@@ -202,4 +202,4 @@ Task: T01-configurable-neutral-dashboard-shell
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: cbea957

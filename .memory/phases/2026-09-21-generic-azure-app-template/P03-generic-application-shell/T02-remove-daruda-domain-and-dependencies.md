@@ -1,6 +1,6 @@
 # Task: T02 Remove Daruda Domain And Dependencies
 
-## Status: pending
+## Status: done
 
 ## Goal
 새 대시보드·인증·Azure 공통 계층이 준비된 뒤 Daruda 번역 라우트, 목업 관리자 화면, 전용 컴포넌트·자산과 더 이상 쓰이지 않는 패키지를 삭제해 활성 프로젝트를 순수한 범용 템플릿으로 만든다.
@@ -99,12 +99,12 @@
   - `components/ui/pagination.tsx`의 unused `itemsPerPage` warning은 P03-T01 실제 계산으로 없어야 한다.
 
 ## Acceptance Criteria
-- [ ] 번역 세 route와 번역/목업 관리자 하위 route가 존재하지 않는다.
-- [ ] `components/translation`, `components/admin`, `lib/dayjs.ts`, mascot 및 unused starter assets가 제거된다.
-- [ ] generic `/admin` page, 모든 `components/ui`, `M365.png`, favicon은 유지된다.
-- [ ] `dayjs`, `react-dropzone`, `nuqs`, `parse-url`가 manifest와 lockfile direct dependency에서 제거된다.
-- [ ] 활성 소스와 package metadata에서 Daruda/번역/용어집/너구리 문자열이 0이다.
-- [ ] 전체 lint, typecheck, unit tests가 통과한다.
+- [x] 번역 세 route와 번역/목업 관리자 하위 route가 존재하지 않는다.
+- [x] `components/translation`, `components/admin`, `lib/dayjs.ts`, mascot 및 unused starter assets가 제거된다.
+- [x] generic `/admin` page, 모든 `components/ui`, `M365.png`, favicon은 유지된다.
+- [x] `dayjs`, `react-dropzone`, `nuqs`, `parse-url`가 manifest와 lockfile direct dependency에서 제거된다.
+- [x] 활성 소스와 package metadata에서 Daruda/번역/용어집/너구리 문자열이 0이다.
+- [x] 전체 lint, typecheck, unit tests가 통과한다.
 
 ## Validation
 - `@('app/document-translation','app/text-translation','app/translation-history','app/admin/general','app/admin/glossary','app/admin/permissions','components/translation','components/admin','lib/dayjs.ts','public/raccoon.png') | ForEach-Object { if (Test-Path $_) { throw "not removed: $_" } }` — 삭제 대상 없음
@@ -128,6 +128,6 @@ Task: T02-remove-daruda-domain-and-dependencies
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
