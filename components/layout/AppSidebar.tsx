@@ -1,269 +1,187 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, type ComponentType } from "react";
+import type { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  LogOut,
+  PanelsTopLeft,
+  ShieldCheck,
+  User,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  LogOut,
-  Languages,
-  User as UserIcon,
-  Type,
-  History,
-  Settings,
-  BookOpen,
-  ShieldCheck,
-  User,
-} from "lucide-react";
+  appConfig,
+  getVisibleNavigation,
+  type NavigationIcon,
+  type NavigationItem,
+} from "@/config/app";
 import { cn } from "@/lib/utils";
-import { signOut, useSession } from "next-auth/react";
 
-export default function AppSidebar() {
-  const { data: session } = useSession();
+interface AppSidebarProps {
+  authEnabled: boolean;
+  session: Session | null;
+}
 
+const navigationIcons: Record<
+  NavigationIcon,
+  ComponentType<{ className?: string }>
+> = {
+  dashboard: LayoutDashboard,
+  admin: ShieldCheck,
+};
+
+function isNavigationActive(pathname: string, href: string): boolean {
+  if (href === "/") {
+    return pathname === href;
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export default function AppSidebar({
+  authEnabled,
+  session,
+}: AppSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
+  const navigation = getVisibleNavigation(appConfig.navigation, {
+    authEnabled,
+    authenticated: session !== null,
+    roles: session?.user.roles,
+  });
 
-  const isVisible = useMemo(() => {
-    return !pathname.startsWith('/auth');
-  }, [pathname]);
-
-  if (!isVisible) return null;
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
-  const menuItems = [
-    {
-      name: "문서 파일 번역",
-      href: "/document-translation",
-      icon: FileText,
-    },
-    {
-      name: "텍스트 번역",
-      href: "/text-translation",
-      icon: Type,
-    },
-    {
-      name: "번역 기록 조회",
-      href: "/translation-history",
-      icon: History,
-    },
-  ];
-
-  const adminMenuItems = [
-    {
-      name: "일반",
-      href: "/admin/general",
-      icon: Settings,
-    },
-    {
-      name: "용어집",
-      href: "/admin/glossary",
-      icon: BookOpen,
-    },
-    {
-      name: "권한 관리",
-      href: "/admin/permissions",
-      icon: ShieldCheck,
-    },
-  ];
-
-  const renderMenuItem = (item: any) => {
-    const isActive = pathname.startsWith(item.href);
-    const content = (
+  const renderNavigationItem = (item: NavigationItem) => {
+    const Icon = navigationIcons[item.icon];
+    const isActive = isNavigationActive(pathname, item.href);
+    const link = (
       <Link
-        key={item.href}
         href={item.href}
         className={cn(
-          "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
+          "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
           isActive
-            ? "bg-sky-50 text-sky-600 shadow-sm"
-            : "text-slate-500 hover:bg-sky-50/50 hover:text-sky-500"
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
         )}
+        aria-current={isActive ? "page" : undefined}
       >
-        <item.icon className={cn(
-          "w-5 h-5 shrink-0 transition-colors",
-          isActive ? "text-sky-600" : "text-slate-400 group-hover:text-sky-500"
-        )} />
-
-        {!isCollapsed && (
-          <span className="font-medium whitespace-nowrap overflow-hidden">
-            {item.name}
-          </span>
-        )}
+        <Icon className="size-5 shrink-0" />
+        {!isCollapsed && <span className="truncate">{item.label}</span>}
       </Link>
     );
 
-    if (isCollapsed) {
-      return (
-        <Tooltip key={item.href} delayDuration={0}>
-          <TooltipTrigger asChild>
-            {content}
-          </TooltipTrigger>
-          <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
-            {item.name}
-          </TooltipContent>
-        </Tooltip>
-      );
+    if (!isCollapsed) {
+      return <div key={item.id}>{link}</div>;
     }
 
-    return content;
+    return (
+      <Tooltip key={item.id}>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right">{item.label}</TooltipContent>
+      </Tooltip>
+    );
   };
+
+  const logoutButton = (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+      aria-label="로그아웃"
+      onClick={() => void signOut({ callbackUrl: "/", redirect: true })}
+    >
+      <LogOut className="size-5" />
+    </Button>
+  );
 
   return (
     <TooltipProvider>
       <aside
         className={cn(
-          "h-screen bg-white border-r border-sky-100 flex flex-col transition-all duration-300 ease-in-out relative z-20 shadow-sm",
-          isCollapsed ? "w-20" : "w-64"
+          "relative z-20 flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm transition-[width] duration-300",
+          isCollapsed ? "w-20" : "w-64",
         )}
       >
-        {/* Header / Branding */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-sky-100 shrink-0">
-          {!isCollapsed && (
-            <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-              <div className="p-1.5 bg-sky-50 rounded-lg">
-                <Languages className="w-5 h-5 text-sky-600" />
-              </div>
-              <span className="font-bold text-xl text-slate-800 tracking-tight">DARUDA</span>
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border px-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="rounded-lg bg-sidebar-primary p-1.5 text-sidebar-primary-foreground">
+              <PanelsTopLeft className="size-5" />
             </div>
-          )}
-          {isCollapsed && (
-            <div className="w-fit flex justify-center">
-              <Languages className="w-6 h-6 text-sky-600" />
-            </div>
-          )}
-
-          {!isCollapsed && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="rounded-full hover:bg-sky-50 text-slate-400 hover:text-sky-600 h-8 w-8"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-          )}
+            {!isCollapsed && (
+              <span className="truncate text-lg font-semibold tracking-tight">
+                {appConfig.name}
+              </span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+            onClick={() => setIsCollapsed((current) => !current)}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="size-4" />
+            ) : (
+              <ChevronLeft className="size-4" />
+            )}
+          </Button>
         </div>
 
-        {/* Collapse Button (Floating if collapsed) */}
-        {isCollapsed && (
-          <div className="absolute -right-3 top-20 z-30">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleSidebar}
-              className="h-6 w-6 bg-white border border-sky-100 rounded-full shadow-md text-sky-600 hover:bg-sky-50 hover:text-sky-700 p-0"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Menu */}
         <ScrollArea className="flex-1 px-3">
-          <div className="py-6 space-y-1">
-            {/* Regular Menu */}
-            <div className="space-y-1 mb-6">
-              {menuItems.map(renderMenuItem)}
-            </div>
-
-            {/* Admin Section */}
-            <div className="pt-4 border-t border-sky-100">
-              {!isCollapsed && (
-                <div className="px-3 mb-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Admin</span>
-                </div>
-              )}
-              <div className="space-y-1">
-                {adminMenuItems.map(renderMenuItem)}
-              </div>
-            </div>
-          </div>
+          <nav aria-label="주요 메뉴" className="space-y-1 py-5">
+            {navigation.map(renderNavigationItem)}
+          </nav>
         </ScrollArea>
 
-        {/* User Profile Footer */}
-        <div className="p-4 border-t border-sky-100 bg-white shrink-0">
-          <div className={cn(
-            "flex items-center gap-3 transition-all duration-300",
-            isCollapsed ? "justify-center" : ""
-          )}>
-            {session ? (
-              <Avatar className="w-10 h-10">
-                <AvatarImage src="/api/profile-images/me" />
-                <AvatarFallback>
-                  <User className="w-5 h-5 text-blue-600" />
-                </AvatarFallback>
-              </Avatar>
+        {authEnabled && session && (
+          <div
+            className={cn(
+              "shrink-0 border-t border-sidebar-border p-3",
+              isCollapsed ? "space-y-2" : "flex items-center gap-3",
+            )}
+          >
+            <Avatar className="size-10 shrink-0">
+              <AvatarImage src="/api/profile-image" alt="" />
+              <AvatarFallback>
+                <User className="size-5" />
+              </AvatarFallback>
+            </Avatar>
+
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
+                  {session.user.name ?? "사용자"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {session.user.upn}
+                </p>
+              </div>
+            )}
+
+            {isCollapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>{logoutButton}</TooltipTrigger>
+                <TooltipContent side="right">로그아웃</TooltipContent>
+              </Tooltip>
             ) : (
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                <User className="w-5 h-5 text-blue-600" />
-              </div>
-            )}
-
-            {!isCollapsed && (
-              <div className="flex-1 overflow-hidden">
-                <p className="font-semibold text-sm text-slate-700 truncate">{session?.user.name}</p>
-                <p className="text-xs text-slate-400 truncate">{session?.user.upn}</p>
-              </div>
-            )}
-
-            {!isCollapsed && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-400 hover:text-red-400 hover:bg-red-50 rounded-lg h-9 w-9"
-                      onClick={() => signOut({ callbackUrl: '/', redirect: true })}
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p>로그아웃</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              logoutButton
             )}
           </div>
-          {/* Logout button for collapsed state */}
-          {isCollapsed && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="mt-4 flex justify-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-full h-9 text-slate-400 hover:text-red-400 hover:bg-red-50 rounded-lg"
-                      onClick={() => signOut({ callbackUrl: '/', redirect: true })}
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>로그아웃</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
+        )}
       </aside>
     </TooltipProvider>
   );

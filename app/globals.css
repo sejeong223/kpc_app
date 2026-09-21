@@ -45,36 +45,6 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  --animate-bounce-slow: bounce-slow 3s ease-in-out infinite;
-  --animate-float-1: float-1 4s ease-in-out infinite;
-  --animate-float-2: float-2 5s ease-in-out infinite;
-  --animate-float-3: float-3 6s ease-in-out infinite;
-
-  @keyframes bounce-slow {
-    0%, 100% {
-      transform: translateY(-5%);
-      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-    }
-    50% {
-      transform: translateY(0);
-      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-    }
-  }
-
-  @keyframes float-1 {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(5deg); }
-  }
-
-  @keyframes float-2 {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(-8deg); }
-  }
-
-  @keyframes float-3 {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-8px) rotate(12deg); }
-  }
 }
 
 :root {

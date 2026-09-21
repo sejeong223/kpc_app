@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import AppSidebar from "@/components/layout/AppSidebar";
+
+import { appConfig } from "@/config/app";
+import { serverEnv } from "@/config/env";
+import AppShell from "@/components/layout/AppShell";
+import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import AuthService from "@/services/AuthService";
-import Providers from "@/components/providers";
+
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DARUDA",
-  description: "문서 번역 서비스",
+  title: appConfig.name,
+  description: appConfig.description,
 };
 
 export default async function RootLayout({
@@ -26,25 +30,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const authService = new AuthService();
-  const session = await authService.getSession();
+  const authEnabled = serverEnv.authEnabled;
+  const session = authEnabled ? await new AuthService().getSession() : null;
 
   return (
-    <html lang="en">
+    <html lang="ko">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
       >
-        <Providers session={session}>
+        <Providers authEnabled={authEnabled} session={session}>
           <Toaster />
-          <div className="flex h-screen overflow-hidden">
-            {/* Sidebar */}
-            <AppSidebar />
-
-            {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto transition-all duration-300">
-              {children}
-            </main>
-          </div>
+          <AppShell authEnabled={authEnabled} session={session}>
+            {children}
+          </AppShell>
         </Providers>
       </body>
     </html>

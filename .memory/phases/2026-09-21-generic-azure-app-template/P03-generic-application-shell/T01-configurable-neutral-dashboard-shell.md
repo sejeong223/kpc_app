@@ -1,6 +1,6 @@
 # Task: T01 Configurable Neutral Dashboard Shell
 
-## Status: pending
+## Status: done
 
 ## Goal
 Daruda 이름·번역 메뉴·하늘색 스타일 대신 중앙 설정에서 이름과 메뉴를 읽는 중립적 대시보드 셸을 제공하고, 인증 상태와 `Admin` 역할에 맞춰 사용자 프로필 및 관리자 예시 메뉴를 노출한다.
@@ -173,12 +173,12 @@ Daruda 이름·번역 메뉴·하늘색 스타일 대신 중앙 설정에서 이
   - shadcn dark token은 유지하되 이번 Task에서 별도 theme switch를 추가하지 않는다.
 
 ## Acceptance Criteria
-- [ ] `/`는 더 이상 번역 route로 redirect하지 않고 generic dashboard를 렌더링한다.
-- [ ] app name/description/menu가 중앙 config에 있고 sidebar에 Daruda/번역 문자열이 없다.
-- [ ] auth disabled에서는 SessionProvider 요청과 관리자 메뉴/사용자 footer가 없다.
-- [ ] Admin page는 server `requireRole`을 호출하며 단순 메뉴 숨김에 의존하지 않는다.
-- [ ] layout과 Pagination에서 고정 `sky-*`, 고정 1/2/3 page mock, 번역 문구가 제거된다.
-- [ ] Pagination boundary와 navigation visibility가 단위 테스트로 검증된다.
+- [x] `/`는 더 이상 번역 route로 redirect하지 않고 generic dashboard를 렌더링한다.
+- [x] app name/description/menu가 중앙 config에 있고 sidebar에 Daruda/번역 문자열이 없다.
+- [x] auth disabled에서는 SessionProvider 요청과 관리자 메뉴/사용자 footer가 없다.
+- [x] Admin page는 server `requireRole`을 호출하며 단순 메뉴 숨김에 의존하지 않는다.
+- [x] layout과 Pagination에서 고정 `sky-*`, 고정 1/2/3 page mock, 번역 문구가 제거된다.
+- [x] Pagination boundary와 navigation visibility가 단위 테스트로 검증된다.
 
 ## Validation
 - `npm.cmd run test -- tests/config/app.test.ts tests/lib/pagination.test.ts` — config/navigation/pagination 테스트 통과
@@ -200,6 +200,6 @@ Task: T01-configurable-neutral-dashboard-shell
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

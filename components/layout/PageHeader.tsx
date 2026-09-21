@@ -9,18 +9,18 @@ interface PageHeaderProps {
 export function PageHeader({
   title,
   description,
-  className
+  className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("space-y-1", className)}>
-      <h1 className="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">
+    <header className={cn("space-y-1", className)}>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
         {title}
       </h1>
       {description && (
-        <p className="text-sm lg:text-base text-slate-500">
+        <p className="text-sm text-muted-foreground lg:text-base">
           {description}
         </p>
       )}
-    </div>
+    </header>
   );
 }

@@ -190,4 +190,4 @@ Task: T04-generic-azure-data-clients
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 8787f48

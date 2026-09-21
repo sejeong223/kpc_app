@@ -1,7 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { getPaginationItems } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 
 interface PaginationProps {
@@ -19,69 +21,91 @@ export function Pagination({
   onPageChange,
   className,
 }: PaginationProps) {
-  // Mock logic for display: usually we would calculate total pages
-  // const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (!Number.isFinite(totalItems) || totalItems < 0) {
+    throw new RangeError("totalItems must be a non-negative number");
+  }
+
+  if (!Number.isFinite(itemsPerPage) || itemsPerPage <= 0) {
+    throw new RangeError("itemsPerPage must be a positive number");
+  }
+
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const normalizedCurrentPage = Number.isFinite(currentPage)
+    ? Math.min(totalPages, Math.max(1, Math.trunc(currentPage)))
+    : 1;
+  const items = getPaginationItems({
+    totalPages,
+    currentPage: normalizedCurrentPage,
+  });
 
   return (
-    <div className={cn("flex items-center justify-between px-2 pt-2 shrink-0 border-t border-slate-50 mt-auto", className)}>
-      <p className="text-xs text-slate-400 font-medium">
-        검색 결과 <span className="text-sky-600 font-bold">{totalItems}</span>건
+    <div
+      className={cn(
+        "mt-auto flex shrink-0 items-center justify-between border-t border-border px-2 pt-2",
+        className,
+      )}
+    >
+      <p className="text-xs font-medium text-muted-foreground">
+        총 <span className="font-bold text-primary">{totalItems}</span>개
       </p>
-      <div className="flex items-center gap-2">
+      <nav aria-label="페이지 탐색" className="flex items-center gap-2">
         <Button
           variant="outline"
-          size="icon"
-          className="h-8 w-8 rounded-lg border-slate-200 disabled:opacity-50"
-          disabled={currentPage <= 1}
-          onClick={() => onPageChange?.(currentPage - 1)}
+          size="icon-sm"
+          className="rounded-lg"
+          aria-label="이전 페이지"
+          disabled={normalizedCurrentPage === 1}
+          onClick={() => onPageChange?.(normalizedCurrentPage - 1)}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="size-4" />
         </Button>
         <div className="flex items-center">
-          {/* Mock Pages for visualization */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "h-8 w-8 rounded-lg font-bold",
-              currentPage === 1 ? "bg-sky-50 text-sky-600" : "text-slate-400 hover:text-slate-600"
-            )}
-            onClick={() => onPageChange?.(1)}
-          >
-            1
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "h-8 w-8 rounded-lg font-bold",
-              currentPage === 2 ? "bg-sky-50 text-sky-600" : "text-slate-400 hover:text-slate-600"
-            )}
-            onClick={() => onPageChange?.(2)}
-          >
-            2
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "h-8 w-8 rounded-lg font-bold",
-              currentPage === 3 ? "bg-sky-50 text-sky-600" : "text-slate-400 hover:text-slate-600"
-            )}
-            onClick={() => onPageChange?.(3)}
-          >
-            3
-          </Button>
+          {items.map((item) => {
+            if (typeof item !== "number") {
+              return (
+                <span
+                  key={item}
+                  className="flex size-8 items-center justify-center text-muted-foreground"
+                  aria-hidden="true"
+                >
+                  …
+                </span>
+              );
+            }
+
+            const isCurrent = item === normalizedCurrentPage;
+
+            return (
+              <Button
+                key={item}
+                variant="ghost"
+                size="icon-sm"
+                className={cn(
+                  "rounded-lg",
+                  isCurrent
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                    : "text-muted-foreground",
+                )}
+                aria-label={`${item}페이지`}
+                aria-current={isCurrent ? "page" : undefined}
+                onClick={() => onPageChange?.(item)}
+              >
+                {item}
+              </Button>
+            );
+          })}
         </div>
         <Button
           variant="outline"
-          size="icon"
-          className="h-8 w-8 rounded-lg border-slate-200"
-          onClick={() => onPageChange?.(currentPage + 1)}
+          size="icon-sm"
+          className="rounded-lg"
+          aria-label="다음 페이지"
+          disabled={normalizedCurrentPage === totalPages}
+          onClick={() => onPageChange?.(normalizedCurrentPage + 1)}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="size-4" />
         </Button>
-      </div>
+      </nav>
     </div>
   );
 }
