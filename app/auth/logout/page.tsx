@@ -1,16 +1,29 @@
-'use client';
+"use client";
 
-import { signOut } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useSearchParams } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { Suspense, useEffect } from "react";
 
-export default function Page() {
+import { Spinner } from "@/components/ui/spinner";
+import { sanitizeCallbackUrl } from "@/lib/auth/callback-url";
+
+function LogoutEffect() {
+  const searchParams = useSearchParams();
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
+
   useEffect(() => {
-    (async () => {
-      signOut({
-        callbackUrl: '/',
-      });
-    })();
-  }, []);
+    void signOut({ callbackUrl });
+  }, [callbackUrl]);
 
-  return null;
+  return <Spinner />;
+}
+
+export default function LogoutPage() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-white">
+      <Suspense fallback={<Spinner />}>
+        <LogoutEffect />
+      </Suspense>
+    </main>
+  );
 }

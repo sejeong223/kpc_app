@@ -1,6 +1,6 @@
 # Task: T03 Auth Routes Proxy And Popup Security
 
-## Status: pending
+## Status: done
 
 ## Goal
 선택형 인증을 API·프록시·로그인 UI 전반에 연결하고, 권한 부족 사용자의 계정 전환 및 iframe 팝업 로그인을 무한 리다이렉트·오픈 리다이렉트·위조 `postMessage` 없이 동작하게 한다.
@@ -150,12 +150,12 @@
   - callback 및 CSP source에 사용자 입력을 그대로 문자열 보간하지 않는다.
 
 ## Acceptance Criteria
-- [ ] auth disabled 상태에서 일반 `/`은 허용되고 NextAuth/profile endpoint는 404다.
-- [ ] anonymous 관리자는 login, 일반 사용자는 forbidden login, Admin은 page 접근으로 분기된다.
-- [ ] forbidden session은 로그인↔관리자 무한 redirect를 만들지 않는다.
-- [ ] popup success는 동일 origin과 저장된 popup source가 모두 맞아야 수락된다.
-- [ ] 외부/프로토콜 상대 callback URL은 `/`로 정규화된다.
-- [ ] proxy에 Daruda route/asset 이름과 무조건 non-GET 우회가 남지 않는다.
+- [x] auth disabled 상태에서 일반 `/`은 허용되고 NextAuth/profile endpoint는 404다.
+- [x] anonymous 관리자는 login, 일반 사용자는 forbidden login, Admin은 page 접근으로 분기된다.
+- [x] forbidden session은 로그인↔관리자 무한 redirect를 만들지 않는다.
+- [x] popup success는 동일 origin과 저장된 popup source가 모두 맞아야 수락된다.
+- [x] 외부/프로토콜 상대 callback URL은 `/`로 정규화된다.
+- [x] proxy에 Daruda route/asset 이름과 무조건 non-GET 우회가 남지 않는다.
 
 ## Validation
 - `npm.cmd run test -- tests/lib/auth/callback-url.test.ts tests/lib/auth/login-message.test.ts tests/lib/auth/proxy-policy.test.ts tests/app/api/profile-image.test.ts` — 보안 정책 테스트 통과
@@ -177,6 +177,6 @@ Task: T03-auth-routes-proxy-and-popup-security
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

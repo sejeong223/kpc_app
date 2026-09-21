@@ -8,6 +8,11 @@ interface RouteHandlerContext {
 
 async function nextHandler(req: NextRequest, res: RouteHandlerContext) {
   const authService = new AuthService();
+
+  if (!authService.isEnabled()) {
+    return new Response(null, { status: 404 });
+  }
+
   const options = await authService.getNextAuthOptions();
   return await NextAuth(req, res, options);
 }

@@ -1,25 +1,38 @@
-import { redirect } from 'next/navigation';
-import LoginComponent from '@/components/auth/LoginComponent';
-import AuthService from '@/services/AuthService';
+import { notFound, redirect } from "next/navigation";
+
+import LoginComponent from "@/components/auth/LoginComponent";
+import { serverEnv } from "@/config/env";
+import { sanitizeCallbackUrl } from "@/lib/auth/callback-url";
+import AuthService from "@/services/AuthService";
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{
     callbackUrl?: string;
+    reason?: string;
   }>;
 }) {
-  const _searchParams = await searchParams;
+  if (!serverEnv.authEnabled) {
+    notFound();
+  }
 
-  const authService = new AuthService();
-  const session = await authService.getSession();
-  if (session) {
-    redirect(_searchParams.callbackUrl ?? '/');
+  const params = await searchParams;
+  const callbackUrl = sanitizeCallbackUrl(params.callbackUrl);
+  const reason = params.reason === "forbidden" ? "forbidden" : undefined;
+  const session = await new AuthService().getSession();
+
+  if (session && !reason) {
+    redirect(callbackUrl);
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-white">
-      <LoginComponent />
-    </div>
+    <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
+      <LoginComponent
+        callbackUrl={callbackUrl}
+        embeddedMode={serverEnv.embeddedMode}
+        reason={reason}
+      />
+    </main>
   );
 }

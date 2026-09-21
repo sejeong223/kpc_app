@@ -1,58 +1,123 @@
-'use client';
+"use client";
 
-import { Label } from '@radix-ui/react-label';
-import { signIn } from 'next-auth/react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Languages } from 'lucide-react';
-import { useEffect } from 'react';
-import { useQueryState } from 'nuqs';
-import { isPopupOrIframe } from '@/utils/frameCheck';
-import { openCenteredPopup } from '@/utils/popup';
+import Image from "next/image";
+import { signIn, signOut } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
 
-export default function LoginComponent() {
-  const [callbackUrl] = useQueryState('callbackUrl', { defaultValue: '/' });
+import { Button } from "@/components/ui/button";
+import { isTrustedLoginSuccessMessage } from "@/lib/auth/login-message";
+import { isPopupOrIframe } from "@/utils/frameCheck";
+import { openCenteredPopup } from "@/utils/popup";
+
+export interface LoginComponentProps {
+  callbackUrl: string;
+  embeddedMode: boolean;
+  reason?: "forbidden";
+}
+
+export default function LoginComponent({
+  callbackUrl,
+  embeddedMode,
+  reason,
+}: LoginComponentProps): React.ReactElement {
+  const popupRef = useRef<Window | null>(null);
+  const [popupError, setPopupError] = useState<string | null>(null);
 
   useEffect(() => {
-    // iframe 로그인 처리
     function handleMessage(event: MessageEvent) {
-      if (event.data.type === 'LOGIN_SUCCESS') {
+      if (
+        isTrustedLoginSuccessMessage(event, {
+          origin: window.location.origin,
+          source: popupRef.current,
+        })
+      ) {
+        popupRef.current = null;
         window.location.replace(callbackUrl);
       }
     }
-    window.addEventListener('message', handleMessage);
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, [callbackUrl]);
 
+  async function startLogin() {
+    setPopupError(null);
+
+    if (reason === "forbidden") {
+      await signOut({ redirect: false });
+    }
+
+    const selectAccount = reason === "forbidden";
+
+    if (embeddedMode || isPopupOrIframe()) {
+      const searchParams = new URLSearchParams({ callbackUrl });
+
+      if (selectAccount) {
+        searchParams.set("selectAccount", "1");
+      }
+
+      popupRef.current = openCenteredPopup(
+        `/auth/login/popup?${searchParams.toString()}`,
+        "kpc-app-login",
+        600,
+        700,
+      );
+
+      if (!popupRef.current) {
+        setPopupError(
+          "로그인 팝업이 차단되었습니다. 브라우저에서 팝업을 허용한 뒤 다시 시도해 주세요.",
+        );
+      }
+
+      return;
+    }
+
+    await signIn(
+      "azure-ad",
+      { callbackUrl },
+      selectAccount ? { prompt: "select_account" } : undefined,
+    );
+  }
+
   return (
-    <>
-      <Languages className="w-20 h-20 text-indigo-600 shrink-0" />
-      <div className="flex flex-col items-center mb-3 mt-10">
-        <Label htmlFor='sign in text' className='text-[32px] font-semibold'>Sign In</Label>
-        <div className="flex flex-col my-3 items-center">
-          <Label htmlFor='sign in description 1' className='text-[14px] font-normal'>Access your account using your</Label>
-          <Label htmlFor='sign in description 2' className='text-[14px] font-normal'>company Microsoft login.</Label>
-        </div>
+    <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-xl border bg-white p-8 shadow-sm">
+      <Image
+        alt="Microsoft logo"
+        width={48}
+        height={48}
+        src="/M365.png"
+      />
+
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl font-semibold">로그인</h1>
+        {reason === "forbidden" ? (
+          <p className="text-sm text-muted-foreground">
+            관리자 권한이 없습니다. 권한이 있는 다른 계정으로 로그인해 주세요.
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            회사 Microsoft 계정으로 계속하세요.
+          </p>
+        )}
       </div>
 
-      <Button size='lg' className="m-1 p-6 font-semibold" variant="outline" onClick={() => {
-        if (isPopupOrIframe()) {
-          openCenteredPopup(
-            '/auth/login/popup?callbackUrl=_parent_call',
-            '_blank',
-            600,
-            700
-          );
-          return;
-        }
-        signIn('azure-ad');
-      }}>
-        <Image alt="Microsoft Logo" width={20} height={20} className="mr-5" src={'/M365.png'} />
-        Sign in with Microsoft
+      <Button
+        type="button"
+        size="lg"
+        className="w-full"
+        variant="outline"
+        onClick={() => void startLogin()}
+      >
+        {reason === "forbidden"
+          ? "다른 계정으로 로그인"
+          : "Microsoft 계정으로 로그인"}
       </Button>
 
-    </>
+      {popupError ? (
+        <p role="alert" className="text-center text-sm text-destructive">
+          {popupError}
+        </p>
+      ) : null}
+    </div>
   );
 }

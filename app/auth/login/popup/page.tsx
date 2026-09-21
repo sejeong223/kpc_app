@@ -1,5 +1,9 @@
-import PopupLoginPage from './PopupLoginPage';
+import { notFound } from "next/navigation";
 
+import { serverEnv } from "@/config/env";
+import { sanitizeCallbackUrl } from "@/lib/auth/callback-url";
+
+import PopupLoginPage from "./PopupLoginPage";
 
 export default async function Page({
   searchParams,
@@ -7,9 +11,20 @@ export default async function Page({
   searchParams: Promise<{
     callbackUrl?: string;
     success?: string;
+    selectAccount?: string;
   }>;
 }) {
-  const _searchParams = await searchParams;
+  if (!serverEnv.authEnabled) {
+    notFound();
+  }
 
-  return <PopupLoginPage searchParams={_searchParams} />
+  const params = await searchParams;
+
+  return (
+    <PopupLoginPage
+      callbackUrl={sanitizeCallbackUrl(params.callbackUrl)}
+      success={params.success === "1"}
+      selectAccount={params.selectAccount === "1"}
+    />
+  );
 }
