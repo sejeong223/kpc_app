@@ -1,6 +1,6 @@
 # Task: T02 Optional Auth Service And RBAC
 
-## Status: pending
+## Status: done
 
 ## Goal
 `AUTH_ENABLED`에 따라 안전하게 비활성화할 수 있는 NextAuth/MSAL 서비스를 만들고, Entra ID App Roles의 `User`·`Admin` 값을 서버와 UI가 공유하는 단일 역할 모델 및 관리자 접근 가드로 제공한다.
@@ -157,11 +157,11 @@
   - 메뉴 숨김 여부를 신뢰하지 않으며 관리자 page server component가 항상 이 함수를 호출해야 한다.
 
 ## Acceptance Criteria
-- [ ] role source는 Entra `roles` claim 하나이며 `User`·`Admin` 외 값은 권한으로 인정하지 않는다.
-- [ ] auth disabled session 조회는 MSAL·Graph·Redis를 호출하지 않는다.
-- [ ] 기존 `User.Basic`, `DARUDA_ENABLE_CROSS_SITE_COOKIE`, `daruda-next-auth.state`, `@daruda_app` 참조가 제거된다.
-- [ ] refresh 실패가 session error로 전달되고 비밀값이 오류에 포함되지 않는다.
-- [ ] 인증 off/anonymous/User/Admin의 관리자 접근 matrix가 단위 테스트로 고정된다.
+- [x] role source는 Entra `roles` claim 하나이며 `User`·`Admin` 외 값은 권한으로 인정하지 않는다.
+- [x] auth disabled session 조회는 MSAL·Graph·Redis를 호출하지 않는다.
+- [x] 기존 `User.Basic`, `DARUDA_ENABLE_CROSS_SITE_COOKIE`, `daruda-next-auth.state`, `@daruda_app` 참조가 제거된다.
+- [x] refresh 실패가 session error로 전달되고 비밀값이 오류에 포함되지 않는다.
+- [x] 인증 off/anonymous/User/Admin의 관리자 접근 matrix가 단위 테스트로 고정된다.
 
 ## Validation
 - `npm.cmd run test -- tests/lib/auth/roles.test.ts tests/lib/auth/access-policy.test.ts tests/lib/auth/guards.test.ts tests/services/AuthService.test.ts` — 역할·AuthService 테스트 통과
@@ -183,6 +183,6 @@ Task: T02-optional-auth-service-and-rbac
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

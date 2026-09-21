@@ -1,91 +1,79 @@
-import 'server-only';
+import "server-only";
 
+import { getServerSession, type NextAuthOptions, type Session } from "next-auth";
+import type { OAuthConfig } from "next-auth/providers/index";
+
+import { serverEnv } from "@/config/env";
+import type { ServerEnv } from "@/config/env.schema";
+import { AUTH_TOKEN_VERSION } from "@/const/auth";
 import {
-  AccountInfo,
-} from '@azure/msal-node';
-import { NextAuthOptions, getServerSession } from 'next-auth';
-import type { OAuthConfig } from 'next-auth/providers/index';
-
-import MSGraphService from './MSGraphService';
-import { AUTH_TOKEN_VERSION } from '@/const/auth';
-import { serverEnv } from '@/config/env';
-import { createMsalClient } from '@/lib/auth/credentials';
-import { MsalCachePlugin } from '@/lib/auth/msal-cache-plugin';
+  createGraphTokenCredential,
+  createMsalClient,
+} from "@/lib/auth/credentials";
+import { AppConfigurationError } from "@/lib/auth/errors";
+import { MsalCachePlugin } from "@/lib/auth/msal-cache-plugin";
+import { normalizeRoles, type AppRole } from "@/lib/auth/roles";
 import {
   buildSessionCacheKey,
   getSessionCache,
-} from '@/lib/auth/session-cache';
+  type SessionCache,
+} from "@/lib/auth/session-cache";
 
-export interface EntraIDProfile extends Record<string, any> {
+import MSGraphService from "./MSGraphService";
+
+const CACHE_TTL_SECONDS = 60 * 60 * 24 * 90;
+const REFRESH_BUFFER_SECONDS = 60 * 15;
+
+export interface EntraIDProfile extends Record<string, unknown> {
   sub: string;
-  nickname: string;
-  email: string;
-  picture: string;
+  oid?: string;
+  name?: string;
+  email?: string;
+  roles?: unknown;
+}
+
+export interface CurrentUser {
+  name: string | null;
   oid: string;
-  account: AccountInfo;
+  upn: string;
+  roles: AppRole[];
+}
+
+interface AuthServiceOptions {
+  env?: ServerEnv;
+  graphService?: MSGraphService;
+  sessionCache?: SessionCache;
 }
 
 export default class AuthService {
-  msGraphService: MSGraphService;
+  private readonly env: ServerEnv;
+  private graphService?: MSGraphService;
+  private sessionCache?: SessionCache;
 
-  constructor() {
-    this.msGraphService = new MSGraphService();
+  constructor(options: AuthServiceOptions = {}) {
+    this.env = options.env ?? serverEnv;
+    this.graphService = options.graphService;
+    this.sessionCache = options.sessionCache;
   }
 
-  async getNextAuthOptions() {
-    const client = await this.msGraphService.getMSGraphClient();
+  isEnabled(): boolean {
+    return this.env.authEnabled;
+  }
 
-    let cookies = undefined;
-
-    if (process.env.DARUDA_ENABLE_CROSS_SITE_COOKIE) {
-      cookies = {
-        sessionToken: {
-          name: `__Secure-next-auth.session-token`,
-          options: {
-            httpOnly: true,
-            sameSite: 'None',
-            path: '/',
-            secure: true,
-          },
-        },
-        callbackUrl: {
-          name: `__Secure-next-auth.callback-url`,
-          options: {
-            sameSite: 'None',
-            path: '/',
-            secure: true,
-          },
-        },
-        csrfToken: {
-          name: `__Host-next-auth.csrf-token`,
-          options: {
-            httpOnly: true,
-            sameSite: 'None',
-            path: '/',
-            secure: true,
-          },
-        },
-        state: {
-          name: `daruda-next-auth.state`,
-          options: {
-            httpOnly: true,
-            sameSite: 'None',
-            path: '/',
-            secure: true,
-            maxAge: 900,
-          },
-        },
-      };
+  async getNextAuthOptions(): Promise<NextAuthOptions> {
+    if (!this.isEnabled()) {
+      throw new AppConfigurationError(
+        "AUTH_ENABLED must be true to build NextAuth options",
+      );
     }
 
-    const options: NextAuthOptions = {
-      secret: process.env.NEXTAUTH_SECRET,
-      session: {
-        strategy: 'jwt',
-      },
-      cookies: cookies,
-      // Configure one or more authentication providers
-      providers: [await this.getNextAuthEntraIDProvider()],
+    const graphClient = this.getGraphService().getMSGraphClient();
+
+    return {
+      secret: this.env.nextAuthSecret,
+      session: { strategy: "jwt" },
+      cookies: this.getEmbeddedCookies(),
+      providers: [this.getNextAuthEntraIdProvider()],
       callbacks: {
         jwt: async ({ token, account, profile }) => {
           if (account) {
@@ -95,204 +83,245 @@ export default class AuthService {
 
           if (profile) {
             token.oid = profile.oid;
-            token.roles = profile.roles ?? [];
-            const user = await client.api(`/users/${token.oid}`).get();
-            token.upn = user.userPrincipalName;
-            token.roles = [...token.roles]
+            token.roles = normalizeRoles(profile.roles);
+
+            if (!token.oid) {
+              throw new AppConfigurationError(
+                "OID claim is required for authenticated users",
+              );
+            }
+
+            const graphUser = await graphClient
+              .api(`/users/${token.oid}`)
+              .get();
+
+            if (!graphUser?.userPrincipalName) {
+              throw new AppConfigurationError(
+                "Microsoft Graph userPrincipalName is required",
+              );
+            }
+
+            token.upn = graphUser.userPrincipalName;
           }
 
-          if (!token.version) {
-            token.version = AUTH_TOKEN_VERSION;
-          }
+          token.version ??= AUTH_TOKEN_VERSION;
 
-          const now = Math.floor(Date.now() / 1000);
-
-          const bufferSeconds = 60 * 15;
-
-          // 토큰 만료 시점 느슨하게
-          if (token.expires_at && token.expires_at - bufferSeconds <= now) {
+          if (this.shouldRefresh(token.expires_at)) {
             try {
               if (!token.oid) {
-                throw new Error('Broken session?');
+                throw new AppConfigurationError(
+                  "OID claim is required for token refresh",
+                );
               }
 
-              const msalClient = await this.getMSALClient({
-                appEnv: serverEnv.appEnv,
-                accountId: token.oid,
-              });
-
+              const msalClient = this.getMsalClient(token.oid);
               const accountInfo = await msalClient
                 .getTokenCache()
                 .getAccountByLocalId(token.oid);
 
               if (!accountInfo) {
-                throw new Error(
-                  'Account Cache not found in cache, please log in again.',
+                throw new AppConfigurationError(
+                  "MSAL account cache is unavailable",
                 );
               }
 
-              const scopes = await this.getAuthScopes([
-                'User.Read',
-              ]);
-
-              const acquiredToken = await msalClient.acquireTokenSilent({
-                scopes: scopes,
+              const refreshed = await msalClient.acquireTokenSilent({
+                scopes: this.getAuthScopes(["User.Read"]),
                 account: accountInfo,
                 forceRefresh: true,
               });
 
-              token.access_token = acquiredToken.accessToken;
-
-              if (acquiredToken.expiresOn) {
-                token.expires_at = acquiredToken.expiresOn.getTime() / 1000;
-              }
-            } catch (e) {
-              console.error(e);
-              throw new Error('Please log in again.');
+              token.access_token = refreshed.accessToken;
+              token.expires_at = refreshed.expiresOn
+                ? refreshed.expiresOn.getTime() / 1000
+                : token.expires_at;
+              token.error = undefined;
+            } catch {
+              token.error = "RefreshAccessTokenError";
             }
           }
 
           return token;
         },
-        async session({ session, token }) {
+        session: async ({ session, token }) => {
           session.user.access_token = token.access_token;
           session.user.oid = token.oid;
           session.user.upn = token.upn;
-          session.user.roles = token.roles;
+          session.user.roles = normalizeRoles(token.roles);
+          session.error = token.error;
           return session;
         },
       },
-      pages: {
-        signIn: '/auth/login',
-      },
+      pages: { signIn: "/auth/login" },
     };
-
-    return options;
   }
 
-  async getSession() {
-    const session = await getServerSession(await this.getNextAuthOptions());
-    return session;
+  async getSession(): Promise<Session | null> {
+    if (!this.isEnabled()) {
+      return null;
+    }
+
+    return getServerSession(await this.getNextAuthOptions());
   }
 
-  async getCurrentUser() {
+  async getCurrentUser(): Promise<CurrentUser | null> {
     const session = await this.getSession();
-    if (session?.user && session?.user?.name && session?.user?.oid && session?.user?.upn) {
-      return {
-        name: session.user.name,
-        oid: session.user.oid,
-        upn: session.user.upn,
-        roles: session.user.roles ?? []
-      }
-    }
-  }
 
-  async getMSALClient(cacheOption?: CacheOption) {
-    let cachePlugin = undefined;
-
-    if (cacheOption) {
-      cachePlugin = new MsalCachePlugin({
-        cache: getSessionCache(),
-        cacheKey: buildSessionCacheKey({
-          namespace: serverEnv.authCacheNamespace,
-          appEnv: cacheOption.appEnv,
-          accountId: cacheOption.accountId,
-        }),
-      });
+    if (!session?.user.oid || !session.user.upn) {
+      return null;
     }
 
-    return createMsalClient({ cachePlugin });
+    return {
+      name: session.user.name ?? null,
+      oid: session.user.oid,
+      upn: session.user.upn,
+      roles: normalizeRoles(session.user.roles),
+    };
   }
 
-  async getAuthScopes(etcScopes: string[]) {
-    const scopes = [
-      'offline_access',
-      'openid',
-      'profile',
-      'email',
-      ...etcScopes,
+  getAuthScopes(extraScopes: readonly string[] = []): string[] {
+    return [
+      ...new Set([
+        "offline_access",
+        "openid",
+        "profile",
+        "email",
+        ...extraScopes,
+      ]),
     ];
-    return scopes;
   }
 
-  async getNextAuthEntraIDProvider<P extends EntraIDProfile>() {
-    const scopes = await this.getAuthScopes([
-      'User.Read',
-    ]);
+  private getGraphService(): MSGraphService {
+    this.graphService ??= new MSGraphService(
+      createGraphTokenCredential(this.env),
+    );
+    return this.graphService;
+  }
 
-    const tenant = process.env.MSAL_TENANT_ID ?? 'common';
+  private getCache(): SessionCache {
+    this.sessionCache ??= getSessionCache(this.env);
+    return this.sessionCache;
+  }
 
-    const provider: OAuthConfig<P> = {
-      id: 'azure-ad',
-      name: 'Azure Active Directory',
-      type: 'oauth',
-      wellKnown: `https://login.microsoftonline.com/${tenant}/v2.0/.well-known/openid-configuration?appid=${process.env.MSAL_CLIENT_ID}`,
-      authorization: {
-        params: {
-          scope: scopes.join(' '),
-        },
-      },
+  private getMsalClient(accountId?: string) {
+    const cachePlugin = accountId
+      ? new MsalCachePlugin({
+          cache: this.getCache(),
+          cacheKey: buildSessionCacheKey({
+            namespace: this.env.authCacheNamespace,
+            appEnv: this.env.appEnv,
+            accountId,
+          }),
+        })
+      : undefined;
+
+    return createMsalClient({ env: this.env, cachePlugin });
+  }
+
+  private getNextAuthEntraIdProvider<P extends EntraIDProfile>(): OAuthConfig<P> {
+    const tenantId = this.env.msalTenantId;
+    const clientId = this.env.msalClientId;
+
+    if (!tenantId || !clientId) {
+      throw new AppConfigurationError(
+        "MSAL_TENANT_ID and MSAL_CLIENT_ID are required",
+      );
+    }
+
+    const scopes = this.getAuthScopes(["User.Read"]);
+
+    return {
+      id: "azure-ad",
+      name: "Microsoft Entra ID",
+      type: "oauth",
+      wellKnown: `https://login.microsoftonline.com/${tenantId}/v2.0/.well-known/openid-configuration?appid=${clientId}`,
+      authorization: { params: { scope: scopes.join(" ") } },
       token: {
         request: async (context) => {
-          const cca = await this.getMSALClient();
-
-          const r = await cca.acquireTokenByCode({
+          const msalClient = this.getMsalClient();
+          const result = await msalClient.acquireTokenByCode({
             code: context.params.code as string,
-            scopes: scopes,
+            scopes,
             redirectUri: context.provider.callbackUrl,
           });
+          const accountId = result.account?.localAccountId;
 
-          const oid = r.account?.localAccountId;
-
-          if (oid && r.expiresOn) {
-            const option = {
-              appEnv: serverEnv.appEnv,
-              accountId: oid,
-            }
-
-            const clientForCache = await this.getMSALClient(option);
-            const cache = cca.getTokenCache().serialize()
-            clientForCache.getTokenCache().deserialize(cache);
-            const sessionCache = getSessionCache();
-            const cacheKey = buildSessionCacheKey({
-              namespace: serverEnv.authCacheNamespace,
-              ...option,
-            });
-            if (!await sessionCache.get(cacheKey)) {
-              await sessionCache.set(cacheKey, cache, 60 * 60 * 24 * 90);
-            }
-            await clientForCache.getTokenCache().getAllAccounts();
+          if (accountId) {
+            await this.getCache().set(
+              buildSessionCacheKey({
+                namespace: this.env.authCacheNamespace,
+                appEnv: this.env.appEnv,
+                accountId,
+              }),
+              msalClient.getTokenCache().serialize(),
+              CACHE_TTL_SECONDS,
+            );
           }
 
           return {
             tokens: {
-              token_type: r.tokenType,
-              id_token: r.idToken,
-              access_token: r.accessToken,
-              scope: r.scopes.join(' '),
-              expires_at: (r.expiresOn?.getTime() ?? 0) / 1000,
-              session_state: r.state,
+              token_type: result.tokenType,
+              id_token: result.idToken,
+              access_token: result.accessToken,
+              scope: result.scopes.join(" "),
+              expires_at: (result.expiresOn?.getTime() ?? 0) / 1000,
+              session_state: result.state,
             },
           };
         },
       },
-      profile: async (profile) => {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-        };
-      },
-      style: { logo: '/azure.svg', text: '#fff', bg: '#0072c6' },
-      clientId: process.env.MSAL_CLIENT_ID,
-      clientSecret: '',
+      profile: (profile) => ({
+        id: profile.sub,
+        name: profile.name,
+        email: profile.email,
+      }),
+      style: { logo: "/M365.png", text: "#fff", bg: "#0072c6" },
+      clientId,
+      clientSecret: this.env.msalClientSecret ?? "",
+    };
+  }
+
+  private getEmbeddedCookies(): NextAuthOptions["cookies"] | undefined {
+    if (!this.env.embeddedMode) {
+      return undefined;
+    }
+
+    const sharedOptions = {
+      sameSite: "none" as const,
+      path: "/",
+      secure: true,
     };
 
-    return provider;
+    return {
+      sessionToken: {
+        name: "__Secure-next-auth.session-token",
+        options: { ...sharedOptions, httpOnly: true },
+      },
+      callbackUrl: {
+        name: "__Secure-next-auth.callback-url",
+        options: sharedOptions,
+      },
+      csrfToken: {
+        name: "__Host-next-auth.csrf-token",
+        options: { ...sharedOptions, httpOnly: true },
+      },
+      state: {
+        name: `${this.env.authCacheNamespace}-next-auth.state`,
+        options: {
+          ...sharedOptions,
+          httpOnly: true,
+          maxAge: 900,
+        },
+      },
+    };
   }
-}
 
-interface CacheOption {
-  appEnv: string;
-  accountId: string;
+  private shouldRefresh(expiresAt: number | undefined): boolean {
+    if (!expiresAt) {
+      return false;
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    return expiresAt - REFRESH_BUFFER_SECONDS <= now;
+  }
 }

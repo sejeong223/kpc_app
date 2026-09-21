@@ -1,34 +1,34 @@
-import { DefaultSession } from 'next-auth';
+import type { DefaultSession } from "next-auth";
 
+import type { AppRole } from "@/lib/auth/roles";
 
-type TUserRole = 'User.Basic';
+type RefreshError = "RefreshAccessTokenError";
 
-type UserRole = TUserRole;
-
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session {
     user: {
       oid?: string;
       upn?: string;
       access_token?: string;
-      roles?: UserRole[];
-    } & DefaultSession['user'];
+      roles: AppRole[];
+    } & DefaultSession["user"];
+    error?: RefreshError;
   }
 
   interface Profile {
     oid?: string;
-    roles?: UserRole[];
+    roles?: unknown;
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
     oid?: string;
     access_token?: string;
-    refresh_token?: string;
     expires_at?: number;
     upn?: string;
     version?: string;
-    roles?: UserRole[];
+    roles?: AppRole[];
+    error?: RefreshError;
   }
 }
