@@ -6,7 +6,7 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | 로그인 표현 복원 및 인증 보안 회귀 검증 | [T01](./T01-restore-login-presentation.md) |
+| T01 | `done` | 로그인 표현 복원 및 인증 보안 회귀 검증 | [T01](./T01-restore-login-presentation.md) |
 
 ## Progress
-- done: 0/1 (active: T01)
+- done: 1/1 (active: complete)

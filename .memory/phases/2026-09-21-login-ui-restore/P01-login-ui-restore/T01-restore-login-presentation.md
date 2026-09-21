@@ -140,4 +140,4 @@ Task: T01-restore-login-presentation
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: `f7b38ca8fa19eff9d7d9ee53a0c668171805fcb4`

@@ -9,7 +9,7 @@
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 기존 로그인 표현을 복원하고 현재 인증 보안 경계를 회귀 검증 | [P01](../phases/2026-09-21-login-ui-restore/P01-login-ui-restore/phase.md) |
+| P01 | `done` | 기존 로그인 표현을 복원하고 현재 인증 보안 경계를 회귀 검증 | [P01](../phases/2026-09-21-login-ui-restore/P01-login-ui-restore/phase.md) |
 
 ## Completion Criteria
 - 일반 로그인 화면에 기존 `Languages` 아이콘, 영문 안내, Microsoft 로고 button이 표시된다.
