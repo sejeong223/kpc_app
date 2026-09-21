@@ -7,7 +7,7 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` ✅ | 중앙 앱 설정, 중립 대시보드·사이드바·관리자 예시 및 범용 Pagination 구현 | [T01](./T01-configurable-neutral-dashboard-shell.md) |
-| T02 | `in_progress` 🔵 | Daruda 라우트·컴포넌트·자산·도메인 의존성 제거 | [T02](./T02-remove-daruda-domain-and-dependencies.md) |
+| T02 | `done` ✅ | Daruda 라우트·컴포넌트·자산·도메인 의존성 제거 | [T02](./T02-remove-daruda-domain-and-dependencies.md) |
 
 ## Progress
-- done: 1/2 (active: T02)
+- done: 2/2 (complete)

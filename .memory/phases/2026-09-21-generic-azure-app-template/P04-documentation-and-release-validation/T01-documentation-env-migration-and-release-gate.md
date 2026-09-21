@@ -1,6 +1,6 @@
 # Task: T01 Documentation Env Migration And Release Gate
 
-## Status: pending
+## Status: done
 
 ## Goal
 범용 템플릿의 설치·인증·Azure 사용법을 한국어 README로 제공하고, 기존 secret 파일을 변경하거나 노출하지 않은 채 현재 로컬 개발에서 인증·팝업 모드를 활성화한 다음 전체 lint·typecheck·test·build 품질 게이트를 통과시킨다.
@@ -115,12 +115,12 @@
   - 이 Task의 표준 commit 이후 `git status --short`가 clean이어야 한다. ignored local env와 `.next`는 status에 나타나지 않는다.
 
 ## Acceptance Criteria
-- [ ] `.env.development` 내용은 변경되지 않고 `.env.development.local`이 현재 개발용 auth/embedded non-secret override를 제공한다.
-- [ ] 실제 env 두 파일은 ignored이고 `.env.example`만 추적 가능하다.
-- [ ] README가 한국어로 빠른 시작, Entra/Redis/Azure/iframe, scripts, 보안 및 메모리 워크플로를 설명한다.
-- [ ] 활성 코드·자산·manifest·README에서 Daruda/번역/CodeBurn 잔재가 없다.
-- [ ] Git tracked files에 secret 환경파일이나 인증서/키가 없다.
-- [ ] npm dependency tree, lint, typecheck, unit tests, auth-disabled production build가 모두 통과한다.
+- [x] `.env.development` 내용은 변경되지 않고 `.env.development.local`이 현재 개발용 auth/embedded non-secret override를 제공한다.
+- [x] 실제 env 두 파일은 ignored이고 `.env.example`만 추적 가능하다.
+- [x] README가 한국어로 빠른 시작, Entra/Redis/Azure/iframe, scripts, 보안 및 메모리 워크플로를 설명한다.
+- [x] 활성 코드·자산·manifest·README에서 Daruda/번역/CodeBurn 잔재가 없다.
+- [x] Git tracked files에 secret 환경파일이나 인증서/키가 없다.
+- [x] npm dependency tree, lint, typecheck, unit tests, auth-disabled production build가 모두 통과한다.
 
 ## Validation
 - `git check-ignore .env.development .env.development.local` — 두 local env 경로 출력
@@ -148,6 +148,6 @@ Task: T01-documentation-env-migration-and-release-gate
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
