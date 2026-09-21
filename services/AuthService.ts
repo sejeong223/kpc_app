@@ -275,7 +275,7 @@ export default class AuthService {
         name: profile.name,
         email: profile.email,
       }),
-      style: { logo: "/M365.png", text: "#fff", bg: "#0072c6" },
+      style: { logo: "/microsoft.svg", text: "#fff", bg: "#0072c6" },
       clientId,
       clientSecret: this.env.msalClientSecret ?? "",
     };

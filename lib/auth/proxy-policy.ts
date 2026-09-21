@@ -15,15 +15,25 @@ const safeFrameSource = new RegExp(
   "i",
 );
 
+const PUBLIC_AUTH_ASSET_PATHS = new Set(["/microsoft.svg"]);
+
 export function isAuthPath(pathname: string): boolean {
   return pathname === "/auth" || pathname.startsWith("/auth/");
+}
+
+export function isPublicAuthAssetPath(pathname: string): boolean {
+  return PUBLIC_AUTH_ASSET_PATHS.has(pathname);
 }
 
 export function shouldApplyAuthentication(input: {
   authEnabled: boolean;
   pathname: string;
 }): boolean {
-  return input.authEnabled && !isAuthPath(input.pathname);
+  return (
+    input.authEnabled &&
+    !isAuthPath(input.pathname) &&
+    !isPublicAuthAssetPath(input.pathname)
+  );
 }
 
 export function buildFrameAncestors(input: {

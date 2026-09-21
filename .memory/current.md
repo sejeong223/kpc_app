@@ -1,27 +1,16 @@
 # Current Context
 
 ## Active Plan
-[범용 Azure 사내 앱 템플릿](./plans/2026-09-21-generic-azure-app-template.md)
+[Login UI Restore](./plans/2026-09-21-login-ui-restore.md)
 
 ## Active Phase
-없음 (계획 완료)
+[P01 Login UI Restore](./phases/2026-09-21-login-ui-restore/P01-login-ui-restore/phase.md)
 
 ## Active Task
-없음
+[T01 Restore Login Presentation](./phases/2026-09-21-login-ui-restore/P01-login-ui-restore/T01-restore-login-presentation.md)
 
 ## Status
-- P01 완료
-- P02-T01 완료 (`fa08d72`)
-- P02-T02 완료 (`610711a`)
-- P02-T03 완료 (`bb9da5f`)
-- P02-T04 완료 (`8787f48`)
-- P02 완료
-- P03-T01 완료 (`cbea957`)
-- P03-T02 완료 (`de6f641`)
-- P03 완료
-- P04-T01 완료 (`fa803a4`)
-- P04 완료
-- 범용 Azure 사내 앱 템플릿 계획 완료
+- T01 구현 시작 준비 완료
 
 ## Next Step (IMPORTANT)
-활성 Task 없음. 새 기능은 `/grill-me`로 요구사항을 확정한 뒤 새 계획을 생성할 것
+T01 청사진을 읽고 `components/auth/LoginComponent.tsx`의 원본 표현 복원부터 시작
