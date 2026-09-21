@@ -1,71 +1,62 @@
-import 'server-only';
+import { CosmosClient, type Container, type Database } from "@azure/cosmos";
+import type { TokenCredential } from "@azure/core-auth";
+import { DefaultAzureCredential } from "@azure/identity";
 
 import {
-  Container,
-  CosmosClient,
-  DeleteOperationInput,
-  ItemDefinition,
-} from '@azure/cosmos';
+  AzureIntegrationConfigurationError,
+  getCosmosConfig,
+  type CosmosConfig,
+} from "@/config/azure";
 
-export default class CosmosDBService {
-  async getCosmosClient() {
-    const client = new CosmosClient({
-      endpoint: process.env.COSMOS_DB_ENDPOINT ?? '',
-      key: process.env.COSMOS_DB_KEY,
-    });
-
-    return client;
-  }
-
-  async getContainer(containerId: CONTAINER_ID) {
-    const client = await this.getCosmosClient();
-
-    const r = await client
-      .database(process.env.COSMOS_DB_NAME ?? 'daruda_dev')
-      .containers.createIfNotExists({
-        id: containerId,
-        partitionKey: '/partition_key',
-      });
-    return r.container;
-  }
+export interface CosmosDBServiceOptions {
+  config?: CosmosConfig;
+  credential?: TokenCredential;
+  client?: CosmosClient;
 }
 
-export type CONTAINER_ID =
-  | 'permissions'
-  | 'glossary_languages'
-  | 'glossarys'
-  | 'files'
-  | 'translations'
-  | 'refdata';
+export default class CosmosDBService {
+  private readonly config: CosmosConfig;
+  private readonly credential?: TokenCredential;
+  private client?: CosmosClient;
 
-type DeleteAllProps = {
-  container: Container;
-  items: ItemDefinition[];
-  chunkSize?: number;
-};
-
-export async function deleteAll({
-  container,
-  items,
-  chunkSize = 100,
-}: DeleteAllProps) {
-  // console.log(items);
-  const operations: DeleteOperationInput[] = items.map((item) => ({
-    operationType: 'Delete',
-    id: item.id ?? '',
-    partitionKey: item.partitionKey ?? item.partition_key,
-  }));
-
-  // Bulk 요청을 나누어 처리
-  for (let i = 0; i < operations.length; i += chunkSize) {
-    const chunk = operations.slice(i, i + chunkSize);
-    try {
-      await container.items.bulk(chunk);
-    } catch (error) {
-      console.error(error);
-    }
+  constructor(options: CosmosDBServiceOptions = {}) {
+    this.config = options.config ?? getCosmosConfig();
+    this.credential = options.credential;
+    this.client = options.client;
   }
-  return {
-    success: true,
-  };
+
+  getCosmosClient(): CosmosClient {
+    if (this.client) {
+      return this.client;
+    }
+
+    this.client =
+      this.config.authMode === "key"
+        ? new CosmosClient({
+            endpoint: this.config.endpoint,
+            key: this.config.key,
+          })
+        : new CosmosClient({
+            endpoint: this.config.endpoint,
+            aadCredentials: this.credential ?? new DefaultAzureCredential(),
+          });
+
+    return this.client;
+  }
+
+  getDatabase(): Database {
+    return this.getCosmosClient().database(this.config.databaseName);
+  }
+
+  getContainer(containerId: string): Container {
+    const normalizedContainerId = containerId.trim();
+
+    if (normalizedContainerId.length === 0) {
+      throw new AzureIntegrationConfigurationError("Cosmos DB", [
+        "containerId",
+      ]);
+    }
+
+    return this.getDatabase().container(normalizedContainerId);
+  }
 }

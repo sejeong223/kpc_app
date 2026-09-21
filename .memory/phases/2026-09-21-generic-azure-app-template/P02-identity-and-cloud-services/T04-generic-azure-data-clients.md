@@ -1,6 +1,6 @@
 # Task: T04 Generic Azure Data Clients
 
-## Status: pending
+## Status: done
 
 ## Goal
 번역 컨테이너와 shared key에 고정된 Cosmos DB·Blob Storage 서비스를 Managed Identity 우선의 범용 클라이언트로 교체하고, 리소스 생성은 명시적으로 실행하는 Cosmos provisioning CLI에만 허용한다.
@@ -158,13 +158,13 @@
 - Power Automate 관련 패키지는 별도 direct dependency가 없으므로 Microsoft Graph client는 Graph 기능을 위해 유지한다.
 
 ## Acceptance Criteria
-- [ ] Cosmos/Blob config는 factory 호출 전까지 앱 시작을 막지 않는다.
-- [ ] Managed Identity 모드에서 account key가 SDK constructor에 전달되지 않는다.
-- [ ] key mode에서 누락 key를 secret value 없이 명확히 거부한다.
-- [ ] runtime Cosmos service에서 `createIfNotExists`와 고정 container union이 제거된다.
-- [ ] `createIfNotExists`는 `scripts/provision-cosmos.ts`에만 존재한다.
-- [ ] Blob service는 client handle만 제공하고 SAS·upload 예제 API를 만들지 않는다.
-- [ ] MS Flow 연동이 완전히 제거된다.
+- [x] Cosmos/Blob config는 factory 호출 전까지 앱 시작을 막지 않는다.
+- [x] Managed Identity 모드에서 account key가 SDK constructor에 전달되지 않는다.
+- [x] key mode에서 누락 key를 secret value 없이 명확히 거부한다.
+- [x] runtime Cosmos service에서 `createIfNotExists`와 고정 container union이 제거된다.
+- [x] `createIfNotExists`는 `scripts/provision-cosmos.ts`에만 존재한다.
+- [x] Blob service는 client handle만 제공하고 SAS·upload 예제 API를 만들지 않는다.
+- [x] MS Flow 연동이 완전히 제거된다.
 
 ## Validation
 - `npm.cmd run test -- tests/config/azure.test.ts tests/services/CosmosDBService.test.ts tests/services/BlobStorageService.test.ts tests/scripts/provision-cosmos.test.ts` — 외부 연결 없이 테스트 통과
@@ -188,6 +188,6 @@ Task: T04-generic-azure-data-clients
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

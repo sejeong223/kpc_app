@@ -1,50 +1,82 @@
-import 'server-only';
+import type { TokenCredential } from "@azure/core-auth";
+import { DefaultAzureCredential } from "@azure/identity";
 import {
-  BlobGenerateSasUrlOptions,
   BlobServiceClient,
   StorageSharedKeyCredential,
-} from '@azure/storage-blob';
+  type BlobClient,
+  type ContainerClient,
+} from "@azure/storage-blob";
+
+import {
+  AzureIntegrationConfigurationError,
+  getBlobConfig,
+  type BlobConfig,
+} from "@/config/azure";
+
+export interface BlobStorageServiceOptions {
+  config?: BlobConfig;
+  credential?: TokenCredential;
+  client?: BlobServiceClient;
+}
 
 export default class BlobStorageService {
-  async getCredential() {
-    const sharedKeyCredential = new StorageSharedKeyCredential(
-      process.env.BLOB_NAME ?? '',
-      process.env.BLOB_KEY ?? '',
+  private readonly config: BlobConfig;
+  private readonly credential?: TokenCredential;
+  private client?: BlobServiceClient;
+
+  constructor(options: BlobStorageServiceOptions = {}) {
+    this.config = options.config ?? getBlobConfig();
+    this.credential = options.credential;
+    this.client = options.client;
+  }
+
+  getBlobServiceClient(): BlobServiceClient {
+    if (this.client) {
+      return this.client;
+    }
+
+    const credential =
+      this.config.authMode === "shared-key"
+        ? new StorageSharedKeyCredential(
+            this.config.accountName,
+            this.config.accountKey,
+          )
+        : (this.credential ?? new DefaultAzureCredential());
+
+    this.client = new BlobServiceClient(this.config.serviceUrl, credential);
+    return this.client;
+  }
+
+  getContainerClient(containerName: string): ContainerClient {
+    const normalizedContainerName = this.requireName(
+      containerName,
+      "containerName",
     );
 
-    return sharedKeyCredential;
-  }
-
-  async getBlobServiceClient() {
-    const credential = await this.getCredential();
-
-    const blobServiceClient = new BlobServiceClient(
-      `https://${process.env.BLOB_NAME}.blob.core.windows.net`,
-      credential,
+    return this.getBlobServiceClient().getContainerClient(
+      normalizedContainerName,
     );
-
-    return blobServiceClient;
   }
 
-  async getContainerClient(containerName: string) {
-    const blobServiceClient = await this.getBlobServiceClient();
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    return containerClient;
+  getBlobClient(containerName: string, blobName: string): BlobClient {
+    const normalizedContainerName = this.requireName(
+      containerName,
+      "containerName",
+    );
+    const normalizedBlobName = this.requireName(blobName, "blobName");
+
+    return this.getBlobServiceClient()
+      .getContainerClient(normalizedContainerName)
+      .getBlobClient(normalizedBlobName);
   }
 
-  async getBlobClient(containerName: string, blobName: string) {
-    const blobClient = await this.getContainerClient(containerName);
-    return blobClient.getBlobClient(blobName);
-  }
+  private requireName(value: string, key: string): string {
+    const normalizedValue = value.trim();
 
-  async generateSasUrl(
-    containerName: string,
-    blobPath: string,
-    options: BlobGenerateSasUrlOptions,
-  ): Promise<string> {
-    const blobClient = await this.getBlobClient(containerName, blobPath);
-    const sasUrl = await blobClient.generateSasUrl(options);
+    if (normalizedValue.length === 0) {
+      throw new AzureIntegrationConfigurationError("Blob Storage", [key]);
+    }
 
-    return sasUrl;
+    return normalizedValue;
   }
 }
