@@ -6,7 +6,7 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | 한국어 README, 로컬 환경 마이그레이션, 잔재 검색 및 전체 릴리스 검증 | [T01](./T01-documentation-env-migration-and-release-gate.md) |
+| T01 | `done` ✅ | 한국어 README, 로컬 환경 마이그레이션, 잔재 검색 및 전체 릴리스 검증 | [T01](./T01-documentation-env-migration-and-release-gate.md) |
 
 ## Progress
-- done: 0/1
+- done: 1/1 (complete)

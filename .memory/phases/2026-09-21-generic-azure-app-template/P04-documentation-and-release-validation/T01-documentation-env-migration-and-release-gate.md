@@ -150,4 +150,4 @@ Task: T01-documentation-env-migration-and-release-gate
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: fa803a4

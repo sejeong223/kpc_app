@@ -4,10 +4,10 @@
 [범용 Azure 사내 앱 템플릿](./plans/2026-09-21-generic-azure-app-template.md)
 
 ## Active Phase
-[P04 Documentation And Release Validation](./phases/2026-09-21-generic-azure-app-template/P04-documentation-and-release-validation/phase.md)
+없음 (계획 완료)
 
 ## Active Task
-[T01 Documentation Env Migration And Release Gate](./phases/2026-09-21-generic-azure-app-template/P04-documentation-and-release-validation/T01-documentation-env-migration-and-release-gate.md)
+없음
 
 ## Status
 - P01 완료
@@ -19,7 +19,9 @@
 - P03-T01 완료 (`cbea957`)
 - P03-T02 완료 (`de6f641`)
 - P03 완료
-- P04-T01 실행 준비 완료
+- P04-T01 완료 (`fa803a4`)
+- P04 완료
+- 범용 Azure 사내 앱 템플릿 계획 완료
 
 ## Next Step (IMPORTANT)
-P04-T01 청사진을 읽고 한국어 문서·로컬 환경 마이그레이션·전체 릴리스 검증부터 시작
+활성 Task 없음. 새 기능은 `/grill-me`로 요구사항을 확정한 뒤 새 계획을 생성할 것

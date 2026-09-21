@@ -9,10 +9,10 @@ Daruda 번역 도메인과 목업 UI를 제거하고, 인증을 끈 상태에서
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 민감정보를 제외한 로컬 Git 기준점을 만들고 환경설정·테스트 기반을 구축 | [P01](../phases/2026-09-21-generic-azure-app-template/P01-repository-foundation/phase.md) |
-| P02 | `pending` | 선택형 Entra 인증, 역할 검사, 팝업 로그인 보안과 Azure 공통 클라이언트를 일반화 | [P02](../phases/2026-09-21-generic-azure-app-template/P02-identity-and-cloud-services/phase.md) |
-| P03 | `pending` | 설정 기반 중립 대시보드 셸로 교체하고 Daruda 도메인 코드·의존성을 제거 | [P03](../phases/2026-09-21-generic-azure-app-template/P03-generic-application-shell/phase.md) |
-| P04 | `pending` | 한국어 온보딩 문서와 로컬 환경 마이그레이션을 완료하고 전체 품질 게이트 검증 | [P04](../phases/2026-09-21-generic-azure-app-template/P04-documentation-and-release-validation/phase.md) |
+| P01 | `done` ✅ | 민감정보를 제외한 로컬 Git 기준점을 만들고 환경설정·테스트 기반을 구축 | [P01](../phases/2026-09-21-generic-azure-app-template/P01-repository-foundation/phase.md) |
+| P02 | `done` ✅ | 선택형 Entra 인증, 역할 검사, 팝업 로그인 보안과 Azure 공통 클라이언트를 일반화 | [P02](../phases/2026-09-21-generic-azure-app-template/P02-identity-and-cloud-services/phase.md) |
+| P03 | `done` ✅ | 설정 기반 중립 대시보드 셸로 교체하고 Daruda 도메인 코드·의존성을 제거 | [P03](../phases/2026-09-21-generic-azure-app-template/P03-generic-application-shell/phase.md) |
+| P04 | `done` ✅ | 한국어 온보딩 문서와 로컬 환경 마이그레이션을 완료하고 전체 품질 게이트 검증 | [P04](../phases/2026-09-21-generic-azure-app-template/P04-documentation-and-release-validation/phase.md) |
 
 ## Completion Criteria
 - 실제 `.env.development`는 로컬에 남아 있으나 Git에서 추적되지 않고, 공개 가능한 `.env.example`만 버전 관리된다.
