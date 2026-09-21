@@ -1,76 +1,96 @@
-import Redis from 'ioredis';
-import type { Cluster } from 'ioredis';
-import parseUrl from 'parse-url';
 import { Redlock } from "@sesamecare-oss/redlock";
+import Redis, { type Cluster, type RedisOptions } from "ioredis";
 
-let redisClient: Redis | null | Cluster = null;
+import { serverEnv } from "@/config/env";
+import type { ServerEnv } from "@/config/env.schema";
+import { AppConfigurationError } from "@/lib/auth/errors";
+
+let redisClient: Redis | Cluster | null = null;
+let redisClientKey: string | null = null;
 let redlock: Redlock | null = null;
+let redlockClient: Redis | Cluster | null = null;
 
-export function getRedisClient(forceNewInstance = false) {
-  if (redisClient && !forceNewInstance) {
+function decodeUrlComponent(value: string): string | undefined {
+  return value ? decodeURIComponent(value) : undefined;
+}
+
+function getClusterConfiguration(redisUrl: string): {
+  node: { host: string; port: number };
+  redisOptions: RedisOptions;
+} {
+  try {
+    const parsed = new URL(redisUrl);
+
+    if (!(["redis:", "rediss:"] as string[]).includes(parsed.protocol)) {
+      throw new Error("unsupported protocol");
+    }
+
+    if (!parsed.hostname) {
+      throw new Error("missing host");
+    }
+
+    const port = parsed.port ? Number.parseInt(parsed.port, 10) : 6379;
+
+    if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+      throw new Error("invalid port");
+    }
+
+    return {
+      node: {
+        host: parsed.hostname,
+        port,
+      },
+      redisOptions: {
+        username: decodeUrlComponent(parsed.username),
+        password: decodeUrlComponent(parsed.password),
+        tls: parsed.protocol === "rediss:" ? {} : undefined,
+      },
+    };
+  } catch {
+    throw new AppConfigurationError("REDIS_URL is invalid");
+  }
+}
+
+export function getRedisClient(
+  env: ServerEnv = serverEnv,
+  forceNewInstance = false,
+): Redis | Cluster {
+  if (!env.redisUrl) {
+    throw new AppConfigurationError("REDIS_URL is required");
+  }
+
+  const clientKey = `${env.redisClusterMode}:${env.redisUrl}`;
+
+  if (redisClient && redisClientKey === clientKey && !forceNewInstance) {
     return redisClient;
   }
 
-  const url = process.env.REDIS_URL ?? '';
-
-  const clusterMode = process.env.REDIS_CLUSTER_MODE ?? false;
-
-  if (clusterMode) {
-    // parse host, port from url
-    const redisUrl = parseUrl(url);
-
-    let redisPort = 6379;
-
-    if (redisUrl.port) {
-      redisPort = parseInt(redisUrl.port, 10);
-    }
-
-    redisClient = new Redis.Cluster(
-      [
-        {
-          port: redisPort,
-          host: redisUrl.host,
-        },
-      ],
-      {
-        slotsRefreshTimeout: 2000,
-      },
-    );
+  if (env.redisClusterMode) {
+    const { node, redisOptions } = getClusterConfiguration(env.redisUrl);
+    redisClient = new Redis.Cluster([node], {
+      slotsRefreshTimeout: 2000,
+      redisOptions,
+    });
   } else {
-    redisClient = new Redis(url);
+    redisClient = new Redis(env.redisUrl);
   }
 
+  redisClientKey = clientKey;
   return redisClient;
 }
 
-export function getRedlock() {
-  if (!redlock) {
-    redlock = new Redlock(
-      // You should have one client for each independent redis node
-      // or cluster.
-      [getRedisClient()],
-      {
-        // The expected clock drift; for more details see:
-        // http://redis.io/topics/distlock
-        driftFactor: 0.01, // multiplied by lock ttl to determine drift time
+export function getRedlock(env: ServerEnv = serverEnv): Redlock {
+  const client = getRedisClient(env);
 
-        // The max number of times Redlock will attempt to lock a resource
-        // before erroring.
-        retryCount: 10,
-
-        // the time in ms between attempts
-        retryDelay: 200, // time in ms
-
-        // the max time in ms randomly added to retries
-        // to improve performance under high contention
-        // see https://www.awsarchitectureblog.com/2015/03/backoff.html
-        retryJitter: 200, // time in ms
-
-        // The minimum remaining time on a lock before an extension is automatically
-        // attempted with the `using` API.
-        automaticExtensionThreshold: 500, // time in ms
-      }
-    );
+  if (!redlock || redlockClient !== client) {
+    redlock = new Redlock([client], {
+      driftFactor: 0.01,
+      retryCount: 10,
+      retryDelay: 200,
+      retryJitter: 200,
+      automaticExtensionThreshold: 500,
+    });
+    redlockClient = client;
   }
 
   return redlock;

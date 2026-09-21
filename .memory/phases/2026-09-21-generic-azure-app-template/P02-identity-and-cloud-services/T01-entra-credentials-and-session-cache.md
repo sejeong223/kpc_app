@@ -1,6 +1,6 @@
 # Task: T01 Entra Credentials And Session Cache
 
-## Status: pending
+## Status: done
 
 ## Goal
 인증서 또는 클라이언트 시크릿을 한 경계에서 선택하고, 로컬에서는 만료 가능한 메모리 캐시·운영에서는 Redis를 사용하는 MSAL 토큰 캐시를 제공해 Daruda 이름과 직접 `process.env` 접근을 인증 기반 계층에서 제거한다.
@@ -161,12 +161,12 @@
   - `getMSGraphClient`는 동기 factory여도 되며 네트워크 호출은 반환된 client의 `.api(...).get()` 시점에만 발생한다.
 
 ## Acceptance Criteria
-- [ ] certificate/secret 방식이 MSAL과 Graph 모두 동일한 env 선택 규칙을 사용한다.
-- [ ] 인증 관련 소스에 `process.env` 직접 접근과 `daruda` cache namespace가 남지 않는다.
-- [ ] development에서 Redis 없이 memory cache가 선택되고 TTL 만료가 검증된다.
-- [ ] production 인증에서 cache factory가 Redis 없는 구성을 허용하지 않는다.
-- [ ] Redis cluster URL의 사용자명·비밀번호·TLS가 유실되지 않는다.
-- [ ] Graph 서비스 테스트가 외부 네트워크 없이 통과한다.
+- [x] certificate/secret 방식이 MSAL과 Graph 모두 동일한 env 선택 규칙을 사용한다.
+- [x] 인증 관련 소스에 `process.env` 직접 접근과 `daruda` cache namespace가 남지 않는다.
+- [x] development에서 Redis 없이 memory cache가 선택되고 TTL 만료가 검증된다.
+- [x] production 인증에서 cache factory가 Redis 없는 구성을 허용하지 않는다.
+- [x] Redis cluster URL의 사용자명·비밀번호·TLS가 유실되지 않는다.
+- [x] Graph 서비스 테스트가 외부 네트워크 없이 통과한다.
 
 ## Validation
 - `npm.cmd run test -- tests/lib/auth/credentials.test.ts tests/lib/auth/session-cache.test.ts tests/lib/auth/msal-cache-plugin.test.ts tests/services/MSGraphService.test.ts` — 관련 테스트 전체 통과
@@ -188,6 +188,6 @@ Task: T01-entra-credentials-and-session-cache
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

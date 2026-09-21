@@ -2,17 +2,19 @@ import 'server-only';
 
 import {
   AccountInfo,
-  ConfidentialClientApplication,
-  ICachePlugin,
-  TokenCacheContext,
 } from '@azure/msal-node';
 import { NextAuthOptions, getServerSession } from 'next-auth';
 import type { OAuthConfig } from 'next-auth/providers/index';
 
 import MSGraphService from './MSGraphService';
-import { getRedisClient } from '@/utils/redis';
 import { AUTH_TOKEN_VERSION } from '@/const/auth';
-import { getEnvCert } from '@/utils/envCert';
+import { serverEnv } from '@/config/env';
+import { createMsalClient } from '@/lib/auth/credentials';
+import { MsalCachePlugin } from '@/lib/auth/msal-cache-plugin';
+import {
+  buildSessionCacheKey,
+  getSessionCache,
+} from '@/lib/auth/session-cache';
 
 export interface EntraIDProfile extends Record<string, any> {
   sub: string;
@@ -115,7 +117,7 @@ export default class AuthService {
               }
 
               const msalClient = await this.getMSALClient({
-                envId: process.env.ID ?? 'localhost',
+                appEnv: serverEnv.appEnv,
                 accountId: token.oid,
               });
 
@@ -189,24 +191,17 @@ export default class AuthService {
     let cachePlugin = undefined;
 
     if (cacheOption) {
-      cachePlugin = new RedisCachePlugin(cacheOption);
+      cachePlugin = new MsalCachePlugin({
+        cache: getSessionCache(),
+        cacheKey: buildSessionCacheKey({
+          namespace: serverEnv.authCacheNamespace,
+          appEnv: cacheOption.appEnv,
+          accountId: cacheOption.accountId,
+        }),
+      });
     }
 
-    const { azure_ad_pem_key, azure_ad_cert_thumbprint } = await getEnvCert();
-
-    return new ConfidentialClientApplication({
-      auth: {
-        clientId: process.env.MSAL_CLIENT_ID ?? '',
-        authority: `https://login.microsoftonline.com/${process.env.MSAL_TENANT_ID}`,
-        clientCertificate: {
-          thumbprint: azure_ad_cert_thumbprint, // a 40-digit hexadecimal string
-          privateKey: azure_ad_pem_key,
-        },
-      },
-      cache: {
-        cachePlugin,
-      }
-    });
+    return createMsalClient({ cachePlugin });
   }
 
   async getAuthScopes(etcScopes: string[]) {
@@ -251,14 +246,21 @@ export default class AuthService {
 
           if (oid && r.expiresOn) {
             const option = {
-              envId: process.env.ID ?? 'localhost',
+              appEnv: serverEnv.appEnv,
               accountId: oid,
             }
 
             const clientForCache = await this.getMSALClient(option);
             const cache = cca.getTokenCache().serialize()
             clientForCache.getTokenCache().deserialize(cache);
-            if (!await getSessionCache(option)) await setSessionCache(option, cache);
+            const sessionCache = getSessionCache();
+            const cacheKey = buildSessionCacheKey({
+              namespace: serverEnv.authCacheNamespace,
+              ...option,
+            });
+            if (!await sessionCache.get(cacheKey)) {
+              await sessionCache.set(cacheKey, cache, 60 * 60 * 24 * 90);
+            }
             await clientForCache.getTokenCache().getAllAccounts();
           }
 
@@ -291,46 +293,6 @@ export default class AuthService {
 }
 
 interface CacheOption {
-  envId: string;
+  appEnv: string;
   accountId: string;
-}
-
-class RedisCachePlugin implements ICachePlugin {
-  private option: CacheOption;
-
-  constructor(option: CacheOption) {
-    this.option = option;
-  }
-
-  async beforeCacheAccess(tokenCacheContext: TokenCacheContext) {
-    const cache = await getSessionCache(this.option);
-    if (cache) {
-      tokenCacheContext.cache.deserialize(cache);
-    }
-  }
-
-  async afterCacheAccess(tokenCacheContext: TokenCacheContext) {
-    if (tokenCacheContext.cacheHasChanged) {
-      const cache = tokenCacheContext.cache.serialize();
-      await setSessionCache(this.option, cache)
-    }
-  }
-}
-
-async function getSessionCache(option: CacheOption) {
-  const redisClient = getRedisClient();
-  const cache = await redisClient.get(
-    `@daruda_app/${option.envId}/session-cache/${option.accountId}`,
-  );
-  return cache
-}
-
-async function setSessionCache(option: CacheOption, cache: string) {
-  const redisClient = getRedisClient();
-  await redisClient.set(
-    `@daruda_app/${option.envId}/session-cache/${option.accountId}`,
-    cache,
-    'EX',
-    60 * 60 * 24 * 90, // 90 days
-  );
 }

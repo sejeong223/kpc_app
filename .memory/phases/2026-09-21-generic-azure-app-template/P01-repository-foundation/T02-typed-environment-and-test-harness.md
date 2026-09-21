@@ -149,4 +149,4 @@ Task: T02-typed-environment-and-test-harness
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: a4cfe73

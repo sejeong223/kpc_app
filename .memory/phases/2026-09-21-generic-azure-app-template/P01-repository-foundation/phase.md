@@ -7,7 +7,7 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` ✅ | 비밀 파일 보호, CodeBurn·샘플 정리, 로컬 Git 저장소 초기화 | [T01](./T01-secure-local-git-baseline.md) |
-| T02 | `in_progress` 🔵 | Zod 환경 스키마, 공개 예제 환경파일, Vitest·검증 스크립트 구축 | [T02](./T02-typed-environment-and-test-harness.md) |
+| T02 | `done` ✅ | Zod 환경 스키마, 공개 예제 환경파일, Vitest·검증 스크립트 구축 | [T02](./T02-typed-environment-and-test-harness.md) |
 
 ## Progress
-- done: 1/2 (active: T02)
+- done: 2/2 (complete)
