@@ -1,6 +1,6 @@
 # Task: T02 Typed Environment And Test Harness
 
-## Status: pending
+## Status: done
 
 ## Goal
 선택형 인증과 Azure 서비스가 빈 문자열로 실행되지 않도록 Zod 기반 환경설정 경계를 만들고, 이후 Task가 외부 서비스 없이도 계약을 검증할 수 있는 Vitest·typecheck 실행 기반을 제공한다.
@@ -120,11 +120,11 @@
   - 테스트는 `process.env` 전역을 직접 변경하지 않고 각 case마다 독립 객체를 `parseServerEnv`에 전달한다.
 
 ## Acceptance Criteria
-- [ ] 직접 import하는 MSAL·core-auth·server-only와 새 Zod/Vitest/tsx 패키지가 `package.json`에 직접 선언된다.
-- [ ] 인증 비활성 최소 환경과 두 인증 자격 증명 방식의 유효/무효 조합이 테스트로 고정된다.
-- [ ] 운영 인증은 Redis 없이 유효하지 않다.
-- [ ] `.env.example`에 실제 비밀값이 없고 `.env.development`는 계속 ignore된다.
-- [ ] `test`, `typecheck`, `test:watch`, Cosmos provisioning 스크립트가 package scripts에 존재한다.
+- [x] 직접 import하는 MSAL·core-auth·server-only와 새 Zod/Vitest/tsx 패키지가 `package.json`에 직접 선언된다.
+- [x] 인증 비활성 최소 환경과 두 인증 자격 증명 방식의 유효/무효 조합이 테스트로 고정된다.
+- [x] 운영 인증은 Redis 없이 유효하지 않다.
+- [x] `.env.example`에 실제 비밀값이 없고 `.env.development`는 계속 ignore된다.
+- [x] `test`, `typecheck`, `test:watch`, Cosmos provisioning 스크립트가 package scripts에 존재한다.
 
 ## Validation
 - `npm.cmd run test -- tests/config/env.schema.test.ts` — 모든 환경 스키마 테스트 통과
@@ -147,6 +147,6 @@ Task: T02-typed-environment-and-test-harness
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
