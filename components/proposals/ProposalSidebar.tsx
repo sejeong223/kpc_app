@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   BookOpen,
   CheckCircle2,
+  ClipboardList,
   FileCog,
   FilePenLine,
   FolderKanban,
@@ -127,8 +128,8 @@ export default function ProposalSidebar({
           const unlocked = canOpenProposalStep(selectedProject, item.step);
           const active = state.activeStep === item.step;
           return (
-            <button
-              key={item.step}
+            <div key={item.step}>
+              <button
               type="button"
               className={cn(
                 "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left transition-colors",
@@ -150,7 +151,19 @@ export default function ProposalSidebar({
               <Icon className="size-[17px]" />
               <span className="flex-1 text-sm font-medium">{item.label}</span>
               {!unlocked && <Lock className="size-3.5" />}
-            </button>
+              </button>
+              {item.step === "editor" && (
+                <button
+                  type="button"
+                  className="ml-8 mt-1 flex h-8 w-[calc(100%-2rem)] items-center gap-2 rounded-md px-3 text-left text-xs text-[#73747A] hover:bg-[#F6F6F7] disabled:cursor-not-allowed disabled:text-[#B2B3B7]"
+                  disabled={!unlocked}
+                  onClick={() => dispatch({ type: "open-task-management" })}
+                >
+                  <ClipboardList className="size-3.5" />
+                  작성 관리
+                </button>
+              )}
+            </div>
           );
         })}
       </nav>

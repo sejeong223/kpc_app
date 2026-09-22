@@ -21,6 +21,7 @@ import type {
 
 export type ProposalWorkspaceAction =
   | { type: "navigate"; view: ProposalWorkspaceView; step?: ProposalWorkflowStep }
+  | { type: "open-task-management" }
   | { type: "select-project"; projectId: string }
   | { type: "set-department"; department: ProposalDepartment }
   | { type: "set-search-query"; query: string }
@@ -61,6 +62,7 @@ export function createInitialProposalWorkspaceState(): ProposalWorkspaceState {
   return {
     view: "pipeline",
     activeStep: "requirements",
+    taskManagementOpen: false,
     selectedProjectId: "project-enterprise-ai",
     selectedSectionId: "section-strategy",
     selectedDepartment: "전체",
@@ -84,6 +86,22 @@ export function getSelectedProposalDocuments(
 ): ProposalDocument[] {
   return state.documents.filter(
     (document) => document.projectId === state.selectedProjectId,
+  );
+}
+
+export function getSelectedProposalRequirements(
+  state: ProposalWorkspaceState,
+): ProposalRequirement[] {
+  return state.requirements.filter(
+    (requirement) => requirement.projectId === state.selectedProjectId,
+  );
+}
+
+export function getSelectedProposalSections(
+  state: ProposalWorkspaceState,
+): ProposalSection[] {
+  return state.sections.filter(
+    (section) => section.projectId === state.selectedProjectId,
   );
 }
 
@@ -146,6 +164,7 @@ export function proposalWorkspaceReducer(
           ...state,
           view: action.view,
           activeStep: action.step ?? state.activeStep,
+          taskManagementOpen: false,
         };
       }
 
@@ -155,7 +174,19 @@ export function proposalWorkspaceReducer(
         return state;
       }
 
-      return { ...state, view: action.view, activeStep: requestedStep };
+      return {
+        ...state,
+        view: action.view,
+        activeStep: requestedStep,
+        taskManagementOpen: false,
+      };
+    }
+
+    case "open-task-management": {
+      const selectedProject = getSelectedProposalProject(state);
+      return selectedProject?.analysisStatus === "분석 완료"
+        ? { ...state, view: "workspace", taskManagementOpen: true }
+        : state;
     }
 
     case "select-project": {
@@ -239,11 +270,22 @@ export function proposalWorkspaceReducer(
     case "toggle-requirement":
       return {
         ...state,
-        requirements: state.requirements.map((requirement) =>
-          requirement.id === action.requirementId
-            ? { ...requirement, checked: !requirement.checked }
-            : requirement,
-        ),
+        requirements: state.requirements.map((requirement) => {
+          if (requirement.id !== action.requirementId) {
+            return requirement;
+          }
+
+          const checked = !requirement.checked;
+          return {
+            ...requirement,
+            checked,
+            status: checked
+              ? "반영"
+              : requirement.status === "반영"
+                ? "미반영"
+                : requirement.status,
+          };
+        }),
       };
 
     case "add-requirement":

@@ -5,6 +5,8 @@ import { useReducer } from "react";
 import AnalysisRequiredState from "@/components/proposals/authoring/AnalysisRequiredState";
 import ProposalAnalysisView from "@/components/proposals/authoring/ProposalAnalysisView";
 import ProposalSetupView from "@/components/proposals/authoring/ProposalSetupView";
+import ProposalRequirementsView from "@/components/proposals/authoring/ProposalRequirementsView";
+import ProposalTaskManagementView from "@/components/proposals/authoring/ProposalTaskManagementView";
 import ProposalPlaceholder from "@/components/proposals/ProposalPlaceholder";
 import ProposalSidebar from "@/components/proposals/ProposalSidebar";
 import ProposalPipelineBoard from "@/components/proposals/pipeline/ProposalPipelineBoard";
@@ -15,6 +17,8 @@ import {
   createInitialProposalWorkspaceState,
   getSelectedProposalDocuments,
   getSelectedProposalProject,
+  getSelectedProposalRequirements,
+  getSelectedProposalSections,
   proposalWorkspaceReducer,
 } from "@/lib/proposals/workspace";
 import type { ProposalWorkflowStep, ProposalWorkspaceView } from "@/types/proposals";
@@ -49,6 +53,8 @@ export default function ProposalWorkspace({
   );
   const selectedProject = getSelectedProposalProject(state);
   const selectedDocuments = getSelectedProposalDocuments(state);
+  const selectedRequirements = getSelectedProposalRequirements(state);
+  const selectedSections = getSelectedProposalSections(state);
   const title =
     state.view === "workspace"
       ? stepTitles[state.activeStep]
@@ -62,6 +68,9 @@ export default function ProposalWorkspace({
     if (!selectedProject) {
       return <ProposalPlaceholder title="프로젝트를 선택하세요" />;
     }
+    if (state.taskManagementOpen) {
+      return <ProposalTaskManagementView project={selectedProject} sections={selectedSections} dispatch={dispatch} />;
+    }
     if (state.activeStep === "setup") {
       return <ProposalSetupView project={selectedProject} documents={selectedDocuments} dispatch={dispatch} />;
     }
@@ -70,6 +79,9 @@ export default function ProposalWorkspace({
     }
     if (state.activeStep === "analysis") {
       return <ProposalAnalysisView project={selectedProject} analysisItems={MOCK_ANALYSIS_ITEMS} onNavigate={(step) => dispatch({ type: "navigate", view: "workspace", step })} />;
+    }
+    if (state.activeStep === "requirements") {
+      return <ProposalRequirementsView project={selectedProject} requirements={selectedRequirements} dispatch={dispatch} onNavigate={(step) => dispatch({ type: "navigate", view: "workspace", step })} />;
     }
     return <ProposalPlaceholder title={title} description={description} />;
   };

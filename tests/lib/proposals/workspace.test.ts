@@ -6,6 +6,8 @@ import {
   filterProposalProjects,
   groupProjectsByStage,
   getSelectedProposalDocuments,
+  getSelectedProposalRequirements,
+  getSelectedProposalSections,
   proposalWorkspaceReducer,
 } from "@/lib/proposals/workspace";
 import type { ProposalDocument, ProposalProject } from "@/types/proposals";
@@ -283,7 +285,21 @@ describe("proposal workspace state", () => {
     const updated = proposalWorkspaceReducer(toggled, {
       type: "update-section",
       sectionId: "section-strategy",
-      changes: { status: "검토 요청", reviewer: "서은채" },
+      changes: {
+        status: "검토 요청",
+        assignee: "정소담",
+        reviewer: "서은채",
+        dueDate: "2026-09-30",
+      },
+    });
+    const selected = proposalWorkspaceReducer(updated, {
+      type: "select-section",
+      sectionId: "section-strategy",
+    });
+    const opened = proposalWorkspaceReducer(selected, {
+      type: "navigate",
+      view: "workspace",
+      step: "editor",
     });
 
     expect(
@@ -292,12 +308,50 @@ describe("proposal workspace state", () => {
     expect(
       toggled.requirements.find((item) => item.id === "requirement-security")?.checked,
     ).toBe(true);
+    expect(
+      toggled.requirements.find((item) => item.id === "requirement-security")?.status,
+    ).toBe("반영");
     expect(updated.sections.find((item) => item.id === "section-strategy")).toMatchObject({
       status: "검토 요청",
+      assignee: "정소담",
       reviewer: "서은채",
+      dueDate: "2026-09-30",
+    });
+    expect(opened).toMatchObject({
+      selectedSectionId: "section-strategy",
+      activeStep: "editor",
+      taskManagementOpen: false,
     });
     expect(initial.sections.find((item) => item.id === "section-strategy")?.status).toBe(
       "작성 중",
     );
+  });
+
+  it("adds and deletes requirements and opens section task management", () => {
+    const initial = createInitialProposalWorkspaceState();
+    const requirement = {
+      ...initial.requirements[0],
+      id: "requirement-new",
+      title: "신규 추적 요구사항",
+    };
+    const added = proposalWorkspaceReducer(initial, {
+      type: "add-requirement",
+      requirement,
+    });
+    const deleted = proposalWorkspaceReducer(added, {
+      type: "delete-requirement",
+      requirementId: requirement.id,
+    });
+    const taskManagement = proposalWorkspaceReducer(initial, {
+      type: "open-task-management",
+    });
+
+    expect(getSelectedProposalRequirements(added)).toContainEqual(requirement);
+    expect(getSelectedProposalRequirements(deleted)).not.toContainEqual(requirement);
+    expect(getSelectedProposalSections(initial)).toHaveLength(3);
+    expect(taskManagement).toMatchObject({
+      view: "workspace",
+      taskManagementOpen: true,
+    });
   });
 });

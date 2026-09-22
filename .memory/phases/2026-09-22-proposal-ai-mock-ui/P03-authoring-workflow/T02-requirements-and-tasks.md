@@ -1,6 +1,6 @@
 # Task: T02 Requirements and Tasks
 
-## Status: pending
+## Status: done
 
 ## Goal
 03 요구사항 checklist와 제안서 section별 작성 task 관리 화면을 구현한다. 분석 fixture에서 추출된 요구사항을 filter·추가·수정·완료 처리하고, section 담당자·검토자·상태·마감일을 한 상태 모델로 연결한다.
@@ -85,6 +85,6 @@ Task: T02-requirements-and-tasks
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

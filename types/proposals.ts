@@ -134,6 +134,7 @@ export interface ProposalLibraryItem {
 export interface ProposalWorkspaceState {
   view: ProposalWorkspaceView;
   activeStep: ProposalWorkflowStep;
+  taskManagementOpen: boolean;
   selectedProjectId: string;
   selectedSectionId: string;
   selectedDepartment: ProposalDepartment;
