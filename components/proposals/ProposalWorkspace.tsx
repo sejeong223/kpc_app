@@ -5,6 +5,8 @@ import { useReducer } from "react";
 import ProposalPlaceholder from "@/components/proposals/ProposalPlaceholder";
 import ProposalSidebar from "@/components/proposals/ProposalSidebar";
 import ProposalPipelineBoard from "@/components/proposals/pipeline/ProposalPipelineBoard";
+import ProposalRegistrationView from "@/components/proposals/review/ProposalRegistrationView";
+import ProposalReviewDetail from "@/components/proposals/review/ProposalReviewDetail";
 import {
   createInitialProposalWorkspaceState,
   getSelectedProposalProject,
@@ -41,19 +43,14 @@ export default function ProposalWorkspace({
     createInitialProposalWorkspaceState,
   );
   const selectedProject = getSelectedProposalProject(state);
-  const isUnauthorizedReview = state.view === "project-review" && !canReview;
   const title =
     state.view === "workspace"
       ? stepTitles[state.activeStep]
-      : isUnauthorizedReview
-        ? "검토 권한이 필요합니다"
-        : viewTitles[state.view];
+      : viewTitles[state.view];
   const description =
     state.view === "workspace" && selectedProject
       ? `${selectedProject.title} · 다음 Task에서 구현 예정입니다.`
-      : isUnauthorizedReview
-        ? "관리자만 제안 검토 화면을 열 수 있습니다."
-        : undefined;
+      : undefined;
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-workspace-surface">
@@ -61,6 +58,10 @@ export default function ProposalWorkspace({
       <main className="min-w-0 flex-1 overflow-auto">
         {state.view === "pipeline" ? (
           <ProposalPipelineBoard state={state} dispatch={dispatch} canReview={canReview} />
+        ) : state.view === "register" ? (
+          <ProposalRegistrationView dispatch={dispatch} />
+        ) : state.view === "project-review" ? (
+          <ProposalReviewDetail state={state} dispatch={dispatch} canReview={canReview} />
         ) : (
           <ProposalPlaceholder title={title} description={description} />
         )}

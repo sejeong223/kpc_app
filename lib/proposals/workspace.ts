@@ -79,6 +79,14 @@ export function getSelectedProposalProject(
   return state.projects.find((project) => project.id === state.selectedProjectId) ?? null;
 }
 
+export function getSelectedProposalDocuments(
+  state: ProposalWorkspaceState,
+): ProposalDocument[] {
+  return state.documents.filter(
+    (document) => document.projectId === state.selectedProjectId,
+  );
+}
+
 export function canOpenProposalStep(
   project: ProposalProject,
   step: ProposalWorkflowStep,

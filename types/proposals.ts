@@ -51,6 +51,26 @@ export interface ProposalProject {
   rejectionReason?: string;
 }
 
+export interface ProposalRegistrationDraft {
+  title: string;
+  agency: string;
+  department: Exclude<ProposalDepartment, "전체">;
+  budget: number;
+  deadline: string;
+  manager: string;
+  summary: string;
+}
+
+export interface ProposalReviewCriterion {
+  id: string;
+  category: string;
+  score: number;
+  maxScore: number;
+  rationale: string;
+  sourcePage: number;
+  sourceQuote: string;
+}
+
 export interface ProposalDocument {
   id: string;
   projectId: string;

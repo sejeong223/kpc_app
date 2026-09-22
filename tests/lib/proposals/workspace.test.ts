@@ -5,6 +5,7 @@ import {
   createInitialProposalWorkspaceState,
   filterProposalProjects,
   groupProjectsByStage,
+  getSelectedProposalDocuments,
   proposalWorkspaceReducer,
 } from "@/lib/proposals/workspace";
 import type { ProposalDocument, ProposalProject } from "@/types/proposals";
@@ -98,6 +99,54 @@ describe("proposal workspace state", () => {
     expect(next.documents).toHaveLength(initial.documents.length + 1);
     expect(next.selectedProjectId).toBe(project.id);
     expect(initial.projects.find((item) => item.id === project.id)).toBeUndefined();
+  });
+
+  it("registers, reviews, approves, and opens a project setup lifecycle", () => {
+    const initial = createInitialProposalWorkspaceState();
+    const project: ProposalProject = {
+      ...initial.projects[0],
+      id: "project-lifecycle",
+      title: "검토 lifecycle 제안",
+      stage: "검토 대기",
+      activeStep: "setup",
+      analysisStatus: "분석 전",
+    };
+    const document: ProposalDocument = {
+      id: "document-lifecycle",
+      projectId: project.id,
+      name: "lifecycle-rfp.pdf",
+      kind: "RFP",
+      size: "2.0 MB",
+      status: "업로드 완료",
+      isPrimary: true,
+    };
+
+    const registered = proposalWorkspaceReducer(initial, {
+      type: "add-project",
+      project,
+      documents: [document],
+    });
+    const reviewing = proposalWorkspaceReducer(registered, {
+      type: "update-stage",
+      projectId: project.id,
+      stage: "검토 중",
+    });
+    const approved = proposalWorkspaceReducer(reviewing, {
+      type: "update-stage",
+      projectId: project.id,
+      stage: "진행",
+    });
+    const opened = proposalWorkspaceReducer(approved, {
+      type: "navigate",
+      view: "workspace",
+      step: "setup",
+    });
+
+    expect(registered.projects.at(-1)?.stage).toBe("검토 대기");
+    expect(getSelectedProposalDocuments(registered)).toEqual([document]);
+    expect(reviewing.projects.at(-1)?.stage).toBe("검토 중");
+    expect(approved.projects.at(-1)?.stage).toBe("진행");
+    expect(opened).toMatchObject({ view: "workspace", activeStep: "setup" });
   });
 
   it("approves and rejects a project while keeping previous state immutable", () => {

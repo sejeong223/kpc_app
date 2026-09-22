@@ -1,6 +1,6 @@
 # Task: T02 Registration and Review
 
-## Status: pending
+## Status: done
 
 ## Goal
 신규 RFP 프로젝트 등록 화면과 RFP 문서·P/Win 정보를 나란히 확인하는 2열 검토 화면을 구현한다. 등록된 project가 `검토 대기`에서 시작해 관리자 검토·승인 또는 반려를 거쳐 작성 workflow로 진입하는 mock lifecycle을 완성한다.
@@ -104,6 +104,6 @@ Task: T02-registration-and-review
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

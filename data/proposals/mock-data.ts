@@ -3,9 +3,82 @@ import type {
   ProposalDocument,
   ProposalLibraryItem,
   ProposalProject,
+  ProposalReviewCriterion,
   ProposalRequirement,
   ProposalSection,
 } from "@/types/proposals";
+
+export const MOCK_RFP_PREVIEW = {
+  pageCount: 86,
+  summary:
+    "사내 지식과 업무 데이터를 안전하게 연결하는 생성형 AI 플랫폼 구축 및 전사 확산 사업",
+  tableOfContents: ["사업 개요", "요구사항", "보안 및 운영", "평가 기준"],
+  pages: [
+    {
+      pageNumber: 7,
+      title: "사업 목표",
+      content:
+        "임직원의 지식 탐색 시간을 단축하고 업무 생산성을 높일 것. 분산된 업무 데이터와 문서를 통합 검색하고 생성형 AI 기반 답변을 제공한다.",
+    },
+    {
+      pageNumber: 18,
+      title: "기능 요구사항",
+      content:
+        "사내 문서 기반 검색증강생성 서비스를 구축하고 답변마다 근거 문서와 출처를 함께 제시해야 한다.",
+    },
+    {
+      pageNumber: 31,
+      title: "보안 요구사항",
+      content:
+        "사용자 및 데이터 등급에 따른 접근통제를 적용해야 한다. 모든 질의와 응답 이력은 감사 목적으로 기록한다.",
+    },
+    {
+      pageNumber: 52,
+      title: "평가 기준",
+      content:
+        "구축 이후 전사 확산과 변화관리 계획을 포함할 것. 유사 사업 경험과 정량적 성과지표를 평가에 반영한다.",
+    },
+  ],
+} as const;
+
+export const MOCK_PROPOSAL_REVIEW_CRITERIA: ProposalReviewCriterion[] = [
+  {
+    id: "criterion-fit",
+    category: "사업 적합성",
+    score: 22,
+    maxScore: 25,
+    rationale: "KPC의 AI 전환 전략과 직접 연결되며 내부 확산 가능성이 높습니다.",
+    sourcePage: 7,
+    sourceQuote: "임직원의 지식 탐색 시간을 단축하고 업무 생산성을 높일 것",
+  },
+  {
+    id: "criterion-capability",
+    category: "수행 역량",
+    score: 20,
+    maxScore: 25,
+    rationale: "유사한 지식검색 및 생성형 AI 구축 경험을 제시할 수 있습니다.",
+    sourcePage: 18,
+    sourceQuote: "사내 문서 기반 검색증강생성 서비스를 구축",
+  },
+  {
+    id: "criterion-risk",
+    category: "리스크 대응",
+    score: 17,
+    maxScore: 25,
+    rationale: "권한과 감사 요구가 명확하며 기존 보안 체계 연계 검토가 필요합니다.",
+    sourcePage: 31,
+    sourceQuote: "사용자 및 데이터 등급에 따른 접근통제를 적용해야 한다",
+  },
+  {
+    id: "criterion-win",
+    category: "수주 경쟁력",
+    score: 19,
+    maxScore: 25,
+    rationale: "업무 이해도와 단계적 확산 경험을 정량 지표로 차별화할 수 있습니다.",
+    sourcePage: 52,
+    sourceQuote: "구축 이후 전사 확산과 변화관리 계획을 포함할 것",
+  },
+];
 
 export const MOCK_PROPOSAL_PROJECTS: ProposalProject[] = [
   {
