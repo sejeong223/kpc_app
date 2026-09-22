@@ -157,6 +157,24 @@ export interface SectionReferenceConfig {
   includeUrls: string[];
 }
 
+export interface ProposalReviewSummary {
+  totalSections: number;
+  completedSections: number;
+  totalCharacters: number;
+  targetCharacters: number;
+  coveredRequirements: number;
+  totalRequirements: number;
+  completionRate: number;
+}
+
+export interface ProposalFactIssue {
+  id: string;
+  sectionId: string;
+  severity: "주의" | "확인 필요";
+  message: string;
+  excerpt: string;
+}
+
 export interface ProposalWorkspaceState {
   view: ProposalWorkspaceView;
   activeStep: ProposalWorkflowStep;

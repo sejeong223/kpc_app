@@ -13,6 +13,7 @@ import ProposalSidebar from "@/components/proposals/ProposalSidebar";
 import ProposalPipelineBoard from "@/components/proposals/pipeline/ProposalPipelineBoard";
 import ProposalRegistrationView from "@/components/proposals/review/ProposalRegistrationView";
 import ProposalReviewDetail from "@/components/proposals/review/ProposalReviewDetail";
+import ProposalReviewView from "@/components/proposals/review-final/ProposalReviewView";
 import { MOCK_ANALYSIS_ITEMS } from "@/data/proposals/mock-data";
 import {
   createInitialProposalWorkspaceState,
@@ -86,6 +87,9 @@ export default function ProposalWorkspace({
     }
     if (state.activeStep === "editor") {
       return <ProposalEditorView project={selectedProject} sections={selectedSections} requirements={selectedRequirements} documents={selectedDocuments} libraryItems={state.libraryItems} selectedSectionId={state.selectedSectionId || null} dispatch={dispatch} onNavigate={(step) => dispatch({ type: "navigate", view: "workspace", step })} />;
+    }
+    if (state.activeStep === "review") {
+      return <ProposalReviewView project={selectedProject} sections={selectedSections} requirements={selectedRequirements} dispatch={dispatch} />;
     }
     return <ProposalPlaceholder title={title} description={description} />;
   };

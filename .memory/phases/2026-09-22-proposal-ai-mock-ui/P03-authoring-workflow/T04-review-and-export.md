@@ -1,6 +1,6 @@
 # Task: T04 Review and Export
 
-## Status: pending
+## Status: done
 
 ## Goal
 05 검토 및 완성 화면에서 section 전체 문서, 요구사항 충족률, 작성 진척도, mock fact check를 통합 확인하고 안전한 text download/print preview로 작성 workflow를 마무리한다.
@@ -99,6 +99,6 @@ Task: T04-review-and-export
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

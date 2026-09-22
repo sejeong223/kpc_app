@@ -134,3 +134,22 @@
     cursor: pointer;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .proposal-print-document,
+  .proposal-print-document * {
+    visibility: visible;
+  }
+
+  .proposal-print-document {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    box-shadow: none;
+  }
+}
