@@ -131,6 +131,32 @@ export interface ProposalLibraryItem {
   useCount: number;
 }
 
+export interface ProposalComment {
+  id: string;
+  sectionId: string;
+  author: string;
+  text: string;
+  createdAt: string;
+  resolved: boolean;
+}
+
+export interface ProposalVersion {
+  id: string;
+  sectionId: string;
+  label: string;
+  author: string;
+  createdAt: string;
+  content: string;
+}
+
+export interface SectionReferenceConfig {
+  sectionId: string;
+  libraryItemIds: string[];
+  documentIds: string[];
+  webSearchEnabled: boolean;
+  includeUrls: string[];
+}
+
 export interface ProposalWorkspaceState {
   view: ProposalWorkspaceView;
   activeStep: ProposalWorkflowStep;

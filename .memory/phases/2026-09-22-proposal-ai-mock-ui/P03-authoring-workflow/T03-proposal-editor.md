@@ -1,6 +1,6 @@
 # Task: T03 Proposal Editor
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 editor의 핵심 정보 구조를 유지한 3-pane 제안서 작성 UI를 구현한다. section 선택·본문 저장·상태 변경·출처 연결·comment/version과 deterministic AI 보조를 제공하되 외부 editor/AI dependency 없이 유지 가능한 크기로 제한한다.
@@ -129,6 +129,6 @@ Task: T03-proposal-editor
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

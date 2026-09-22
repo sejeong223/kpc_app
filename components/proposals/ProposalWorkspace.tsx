@@ -7,6 +7,7 @@ import ProposalAnalysisView from "@/components/proposals/authoring/ProposalAnaly
 import ProposalSetupView from "@/components/proposals/authoring/ProposalSetupView";
 import ProposalRequirementsView from "@/components/proposals/authoring/ProposalRequirementsView";
 import ProposalTaskManagementView from "@/components/proposals/authoring/ProposalTaskManagementView";
+import ProposalEditorView from "@/components/proposals/editor/ProposalEditorView";
 import ProposalPlaceholder from "@/components/proposals/ProposalPlaceholder";
 import ProposalSidebar from "@/components/proposals/ProposalSidebar";
 import ProposalPipelineBoard from "@/components/proposals/pipeline/ProposalPipelineBoard";
@@ -82,6 +83,9 @@ export default function ProposalWorkspace({
     }
     if (state.activeStep === "requirements") {
       return <ProposalRequirementsView project={selectedProject} requirements={selectedRequirements} dispatch={dispatch} onNavigate={(step) => dispatch({ type: "navigate", view: "workspace", step })} />;
+    }
+    if (state.activeStep === "editor") {
+      return <ProposalEditorView project={selectedProject} sections={selectedSections} requirements={selectedRequirements} documents={selectedDocuments} libraryItems={state.libraryItems} selectedSectionId={state.selectedSectionId || null} dispatch={dispatch} onNavigate={(step) => dispatch({ type: "navigate", view: "workspace", step })} />;
     }
     return <ProposalPlaceholder title={title} description={description} />;
   };
