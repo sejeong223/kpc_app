@@ -1,6 +1,6 @@
 # Task: T01 Proposal Domain and State
 
-## Status: pending
+## Status: done
 
 ## Goal
 모든 제안서 목 화면이 공유할 최소 domain type, UTF-8 한국어 fixture, 순수 reducer와 transition guard를 구축한다. UI보다 먼저 상태 계약을 고정해 이후 Task가 원본 `App.tsx`처럼 거대한 local state 덩어리를 다시 만들지 않게 한다.
@@ -124,6 +124,6 @@ Task: T01-proposal-domain-and-state
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
