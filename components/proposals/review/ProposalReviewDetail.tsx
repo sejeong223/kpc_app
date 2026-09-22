@@ -44,7 +44,7 @@ export default function ProposalReviewDetail({ state, dispatch, canReview }: Pro
     <section className="min-h-full bg-[#F8F9FA] p-4 lg:p-6">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Button size="icon" variant="ghost" title="제안 목록" onClick={() => dispatch({ type: "navigate", view: "pipeline" })}><ArrowLeft className="size-5" /></Button>
+          <Button size="icon" variant="ghost" title="제안 목록" aria-label="제안 목록" onClick={() => dispatch({ type: "navigate", view: "pipeline" })}><ArrowLeft className="size-5" /></Button>
           <div className="min-w-0"><h1 className="truncate text-lg font-bold text-[#202124]">{project.title}</h1><p className="text-xs text-[#7B7C82]">{documents[0]?.name ?? project.primaryRfpFileName}</p></div>
         </div>
         <Badge variant="outline" className="bg-white">{project.stage}</Badge>
@@ -54,11 +54,11 @@ export default function ProposalReviewDetail({ state, dispatch, canReview }: Pro
         <section className="min-h-[620px] overflow-hidden rounded-lg border bg-white">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
             <div className="flex items-center gap-1">
-              <Button size="icon" variant="ghost" disabled={pageIndex === 0} onClick={() => { setPageIndex((value) => value - 1); setSelectedQuote(""); }}><ChevronLeft className="size-4" /></Button>
+              <Button size="icon" variant="ghost" aria-label="이전 RFP 페이지" disabled={pageIndex === 0} onClick={() => { setPageIndex((value) => value - 1); setSelectedQuote(""); }}><ChevronLeft className="size-4" /></Button>
               <select className="h-8 rounded-md border bg-white px-2 text-xs" value={pageIndex} onChange={(event) => { setPageIndex(Number(event.target.value)); setSelectedQuote(""); }} aria-label="RFP 페이지">
                 {MOCK_RFP_PREVIEW.pages.map((item, index) => <option key={item.pageNumber} value={index}>p. {item.pageNumber}</option>)}
               </select>
-              <Button size="icon" variant="ghost" disabled={pageIndex === MOCK_RFP_PREVIEW.pages.length - 1} onClick={() => { setPageIndex((value) => value + 1); setSelectedQuote(""); }}><ChevronRight className="size-4" /></Button>
+              <Button size="icon" variant="ghost" aria-label="다음 RFP 페이지" disabled={pageIndex === MOCK_RFP_PREVIEW.pages.length - 1} onClick={() => { setPageIndex((value) => value + 1); setSelectedQuote(""); }}><ChevronRight className="size-4" /></Button>
             </div>
             <label className="relative w-full sm:w-56"><span className="sr-only">문서 검색</span><Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-[#929399]" /><Input className="h-8 pl-8 text-xs" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="현재 페이지 검색" /></label>
           </div>

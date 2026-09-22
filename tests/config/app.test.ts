@@ -43,6 +43,8 @@ describe("appConfig", () => {
     expect(appConfig.headerNavigation.find((item) => item.id === "proposal-ai")).toMatchObject({
       href: "/proposals",
     });
+    expect(appConfig.headerNavigation.some((item) => item.id === "admin")).toBe(false);
+    expect(appConfig.profileNavigation.some((item) => item.id === "proposal-ai")).toBe(false);
   });
 
   it("keeps admin navigation in the role-filtered profile menu", () => {

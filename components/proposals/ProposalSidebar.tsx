@@ -29,6 +29,8 @@ import type {
 interface ProposalSidebarProps {
   state: ProposalWorkspaceState;
   dispatch: Dispatch<ProposalWorkspaceAction>;
+  mobile?: boolean;
+  onNavigate?: () => void;
 }
 
 const mainNavigation: Array<{
@@ -57,17 +59,19 @@ const projectSteps: Array<{
 export default function ProposalSidebar({
   state,
   dispatch,
+  mobile = false,
+  onNavigate,
 }: ProposalSidebarProps): React.ReactElement {
   const selectedProject = getSelectedProposalProject(state);
   const showsProjectNavigation = state.view === "workspace" && selectedProject !== null;
 
   if (!showsProjectNavigation) {
     return (
-      <aside className="flex h-full w-60 shrink-0 flex-col border-r border-black/8 bg-white px-3 py-4">
+      <aside className={cn("h-full w-60 shrink-0 flex-col border-r border-black/8 bg-white px-3 py-4", mobile ? "flex w-full border-r-0" : "hidden lg:flex")}>
         <button
           type="button"
           className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-kpc-red px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#CA0010]"
-          onClick={() => dispatch({ type: "navigate", view: "register" })}
+          onClick={() => { dispatch({ type: "navigate", view: "register" }); onNavigate?.(); }}
         >
           <Plus className="size-4" />
           제안서 생성
@@ -88,7 +92,7 @@ export default function ProposalSidebar({
                     : "text-[#5F6065] hover:bg-[#F6F6F7] hover:text-[#202124]",
                 )}
                 aria-current={active ? "page" : undefined}
-                onClick={() => dispatch({ type: "navigate", view: item.view })}
+                onClick={() => { dispatch({ type: "navigate", view: item.view }); onNavigate?.(); }}
               >
                 <Icon className="size-[18px]" />
                 {item.label}
@@ -101,12 +105,12 @@ export default function ProposalSidebar({
   }
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-black/8 bg-white">
+    <aside className={cn("h-full w-60 shrink-0 flex-col border-r border-black/8 bg-white", mobile ? "flex w-full border-r-0" : "hidden lg:flex")}>
       <div className="border-b border-black/8 px-3 pb-4 pt-3">
         <button
           type="button"
           className="flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-[#707075] hover:bg-[#F5F5F6] hover:text-[#222]"
-          onClick={() => dispatch({ type: "navigate", view: "pipeline" })}
+          onClick={() => { dispatch({ type: "navigate", view: "pipeline" }); onNavigate?.(); }}
         >
           <ArrowLeft className="size-3.5" />
           제안 목록
@@ -143,9 +147,7 @@ export default function ProposalSidebar({
               aria-disabled={!unlocked}
               aria-current={active && unlocked ? "step" : undefined}
               title={unlocked ? undefined : "AI 분석 완료 후 열 수 있습니다."}
-              onClick={() =>
-                dispatch({ type: "navigate", view: "workspace", step: item.step })
-              }
+              onClick={() => { dispatch({ type: "navigate", view: "workspace", step: item.step }); onNavigate?.(); }}
             >
               <span className="w-5 text-[10px] font-bold tabular-nums opacity-70">{item.number}</span>
               <Icon className="size-[17px]" />
@@ -157,7 +159,7 @@ export default function ProposalSidebar({
                   type="button"
                   className="ml-8 mt-1 flex h-8 w-[calc(100%-2rem)] items-center gap-2 rounded-md px-3 text-left text-xs text-[#73747A] hover:bg-[#F6F6F7] disabled:cursor-not-allowed disabled:text-[#B2B3B7]"
                   disabled={!unlocked}
-                  onClick={() => dispatch({ type: "open-task-management" })}
+                  onClick={() => { dispatch({ type: "open-task-management" }); onNavigate?.(); }}
                 >
                   <ClipboardList className="size-3.5" />
                   작성 관리
@@ -172,7 +174,7 @@ export default function ProposalSidebar({
         <button
           type="button"
           className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-[#66676C] hover:bg-[#F6F6F7] hover:text-[#202124]"
-          onClick={() => dispatch({ type: "navigate", view: "settings" })}
+          onClick={() => { dispatch({ type: "navigate", view: "settings" }); onNavigate?.(); }}
         >
           <Settings className="size-[17px]" />
           프로젝트 설정

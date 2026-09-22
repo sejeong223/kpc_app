@@ -55,6 +55,7 @@ export default function ProposalEditorView({ project, sections, requirements, do
   const [comments, setComments] = useState<ProposalComment[]>([]);
   const [versions, setVersions] = useState<ProposalVersion[]>([]);
   const [referenceConfigs, setReferenceConfigs] = useState<Record<string, SectionReferenceConfig>>({});
+  const [compactPane, setCompactPane] = useState<"sections" | "editor" | "assistant">("editor");
 
   if (!selectedSection) {
     return <section className="flex min-h-full items-center justify-center bg-[#F8F9FA] p-6"><div className="text-center"><h1 className="text-lg font-bold">작성할 Section이 없습니다.</h1><Button className="mt-4" variant="outline" onClick={() => onNavigate("requirements")}>요구사항으로 이동</Button></div></section>;
@@ -79,6 +80,7 @@ export default function ProposalEditorView({ project, sections, requirements, do
     setDraft(target.content);
     setAiPreview("");
     setPendingSectionId(null);
+    setCompactPane("editor");
   };
   const requestSection = (sectionId: string) => {
     if (sectionId === selectedSection.id) return;
@@ -96,11 +98,12 @@ export default function ProposalEditorView({ project, sections, requirements, do
   };
 
   return (
-    <section className="h-full min-h-[680px] overflow-x-auto bg-[#F8F9FA]">
-      <div className="grid h-full min-w-[1136px] grid-cols-[256px_minmax(560px,1fr)_320px]">
-        <ProposalSectionNavigator sections={sections} selectedSectionId={selectedSection.id} onSelect={requestSection} />
-        <ProposalContentEditor section={selectedSection} draft={draft} people={people} saved={saved} onDraftChange={setDraft} onMetadataChange={(changes) => dispatch({ type: "update-section", sectionId: selectedSection.id, changes })} onSave={save} />
-        <ProposalAssistantPanel section={selectedSection} requirements={requirements} documents={documents} libraryItems={libraryItems} referenceConfig={referenceConfig} comments={sectionComments} versions={sectionVersions} aiPreview={aiPreview} onGenerate={generate} onApplyPreview={() => { setDraft(aiPreview); setAiPreview(""); }} onOpenReferences={() => setReferenceOpen(true)} onAddComment={(text) => setComments((current) => [...current, { id: `comment-${Date.now()}`, sectionId: selectedSection.id, author: "정소담", text, createdAt: new Date().toLocaleString("ko-KR"), resolved: false }])} onResolveComment={(commentId) => setComments((current) => current.map((comment) => comment.id === commentId ? { ...comment, resolved: true } : comment))} onRestoreVersion={setPendingVersion} />
+    <section className="h-full min-h-[680px] bg-[#F8F9FA]">
+      <div className="grid grid-cols-3 border-b bg-white xl:hidden" role="tablist" aria-label="편집 화면"><button type="button" role="tab" aria-selected={compactPane === "sections"} className={`h-10 text-xs ${compactPane === "sections" ? "border-b-2 border-kpc-red text-kpc-red" : ""}`} onClick={() => setCompactPane("sections")}>Section</button><button type="button" role="tab" aria-selected={compactPane === "editor"} className={`h-10 text-xs ${compactPane === "editor" ? "border-b-2 border-kpc-red text-kpc-red" : ""}`} onClick={() => setCompactPane("editor")}>본문</button><button type="button" role="tab" aria-selected={compactPane === "assistant"} className={`h-10 text-xs ${compactPane === "assistant" ? "border-b-2 border-kpc-red text-kpc-red" : ""}`} onClick={() => setCompactPane("assistant")}>작성 보조</button></div>
+      <div className="grid h-[calc(100%-2.5rem)] grid-cols-1 md:grid-cols-[256px_minmax(0,1fr)] xl:h-full xl:grid-cols-[256px_minmax(560px,1fr)_320px]">
+        <div className={compactPane === "sections" ? "block" : "hidden md:block"}><ProposalSectionNavigator sections={sections} selectedSectionId={selectedSection.id} onSelect={requestSection} /></div>
+        <div className={compactPane === "editor" ? "block min-w-0" : "hidden xl:block"}><ProposalContentEditor section={selectedSection} draft={draft} people={people} saved={saved} onDraftChange={setDraft} onMetadataChange={(changes) => dispatch({ type: "update-section", sectionId: selectedSection.id, changes })} onSave={save} /></div>
+        <div className={compactPane === "assistant" ? "block min-w-0" : "hidden xl:block"}><ProposalAssistantPanel section={selectedSection} requirements={requirements} documents={documents} libraryItems={libraryItems} referenceConfig={referenceConfig} comments={sectionComments} versions={sectionVersions} aiPreview={aiPreview} onGenerate={generate} onApplyPreview={() => { setDraft(aiPreview); setAiPreview(""); }} onOpenReferences={() => setReferenceOpen(true)} onAddComment={(text) => setComments((current) => [...current, { id: `comment-${Date.now()}`, sectionId: selectedSection.id, author: "정소담", text, createdAt: new Date().toLocaleString("ko-KR"), resolved: false }])} onResolveComment={(commentId) => setComments((current) => current.map((comment) => comment.id === commentId ? { ...comment, resolved: true } : comment))} onRestoreVersion={setPendingVersion} /></div>
       </div>
 
       <SectionReferenceDialog key={`${selectedSection.id}-${referenceOpen}`} open={referenceOpen} documents={documents} libraryItems={libraryItems} initialConfig={referenceConfig} onOpenChange={setReferenceOpen} onSave={(config) => setReferenceConfigs((current) => ({ ...current, [selectedSection.id]: config }))} />

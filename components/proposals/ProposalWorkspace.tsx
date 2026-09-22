@@ -1,6 +1,7 @@
 "use client";
 
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
+import { Menu } from "lucide-react";
 
 import AnalysisRequiredState from "@/components/proposals/authoring/AnalysisRequiredState";
 import ProposalAnalysisView from "@/components/proposals/authoring/ProposalAnalysisView";
@@ -8,8 +9,15 @@ import ProposalSetupView from "@/components/proposals/authoring/ProposalSetupVie
 import ProposalRequirementsView from "@/components/proposals/authoring/ProposalRequirementsView";
 import ProposalTaskManagementView from "@/components/proposals/authoring/ProposalTaskManagementView";
 import ProposalEditorView from "@/components/proposals/editor/ProposalEditorView";
-import ProposalPlaceholder from "@/components/proposals/ProposalPlaceholder";
 import ProposalSidebar from "@/components/proposals/ProposalSidebar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import ProposalPipelineBoard from "@/components/proposals/pipeline/ProposalPipelineBoard";
 import ProposalRegistrationView from "@/components/proposals/review/ProposalRegistrationView";
 import ProposalReviewDetail from "@/components/proposals/review/ProposalReviewDetail";
@@ -25,27 +33,15 @@ import {
   getSelectedProposalSections,
   proposalWorkspaceReducer,
 } from "@/lib/proposals/workspace";
-import type { ProposalWorkflowStep, ProposalWorkspaceView } from "@/types/proposals";
+import type { ProposalWorkspaceView } from "@/types/proposals";
 
 interface ProposalWorkspaceProps {
   canReview: boolean;
 }
 
-const viewTitles: Record<Exclude<ProposalWorkspaceView, "workspace">, string> = {
-  pipeline: "제안 목록",
-  register: "제안서 생성",
-  "project-review": "제안 검토",
-  library: "자료 라이브러리",
-  settings: "제안 설정",
-};
-
-const stepTitles: Record<ProposalWorkflowStep, string> = {
-  setup: "문서 설정",
-  analysis: "AI 분석",
-  requirements: "요구사항",
-  editor: "제안서 작성",
-  review: "검토 및 완성",
-};
+function assertNever(value: never): never {
+  throw new Error(`Unhandled proposal view: ${String(value)}`);
+}
 
 export default function ProposalWorkspace({
   canReview,
@@ -55,22 +51,14 @@ export default function ProposalWorkspace({
     undefined,
     createInitialProposalWorkspaceState,
   );
+  const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const selectedProject = getSelectedProposalProject(state);
   const selectedDocuments = getSelectedProposalDocuments(state);
   const selectedRequirements = getSelectedProposalRequirements(state);
   const selectedSections = getSelectedProposalSections(state);
-  const title =
-    state.view === "workspace"
-      ? stepTitles[state.activeStep]
-      : viewTitles[state.view];
-  const description =
-    state.view === "workspace" && selectedProject
-      ? `${selectedProject.title} · 다음 Task에서 구현 예정입니다.`
-      : undefined;
-
   const renderWorkspace = () => {
     if (!selectedProject) {
-      return <ProposalPlaceholder title="프로젝트를 선택하세요" />;
+      return <section className="flex min-h-full items-center justify-center p-6 text-sm text-[#77787E]">프로젝트를 선택하세요.</section>;
     }
     if (state.taskManagementOpen) {
       return <ProposalTaskManagementView project={selectedProject} sections={selectedSections} dispatch={dispatch} />;
@@ -93,28 +81,35 @@ export default function ProposalWorkspace({
     if (state.activeStep === "review") {
       return <ProposalReviewView project={selectedProject} sections={selectedSections} requirements={selectedRequirements} dispatch={dispatch} />;
     }
-    return <ProposalPlaceholder title={title} description={description} />;
+    return assertNever(state.activeStep);
+  };
+
+  const renderView = (view: ProposalWorkspaceView): React.ReactElement => {
+    switch (view) {
+      case "pipeline":
+        return <ProposalPipelineBoard state={state} dispatch={dispatch} canReview={canReview} />;
+      case "register":
+        return <ProposalRegistrationView dispatch={dispatch} />;
+      case "project-review":
+        return <ProposalReviewDetail state={state} dispatch={dispatch} canReview={canReview} />;
+      case "workspace":
+        return renderWorkspace();
+      case "library":
+        return <ProposalLibraryView items={state.libraryItems} activeProject={selectedProject} importedDocumentIds={selectedDocuments.map((document) => document.id)} dispatch={dispatch} />;
+      case "settings":
+        return <ProposalSettingsView canReview={canReview} />;
+      default:
+        return assertNever(view);
+    }
   };
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-workspace-surface">
       <ProposalSidebar state={state} dispatch={dispatch} />
-      <main className="min-w-0 flex-1 overflow-auto">
-        {state.view === "pipeline" ? (
-          <ProposalPipelineBoard state={state} dispatch={dispatch} canReview={canReview} />
-        ) : state.view === "register" ? (
-          <ProposalRegistrationView dispatch={dispatch} />
-        ) : state.view === "project-review" ? (
-          <ProposalReviewDetail state={state} dispatch={dispatch} canReview={canReview} />
-        ) : state.view === "workspace" ? (
-          renderWorkspace()
-        ) : state.view === "library" ? (
-          <ProposalLibraryView items={state.libraryItems} activeProject={selectedProject} importedDocumentIds={selectedDocuments.map((document) => document.id)} dispatch={dispatch} />
-        ) : state.view === "settings" ? (
-          <ProposalSettingsView canReview={canReview} />
-        ) : (
-          <ProposalPlaceholder title={title} description={description} />
-        )}
+      <Button size="icon" variant="outline" className="fixed left-3 top-[4.25rem] z-30 bg-white print:hidden lg:hidden" aria-label="제안 메뉴 열기" onClick={() => setMobileNavigationOpen(true)}><Menu className="size-5" /></Button>
+      <Dialog open={mobileNavigationOpen} onOpenChange={setMobileNavigationOpen}><DialogContent className="left-0 top-14 h-[calc(100vh-3.5rem)] max-w-72 translate-x-0 translate-y-0 rounded-none p-0"><DialogHeader className="sr-only"><DialogTitle>제안 메뉴</DialogTitle><DialogDescription>제안서 화면과 작성 단계로 이동합니다.</DialogDescription></DialogHeader><ProposalSidebar mobile state={state} dispatch={dispatch} onNavigate={() => setMobileNavigationOpen(false)} /></DialogContent></Dialog>
+      <main className="min-w-0 flex-1 overflow-auto pt-12 lg:pt-0">
+        {renderView(state.view)}
       </main>
     </div>
   );

@@ -64,6 +64,25 @@ Git Bash, macOS, Linux에서는 `npm ...`을 사용합니다. Windows PowerShell
 
 인증을 켠 상태에서 인증서와 client secret을 모두 제공하거나 모두 누락하면 앱이 시작을 거부합니다.
 
+## 제안서 AI 목업
+
+개발 서버를 실행한 뒤 `http://localhost:3000/proposals`에서 제안서 목업을 사용할 수 있습니다.
+
+```powershell
+npm.cmd run dev
+```
+
+- 제안 pipeline, 신규 RFP 등록, 관리자 검토·승인/반려
+- 문서 설정, fixture 기반 AI 분석, 요구사항과 작성 업무 관리
+- 3-pane 제안서 editor, 통합 검토, text download와 browser print
+- 자료 라이브러리와 팀·템플릿·AI 정책·알림 설정
+
+`AUTH_ENABLED=false`에서는 로컬 목업 사용자와 관리자 제어가 표시됩니다. 인증을 켜면 로그인 session의 역할에 따라 관리자 제어가 제한되며 `/admin`은 `Admin` 역할에만 노출됩니다.
+
+모든 제안 데이터와 설정은 browser session의 React state에만 존재하므로 새로고침하면 fixture 초기값으로 돌아갑니다. 실제 API, AI 호출, 파일 binary 업로드, 서버 저장은 구현하지 않았으며 출력은 UTF-8 text download와 browser print 목업입니다.
+
+화면 구조와 fixture는 reference repository `KPC_AI`의 commit `8f074e5`를 기준으로 현재 Next.js workspace에 맞게 재구성했습니다.
+
 ## 환경변수
 
 | 변수 | 필수 조건 | Secret | 설명 |

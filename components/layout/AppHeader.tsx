@@ -4,7 +4,7 @@ import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, LogOut, Settings, ShieldCheck, User } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Settings, ShieldCheck, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -62,7 +62,7 @@ export default function AppHeader({
 
         <nav
           aria-label="KPC AI 주요 메뉴: Knowledge AI, AI Worker, 제안서 AI, Custom AI, AI Agent, AI Community"
-          className="ml-auto hidden h-full items-stretch lg:flex"
+          className="ml-auto hidden h-full items-stretch md:flex"
         >
           {appConfig.headerNavigation.map((item) => {
             const isActive = isNavigationActive(pathname, item);
@@ -100,7 +100,16 @@ export default function AppHeader({
           })}
         </nav>
 
-        <details className="group relative ml-auto lg:ml-3">
+        <details className="group relative ml-auto md:hidden">
+          <summary className="flex size-9 list-none items-center justify-center rounded-md hover:bg-[#F5F5F5] focus-visible:ring-2 focus-visible:ring-kpc-red/30 [&::-webkit-details-marker]:hidden" aria-label="주요 메뉴 열기">
+            <Menu className="size-5" />
+          </summary>
+          <nav aria-label="모바일 KPC AI 주요 메뉴" className="absolute right-0 top-11 w-52 rounded-md border bg-white p-2 shadow-lg">
+            {appConfig.headerNavigation.map((item) => item.href ? <Link key={item.id} href={item.href} aria-current={isNavigationActive(pathname, item) ? "page" : undefined} className={cn("block rounded-md px-3 py-2 text-sm", isNavigationActive(pathname, item) ? "bg-[#FFF1F2] font-semibold text-kpc-red" : "hover:bg-[#F5F5F5]")}>{item.label}</Link> : <button key={item.id} type="button" className="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-[#F5F5F5]" onClick={() => toast.info("준비 중인 목업 메뉴입니다.")}>{item.label}</button>)}
+          </nav>
+        </details>
+
+        <details className="group relative ml-2 md:ml-3">
           <summary className="flex h-9 list-none items-center gap-2 rounded-full px-1.5 outline-none transition-colors hover:bg-[#F5F5F5] focus-visible:ring-2 focus-visible:ring-kpc-red/30 [&::-webkit-details-marker]:hidden">
             <Avatar className="size-8 border border-black/10">
               {authEnabled && session && <AvatarImage src="/api/profile-image" alt="" />}

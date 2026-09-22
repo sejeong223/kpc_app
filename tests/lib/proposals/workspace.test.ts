@@ -10,6 +10,7 @@ import {
   getSelectedProposalSections,
   proposalWorkspaceReducer,
 } from "@/lib/proposals/workspace";
+import { calculateProposalReviewSummary } from "@/lib/proposals/review";
 import type { ProposalDocument, ProposalProject } from "@/types/proposals";
 
 describe("proposal workspace state", () => {
@@ -375,5 +376,61 @@ describe("proposal workspace state", () => {
       isPrimary: false,
     });
     expect(duplicated).toBe(imported);
+  });
+
+  it("runs the complete pipeline-to-review reducer lifecycle", () => {
+    let state = createInitialProposalWorkspaceState();
+    state = proposalWorkspaceReducer(state, {
+      type: "update-stage",
+      projectId: "project-enterprise-ai",
+      stage: "검토 대기",
+    });
+    state = proposalWorkspaceReducer(state, {
+      type: "select-project",
+      projectId: "project-enterprise-ai",
+    });
+    state = proposalWorkspaceReducer(state, { type: "navigate", view: "project-review" });
+    state = proposalWorkspaceReducer(state, {
+      type: "update-stage",
+      projectId: "project-enterprise-ai",
+      stage: "검토 중",
+    });
+    state = proposalWorkspaceReducer(state, {
+      type: "update-stage",
+      projectId: "project-enterprise-ai",
+      stage: "진행",
+    });
+    state = proposalWorkspaceReducer(state, {
+      type: "navigate",
+      view: "workspace",
+      step: "setup",
+    });
+    state = proposalWorkspaceReducer(state, {
+      type: "set-analysis-status",
+      projectId: "project-enterprise-ai",
+      status: "분석 완료",
+    });
+    state = proposalWorkspaceReducer(state, {
+      type: "toggle-requirement",
+      requirementId: "requirement-security",
+    });
+    state = proposalWorkspaceReducer(state, {
+      type: "update-section",
+      sectionId: "section-strategy",
+      changes: { status: "완료", content: "검토가 완료된 제안 본문입니다." },
+    });
+    state = proposalWorkspaceReducer(state, {
+      type: "navigate",
+      view: "workspace",
+      step: "review",
+    });
+
+    const summary = calculateProposalReviewSummary(
+      getSelectedProposalSections(state),
+      getSelectedProposalRequirements(state),
+    );
+    expect(state).toMatchObject({ view: "workspace", activeStep: "review" });
+    expect(summary.completedSections).toBe(1);
+    expect(summary.coveredRequirements).toBe(2);
   });
 });

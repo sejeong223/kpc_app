@@ -1,6 +1,6 @@
 # Task: T02 Quality and Documentation
 
-## Status: pending
+## Status: done
 
 ## Goal
 KPC header와 제안서 전체 화면을 desktop/mobile에서 사용할 수 있게 마무리하고, keyboard/accessibility·auth regression·production build를 검증한 뒤 README에 목 UI 사용법과 한계를 기록한다.
@@ -48,13 +48,13 @@ KPC header와 제안서 전체 화면을 desktop/mobile에서 사용할 수 있�
 - source audit에서 Vite-only import, `@google/genai`, reference email/name hard-code가 인증 활성 사용자 UI에 노출되지 않는지 확인한다. auth disabled mock identity는 명시적으로 허용한다.
 
 ## Acceptance Criteria
-- [ ] desktop에서 reference의 header/sidebar/information density를 유지한다.
-- [ ] mobile에서 모든 main view와 5단계 workflow에 접근 가능하다.
-- [ ] keyboard focus, button label, dialog title, active navigation semantics가 존재한다.
-- [ ] placeholder와 unreachable/dead proposal view가 남지 않는다.
-- [ ] 전체 reducer lifecycle과 helper test가 통과한다.
-- [ ] 기존 로그인·권한·proxy test와 production build가 통과한다.
-- [ ] README가 목 UI 실행법과 비영속성/비AI 한계를 정확히 설명한다.
+- [x] desktop에서 reference의 header/sidebar/information density를 유지한다.
+- [x] mobile에서 모든 main view와 5단계 workflow에 접근 가능하다.
+- [x] keyboard focus, button label, dialog title, active navigation semantics가 존재한다.
+- [x] placeholder와 unreachable/dead proposal view가 남지 않는다.
+- [x] 전체 reducer lifecycle과 helper test가 통과한다.
+- [x] 기존 로그인·권한·proxy test와 production build가 통과한다.
+- [x] README가 목 UI 실행법과 비영속성/비AI 한계를 정확히 설명한다.
 
 ## Validation
 - `npm.cmd run test` — 전체 Vitest suite 통과
@@ -79,6 +79,6 @@ Task: T02-quality-and-documentation
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

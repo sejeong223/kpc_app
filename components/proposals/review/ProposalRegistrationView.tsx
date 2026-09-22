@@ -226,8 +226,8 @@ export default function ProposalRegistrationView({
               <div className="mt-3 flex items-center justify-between rounded-md border bg-[#FAFAFB] px-3 py-2.5">
                 <div className="min-w-0"><p className="truncate text-sm font-medium">{document.name}</p><p className="text-xs text-[#85868B]">{document.size} · 주 RFP</p></div>
                 <div className="flex gap-1">
-                  <Button type="button" size="icon" variant="ghost" title="문서 미리보기" onClick={() => setPreviewOpen(true)}><Eye className="size-4" /></Button>
-                  <Button type="button" size="icon" variant="ghost" title="문서 제거" onClick={() => setDocument(null)}><Trash2 className="size-4" /></Button>
+                  <Button type="button" size="icon" variant="ghost" title="문서 미리보기" aria-label="문서 미리보기" onClick={() => setPreviewOpen(true)}><Eye className="size-4" /></Button>
+                  <Button type="button" size="icon" variant="ghost" title="문서 제거" aria-label="문서 제거" onClick={() => setDocument(null)}><Trash2 className="size-4" /></Button>
                 </div>
               </div>
             )}

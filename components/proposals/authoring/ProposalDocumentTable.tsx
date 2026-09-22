@@ -30,7 +30,7 @@ export default function ProposalDocumentTable({
               <td className="px-3 py-3 text-[#66676D]">{document.size}</td>
               <td className="px-3 py-3 text-[#66676D]">{document.pageCount ?? "-"}</td>
               <td className="px-3 py-3"><span className="rounded-full bg-[#EEF7F0] px-2 py-1 text-xs font-medium text-[#347344]">{document.status}</span></td>
-              <td className="px-3 py-3"><div className="flex justify-end gap-1"><Button size="icon" variant="ghost" title="미리보기" onClick={() => onPreview(document)}><Eye className="size-4" /></Button><Button size="icon" variant="ghost" title="삭제" onClick={() => onRemove(document.id)}><Trash2 className="size-4" /></Button></div></td>
+              <td className="px-3 py-3"><div className="flex justify-end gap-1"><Button size="icon" variant="ghost" title="미리보기" aria-label={`${document.name} 미리보기`} onClick={() => onPreview(document)}><Eye className="size-4" /></Button><Button size="icon" variant="ghost" title="삭제" aria-label={`${document.name} 삭제`} onClick={() => onRemove(document.id)}><Trash2 className="size-4" /></Button></div></td>
             </tr>
           ))}
         </tbody>
