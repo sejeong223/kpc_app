@@ -95,7 +95,7 @@ export function canOpenProposalStep(
     return false;
   }
 
-  if (step === "setup" || step === "analysis") {
+  if (step === "setup") {
     return true;
   }
 

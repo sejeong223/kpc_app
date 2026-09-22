@@ -1,6 +1,6 @@
 # Task: T01 Setup and Analysis
 
-## Status: pending
+## Status: done
 
 ## Goal
 승인된 project의 01 문서 설정과 02 AI 분석 결과 화면을 구현한다. 사용자는 RFP/참고자료 metadata와 작성 방식을 설정하고, network 호출 없는 mock 분석을 실행한 뒤 출처 page가 연결된 분석 결과를 탐색할 수 있다.
@@ -92,6 +92,6 @@ Task: T01-setup-and-analysis
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

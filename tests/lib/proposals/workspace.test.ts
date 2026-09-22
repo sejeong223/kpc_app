@@ -149,6 +149,49 @@ describe("proposal workspace state", () => {
     expect(opened).toMatchObject({ view: "workspace", activeStep: "setup" });
   });
 
+  it("updates setup documents, writing mode, and analysis status immutably", () => {
+    const initial = createInitialProposalWorkspaceState();
+    const document: ProposalDocument = {
+      id: "document-reference",
+      projectId: "project-enterprise-ai",
+      name: "reference.docx",
+      kind: "참고자료",
+      size: "500 KB",
+      status: "업로드 완료",
+      isPrimary: false,
+    };
+    const withDocument = proposalWorkspaceReducer(initial, {
+      type: "add-document",
+      document,
+    });
+    const withMode = proposalWorkspaceReducer(withDocument, {
+      type: "set-workflow-mode",
+      projectId: "project-enterprise-ai",
+      mode: "qa",
+    });
+    const analyzing = proposalWorkspaceReducer(withMode, {
+      type: "set-analysis-status",
+      projectId: "project-enterprise-ai",
+      status: "분석 중",
+    });
+    const completed = proposalWorkspaceReducer(analyzing, {
+      type: "set-analysis-status",
+      projectId: "project-enterprise-ai",
+      status: "분석 완료",
+    });
+    const removed = proposalWorkspaceReducer(completed, {
+      type: "remove-document",
+      documentId: document.id,
+    });
+
+    expect(getSelectedProposalDocuments(withDocument)).toContainEqual(document);
+    expect(withMode.projects.find((project) => project.id === "project-enterprise-ai")?.workflowMode).toBe("qa");
+    expect(analyzing.projects.find((project) => project.id === "project-enterprise-ai")?.analysisStatus).toBe("분석 중");
+    expect(completed.projects.find((project) => project.id === "project-enterprise-ai")?.analysisStatus).toBe("분석 완료");
+    expect(getSelectedProposalDocuments(removed)).not.toContainEqual(document);
+    expect(initial.documents).not.toContainEqual(document);
+  });
+
   it("approves and rejects a project while keeping previous state immutable", () => {
     const initial = createInitialProposalWorkspaceState();
     const projectId = "project-smart-factory";
@@ -189,6 +232,11 @@ describe("proposal workspace state", () => {
     expect(activeProject).toBeDefined();
     expect(canOpenProposalStep(pendingProject!, "setup")).toBe(false);
     expect(canOpenProposalStep(activeProject!, "review")).toBe(true);
+
+    const analysisPendingProject = { ...activeProject!, analysisStatus: "분석 전" as const };
+    expect(canOpenProposalStep(analysisPendingProject, "setup")).toBe(true);
+    expect(canOpenProposalStep(analysisPendingProject, "analysis")).toBe(false);
+    expect(canOpenProposalStep(analysisPendingProject, "requirements")).toBe(false);
 
     const selectedPending = proposalWorkspaceReducer(initial, {
       type: "select-project",
