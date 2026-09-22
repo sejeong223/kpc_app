@@ -4,6 +4,7 @@ import { useReducer } from "react";
 
 import ProposalPlaceholder from "@/components/proposals/ProposalPlaceholder";
 import ProposalSidebar from "@/components/proposals/ProposalSidebar";
+import ProposalPipelineBoard from "@/components/proposals/pipeline/ProposalPipelineBoard";
 import {
   createInitialProposalWorkspaceState,
   getSelectedProposalProject,
@@ -58,7 +59,11 @@ export default function ProposalWorkspace({
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-workspace-surface">
       <ProposalSidebar state={state} dispatch={dispatch} />
       <main className="min-w-0 flex-1 overflow-auto">
-        <ProposalPlaceholder title={title} description={description} />
+        {state.view === "pipeline" ? (
+          <ProposalPipelineBoard state={state} dispatch={dispatch} canReview={canReview} />
+        ) : (
+          <ProposalPlaceholder title={title} description={description} />
+        )}
       </main>
     </div>
   );

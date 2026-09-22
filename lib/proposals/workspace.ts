@@ -110,6 +110,23 @@ export function filterProposalProjects(state: ProposalWorkspaceState): ProposalP
   });
 }
 
+export function groupProjectsByStage(
+  projects: readonly ProposalProject[],
+): Record<ProposalStage, ProposalProject[]> {
+  const groups: Record<ProposalStage, ProposalProject[]> = {
+    "검토 대기": [],
+    "검토 중": [],
+    진행: [],
+    "진행 안 함": [],
+  };
+
+  for (const project of projects) {
+    groups[project.stage].push(project);
+  }
+
+  return groups;
+}
+
 export function proposalWorkspaceReducer(
   state: ProposalWorkspaceState,
   action: ProposalWorkspaceAction,

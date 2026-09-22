@@ -1,6 +1,6 @@
 # Task: T01 Proposal Pipeline Board
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 `PipelineBoard`의 부서별 제안 기회 현황과 네 단계 kanban을 현재 workspace state에 연결한다. 사용자는 검색·부서 filter·card 상세 진입이 가능하고, 관리자 mock 권한에서는 drag 또는 명시적 stage menu로 상태를 변경할 수 있다.
@@ -97,6 +97,6 @@ Task: T01-proposal-pipeline-board
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

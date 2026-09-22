@@ -4,6 +4,7 @@ import {
   canOpenProposalStep,
   createInitialProposalWorkspaceState,
   filterProposalProjects,
+  groupProjectsByStage,
   proposalWorkspaceReducer,
 } from "@/lib/proposals/workspace";
 import type { ProposalDocument, ProposalProject } from "@/types/proposals";
@@ -36,6 +37,37 @@ describe("proposal workspace state", () => {
     expect(filterProposalProjects(bySearch).map((project) => project.id)).toEqual([
       "project-enterprise-ai",
     ]);
+  });
+
+  it("groups filtered projects into all four pipeline stages", () => {
+    const initial = createInitialProposalWorkspaceState();
+    const groups = groupProjectsByStage(filterProposalProjects(initial));
+
+    expect(Object.keys(groups)).toEqual(["검토 대기", "검토 중", "진행", "진행 안 함"]);
+    expect(groups["검토 대기"]).toHaveLength(2);
+    expect(groups["검토 중"]).toHaveLength(1);
+    expect(groups["진행"]).toHaveLength(2);
+    expect(groups["진행 안 함"]).toHaveLength(1);
+  });
+
+  it("moves a project to another pipeline group through the reducer", () => {
+    const initial = createInitialProposalWorkspaceState();
+    const moved = proposalWorkspaceReducer(initial, {
+      type: "update-stage",
+      projectId: "project-ai-academy",
+      stage: "검토 중",
+    });
+    const groups = groupProjectsByStage(moved.projects);
+
+    expect(groups["검토 대기"].map((project) => project.id)).not.toContain(
+      "project-ai-academy",
+    );
+    expect(groups["검토 중"].map((project) => project.id)).toContain(
+      "project-ai-academy",
+    );
+    expect(initial.projects.find((project) => project.id === "project-ai-academy")?.stage).toBe(
+      "검토 대기",
+    );
   });
 
   it("adds a project and its documents without mutating the source state", () => {
