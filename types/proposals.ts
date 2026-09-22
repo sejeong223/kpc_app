@@ -175,6 +175,36 @@ export interface ProposalFactIssue {
   excerpt: string;
 }
 
+export interface ProposalMember {
+  id: string;
+  name: string;
+  department: string;
+  role: "PM" | "작성자" | "검토자";
+  email: string;
+}
+
+export interface ProposalTemplate {
+  id: string;
+  name: string;
+  description: string;
+  isDefault: boolean;
+  updatedAt: string;
+}
+
+export interface ProposalAiPolicy {
+  modelLabel: string;
+  allowWebSearch: boolean;
+  requireCitation: boolean;
+  maxMonthlyTokens: number;
+}
+
+export interface ProposalNotificationSettings {
+  deadline: boolean;
+  comments: boolean;
+  reviewRequests: boolean;
+  analysisComplete: boolean;
+}
+
 export interface ProposalWorkspaceState {
   view: ProposalWorkspaceView;
   activeStep: ProposalWorkflowStep;

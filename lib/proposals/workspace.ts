@@ -41,7 +41,7 @@ export type ProposalWorkspaceAction =
   | { type: "delete-requirement"; requirementId: string }
   | { type: "select-section"; sectionId: string }
   | { type: "update-section"; sectionId: string; changes: Partial<ProposalSection> }
-  | { type: "import-library-item"; item: ProposalLibraryItem };
+  | { type: "import-library-item"; item: ProposalLibraryItem; projectId: string };
 
 const cloneProject = (project: ProposalProject): ProposalProject => ({
   ...project,
@@ -343,9 +343,28 @@ export function proposalWorkspaceReducer(
       };
 
     case "import-library-item":
+      if (
+        !state.projects.some((project) => project.id === action.projectId) ||
+        state.documents.some(
+          (document) => document.id === `library-${action.projectId}-${action.item.id}`,
+        )
+      ) {
+        return state;
+      }
       return {
         ...state,
-        libraryItems: [...state.libraryItems, cloneLibraryItem(action.item)],
+        documents: [
+          ...state.documents,
+          {
+            id: `library-${action.projectId}-${action.item.id}`,
+            projectId: action.projectId,
+            name: `${action.item.title}.${action.item.fileFormat.toLocaleLowerCase("en-US")}`,
+            kind: "참고자료",
+            size: action.item.size,
+            status: "업로드 완료",
+            isPrimary: false,
+          },
+        ],
       };
   }
 }

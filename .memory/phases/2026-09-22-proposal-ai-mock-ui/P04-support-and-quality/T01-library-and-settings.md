@@ -1,6 +1,6 @@
 # Task: T01 Library and Settings
 
-## Status: pending
+## Status: done
 
 ## Goal
 제안서 main navigation의 자료 라이브러리와 프로젝트 설정 화면을 구현한다. 문서 검색·preview·project import와 팀/템플릿/AI 정책/알림 설정을 mock state로 제공해 원본 제안서 카테고리의 보조 화면을 완성한다.
@@ -105,6 +105,6 @@ Task: T01-library-and-settings
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

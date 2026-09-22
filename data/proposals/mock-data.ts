@@ -1,11 +1,15 @@
 import type {
   ProposalAnalysisItem,
+  ProposalAiPolicy,
   ProposalDocument,
   ProposalLibraryItem,
+  ProposalMember,
+  ProposalNotificationSettings,
   ProposalProject,
   ProposalReviewCriterion,
   ProposalRequirement,
   ProposalSection,
+  ProposalTemplate,
 } from "@/types/proposals";
 
 export const MOCK_RFP_PREVIEW = {
@@ -447,3 +451,56 @@ export const MOCK_LIBRARY_ITEMS: ProposalLibraryItem[] = [
     useCount: 19,
   },
 ];
+
+export const MOCK_ENTERPRISE_LIBRARY_ITEMS: ProposalLibraryItem[] = [
+  ...MOCK_LIBRARY_ITEMS,
+  {
+    id: "library-consulting-method",
+    title: "디지털 전환 컨설팅 방법론",
+    category: "방법론",
+    description: "현황 진단부터 실행 로드맵 수립까지 사용하는 표준 컨설팅 절차",
+    fileFormat: "PDF",
+    department: "컨설팅본부",
+    size: "6.3 MB",
+    tags: ["DX", "방법론", "로드맵"],
+    updatedAt: "2026.09.20",
+    useCount: 16,
+  },
+  {
+    id: "library-training-template",
+    title: "교육 운영 제안 템플릿",
+    category: "제안 템플릿",
+    description: "교육 과정 설계와 운영 계획을 위한 표준 제안서 템플릿",
+    fileFormat: "PPTX",
+    department: "교육사업본부",
+    size: "9.1 MB",
+    tags: ["교육", "템플릿", "운영"],
+    updatedAt: "2026.09.08",
+    useCount: 31,
+  },
+];
+
+export const MOCK_PROPOSAL_MEMBERS: ProposalMember[] = [
+  { id: "member-current", name: "정소담", department: "AI사업본부", role: "작성자", email: "sodam.jeong@kpc.or.kr" },
+  { id: "member-manager", name: "김세정", department: "AI사업본부", role: "PM", email: "sejeong.kim@kpc.or.kr" },
+  { id: "member-reviewer", name: "오지훈", department: "컨설팅본부", role: "검토자", email: "jihun.oh@kpc.or.kr" },
+];
+
+export const MOCK_PROPOSAL_TEMPLATES: ProposalTemplate[] = [
+  { id: "template-standard", name: "KPC 표준 제안서", description: "공공·민간 제안에 공통으로 사용하는 기본 목차", isDefault: true, updatedAt: "2026.09.01" },
+  { id: "template-consulting", name: "컨설팅 사업 제안서", description: "진단, 전략, 실행 로드맵 중심 구성", isDefault: false, updatedAt: "2026.08.18" },
+];
+
+export const DEFAULT_PROPOSAL_AI_POLICY: ProposalAiPolicy = {
+  modelLabel: "KPC 표준 생성 모델",
+  allowWebSearch: false,
+  requireCitation: true,
+  maxMonthlyTokens: 500_000,
+};
+
+export const DEFAULT_PROPOSAL_NOTIFICATIONS: ProposalNotificationSettings = {
+  deadline: true,
+  comments: true,
+  reviewRequests: true,
+  analysisComplete: true,
+};

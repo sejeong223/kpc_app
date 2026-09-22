@@ -14,6 +14,8 @@ import ProposalPipelineBoard from "@/components/proposals/pipeline/ProposalPipel
 import ProposalRegistrationView from "@/components/proposals/review/ProposalRegistrationView";
 import ProposalReviewDetail from "@/components/proposals/review/ProposalReviewDetail";
 import ProposalReviewView from "@/components/proposals/review-final/ProposalReviewView";
+import ProposalLibraryView from "@/components/proposals/support/ProposalLibraryView";
+import ProposalSettingsView from "@/components/proposals/support/ProposalSettingsView";
 import { MOCK_ANALYSIS_ITEMS } from "@/data/proposals/mock-data";
 import {
   createInitialProposalWorkspaceState,
@@ -106,6 +108,10 @@ export default function ProposalWorkspace({
           <ProposalReviewDetail state={state} dispatch={dispatch} canReview={canReview} />
         ) : state.view === "workspace" ? (
           renderWorkspace()
+        ) : state.view === "library" ? (
+          <ProposalLibraryView items={state.libraryItems} activeProject={selectedProject} importedDocumentIds={selectedDocuments.map((document) => document.id)} dispatch={dispatch} />
+        ) : state.view === "settings" ? (
+          <ProposalSettingsView canReview={canReview} />
         ) : (
           <ProposalPlaceholder title={title} description={description} />
         )}

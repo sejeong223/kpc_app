@@ -354,4 +354,26 @@ describe("proposal workspace state", () => {
       taskManagementOpen: true,
     });
   });
+
+  it("imports a library item into the selected project only once", () => {
+    const initial = createInitialProposalWorkspaceState();
+    const item = initial.libraryItems[0];
+    const imported = proposalWorkspaceReducer(initial, {
+      type: "import-library-item",
+      item,
+      projectId: initial.selectedProjectId,
+    });
+    const duplicated = proposalWorkspaceReducer(imported, {
+      type: "import-library-item",
+      item,
+      projectId: initial.selectedProjectId,
+    });
+
+    expect(getSelectedProposalDocuments(imported).at(-1)).toMatchObject({
+      name: `${item.title}.${item.fileFormat.toLocaleLowerCase("en-US")}`,
+      kind: "참고자료",
+      isPrimary: false,
+    });
+    expect(duplicated).toBe(imported);
+  });
 });
