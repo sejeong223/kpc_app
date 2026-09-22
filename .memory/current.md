@@ -7,12 +7,12 @@
 [P01 Foundation and Shell](./phases/2026-09-22-proposal-ai-mock-ui/P01-foundation-and-shell/phase.md)
 
 ## Active Task
-[T01 Proposal Domain and State](./phases/2026-09-22-proposal-ai-mock-ui/P01-foundation-and-shell/T01-proposal-domain-and-state.md)
+[T02 KPC Header and Proposal Shell](./phases/2026-09-22-proposal-ai-mock-ui/P01-foundation-and-shell/T02-kpc-header-and-proposal-shell.md)
 
 ## Status
-- T01 구현 시작 준비 완료
-- 이전 login UI 작업의 working tree 변경은 유지되며 이번 계획 범위에서 수정하지 않는다.
+- T01 완료 (`e18d0cd`)
+- P01 T02 진행 준비 완료
 
 ## Next Step (IMPORTANT)
-T01 청사진을 읽고 `types/proposals.ts`, `data/proposals/mock-data.ts`, `lib/proposals/workspace.ts`와 reducer test부터 구현한다.
+T02 청사진을 읽고 KPC global header와 `/proposals` workspace/sidebar shell을 구현한다.
 

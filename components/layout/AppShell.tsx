@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 import type { ProvidersProps } from "@/components/providers";
 
-import AppSidebar from "./AppSidebar";
+import AppHeader from "./AppHeader";
 
 type AppShellProps = ProvidersProps;
 
@@ -20,11 +20,9 @@ export default function AppShell({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <AppSidebar authEnabled={authEnabled} session={session} />
-      <main className="min-w-0 flex-1 overflow-y-auto transition-[margin] duration-300">
-        {children}
-      </main>
+    <div className="min-h-screen">
+      <AppHeader authEnabled={authEnabled} session={session} />
+      <main className="min-h-screen pt-14">{children}</main>
     </div>
   );
 }

@@ -9,8 +9,8 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | 제안서 model, mock fixture, 순수 state reducer 구축 | [T01](./T01-proposal-domain-and-state.md) |
-| T02 | `pending` | KPC global header와 `/proposals` workspace/sidebar shell 연결 | [T02](./T02-kpc-header-and-proposal-shell.md) |
+| T01 | `done` | 제안서 model, mock fixture, 순수 state reducer 구축 | [T01](./T01-proposal-domain-and-state.md) |
+| T02 | `in_progress` | KPC global header와 `/proposals` workspace/sidebar shell 연결 | [T02](./T02-kpc-header-and-proposal-shell.md) |
 
 ## Progress
-- done: 0/2 (active: T01)
+- done: 1/2 (active: T02)

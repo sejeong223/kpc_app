@@ -126,4 +126,4 @@ Task: T01-proposal-domain-and-state
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: `e18d0cd005d4c49ae04b4ae159e22c2bfdb98b4e`

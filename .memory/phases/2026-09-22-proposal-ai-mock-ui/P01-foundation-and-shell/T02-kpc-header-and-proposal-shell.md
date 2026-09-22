@@ -1,6 +1,6 @@
 # Task: T02 KPC Header and Proposal Shell
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 KPC AI global header와 contextual proposal sidebar를 현재 Next.js App Router shell에 이식하고 `/proposals` route에서 공통 workspace state와 content outlet을 제공한다.
@@ -105,6 +105,6 @@ Task: T02-kpc-header-and-proposal-shell
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

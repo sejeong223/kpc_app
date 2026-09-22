@@ -1,12 +1,10 @@
 import { hasRole, type AppRole } from "@/lib/auth/roles";
 
-export type NavigationIcon = "dashboard" | "admin";
-
-export interface NavigationItem {
+export interface HeaderNavigationItem {
   id: string;
   label: string;
-  href: `/${string}` | "/";
-  icon: NavigationIcon;
+  href?: `/${string}` | "/";
+  isMock?: boolean;
   requiresAuth?: boolean;
   requiredRole?: AppRole;
 }
@@ -14,25 +12,51 @@ export interface NavigationItem {
 export interface AppConfig {
   name: string;
   description: string;
-  navigation: readonly NavigationItem[];
+  headerNavigation: readonly HeaderNavigationItem[];
+  profileNavigation: readonly HeaderNavigationItem[];
 }
 
 export const appConfig: AppConfig = {
-  name: process.env.NEXT_PUBLIC_APP_NAME ?? "KPC App",
+  name: process.env.NEXT_PUBLIC_APP_NAME ?? "KPC AI",
   description:
-    process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? "사내 업무 애플리케이션",
-  navigation: [
+    process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? "KPC Enterprise AI 업무 플랫폼",
+  headerNavigation: [
     {
-      id: "dashboard",
-      label: "대시보드",
+      id: "knowledge-ai",
+      label: "Knowledge AI",
       href: "/",
-      icon: "dashboard",
     },
+    {
+      id: "ai-worker",
+      label: "AI Worker",
+      isMock: true,
+    },
+    {
+      id: "proposal-ai",
+      label: "제안서 AI",
+      href: "/proposals",
+    },
+    {
+      id: "custom-ai",
+      label: "Custom AI",
+      isMock: true,
+    },
+    {
+      id: "ai-agent",
+      label: "AI Agent",
+      isMock: true,
+    },
+    {
+      id: "ai-community",
+      label: "AI Community",
+      isMock: true,
+    },
+  ],
+  profileNavigation: [
     {
       id: "admin",
       label: "관리자",
       href: "/admin",
-      icon: "admin",
       requiresAuth: true,
       requiredRole: "Admin",
     },
@@ -40,13 +64,13 @@ export const appConfig: AppConfig = {
 };
 
 export function getVisibleNavigation(
-  items: readonly NavigationItem[],
+  items: readonly HeaderNavigationItem[],
   context: {
     authEnabled: boolean;
     authenticated: boolean;
     roles?: readonly string[];
   },
-): NavigationItem[] {
+): HeaderNavigationItem[] {
   // Menu filtering is a UX convenience. Server-side authorization remains
   // responsible for protecting every restricted route.
   return items.filter((item) => {
