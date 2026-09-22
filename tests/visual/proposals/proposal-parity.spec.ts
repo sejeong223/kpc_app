@@ -1,0 +1,152 @@
+import { execFileSync } from "node:child_process";
+import path from "node:path";
+import { expect, test, type Page } from "@playwright/test";
+
+const REFERENCE_COMMIT = "8f074e51f7a16db063ef5206e6ac927c6e87c2a4";
+const REFERENCE_REPOSITORY =
+  process.env.KPC_REFERENCE_REPO ??
+  path.resolve(process.cwd(), "..", "KPC_AI");
+
+const VIEWPORTS = [
+  { width: 1920, height: 1080 },
+  { width: 1440, height: 900 },
+  { width: 1280, height: 800 },
+] as const;
+
+type Scenario = {
+  name: string;
+  expectedText: string | RegExp;
+  open(page: Page): Promise<void>;
+};
+
+async function openProposals(page: Page) {
+  await page.goto("/");
+  await page.locator("#gnb-proposals-btn").click();
+  await expect(page.locator("#lnb-pipeline-btn")).toBeVisible();
+}
+
+async function openWritingSetup(page: Page) {
+  await openProposals(page);
+  await page.getByRole("button", { name: "작성시작" }).first().click();
+  await expect(page.getByText("전체 프로젝트", { exact: true })).toBeVisible();
+}
+
+const scenarios: readonly Scenario[] = [
+  {
+    name: "header-proposal-active",
+    expectedText: "제안 목록",
+    open: openProposals,
+  },
+  {
+    name: "header-profile-dropdown",
+    expectedText: "정소담",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#user-profile-badge").click();
+    },
+  },
+  {
+    name: "pipeline-kanban",
+    expectedText: "검토대기",
+    open: openProposals,
+  },
+  {
+    name: "pipeline-list",
+    expectedText: "프로젝트명 / 발주처",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#pipeline-view-list-btn").click();
+    },
+  },
+  {
+    name: "project-registration",
+    expectedText: "프로젝트 등록",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#register-project-main-btn").click();
+    },
+  },
+  {
+    name: "project-review",
+    expectedText: /수주|검토/,
+    open: async (page) => {
+      await openProposals(page);
+      await page.getByRole("button", { name: "검토시작" }).first().click();
+    },
+  },
+  {
+    name: "setup",
+    expectedText: /RFP|작성 설정/,
+    open: openWritingSetup,
+  },
+  {
+    name: "library",
+    expectedText: "자료 라이브러리",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-library-btn").click();
+    },
+  },
+  {
+    name: "settings",
+    expectedText: "제안 설정",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-settings-btn").click();
+    },
+  },
+] as const;
+
+test.beforeAll(({}, workerInfo) => {
+  const isReference = workerInfo.project.name === "reference";
+  const isUpdating = ["all", "changed"].includes(
+    workerInfo.config.updateSnapshots,
+  );
+
+  if (isUpdating && !isReference) {
+    throw new Error("Snapshot updates are allowed only in the reference project.");
+  }
+
+  if (!isReference) {
+    return;
+  }
+
+  const actualCommit = execFileSync(
+    "git",
+    ["-C", REFERENCE_REPOSITORY, "rev-parse", "HEAD"],
+    { encoding: "utf8" },
+  ).trim();
+
+  if (actualCommit !== REFERENCE_COMMIT) {
+    throw new Error(
+      `Reference commit mismatch: expected ${REFERENCE_COMMIT}, received ${actualCommit}`,
+    );
+  }
+});
+
+test.afterEach(async ({ page }) => {
+  if (!page.url().startsWith("http")) {
+    return;
+  }
+
+  await page.evaluate(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+});
+
+for (const viewport of VIEWPORTS) {
+  test.describe(`${viewport.width}x${viewport.height}`, () => {
+    test.use({ viewport });
+
+    for (const scenario of scenarios) {
+      test(scenario.name, async ({ page }) => {
+        await scenario.open(page);
+        await expect(page.getByText(scenario.expectedText).first()).toBeVisible();
+        await expect(page).toHaveScreenshot(
+          `${scenario.name}-${viewport.width}x${viewport.height}.png`,
+        );
+      });
+    }
+  });
+}

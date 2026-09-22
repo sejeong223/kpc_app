@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:proposal-reference": "playwright test --project=reference --update-snapshots",
+    "test:proposal-visual": "playwright test --project=target",
     "azure:cosmos:provision": "tsx scripts/provision-cosmos.ts"
   },
   "dependencies": {
@@ -48,6 +50,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
