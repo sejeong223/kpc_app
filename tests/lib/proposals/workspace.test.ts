@@ -443,6 +443,27 @@ describe("proposal workspace state", () => {
 });
 
 describe("source-equivalent proposal workspace state", () => {
+  it("keeps the source pipeline stage counts and department filtering contract", () => {
+    const initial = createSourceProposalWorkspaceState();
+    const counts = Object.fromEntries(
+      ["검토 대기", "검토 중", "진행", "진행 안 함"].map((stage) => [
+        stage,
+        initial.rfpList.filter((rfp) => rfp.stage === stage).length,
+      ]),
+    );
+    const filtered = initial.rfpList.filter(
+      (rfp) => rfp.department === "AI산업본부",
+    );
+
+    expect(counts).toEqual({
+      "검토 대기": 3,
+      "검토 중": 3,
+      진행: 3,
+      "진행 안 함": 1,
+    });
+    expect(filtered.map((rfp) => rfp.id)).toEqual(["rfp-001", "rfp-008", "rfp-009"]);
+  });
+
   it("keeps the source fixture counts, order, and representative values", () => {
     expect(INITIAL_RFPS).toHaveLength(10);
     expect(SAMPLE_PROJECTS).toHaveLength(10);

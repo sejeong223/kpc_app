@@ -23,7 +23,14 @@ export default async function RootLayout({
 
   return (
     <html lang="ko">
-      <body className="bg-background text-foreground antialiased">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className="bg-[#F8F9FA] text-[#111111] antialiased selection:bg-[#E60012]/15 selection:text-[#E60012]">
         <Providers authEnabled={authEnabled} session={session}>
           <Toaster />
           {children}

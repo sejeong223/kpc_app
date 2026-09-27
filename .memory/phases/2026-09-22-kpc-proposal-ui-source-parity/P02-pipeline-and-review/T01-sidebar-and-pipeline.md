@@ -1,6 +1,6 @@
 # Task: T01 Sidebar And Pipeline
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 Proposal Sidebar와 pipeline의 Kanban/List UI를 동일한 DOM 구조, className, fixture, stage interaction으로 이식해 `/proposals` 첫 화면이 source screenshot과 일치하게 한다.
@@ -106,6 +106,6 @@ Task: T01-sidebar-and-pipeline
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

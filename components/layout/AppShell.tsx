@@ -31,7 +31,7 @@ export default function AppShell({
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen font-sans antialiased">
       <AppHeader
         activeTab="proposals"
         onUnavailableTab={handleUnavailableTab}

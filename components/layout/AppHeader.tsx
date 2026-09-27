@@ -116,6 +116,7 @@ export default function AppHeader({
 
   const handleTabChange = (tab: GnbTab) => {
     if (tab === "proposals") {
+      onShowToast("[제안서 AI] 화면으로 전환되었습니다.");
       router.push("/proposals");
       return;
     }
