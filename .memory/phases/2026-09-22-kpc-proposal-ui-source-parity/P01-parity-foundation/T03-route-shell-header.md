@@ -1,6 +1,6 @@
 # Task: T03 Route Shell Header
 
-## Status: pending
+## Status: done
 
 ## Goal
 `daruda_app`과 같은 authenticated route/layout 경계를 적용하고 원본 Header의 56px geometry, branding, GNB, profile dropdown을 현재 auth session과 안전하게 연결해 동일하게 렌더링한다.
@@ -94,6 +94,6 @@ Task: T03-route-shell-header
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

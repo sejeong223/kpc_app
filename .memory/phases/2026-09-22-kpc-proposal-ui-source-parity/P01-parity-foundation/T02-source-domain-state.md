@@ -113,4 +113,4 @@ Task: T02-source-domain-state
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: `ebd7bb99f72f6f3b93ee55326de63b0042abb3d2`

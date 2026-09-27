@@ -40,11 +40,11 @@ describe("appConfig", () => {
       "AI Agent",
       "AI Community",
     ]);
-    expect(appConfig.headerNavigation.find((item) => item.id === "proposal-ai")).toMatchObject({
+    expect(appConfig.headerNavigation.find((item) => item.id === "proposals")).toMatchObject({
       href: "/proposals",
     });
     expect(appConfig.headerNavigation.some((item) => item.id === "admin")).toBe(false);
-    expect(appConfig.profileNavigation.some((item) => item.id === "proposal-ai")).toBe(false);
+    expect(appConfig.profileNavigation.some((item) => item.id === "proposals")).toBe(false);
   });
 
   it("keeps admin navigation in the role-filtered profile menu", () => {

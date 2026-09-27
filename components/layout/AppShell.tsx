@@ -1,28 +1,46 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useCallback, useState } from "react";
 
-import type { ProvidersProps } from "@/components/providers";
-
+import { Toast } from "@/components/common/Toast";
+import type { GnbTab } from "@/types/proposals";
 import AppHeader from "./AppHeader";
 
-type AppShellProps = ProvidersProps;
+interface AppShellProps {
+  children: React.ReactNode;
+}
 
 export default function AppShell({
   children,
-  authEnabled,
-  session,
-}: AppShellProps) {
-  const pathname = usePathname();
-
-  if (pathname.startsWith("/auth")) {
-    return <main className="min-h-screen">{children}</main>;
-  }
+}: AppShellProps): React.ReactElement {
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = useCallback((message: string) => setToastMessage(message), []);
+  const handleUnavailableTab = useCallback(
+    (tab: Exclude<GnbTab, "proposals">) => {
+      const labels: Partial<Record<GnbTab, string>> = {
+        knowledge_ai: "Knowledge AI",
+        dia: "Knowledge AI",
+        ai_worker: "AI Worker",
+        custom_ai: "Custom AI",
+        ai_agent: "AI Agent",
+        ai_community: "AI Community",
+      };
+      showToast(`${labels[tab] ?? tab}는 현재 제안서 UI 이식 범위에 포함되지 않은 화면입니다.`);
+    },
+    [showToast],
+  );
 
   return (
     <div className="min-h-screen">
-      <AppHeader authEnabled={authEnabled} session={session} />
+      <AppHeader
+        activeTab="proposals"
+        onUnavailableTab={handleUnavailableTab}
+        onShowToast={showToast}
+      />
       <main className="min-h-screen pt-14">{children}</main>
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
     </div>
   );
 }

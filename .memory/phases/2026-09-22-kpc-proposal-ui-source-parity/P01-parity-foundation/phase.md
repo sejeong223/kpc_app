@@ -10,8 +10,8 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done ✅` | 원본 화면 manifest와 Playwright parity harness 구축 | [T01](./T01-reference-parity-harness.md) |
-| T02 | `in_progress 🔵` | 원본 proposal type·fixture·controller 계약 이식 | [T02](./T02-source-domain-state.md) |
-| T03 | `pending` | daruda식 route/layout과 원본 Header 동일 이식 | [T03](./T03-route-shell-header.md) |
+| T02 | `done ✅` | 원본 proposal type·fixture·controller 계약 이식 | [T02](./T02-source-domain-state.md) |
+| T03 | `done ✅` | daruda식 route/layout과 원본 Header 동일 이식 | [T03](./T03-route-shell-header.md) |
 
 ## Progress
-- done: 1/3 (active: T02)
+- done: 3/3 (complete)

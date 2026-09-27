@@ -22,32 +22,32 @@ export const appConfig: AppConfig = {
     process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? "KPC Enterprise AI 업무 플랫폼",
   headerNavigation: [
     {
-      id: "knowledge-ai",
+      id: "knowledge_ai",
       label: "Knowledge AI",
-      href: "/",
+      isMock: true,
     },
     {
-      id: "ai-worker",
+      id: "ai_worker",
       label: "AI Worker",
       isMock: true,
     },
     {
-      id: "proposal-ai",
+      id: "proposals",
       label: "제안서 AI",
       href: "/proposals",
     },
     {
-      id: "custom-ai",
+      id: "custom_ai",
       label: "Custom AI",
       isMock: true,
     },
     {
-      id: "ai-agent",
+      id: "ai_agent",
       label: "AI Agent",
       isMock: true,
     },
     {
-      id: "ai-community",
+      id: "ai_community",
       label: "AI Community",
       isMock: true,
     },
