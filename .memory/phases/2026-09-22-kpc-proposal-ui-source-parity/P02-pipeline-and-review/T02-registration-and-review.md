@@ -107,4 +107,4 @@ Task: T02-registration-and-review
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 5e14c1a

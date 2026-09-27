@@ -9,9 +9,9 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | 작성 설정·AI 분석·체크리스트 parity | [T01](./T01-setup-analysis-requirements.md) |
-| T02 | `pending` | 구조·업무 관리와 editor parity | [T02](./T02-editor-and-work-management.md) |
+| T01 | `done ✅` | 작성 설정·AI 분석·체크리스트 parity | [T01](./T01-setup-analysis-requirements.md) |
+| T02 | `in_progress 🔵` | 구조·업무 관리와 editor parity | [T02](./T02-editor-and-work-management.md) |
 | T03 | `pending` | 요구사항 matrix와 fact-check parity | [T03](./T03-review-and-fact-check.md) |
 
 ## Progress
-- done: 0/3 (active: pending)
+- done: 1/3 (active: T02)

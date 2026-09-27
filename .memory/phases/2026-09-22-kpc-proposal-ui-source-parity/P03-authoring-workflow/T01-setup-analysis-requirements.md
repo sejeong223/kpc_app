@@ -1,6 +1,6 @@
 # Task: T01 Setup Analysis Requirements
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 제안서 01 기본설정, 02 분석, 03 체크리스트와 잠금 상태를 동일하게 이식하고 분석 완료 전후 navigation과 공유 checklist state를 연결한다.
@@ -105,6 +105,6 @@ Task: T01-setup-analysis-requirements
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

@@ -3,12 +3,17 @@
 import { useReducer } from "react";
 
 import { Toast } from "@/components/common/Toast";
+import AiAnalysisView from "@/components/proposals/authoring/AiAnalysisView";
+import ProposalSetupView from "@/components/proposals/authoring/ProposalSetupView";
+import RequirementsView from "@/components/proposals/authoring/RequirementsView";
+import RfpAnalysisRequiredState from "@/components/proposals/authoring/RfpAnalysisRequiredState";
 import ProposalSidebar from "@/components/proposals/navigation/ProposalSidebar";
 import PipelineBoard from "@/components/proposals/pipeline/PipelineBoard";
 import ProjectRegistrationView from "@/components/proposals/review/ProjectRegistrationView";
 import ProjectReviewDetail from "@/components/proposals/review/ProjectReviewDetail";
 import {
   createSourceProposalWorkspaceState,
+  getFilesForSourceProject,
   sourceProposalWorkspaceReducer,
   type SourceProposalWorkspaceTab,
 } from "@/lib/proposals/workspace";
@@ -93,6 +98,7 @@ export default function ProposalWorkspace({
   const pipelineVisible =
     state.activeProposalLnb === "pipeline" ||
     state.activeProposalLnb === "proposals";
+  const projectFiles = getFilesForSourceProject(state, state.activeProject);
 
   const renderContent = (): React.ReactElement => {
     if (pipelineVisible) {
@@ -163,6 +169,81 @@ export default function ProposalWorkspace({
           onStartProposalWriting={(project) =>
             dispatch({ type: "start-proposal", project })
           }
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "rfp_upload" ||
+      state.activeProposalLnb === "setup" ||
+      state.activeProposalLnb === "rfp-docs"
+    ) {
+      return (
+        <ProposalSetupView
+          project={state.activeProject}
+          onStartAnalysis={() => {
+            dispatch({ type: "complete-analysis", projectId: state.activeProject.id });
+            showToast("RFP 심층 분석(2단계)이 활성화되어 이동했습니다.");
+          }}
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "ai_analysis" ||
+      state.activeProposalLnb === "ai-analysis"
+    ) {
+      if (state.activeProject.analysisStatus !== "분석 완료" || projectFiles.length === 0) {
+        return (
+          <RfpAnalysisRequiredState
+            stepNumber="02"
+            stepTitle="RFP 분석"
+            projectName={state.activeProject.title}
+            onNavigateToStep1={() => dispatch({ type: "navigate", tab: "rfp_upload" })}
+          />
+        );
+      }
+      return (
+        <AiAnalysisView
+          activeProject={state.activeProject}
+          uploadedFiles={projectFiles}
+          onNavigateToProjects={() => dispatch({ type: "navigate", tab: "pipeline" })}
+          onNavigateToProjectRoot={() => dispatch({ type: "navigate", tab: "rfp_upload" })}
+          onNavigateNext={() => {
+            dispatch({ type: "navigate", tab: "requirements" });
+            showToast("요구사항 관리 화면으로 이동했습니다.");
+          }}
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (state.activeProposalLnb === "requirements") {
+      if (state.activeProject.analysisStatus !== "분석 완료" || projectFiles.length === 0) {
+        return (
+          <RfpAnalysisRequiredState
+            stepNumber="03"
+            stepTitle="체크리스트"
+            projectName={state.activeProject.title}
+            onNavigateToStep1={() => dispatch({ type: "navigate", tab: "rfp_upload" })}
+          />
+        );
+      }
+      return (
+        <RequirementsView
+          activeProject={state.activeProject}
+          requirementsList={state.checklistRequirements}
+          onUpdateRequirements={(requirements) =>
+            dispatch({ type: "set-checklist", requirements })
+          }
+          onNavigateToProjects={() => dispatch({ type: "navigate", tab: "pipeline" })}
+          onNavigateToProjectRoot={() => dispatch({ type: "navigate", tab: "rfp_upload" })}
+          onNavigateNext={() => {
+            dispatch({ type: "navigate", tab: "editor" });
+            showToast("04 제안서 작성 화면으로 이동했습니다.");
+          }}
           onShowToast={showToast}
         />
       );
