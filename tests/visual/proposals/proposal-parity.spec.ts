@@ -49,6 +49,14 @@ async function openEditorDetail(page: Page) {
   await expect(page.getByText("스토리보드", { exact: true })).toBeVisible();
 }
 
+async function openReviewMatrix(page: Page) {
+  await openAnalysis(page);
+  await page.locator("button").filter({ hasText: "05" }).click();
+  await expect(
+    page.getByText("제안서 현재 상황 전체보기", { exact: true }),
+  ).toBeVisible();
+}
+
 const scenarios: readonly Scenario[] = [
   {
     name: "header-proposal-active",
@@ -128,6 +136,19 @@ const scenarios: readonly Scenario[] = [
       await page
         .getByTitle("참조 위치 설정 (내부저장소, 업로드, 웹 검색 - 현재 섹션 전용)")
         .click();
+    },
+  },
+  {
+    name: "matrix",
+    expectedText: "제안서 현재 상황 전체보기",
+    open: openReviewMatrix,
+  },
+  {
+    name: "fact-check",
+    expectedText: "제안서 사실관계검증 (Fact-Check)",
+    open: async (page) => {
+      await openReviewMatrix(page);
+      await page.getByRole("button", { name: /사실관계검증/ }).click();
     },
   },
   {

@@ -11,7 +11,7 @@
 | :--- | :--- | :--- | :--- |
 | T01 | `done ✅` | 작성 설정·AI 분석·체크리스트 parity | [T01](./T01-setup-analysis-requirements.md) |
 | T02 | `done ✅` | 구조·업무 관리와 editor parity | [T02](./T02-editor-and-work-management.md) |
-| T03 | `in_progress 🔵` | 요구사항 matrix와 fact-check parity | [T03](./T03-review-and-fact-check.md) |
+| T03 | `done ✅` | 요구사항 matrix와 fact-check parity | [T03](./T03-review-and-fact-check.md) |
 
 ## Progress
-- done: 2/3 (active: T03)
+- done: 3/3 (complete)

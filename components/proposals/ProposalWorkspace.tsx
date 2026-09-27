@@ -15,6 +15,7 @@ import ProposalSidebar from "@/components/proposals/navigation/ProposalSidebar";
 import PipelineBoard from "@/components/proposals/pipeline/PipelineBoard";
 import ProjectRegistrationView from "@/components/proposals/review/ProjectRegistrationView";
 import ProjectReviewDetail from "@/components/proposals/review/ProjectReviewDetail";
+import { RequirementsMatrix } from "@/components/proposals/review/RequirementsMatrix";
 import {
   createSourceProposalWorkspaceState,
   getFilesForSourceProject,
@@ -321,6 +322,29 @@ export default function ProposalWorkspace({
             dispatch({ type: "open-editor-section", sectionId: taskId })
           }
           onShowToast={showToast}
+        />
+      );
+    }
+
+    if (state.activeProposalLnb === "matrix") {
+      return (
+        <RequirementsMatrix
+          activeProject={state.activeProject}
+          sections={state.proposalSections}
+          uploadedFiles={projectFiles}
+          onUpdateSections={(sections) =>
+            dispatch({ type: "set-sections", sections })
+          }
+          onNavigateToProjects={() =>
+            dispatch({ type: "navigate", tab: "pipeline" })
+          }
+          onNavigateToProjectRoot={() =>
+            dispatch({ type: "navigate", tab: "rfp_upload" })
+          }
+          onShowToast={showToast}
+          onOpenEditorSection={(sectionId) =>
+            dispatch({ type: "open-editor-section", sectionId })
+          }
         />
       );
     }

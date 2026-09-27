@@ -9,8 +9,8 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | 자료 라이브러리와 제안 설정 parity | [T01](./T01-library-and-settings.md) |
+| T01 | `in_progress 🔵` | 자료 라이브러리와 제안 설정 parity | [T01](./T01-library-and-settings.md) |
 | T02 | `pending` | legacy 제거와 전체 visual parity gate | [T02](./T02-final-parity-gate.md) |
 
 ## Progress
-- done: 0/2 (active: pending)
+- done: 0/2 (active: T01)

@@ -122,4 +122,4 @@ Task: T02-editor-and-work-management
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 3b0bd4d
