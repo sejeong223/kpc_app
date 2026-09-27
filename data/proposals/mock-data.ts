@@ -504,3 +504,20 @@ export const DEFAULT_PROPOSAL_NOTIFICATIONS: ProposalNotificationSettings = {
   reviewRequests: true,
   analysisComplete: true,
 };
+
+// 원본 KPC_AI fixture의 공개 진입점. 기존 MOCK_* 상수는 이전 화면의
+// 호환 계층이며 source-parity 화면은 아래 모듈화된 fixture를 사용한다.
+export { INITIAL_RFPS, SAMPLE_PROJECTS, SAMPLE_RFPS } from "./projects";
+export { DEFAULT_PWIN_ITEMS, REJECTION_REASONS, SAMPLE_RFP_PAGES } from "./pwin";
+export { SAMPLE_RFP_DOCUMENT_PAGES } from "./rfp-pages";
+export {
+  INITIAL_KPC_CHECKLIST,
+  INITIAL_PROJECT_FILES,
+  INITIAL_PROPOSAL_SECTIONS,
+  INITIAL_PROPOSAL_STRUCTURE,
+  KPC_AI_ANALYSIS_11_ITEMS,
+  RFP_ONLY_DOCUMENTS,
+  SAMPLE_REFERENCE_MATERIALS,
+} from "./authoring";
+export { ENTERPRISE_KNOWLEDGE_BASE, SAMPLE_LIBRARY_ITEMS } from "./library";
+export { SAMPLE_TASKS } from "./tasks";

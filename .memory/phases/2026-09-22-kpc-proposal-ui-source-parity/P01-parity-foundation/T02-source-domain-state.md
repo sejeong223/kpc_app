@@ -1,6 +1,6 @@
 # Task: T02 Source Domain State
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 `App.tsx`의 proposal 관련 state, type, fixture와 callback 전이를 의미 변경 없이 현재 프로젝트에 이식해 모든 후속 UI가 동일 데이터를 렌더링할 수 있게 한다.
@@ -85,11 +85,11 @@
 - `getFilesForProject()`가 source와 같은 default RFP file과 `SAMPLE_REFERENCE_MATERIALS`를 반환하게 한다.
 
 ## Acceptance Criteria
-- [ ] source와 target의 initial RFP/project/task/library/section/checklist 개수와 순서가 일치한다.
-- [ ] 대표 project title, agency, budget, deadline, P/Win, manager가 source와 일치한다.
-- [ ] controller 기본 선택값과 projectFilesMap이 source `App.tsx`와 일치한다.
-- [ ] 등록·검토·stage·분석·section callback 이후 state가 source와 일치한다.
-- [ ] `@google/genai`, network request, storage dependency가 추가되지 않는다.
+- [x] source와 target의 initial RFP/project/task/library/section/checklist 개수와 순서가 일치한다.
+- [x] 대표 project title, agency, budget, deadline, P/Win, manager가 source와 일치한다.
+- [x] controller 기본 선택값과 projectFilesMap이 source `App.tsx`와 일치한다.
+- [x] 등록·검토·stage·분석·section callback 이후 state가 source와 일치한다.
+- [x] `@google/genai`, network request, storage dependency가 추가되지 않는다.
 
 ## Validation
 - `npm.cmd run test -- tests/lib/proposals/workspace.test.ts tests/lib/proposals/editor-mocks.test.ts tests/lib/proposals/review.test.ts` — source fixture/state/helper 회귀 통과
@@ -111,6 +111,6 @@ Task: T02-source-domain-state
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

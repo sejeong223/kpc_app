@@ -3,13 +3,20 @@ import { describe, expect, it } from "vitest";
 import {
   canOpenProposalStep,
   createInitialProposalWorkspaceState,
+  createSourceProposalWorkspaceState,
   filterProposalProjects,
   groupProjectsByStage,
   getSelectedProposalDocuments,
   getSelectedProposalRequirements,
   getSelectedProposalSections,
+  getFilesForSourceProject,
   proposalWorkspaceReducer,
+  sourceProposalWorkspaceReducer,
 } from "@/lib/proposals/workspace";
+import { INITIAL_KPC_CHECKLIST, INITIAL_PROPOSAL_SECTIONS } from "@/data/proposals/authoring";
+import { SAMPLE_LIBRARY_ITEMS } from "@/data/proposals/library";
+import { INITIAL_RFPS, SAMPLE_PROJECTS } from "@/data/proposals/projects";
+import { SAMPLE_TASKS } from "@/data/proposals/tasks";
 import { calculateProposalReviewSummary } from "@/lib/proposals/review";
 import type { ProposalDocument, ProposalProject } from "@/types/proposals";
 
@@ -432,5 +439,134 @@ describe("proposal workspace state", () => {
     expect(state).toMatchObject({ view: "workspace", activeStep: "review" });
     expect(summary.completedSections).toBe(1);
     expect(summary.coveredRequirements).toBe(2);
+  });
+});
+
+describe("source-equivalent proposal workspace state", () => {
+  it("keeps the source fixture counts, order, and representative values", () => {
+    expect(INITIAL_RFPS).toHaveLength(10);
+    expect(SAMPLE_PROJECTS).toHaveLength(10);
+    expect(SAMPLE_TASKS).toHaveLength(5);
+    expect(SAMPLE_LIBRARY_ITEMS).toHaveLength(6);
+    expect(INITIAL_KPC_CHECKLIST).toHaveLength(15);
+    expect(INITIAL_PROPOSAL_SECTIONS).toHaveLength(10);
+
+    expect(INITIAL_RFPS[0]).toMatchObject({
+      id: "rfp-001",
+      title: "공공기관 생성형 AI 업무혁신 플랫폼 구축",
+      agency: "한국산업진흥원",
+      budget: 1_200_000_000,
+      deadline: "2026.10.15",
+      pwin: 76,
+      assignee: "정소담",
+    });
+    expect(SAMPLE_PROJECTS[2]).toMatchObject({
+      id: "proj-3",
+      stage: "진행",
+      rfpId: "rfp-003",
+      manager: "이서연",
+    });
+  });
+
+  it("creates independent controller state with the source defaults", () => {
+    const first = createSourceProposalWorkspaceState();
+    const second = createSourceProposalWorkspaceState();
+
+    expect(first).toMatchObject({
+      activeProposalLnb: "pipeline",
+      selectedDepartment: "전체",
+      activeProject: { id: "proj-3" },
+      selectedReviewProject: { id: "proj-1" },
+      rfpToConvert: { id: "rfp-001" },
+      convertModalOpen: false,
+      toastMessage: null,
+    });
+    expect(first.projectFilesMap["proj-1"]).toHaveLength(8);
+
+    first.projects[0].teamMembers.push("추가 구성원");
+    first.checklistRequirements[0].checked = false;
+    expect(second.projects[0].teamMembers).not.toContain("추가 구성원");
+    expect(second.checklistRequirements[0].checked).toBe(true);
+  });
+
+  it("returns the saved project files or the source default RFP bundle", () => {
+    const state = createSourceProposalWorkspaceState();
+
+    expect(getFilesForSourceProject(state, state.projects[0])).toHaveLength(8);
+    const generated = getFilesForSourceProject(state, state.projects[1]);
+    expect(generated).toHaveLength(8);
+    expect(generated[0]).toMatchObject({
+      id: "rfp-proj-2",
+      category: "RFP 문서",
+      status: "분석 준비 완료",
+    });
+    expect(getFilesForSourceProject(state, null)).toEqual([]);
+  });
+
+  it("runs registration, review, stage, analysis, checklist, and section transitions", () => {
+    const initial = createSourceProposalWorkspaceState();
+    const project = {
+      ...initial.projects[0],
+      id: "proj-source-new",
+      rfpId: "rfp-source-new",
+      title: "신규 원본 계약 프로젝트",
+      stage: "검토 대기" as const,
+      status: "검토 대기",
+    };
+    const registered = sourceProposalWorkspaceReducer(initial, {
+      type: "register-project",
+      project,
+      startReview: true,
+    });
+    const approved = sourceProposalWorkspaceReducer(registered, {
+      type: "update-project-stage",
+      projectId: project.id,
+      stage: "진행",
+    });
+    const opened = sourceProposalWorkspaceReducer(approved, {
+      type: "start-proposal",
+      project: approved.projects[0],
+    });
+    const analyzing = sourceProposalWorkspaceReducer(opened, {
+      type: "start-analysis",
+      projectId: project.id,
+    });
+    const analyzed = sourceProposalWorkspaceReducer(analyzing, {
+      type: "complete-analysis",
+      projectId: project.id,
+    });
+    const requirement = {
+      ...analyzed.checklistRequirements[0],
+      checked: !analyzed.checklistRequirements[0].checked,
+    };
+    const withRequirement = sourceProposalWorkspaceReducer(analyzed, {
+      type: "update-checklist",
+      requirement,
+    });
+    const section = {
+      ...withRequirement.proposalSections[0],
+      status: "검토 중" as const,
+    };
+    const withSection = sourceProposalWorkspaceReducer(withRequirement, {
+      type: "update-section",
+      section,
+    });
+
+    expect(registered).toMatchObject({
+      activeProposalLnb: "project_review",
+      selectedReviewProject: { id: project.id },
+    });
+    expect(registered.rfpList[0]).toMatchObject({
+      id: project.rfpId,
+      source: "직접 등록",
+      stage: "검토 대기",
+    });
+    expect(approved.projects[0].stage).toBe("진행");
+    expect(opened).toMatchObject({ activeProject: { id: project.id }, activeProposalLnb: "rfp_upload" });
+    expect(analyzing.projects[0].analysisStatus).toBe("분석 중");
+    expect(analyzed.projects[0].analysisStatus).toBe("분석 완료");
+    expect(withRequirement.checklistRequirements[0]).toEqual(requirement);
+    expect(withSection.proposalSections[0]).toEqual(section);
+    expect(initial.projects.find((item) => item.id === project.id)).toBeUndefined();
   });
 });
