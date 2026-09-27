@@ -31,6 +31,24 @@ async function openWritingSetup(page: Page) {
   await expect(page.getByText("전체 프로젝트", { exact: true })).toBeVisible();
 }
 
+async function openAnalysis(page: Page) {
+  await openWritingSetup(page);
+  await page.getByRole("button", { name: /RFP 분석 시작/ }).click();
+  await expect(page.getByText("02 RFP 분석", { exact: true })).toBeVisible();
+}
+
+async function openEditorOverview(page: Page) {
+  await openAnalysis(page);
+  await page.locator("button").filter({ hasText: "04" }).click();
+  await expect(page.getByText("제안서 작성", { exact: true })).toBeVisible();
+}
+
+async function openEditorDetail(page: Page) {
+  await openEditorOverview(page);
+  await page.getByText("1. 사업 이해 및 추진전략", { exact: true }).click();
+  await expect(page.getByText("스토리보드", { exact: true })).toBeVisible();
+}
+
 const scenarios: readonly Scenario[] = [
   {
     name: "header-proposal-active",
@@ -78,6 +96,39 @@ const scenarios: readonly Scenario[] = [
     name: "setup",
     expectedText: /RFP|작성 설정/,
     open: openWritingSetup,
+  },
+  {
+    name: "analysis",
+    expectedText: "02 RFP 분석",
+    open: openAnalysis,
+  },
+  {
+    name: "requirements",
+    expectedText: "제안서 제출 마감 일시 (2026년 10월 15일 17:00까지) 엄수",
+    open: async (page) => {
+      await openAnalysis(page);
+      await page.getByRole("button", { name: /체크리스트 이동/ }).click();
+    },
+  },
+  {
+    name: "structure",
+    expectedText: "제안서 작성",
+    open: openEditorOverview,
+  },
+  {
+    name: "editor",
+    expectedText: "스토리보드",
+    open: openEditorDetail,
+  },
+  {
+    name: "reference",
+    expectedText: "내부 저장소",
+    open: async (page) => {
+      await openEditorDetail(page);
+      await page
+        .getByTitle("참조 위치 설정 (내부저장소, 업로드, 웹 검색 - 현재 섹션 전용)")
+        .click();
+    },
   },
   {
     name: "library",

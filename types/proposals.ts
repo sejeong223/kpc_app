@@ -172,9 +172,9 @@ export interface ProposalLibraryItem {
 export interface ProposalComment {
   id: string;
   author: string;
-  sectionId: string;
-  text: string;
-  createdAt: string;
+  sectionId?: string;
+  text?: string;
+  createdAt?: string;
   resolved: boolean;
   date?: string;
   content?: string;
@@ -200,10 +200,25 @@ export interface ProposalVersion {
 
 export interface SectionReferenceConfig {
   sectionId: string;
-  libraryItemIds: string[];
-  documentIds: string[];
-  webSearchEnabled: boolean;
-  includeUrls: string[];
+  internalKnowledge: {
+    selectedFileIds: string[];
+    files: Array<{
+      id: string;
+      title: string;
+      category: string;
+      folderPath?: string;
+      fileFormat: string;
+      size: string;
+      updatedAt: string;
+      relevanceScore?: number;
+    }>;
+  };
+  uploadedFiles: SectionReferenceFileItem[];
+  webSearch: {
+    enabled: boolean;
+    includeUrls: string[];
+    excludeUrls: string[];
+  };
 }
 
 export interface ProposalReviewSummary {
@@ -531,29 +546,6 @@ export interface SectionReferenceFileItem {
   uploader?: string;
   status: string;
   selected: boolean;
-}
-
-export interface SourceSectionReferenceConfig {
-  sectionId: string;
-  internalKnowledge: {
-    selectedFileIds: string[];
-    files: Array<{
-      id: string;
-      title: string;
-      category: string;
-      folderPath?: string;
-      fileFormat: string;
-      size: string;
-      updatedAt: string;
-      relevanceScore?: number;
-    }>;
-  };
-  uploadedFiles: SectionReferenceFileItem[];
-  webSearch: {
-    enabled: boolean;
-    includeUrls: string[];
-    excludeUrls: string[];
-  };
 }
 
 export type LibraryItem = ProposalLibraryItem;

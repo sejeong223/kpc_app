@@ -1,6 +1,6 @@
 # Task: T02 Editor And Work Management
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 제안서 구조 편집, 작성 업무 관리, 내 작업과 3-pane editor 및 자료 연결 modal을 전체 기능과 시각 구조 그대로 이식한다.
@@ -93,12 +93,12 @@
 - source의 conditional hook 위험은 hook 순서를 항상 일정하게 바꾸는 최소 수정만 허용하며 rendered output/state semantics는 유지한다.
 
 ## Acceptance Criteria
-- [ ] 구조 편집과 업무 관리 화면의 모든 control·fixture·toast가 source와 일치한다.
-- [ ] editor의 3-pane geometry, section data, toolbar, tabs, comments, versions와 AI mock action이 source와 일치한다.
-- [ ] reference modal 세 tab과 enterprise data 선택 결과가 section config에 동일하게 저장된다.
-- [ ] checklist와 section state가 이전/다음 화면에서 유지된다.
-- [ ] source의 browser-only API가 SSR에서 실행되지 않는다.
-- [ ] 4,915줄을 분리하더라도 screenshot DOM 순서와 className이 달라지지 않는다.
+- [x] 구조 편집과 업무 관리 화면의 모든 control·fixture·toast가 source와 일치한다.
+- [x] editor의 3-pane geometry, section data, toolbar, tabs, comments, versions와 AI mock action이 source와 일치한다.
+- [x] reference modal 세 tab과 enterprise data 선택 결과가 section config에 동일하게 저장된다.
+- [x] checklist와 section state가 이전/다음 화면에서 유지된다.
+- [x] source의 browser-only API가 SSR에서 실행되지 않는다.
+- [x] 4,915줄을 분리하더라도 screenshot DOM 순서와 className이 달라지지 않는다.
 
 ## Validation
 - `npm.cmd run test -- tests/lib/proposals/workspace.test.ts tests/lib/proposals/editor-mocks.test.ts` — section/checklist/editor state 통과
@@ -120,6 +120,6 @@ Task: T02-editor-and-work-management
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

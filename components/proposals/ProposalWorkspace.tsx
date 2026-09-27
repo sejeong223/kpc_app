@@ -4,9 +4,13 @@ import { useReducer } from "react";
 
 import { Toast } from "@/components/common/Toast";
 import AiAnalysisView from "@/components/proposals/authoring/AiAnalysisView";
+import { MyTasksView } from "@/components/proposals/authoring/MyTasksView";
 import ProposalSetupView from "@/components/proposals/authoring/ProposalSetupView";
+import { ProposalStructureView } from "@/components/proposals/authoring/ProposalStructureView";
 import RequirementsView from "@/components/proposals/authoring/RequirementsView";
 import RfpAnalysisRequiredState from "@/components/proposals/authoring/RfpAnalysisRequiredState";
+import { TaskManagementView } from "@/components/proposals/authoring/TaskManagementView";
+import { EditorView } from "@/components/proposals/editor/EditorView";
 import ProposalSidebar from "@/components/proposals/navigation/ProposalSidebar";
 import PipelineBoard from "@/components/proposals/pipeline/PipelineBoard";
 import ProjectRegistrationView from "@/components/proposals/review/ProjectRegistrationView";
@@ -244,6 +248,78 @@ export default function ProposalWorkspace({
             dispatch({ type: "navigate", tab: "editor" });
             showToast("04 제안서 작성 화면으로 이동했습니다.");
           }}
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (state.activeProposalLnb === "structure") {
+      return (
+        <ProposalStructureView
+          onNavigateNext={() => {
+            dispatch({ type: "navigate", tab: "tasks" });
+            showToast("작성 관리 화면으로 이동했습니다.");
+          }}
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "tasks" ||
+      state.activeProposalLnb === "task-mgmt"
+    ) {
+      return (
+        <TaskManagementView
+          onOpenEditor={(sectionId) =>
+            dispatch({ type: "open-editor-section", sectionId })
+          }
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "editor" ||
+      state.activeProposalLnb === "inputs" ||
+      state.activeProposalLnb === "review" ||
+      state.activeProposalLnb === "export"
+    ) {
+      return (
+        <EditorView
+          activeProject={state.activeProject}
+          uploadedFiles={projectFiles}
+          checklistRequirements={state.checklistRequirements}
+          onUpdateChecklistRequirements={(requirements) =>
+            dispatch({ type: "set-checklist", requirements })
+          }
+          sections={state.proposalSections}
+          onUpdateSections={(sections) =>
+            dispatch({ type: "set-sections", sections })
+          }
+          initialSelectedSectionId={state.selectedEditorSectionId}
+          onNavigateToProjects={() =>
+            dispatch({ type: "navigate", tab: "pipeline" })
+          }
+          onNavigateToProjectRoot={() =>
+            dispatch({ type: "navigate", tab: "rfp_upload" })
+          }
+          onShowToast={showToast}
+          onExportDone={() => showToast("제안서 내보내기가 완료되었습니다.")}
+          userRole={userRole}
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "my_tasks" ||
+      state.activeProposalLnb === "my-tasks"
+    ) {
+      return (
+        <MyTasksView
+          onOpenTask={(taskId) =>
+            dispatch({ type: "open-editor-section", sectionId: taskId })
+          }
           onShowToast={showToast}
         />
       );
