@@ -17,17 +17,7 @@ export type ProposalWorkflowStep =
   | "editor"
   | "review";
 
-export type ProposalWorkspaceView =
-  | "pipeline"
-  | "register"
-  | "project-review"
-  | "workspace"
-  | "library"
-  | "settings";
-
 export type AnalysisStatus = "분석 전" | "분석 중" | "분석 완료";
-export type RequirementStatus = "미반영" | "작성 중" | "반영";
-export type SectionStatus = "작성 대기" | "작성 중" | "검토 요청" | "완료";
 
 export interface ProposalProject {
   id: string;
@@ -81,73 +71,6 @@ export interface ProposalProject {
   purpose?: string;
 }
 
-export interface ProposalRegistrationDraft {
-  title: string;
-  agency: string;
-  department: Exclude<ProposalDepartment, "전체">;
-  budget: number;
-  deadline: string;
-  manager: string;
-  summary: string;
-}
-
-export interface ProposalReviewCriterion {
-  id: string;
-  category: string;
-  score: number;
-  maxScore: number;
-  rationale: string;
-  sourcePage: number;
-  sourceQuote: string;
-}
-
-export interface ProposalDocument {
-  id: string;
-  projectId: string;
-  name: string;
-  kind: "RFP" | "참고자료" | "기존 제안서" | "회사소개서" | "기술자료";
-  size: string;
-  pageCount?: number;
-  status: "업로드 완료" | "분석 완료";
-  isPrimary: boolean;
-}
-
-export interface ProposalAnalysisItem {
-  id: string;
-  title: string;
-  content: string;
-  sourcePage: string;
-  sourceQuote: string;
-  tone: "default" | "risk" | "win";
-}
-
-export interface ProposalRequirement {
-  id: string;
-  projectId: string;
-  category: string;
-  title: string;
-  sourcePage: string;
-  priority: "높음" | "보통" | "낮음";
-  status: RequirementStatus;
-  assignee: string;
-  checked: boolean;
-}
-
-export interface ProposalSection {
-  id: string;
-  projectId: string;
-  number: string;
-  title: string;
-  status: SectionStatus;
-  assignee: string;
-  reviewer: string;
-  dueDate: string;
-  targetCharacters: number;
-  content: string;
-  requirementIds: string[];
-  updatedAt: string;
-}
-
 export interface ProposalLibraryItem {
   id: string;
   title: string;
@@ -189,15 +112,6 @@ export interface ProposalComment {
   }>;
 }
 
-export interface ProposalVersion {
-  id: string;
-  sectionId: string;
-  label: string;
-  author: string;
-  createdAt: string;
-  content: string;
-}
-
 export interface SectionReferenceConfig {
   sectionId: string;
   internalKnowledge: {
@@ -219,69 +133,6 @@ export interface SectionReferenceConfig {
     includeUrls: string[];
     excludeUrls: string[];
   };
-}
-
-export interface ProposalReviewSummary {
-  totalSections: number;
-  completedSections: number;
-  totalCharacters: number;
-  targetCharacters: number;
-  coveredRequirements: number;
-  totalRequirements: number;
-  completionRate: number;
-}
-
-export interface ProposalFactIssue {
-  id: string;
-  sectionId: string;
-  severity: "주의" | "확인 필요";
-  message: string;
-  excerpt: string;
-}
-
-export interface ProposalMember {
-  id: string;
-  name: string;
-  department: string;
-  role: "PM" | "작성자" | "검토자";
-  email: string;
-}
-
-export interface ProposalTemplate {
-  id: string;
-  name: string;
-  description: string;
-  isDefault: boolean;
-  updatedAt: string;
-}
-
-export interface ProposalAiPolicy {
-  modelLabel: string;
-  allowWebSearch: boolean;
-  requireCitation: boolean;
-  maxMonthlyTokens: number;
-}
-
-export interface ProposalNotificationSettings {
-  deadline: boolean;
-  comments: boolean;
-  reviewRequests: boolean;
-  analysisComplete: boolean;
-}
-
-export interface ProposalWorkspaceState {
-  view: ProposalWorkspaceView;
-  activeStep: ProposalWorkflowStep;
-  taskManagementOpen: boolean;
-  selectedProjectId: string;
-  selectedSectionId: string;
-  selectedDepartment: ProposalDepartment;
-  searchQuery: string;
-  projects: ProposalProject[];
-  documents: ProposalDocument[];
-  requirements: ProposalRequirement[];
-  sections: ProposalSection[];
-  libraryItems: ProposalLibraryItem[];
 }
 
 export type GnbTab =

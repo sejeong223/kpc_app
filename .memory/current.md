@@ -4,13 +4,14 @@
 [KPC Proposal UI Source Parity](./plans/2026-09-22-kpc-proposal-ui-source-parity.md)
 
 ## Active Phase
-[P04 Support and Parity](./phases/2026-09-22-kpc-proposal-ui-source-parity/P04-support-and-parity/phase.md)
+완료
 
 ## Active Task
-[T02 Final Parity Gate](./phases/2026-09-22-kpc-proposal-ui-source-parity/P04-support-and-parity/T02-final-parity-gate.md)
+완료
 
 ## Status
-- P04-T01 완료, P04-T02 최종 검증 준비 완료
+- P01부터 P04까지 모든 Task 완료
+- `KPC_AI@8f074e5` 기준 전체 Proposal UI 패리티 검증 완료
 
 ## Next Step (IMPORTANT)
-T02 청사진을 읽고 legacy 제거와 전체 패리티 검증을 완료한다.
+현재 계획은 완료되었다. 새 작업은 별도 계획을 활성화한 뒤 진행한다.

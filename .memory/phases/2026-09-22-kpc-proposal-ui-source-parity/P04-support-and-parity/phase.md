@@ -10,7 +10,7 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done ✅` | 자료 라이브러리와 제안 설정 parity | [T01](./T01-library-and-settings.md) |
-| T02 | `in_progress 🔵` | legacy 제거와 전체 visual parity gate | [T02](./T02-final-parity-gate.md) |
+| T02 | `done ✅` | legacy 제거와 전체 visual parity gate | [T02](./T02-final-parity-gate.md) |
 
 ## Progress
-- done: 1/2 (active: T02)
+- done: 2/2 (phase complete)

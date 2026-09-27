@@ -1,6 +1,6 @@
 # Task: T02 Final Parity Gate
 
-## Status: pending
+## Status: done
 
 ## Goal
 현재 축약형 제안서 구현과 임시 compatibility layer를 제거하고, 원본과 target의 모든 Header·Sidebar·Proposal UI 상태가 시각·문구·데이터·상호작용 면에서 동일함을 자동·수동 검증한다.
@@ -59,12 +59,12 @@
 - screenshot 차이가 0.5%를 넘으면 해당 Task를 완료하지 않으며 baseline을 target 결과로 덮어쓰지 않는다.
 
 ## Acceptance Criteria
-- [ ] Header, Sidebar와 manifest의 모든 Proposal UI screenshot이 source baseline 허용 오차 내에서 통과한다.
-- [ ] source/target의 visible Korean text, project count/order와 interactive state가 일치한다.
-- [ ] 축약 UI, fixture, compatibility alias와 dead import가 남지 않는다.
-- [ ] 다른 GNB category content와 Google AI/motion dependency가 추가되지 않는다.
-- [ ] 기존 auth/admin/proxy 동작과 production build에 회귀가 없다.
-- [ ] README가 “참고 재구성”이 아니라 `KPC_AI@8f074e5` proposal UI parity임을 정확히 설명한다.
+- [x] Header, Sidebar와 manifest의 모든 Proposal UI screenshot이 source baseline 허용 오차 내에서 통과한다.
+- [x] source/target의 visible Korean text, project count/order와 interactive state가 일치한다.
+- [x] 축약 UI, fixture, compatibility alias와 dead import가 남지 않는다.
+- [x] 다른 GNB category content와 Google AI/motion dependency가 추가되지 않는다.
+- [x] 기존 auth/admin/proxy 동작과 production build에 회귀가 없다.
+- [x] README가 “참고 재구성”이 아니라 `KPC_AI@8f074e5` proposal UI parity임을 정확히 설명한다.
 
 ## Validation
 - `npm.cmd run test` — 전체 Vitest suite 통과
@@ -89,6 +89,6 @@ Task: T02-final-parity-gate
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 현재 Task 커밋

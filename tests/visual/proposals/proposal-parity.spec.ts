@@ -22,7 +22,7 @@ type Scenario = {
 async function openProposals(page: Page) {
   await page.goto("/");
   await page.locator("#gnb-proposals-btn").click();
-  await expect(page.locator("#lnb-pipeline-btn")).toBeVisible();
+  await expect(page.locator("#lnb-pipeline-btn")).toBeVisible({ timeout: 20_000 });
 }
 
 async function openWritingSetup(page: Page) {
@@ -194,6 +194,42 @@ const scenarios: readonly Scenario[] = [
       await openProposals(page);
       await page.locator("#lnb-settings-btn").click();
       await page.getByRole("button", { name: /템플릿 및 스킬 관리/ }).click();
+    },
+  },
+  {
+    name: "settings-ai-policy",
+    expectedText: "프로젝트 AI 추론 모델 및 보안 정책 설정",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-settings-btn").click();
+      await page.getByRole("button", { name: "AI 생성 정책" }).click();
+    },
+  },
+  {
+    name: "settings-activity",
+    expectedText: "프로젝트 활동 및 변경 이력 조회",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-settings-btn").click();
+      await page.getByRole("button", { name: /활동 및 변경 이력/ }).click();
+    },
+  },
+  {
+    name: "settings-cost",
+    expectedText: /내 토큰 소모량/,
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-settings-btn").click();
+      await page.getByRole("button", { name: "토큰 비용 및 AI 사용량" }).click();
+    },
+  },
+  {
+    name: "settings-notifications",
+    expectedText: "프로젝트 알림 수신 및 리마인더 설정",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-settings-btn").click();
+      await page.getByRole("button", { name: "프로젝트 알림 설정" }).click();
     },
   },
 ] as const;

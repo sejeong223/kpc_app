@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useReducer } from "react";
+import { useCallback, useReducer, type Dispatch } from "react";
 
 import {
   createSourceProposalWorkspaceState,
   getFilesForSourceProject,
   sourceProposalWorkspaceReducer,
   type ProposalConversionInput,
+  type SourceProposalWorkspaceAction,
   type SourceProposalWorkspaceState,
   type SourceProposalWorkspaceTab,
 } from "@/lib/proposals/workspace";
@@ -21,6 +22,7 @@ import type {
 } from "@/types/proposals";
 
 export interface ProposalWorkspaceController extends SourceProposalWorkspaceState {
+  dispatch: Dispatch<SourceProposalWorkspaceAction>;
   setActiveProposalLnb(tab: SourceProposalWorkspaceTab): void;
   selectDepartment(department: Department): void;
   selectProject(project: ProposalProject): void;
@@ -147,6 +149,7 @@ export function useProposalWorkspace(): ProposalWorkspaceController {
 
   return {
     ...state,
+    dispatch,
     setActiveProposalLnb,
     selectDepartment,
     selectProject,

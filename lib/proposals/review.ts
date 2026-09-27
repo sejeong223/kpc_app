@@ -1,10 +1,4 @@
-import { countKoreanCharacters } from "@/lib/proposals/editor-mocks";
-import type {
-  ProposalRequirement,
-  ProposalReviewSummary,
-  ProposalSection,
-  ProposalSectionItem,
-} from "@/types/proposals";
+import type { ProposalSectionItem } from "@/types/proposals";
 
 export type FactCheckCategory = "company" | "person" | "project";
 export type FactCheckSeverity = "critical" | "warning";
@@ -66,35 +60,6 @@ export const DEFAULT_FACT_BASELINE: FactBaseline = {
   projectYear: "2026년도",
   projectDuration: "6개월",
 };
-
-export function calculateProposalReviewSummary(
-  sections: readonly ProposalSection[],
-  requirements: readonly ProposalRequirement[],
-): ProposalReviewSummary {
-  const totalCharacters = sections.reduce(
-    (total, section) => total + countKoreanCharacters(section.content),
-    0,
-  );
-  const targetCharacters = sections.reduce(
-    (total, section) => total + Math.max(0, section.targetCharacters),
-    0,
-  );
-
-  return {
-    totalSections: sections.length,
-    completedSections: sections.filter((section) => section.status === "완료").length,
-    totalCharacters,
-    targetCharacters,
-    coveredRequirements: requirements.filter(
-      (requirement) => requirement.checked || requirement.status === "반영",
-    ).length,
-    totalRequirements: requirements.length,
-    completionRate:
-      targetCharacters === 0
-        ? 0
-        : Math.max(0, Math.min(100, Math.round((totalCharacters / targetCharacters) * 100))),
-  };
-}
 
 export function createFactCheckRules(
   baseline: FactBaseline = DEFAULT_FACT_BASELINE,

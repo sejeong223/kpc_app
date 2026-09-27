@@ -57,7 +57,7 @@ tests/
 | P01 | `done ✅` | 원본 parity 기준, domain fixture/state, route와 Header 기반 구축 | [P01](../phases/2026-09-22-kpc-proposal-ui-source-parity/P01-parity-foundation/phase.md) |
 | P02 | `done ✅` | Proposal Sidebar, pipeline, 등록·검토 화면 동일 이식 | [P02](../phases/2026-09-22-kpc-proposal-ui-source-parity/P02-pipeline-and-review/phase.md) |
 | P03 | `done ✅` | 작성 설정부터 editor와 최종 검토까지 원본 workflow 이식 | [P03](../phases/2026-09-22-kpc-proposal-ui-source-parity/P03-authoring-workflow/phase.md) |
-| P04 | `in_progress 🔵` | 자료실·설정 이식, legacy 제거, 전체 screenshot parity 검증 | [P04](../phases/2026-09-22-kpc-proposal-ui-source-parity/P04-support-and-parity/phase.md) |
+| P04 | `done ✅` | 자료실·설정 이식, legacy 제거, 전체 screenshot parity 검증 | [P04](../phases/2026-09-22-kpc-proposal-ui-source-parity/P04-support-and-parity/phase.md) |
 
 ## Definition Of Done
 - 1440x900과 1920x1080에서 원본과 target의 Header, Sidebar, 모든 도달 가능한 Proposal 화면 screenshot이 허용 오차 내에서 일치한다.

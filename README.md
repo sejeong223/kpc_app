@@ -64,7 +64,7 @@ Git Bash, macOS, Linux에서는 `npm ...`을 사용합니다. Windows PowerShell
 
 인증을 켠 상태에서 인증서와 client secret을 모두 제공하거나 모두 누락하면 앱이 시작을 거부합니다.
 
-## 제안서 AI 목업
+## 제안서 AI 원본 패리티 목업
 
 개발 서버를 실행한 뒤 `http://localhost:3000/proposals`에서 제안서 목업을 사용할 수 있습니다.
 
@@ -81,7 +81,18 @@ npm.cmd run dev
 
 모든 제안 데이터와 설정은 browser session의 React state에만 존재하므로 새로고침하면 fixture 초기값으로 돌아갑니다. 실제 API, AI 호출, 파일 binary 업로드, 서버 저장은 구현하지 않았으며 출력은 UTF-8 text download와 browser print 목업입니다.
 
-화면 구조와 fixture는 reference repository `KPC_AI`의 commit `8f074e5`를 기준으로 현재 Next.js workspace에 맞게 재구성했습니다.
+제안서 영역의 source of truth는 `C:\Users\김세정\Documents\GitHub\KPC_AI`의 commit `8f074e51f7a16db063ef5206e6ac927c6e87c2a4`(`8f074e5`)입니다. `kpc_app`의 Next.js 인증·라우팅 셸 안에서 해당 commit의 Header, Sidebar, 제안 목록, 등록·검토, 작성 workflow, 자료실, 설정 화면과 상호작용을 동일하게 재현합니다. 구버전 축약 UI는 사용하지 않습니다.
+
+패리티 검증은 원본 Vite 앱과 대상 Next.js 앱을 각각 실행한 상태에서 다음 명령으로 수행합니다.
+
+```powershell
+$env:KPC_REFERENCE_URL='http://127.0.0.1:3002'
+npm.cmd run test:proposal-reference
+$env:KPC_TARGET_URL='http://127.0.0.1:3001'
+npm.cmd run test:proposal-visual
+```
+
+원본 baseline은 위 commit에서만 갱신할 수 있으며, 대상 결과로 baseline을 덮어쓰지 않습니다. 원본에도 연결 동작이 없는 `ProposalConvertModal` 진입점은 비활성 상태를 그대로 유지합니다.
 
 ## 환경변수
 

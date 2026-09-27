@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 import type { ChecklistRequirement, EditorVersion, ProposalComment, ProposalProject, SectionReferenceConfig, UploadedProposalFile, UserRole } from '@/types/proposals';
 import { INITIAL_KPC_CHECKLIST } from '@/data/proposals/authoring';
-import { EnterpriseDataModal } from './EnterpriseDataModal';
+import { EnterpriseDataModal } from '@/components/proposals/support/EnterpriseDataModal';
 import { SectionReferenceModal, ReferenceTabType } from './SectionReferenceModal';
 import RfpAnalysisRequiredState from '@/components/proposals/authoring/RfpAnalysisRequiredState';
 

@@ -23,7 +23,7 @@ import {
   Edit2
 } from 'lucide-react';
 import type { SectionReferenceConfig, SectionReferenceFileItem } from '@/types/proposals';
-import { ENTERPRISE_KNOWLEDGE_BASE } from './EnterpriseDataModal';
+import { ENTERPRISE_KNOWLEDGE_BASE } from '@/data/proposals/library';
 
 export type ReferenceTabType = 'internal' | 'upload' | 'web';
 

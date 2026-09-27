@@ -1,7 +1,5 @@
 "use client";
 
-import { useReducer } from "react";
-
 import { Toast } from "@/components/common/Toast";
 import AiAnalysisView from "@/components/proposals/authoring/AiAnalysisView";
 import { MyTasksView } from "@/components/proposals/authoring/MyTasksView";
@@ -18,12 +16,8 @@ import ProjectReviewDetail from "@/components/proposals/review/ProjectReviewDeta
 import { RequirementsMatrix } from "@/components/proposals/review/RequirementsMatrix";
 import { ProposalLibrary } from "@/components/proposals/support/ProposalLibrary";
 import { ProposalSettingsView } from "@/components/proposals/support/ProposalSettingsView";
-import {
-  createSourceProposalWorkspaceState,
-  getFilesForSourceProject,
-  sourceProposalWorkspaceReducer,
-  type SourceProposalWorkspaceTab,
-} from "@/lib/proposals/workspace";
+import { useProposalWorkspace } from "@/hooks/proposals/useProposalWorkspace";
+import type { SourceProposalWorkspaceTab } from "@/lib/proposals/workspace";
 import type {
   ProjectSubTab,
   ProposalLnbTab,
@@ -56,11 +50,8 @@ const PROJECT_TABS: readonly SourceProposalWorkspaceTab[] = [
 export default function ProposalWorkspace({
   canReview,
 }: ProposalWorkspaceProps): React.ReactElement {
-  const [state, dispatch] = useReducer(
-    sourceProposalWorkspaceReducer,
-    undefined,
-    createSourceProposalWorkspaceState,
-  );
+  const state = useProposalWorkspace();
+  const { dispatch } = state;
   const userRole: UserRole = canReview ? "admin" : "user";
   const activeProject = PROJECT_TABS.includes(state.activeProposalLnb)
     ? state.activeProject
@@ -105,7 +96,7 @@ export default function ProposalWorkspace({
   const pipelineVisible =
     state.activeProposalLnb === "pipeline" ||
     state.activeProposalLnb === "proposals";
-  const projectFiles = getFilesForSourceProject(state, state.activeProject);
+  const projectFiles = state.getFilesForProject(state.activeProject);
 
   const renderContent = (): React.ReactElement => {
     if (pipelineVisible) {

@@ -445,7 +445,7 @@ const RequirementsMatrixContent: React.FC<RequirementsMatrixProps> = ({
         </aside>
 
         {/* Right Document Canvas */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 bg-neutral-100/70 flex justify-center">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-neutral-100/70 flex justify-center">
           <div className="w-full max-w-4xl space-y-6">
             {/* Unified Document Official Cover / Header Box */}
             <div className="bg-white rounded-xl shadow-xs border border-neutral-200 p-6 sm:p-10 relative overflow-hidden">
@@ -583,7 +583,7 @@ const RequirementsMatrixContent: React.FC<RequirementsMatrixProps> = ({
               </div>
             )}
           </div>
-        </main>
+        </div>
       </div>
 
       {/* MODAL: 제안서 완본 내보내기 (Export Modal) */}

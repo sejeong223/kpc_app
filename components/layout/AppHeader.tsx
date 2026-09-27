@@ -239,7 +239,7 @@ export default function AppHeader({
                     {displayName}
                   </span>
                   <span
-                    className={`rounded border px-1.5 py-0.5 text-[9px] leading-none font-bold ${
+                    className={`rounded border px-1.5 py-0.2 text-[9px] leading-none font-bold ${
                       visualRole === "admin"
                         ? "border-red-200 bg-red-50 text-[#E60012]"
                         : "border-neutral-200 bg-neutral-100 text-neutral-600"
@@ -275,7 +275,7 @@ export default function AppHeader({
                           {displayName} {visualRole === "admin" ? "수석연구원" : "선임연구원"}
                         </span>
                         <span
-                          className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${
+                          className={`rounded border px-1.5 py-0.2 text-[10px] font-bold ${
                             visualRole === "admin"
                               ? "border-[#E60012]/20 bg-red-50 text-[#E60012]"
                               : "border-neutral-300 bg-neutral-100 text-neutral-700"
@@ -365,7 +365,7 @@ export default function AppHeader({
                       </span>
                       <span className="flex items-center gap-1.5">
                         관리자 콘솔
-                        <span className="rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider text-[#E60012]">
+                        <span className="rounded bg-red-100 px-1.5 py-0.2 text-[9px] font-extrabold tracking-wider text-[#E60012]">
                           ADMIN
                         </span>
                       </span>
@@ -386,7 +386,7 @@ export default function AppHeader({
                   >
                     <Bell className="h-3.5 w-3.5" /> 업무 알림
                     {unreadCount > 0 && (
-                      <span className="rounded-full bg-[#E60012] px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      <span className="rounded-full bg-[#E60012] px-1.5 py-0.2 text-[10px] font-bold text-white">
                         {unreadCount}
                       </span>
                     )}
@@ -596,25 +596,24 @@ function NotificationsPanel({
       </div>
       <div className="max-h-64 space-y-1 divide-y divide-neutral-100 overflow-y-auto pr-0.5">
         {notifications.map((item) => (
-          <button
+          <div
             key={item.id}
-            type="button"
             onClick={() => onMarkRead(item.id)}
-            className={`block w-full rounded-lg p-2.5 text-left transition-colors ${
+            className={`cursor-pointer rounded-lg p-2.5 transition-colors ${
               item.read
                 ? "bg-white opacity-75 hover:bg-neutral-50"
                 : "border border-red-100/50 bg-red-50/40 hover:bg-red-50/70"
             }`}
           >
-            <span className="mb-1 flex items-center justify-between">
+            <div className="mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-xs font-bold text-[#111111]">
                 {!item.read && <span className="h-1.5 w-1.5 rounded-full bg-[#E60012]" />}
                 {item.title}
               </span>
               <span className="text-[10px] text-neutral-400">{item.time}</span>
-            </span>
-            <span className="block text-[11px] leading-relaxed text-neutral-600">{item.text}</span>
-          </button>
+            </div>
+            <p className="text-[11px] leading-relaxed text-neutral-600">{item.text}</p>
+          </div>
         ))}
       </div>
     </div>
