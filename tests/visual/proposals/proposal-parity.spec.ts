@@ -160,11 +160,40 @@ const scenarios: readonly Scenario[] = [
     },
   },
   {
+    name: "library-enterprise",
+    expectedText: "사내 자료 저장소 (전체 폴더)",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-library-btn").click();
+      await page
+        .getByRole("button", { name: "자료 등록 (사내 저장소 연계)" })
+        .click();
+    },
+  },
+  {
+    name: "library-preview",
+    expectedText: "한국생산성본부(KPC) 제안 수주 지식 자산 저장소",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-library-btn").click();
+      await page.getByRole("button", { name: "미리보기" }).first().click();
+    },
+  },
+  {
     name: "settings",
     expectedText: "제안 설정",
     open: async (page) => {
       await openProposals(page);
       await page.locator("#lnb-settings-btn").click();
+    },
+  },
+  {
+    name: "settings-templates",
+    expectedText: "제안서 템플릿",
+    open: async (page) => {
+      await openProposals(page);
+      await page.locator("#lnb-settings-btn").click();
+      await page.getByRole("button", { name: /템플릿 및 스킬 관리/ }).click();
     },
   },
 ] as const;

@@ -1,6 +1,6 @@
 # Task: T01 Library And Settings
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 제안 자료 관리, 사내 저장소 연계, 문서 preview와 제안 설정 전체 tab을 동일한 fixture·local state·권한 동작으로 이식한다.
@@ -60,11 +60,11 @@
 - admin-only mutation은 `userRole` 표시 state와 별개로 `canReview`가 false면 실행되지 않게 adapter에서 차단한다.
 
 ## Acceptance Criteria
-- [ ] library category, search, card, import modal, preview와 delete 결과가 source와 일치한다.
-- [ ] settings의 6개 tab과 templates/skills sub-tab 내용이 source와 일치한다.
-- [ ] fixture의 이름·부서·날짜·사용량·token/cost 값이 source와 일치한다.
-- [ ] 일반 사용자가 admin-only 설정을 저장할 수 없다.
-- [ ] 새로고침 시 source와 같이 initial mock state로 돌아간다.
+- [x] library category, search, card, import modal, preview와 delete 결과가 source와 일치한다.
+- [x] settings의 6개 tab과 templates/skills sub-tab 내용이 source와 일치한다.
+- [x] fixture의 이름·부서·날짜·사용량·token/cost 값이 source와 일치한다.
+- [x] 일반 사용자가 admin-only 설정을 저장할 수 없다.
+- [x] 새로고침 시 source와 같이 initial mock state로 돌아간다.
 
 ## Validation
 - `npm.cmd run test -- tests/lib/proposals/workspace.test.ts` — library import와 project settings state 통과
@@ -86,6 +86,6 @@ Task: T01-library-and-settings
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

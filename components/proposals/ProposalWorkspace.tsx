@@ -16,6 +16,8 @@ import PipelineBoard from "@/components/proposals/pipeline/PipelineBoard";
 import ProjectRegistrationView from "@/components/proposals/review/ProjectRegistrationView";
 import ProjectReviewDetail from "@/components/proposals/review/ProjectReviewDetail";
 import { RequirementsMatrix } from "@/components/proposals/review/RequirementsMatrix";
+import { ProposalLibrary } from "@/components/proposals/support/ProposalLibrary";
+import { ProposalSettingsView } from "@/components/proposals/support/ProposalSettingsView";
 import {
   createSourceProposalWorkspaceState,
   getFilesForSourceProject,
@@ -345,6 +347,34 @@ export default function ProposalWorkspace({
           onOpenEditorSection={(sectionId) =>
             dispatch({ type: "open-editor-section", sectionId })
           }
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "library" ||
+      state.activeProposalLnb === "resources"
+    ) {
+      return (
+        <ProposalLibrary
+          activeProject={state.activeProject}
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "settings" ||
+      state.activeProposalLnb === "proj-settings"
+    ) {
+      return (
+        <ProposalSettingsView
+          activeProject={state.activeProject}
+          onUpdateProject={(project) =>
+            dispatch({ type: "update-project", project })
+          }
+          userRole={userRole}
+          onShowToast={showToast}
         />
       );
     }
