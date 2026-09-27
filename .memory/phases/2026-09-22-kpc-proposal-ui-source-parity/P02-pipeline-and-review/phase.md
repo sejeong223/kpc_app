@@ -10,7 +10,7 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done ✅` | Proposal Sidebar와 pipeline board/list parity | [T01](./T01-sidebar-and-pipeline.md) |
-| T02 | `in_progress 🔵` | 프로젝트 등록과 검토 상세 parity | [T02](./T02-registration-and-review.md) |
+| T02 | `done ✅` | 프로젝트 등록과 검토 상세 parity | [T02](./T02-registration-and-review.md) |
 
 ## Progress
-- done: 1/2 (active: T02)
+- done: 2/2 (complete)

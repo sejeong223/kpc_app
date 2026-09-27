@@ -1,6 +1,6 @@
 # Task: T02 Registration And Review
 
-## Status: pending
+## Status: done
 
 ## Goal
 원본 프로젝트 등록 form과 2-column RFP/P-Win 검토 화면, 문서 preview를 동일하게 이식해 등록부터 검토·승인·반려·작성 시작까지 같은 흐름을 제공한다.
@@ -105,6 +105,6 @@ Task: T02-registration-and-review
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

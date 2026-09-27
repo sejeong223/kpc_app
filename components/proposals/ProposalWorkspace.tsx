@@ -5,6 +5,8 @@ import { useReducer } from "react";
 import { Toast } from "@/components/common/Toast";
 import ProposalSidebar from "@/components/proposals/navigation/ProposalSidebar";
 import PipelineBoard from "@/components/proposals/pipeline/PipelineBoard";
+import ProjectRegistrationView from "@/components/proposals/review/ProjectRegistrationView";
+import ProjectReviewDetail from "@/components/proposals/review/ProjectReviewDetail";
 import {
   createSourceProposalWorkspaceState,
   sourceProposalWorkspaceReducer,
@@ -92,6 +94,89 @@ export default function ProposalWorkspace({
     state.activeProposalLnb === "pipeline" ||
     state.activeProposalLnb === "proposals";
 
+  const renderContent = (): React.ReactElement => {
+    if (pipelineVisible) {
+      return (
+        <PipelineBoard
+          userRole={userRole}
+          rfpList={state.rfpList}
+          projects={state.projects}
+          selectedDepartment={state.selectedDepartment}
+          onSelectDepartment={(department) =>
+            dispatch({ type: "select-department", department })
+          }
+          onOpenProjectRegister={() => {
+            dispatch({ type: "navigate", tab: "project_register" });
+            showToast("새 프로젝트 등록 화면으로 이동했습니다.");
+          }}
+          onUpdateStage={(rfpId, stage) =>
+            dispatch({ type: "update-project-stage", projectId: rfpId, stage })
+          }
+          onOpenRfpDetail={openRfpDetail}
+          onSelectProject={selectProject}
+          onStartProposalProcess={startProposal}
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (state.activeProposalLnb === "project_register") {
+      const closeRegistration = () => {
+        dispatch({ type: "navigate", tab: "pipeline" });
+        showToast("프로젝트 등록을 취소하고 제안 목록으로 복귀했습니다.");
+      };
+      return (
+        <ProjectRegistrationView
+          onBack={closeRegistration}
+          onCancel={closeRegistration}
+          onRegisterComplete={(project) =>
+            dispatch({ type: "register-project", project, startReview: false })
+          }
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    if (
+      state.activeProposalLnb === "project_review" &&
+      state.selectedReviewProject
+    ) {
+      return (
+        <ProjectReviewDetail
+          userRole={userRole}
+          project={state.selectedReviewProject}
+          onBack={() => {
+            dispatch({ type: "navigate", tab: "pipeline" });
+            showToast("제안 목록 보드로 복귀했습니다.");
+          }}
+          onUpdateProjectStage={(projectId, stage, extraData) =>
+            dispatch({
+              type: "update-project-stage",
+              projectId,
+              stage,
+              extraData,
+            })
+          }
+          onUpdateProject={(project) =>
+            dispatch({ type: "update-project", project })
+          }
+          onStartProposalWriting={(project) =>
+            dispatch({ type: "start-proposal", project })
+          }
+          onShowToast={showToast}
+        />
+      );
+    }
+
+    return (
+      <section className="flex flex-1 items-center justify-center bg-[#F8F9FA] p-8 text-center">
+        <p className="text-xs font-semibold text-neutral-500">
+          선택한 화면을 준비하고 있습니다.
+        </p>
+      </section>
+    );
+  };
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-[#F8F9FA]">
       <ProposalSidebar
@@ -117,34 +202,7 @@ export default function ProposalWorkspace({
       />
 
       <div className="flex min-w-0 flex-1 overflow-hidden">
-        {pipelineVisible ? (
-          <PipelineBoard
-            userRole={userRole}
-            rfpList={state.rfpList}
-            projects={state.projects}
-            selectedDepartment={state.selectedDepartment}
-            onSelectDepartment={(department) =>
-              dispatch({ type: "select-department", department })
-            }
-            onOpenProjectRegister={() => {
-              dispatch({ type: "navigate", tab: "project_register" });
-              showToast("새 프로젝트 등록 화면으로 이동했습니다.");
-            }}
-            onUpdateStage={(rfpId, stage) =>
-              dispatch({ type: "update-project-stage", projectId: rfpId, stage })
-            }
-            onOpenRfpDetail={openRfpDetail}
-            onSelectProject={selectProject}
-            onStartProposalProcess={startProposal}
-            onShowToast={showToast}
-          />
-        ) : (
-          <section className="flex flex-1 items-center justify-center bg-[#F8F9FA] p-8 text-center">
-            <p className="text-xs font-semibold text-neutral-500">
-              선택한 화면을 준비하고 있습니다.
-            </p>
-          </section>
-        )}
+        {renderContent()}
       </div>
 
       {state.toastMessage && (
