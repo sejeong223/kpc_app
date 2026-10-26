@@ -1,6 +1,6 @@
 # Azure App Template
 
-Next.js 16 기반의 범용 Azure 사내 애플리케이션 템플릿입니다. 인증과 Azure 자격 증명 없이 로컬에서 시작하고, 프로젝트에 필요할 때 Microsoft Entra ID와 Azure 데이터 서비스를 연결할 수 있습니다. 기본 화면은 새 기능의 시작 지점이며 업무 화면이나 디자인 시스템을 포함하지 않습니다.
+Next.js 16 기반의 범용 Azure 사내 애플리케이션 템플릿입니다. 왼쪽 사이드바와 중앙 콘텐츠 영역을 갖춘 기본 워크스페이스, Microsoft 로그인 화면을 제공합니다. 인증과 Azure 자격 증명 없이 로컬에서 시작하고, 프로젝트에 필요할 때 Microsoft Entra ID와 Azure 데이터 서비스를 연결할 수 있습니다.
 
 ## 포함 기능
 
@@ -53,7 +53,9 @@ Git Bash, macOS, Linux에서는 `npm ...`을 사용합니다. Windows PowerShell
    npm run dev
    ```
 
-`/`에는 프로젝트 시작 안내만 표시됩니다. 인증을 켜면 `/auth/login`, `/auth/logout`과 관리자 예시 `/admin`을 사용할 수 있습니다. `/admin`은 서버에서 `Admin` 역할을 검사하며 인증이 꺼져 있으면 404를 반환합니다. `/auth/login/popup`은 임베디드 로그인 흐름에 사용됩니다.
+`AUTH_ENABLED=false`인 현재 개발 모드에서는 `/`의 사이드바·중앙 콘텐츠 레이아웃을 바로 확인할 수 있습니다. `AUTH_ENABLED=true`와 Entra ID 설정을 적용하면 **URL 접속 → Microsoft 로그인 → 세션·App Role 확인 → 워크스페이스 렌더링** 순서로 동작합니다. 앱 진입에는 `User` 또는 `Admin` 역할이 필요하며, 우측 상단에는 로그인 버튼을 두지 않습니다.
+
+`/auth/login`에는 Microsoft 로그인 화면이 준비되어 있습니다. 인증 연결 전에는 로그인 버튼이 비활성화됩니다. `/admin`은 별도로 `Admin` 역할을 검사하며 인증이 꺼져 있으면 404를 반환합니다. `/auth/login/popup`은 임베디드 로그인 흐름에 사용됩니다.
 
 `/api/profile-image`는 Microsoft Graph 프로필 이미지 API의 재사용 예시이고, `lib/pagination.ts`는 범용 계산 함수입니다. 둘 다 기본 화면에서는 호출하지 않습니다.
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildLoginUrl,
   evaluateAccess,
+  evaluateAppAccess,
 } from "@/lib/auth/access-policy";
 import { APP_ROLES } from "@/lib/auth/roles";
 
@@ -68,5 +69,31 @@ describe("access policy", () => {
         reason: "forbidden",
       }),
     ).toBe("/auth/login?reason=forbidden&callbackUrl=%2Fadmin");
+  });
+});
+
+describe("application entry policy", () => {
+  it("allows the local workspace while authentication is disabled", () => {
+    expect(evaluateAppAccess({
+      authEnabled: false, authenticated: false, callbackUrl: "/",
+    })).toEqual({ kind: "allow" });
+  });
+
+  it("requires login before entering an authenticated application", () => {
+    expect(evaluateAppAccess({
+      authEnabled: true, authenticated: false, callbackUrl: "/documents",
+    })).toEqual({ kind: "login", callbackUrl: "/documents" });
+  });
+
+  it.each([APP_ROLES.USER, APP_ROLES.ADMIN])("accepts the %s app role", (role) => {
+    expect(evaluateAppAccess({
+      authEnabled: true, authenticated: true, roles: [role], callbackUrl: "/",
+    })).toEqual({ kind: "allow" });
+  });
+
+  it.each([{ roles: undefined }, { roles: [] }, { roles: ["unknown-role"] }])("blocks sessions without an assigned app role: %j", ({ roles }) => {
+    expect(evaluateAppAccess({
+      authEnabled: true, authenticated: true, roles, callbackUrl: "/",
+    })).toEqual({ kind: "forbidden", callbackUrl: "/" });
   });
 });

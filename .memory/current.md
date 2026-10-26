@@ -15,6 +15,7 @@
 ## Status
 
 - P01의 T01부터 T05까지 모든 Task 구현·검증 완료
+- 후속 정정: [Microsoft 로그인과 기본 워크스페이스 복원](./decisions/2026-10-26-template-shell-login-correction.md)
 
 ## Next Step (IMPORTANT)
 

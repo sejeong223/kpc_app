@@ -5,6 +5,8 @@ import { sanitizeCallbackUrl } from "@/lib/auth/callback-url";
 
 import PopupLoginPage from "./PopupLoginPage";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page({
   searchParams,
 }: {

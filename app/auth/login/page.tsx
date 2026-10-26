@@ -1,7 +1,9 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import LoginComponent from "@/components/auth/LoginComponent";
+import styles from "@/components/auth/LoginComponent.module.css";
 import { serverEnv } from "@/config/env";
+import { evaluateAppAccess } from "@/lib/auth/access-policy";
 import { sanitizeCallbackUrl } from "@/lib/auth/callback-url";
 import AuthService from "@/services/AuthService";
 
@@ -13,22 +15,26 @@ export default async function LoginPage({
     reason?: string;
   }>;
 }) {
-  if (!serverEnv.authEnabled) {
-    notFound();
-  }
-
   const params = await searchParams;
   const callbackUrl = sanitizeCallbackUrl(params.callbackUrl);
-  const reason = params.reason === "forbidden" ? "forbidden" : undefined;
-  const session = await new AuthService().getSession();
+  const session = serverEnv.authEnabled ? await new AuthService().getSession() : null;
+  const access = evaluateAppAccess({
+    authEnabled: serverEnv.authEnabled,
+    authenticated: session !== null,
+    roles: session?.user.roles,
+    callbackUrl,
+  });
+  const reason = params.reason === "forbidden" || access.kind === "forbidden"
+    ? "forbidden" : undefined;
 
-  if (session && !reason) {
+  if (session && access.kind === "allow" && !reason) {
     redirect(callbackUrl);
   }
 
   return (
-    <main>
+    <main className={styles.page}>
       <LoginComponent
+        authEnabled={serverEnv.authEnabled}
         callbackUrl={callbackUrl}
         embeddedMode={serverEnv.embeddedMode}
         reason={reason}

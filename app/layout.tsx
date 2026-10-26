@@ -5,6 +5,8 @@ import { serverEnv } from "@/config/env";
 import Providers from "@/components/providers";
 import AuthService from "@/services/AuthService";
 
+import "./globals.css";
+
 export const metadata: Metadata = {
   title: appConfig.name,
   description: appConfig.description,

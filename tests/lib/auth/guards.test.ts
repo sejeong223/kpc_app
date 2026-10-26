@@ -11,7 +11,7 @@ const navigation = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => navigation);
 
-import { requireRole } from "@/lib/auth/guards";
+import { requireAppAccess, requireRole } from "@/lib/auth/guards";
 import { APP_ROLES } from "@/lib/auth/roles";
 
 function createSession(roles: Array<"User" | "Admin">): Session {
@@ -38,8 +38,7 @@ function createAuthService(input: {
   } as unknown as AuthService;
 }
 
-describe("requireRole", () => {
-  beforeEach(() => {
+beforeEach(() => {
     vi.clearAllMocks();
     navigation.notFound.mockImplementation(() => {
       throw new Error("NEXT_NOT_FOUND");
@@ -47,7 +46,9 @@ describe("requireRole", () => {
     navigation.redirect.mockImplementation((url: string) => {
       throw new Error(`NEXT_REDIRECT:${url}`);
     });
-  });
+});
+
+describe("requireRole", () => {
 
   it("returns not found when authentication is disabled", async () => {
     await expect(
@@ -91,5 +92,42 @@ describe("requireRole", () => {
     ).resolves.toBe(session);
     expect(navigation.redirect).not.toHaveBeenCalled();
     expect(navigation.notFound).not.toHaveBeenCalled();
+  });
+});
+
+describe("requireAppAccess", () => {
+  it("allows local development without asking the auth service for a session", async () => {
+    const authService = createAuthService({ enabled: false, session: null });
+    await expect(requireAppAccess("/", { authService })).resolves.toBeNull();
+    expect(authService.getSession).not.toHaveBeenCalled();
+    expect(navigation.redirect).not.toHaveBeenCalled();
+  });
+
+  it("stops anonymous users before the app shell is returned", async () => {
+    await expect(requireAppAccess("/", {
+      authService: createAuthService({ enabled: true, session: null }),
+    })).rejects.toThrow("NEXT_REDIRECT:/auth/login?callbackUrl=%2F");
+  });
+
+  it("blocks a signed-in session without an allowed app role", async () => {
+    await expect(requireAppAccess("/", {
+      authService: createAuthService({ enabled: true, session: createSession([]) }),
+    })).rejects.toThrow("NEXT_REDIRECT:/auth/login?reason=forbidden&callbackUrl=%2F");
+  });
+
+  it.each([APP_ROLES.USER, APP_ROLES.ADMIN])("returns the session for %s", async (role) => {
+    const session = createSession([role]);
+    await expect(requireAppAccess("/", {
+      authService: createAuthService({ enabled: true, session }),
+    })).resolves.toBe(session);
+    expect(navigation.redirect).not.toHaveBeenCalled();
+  });
+
+  it("clears a failed token-refresh session before app access", async () => {
+    const session = createSession([APP_ROLES.USER]);
+    session.error = "RefreshAccessTokenError";
+    await expect(requireAppAccess("/", {
+      authService: createAuthService({ enabled: true, session }),
+    })).rejects.toThrow("NEXT_REDIRECT:/auth/logout");
   });
 });
