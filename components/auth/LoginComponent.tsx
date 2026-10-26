@@ -56,7 +56,7 @@ export default function LoginComponent({
 
       popupRef.current = openCenteredPopup(
         `/auth/login/popup?${searchParams.toString()}`,
-        "kpc-app-login",
+        "azure-app-template-login",
         600,
         700,
       );

@@ -15,11 +15,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
 
-  // 전역적으로 any 허용 (비추천이지만 요청에 따라 설정)
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
 ]);

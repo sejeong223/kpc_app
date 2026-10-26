@@ -10,12 +10,12 @@
 
 ## Active Task
 
-[T04 템플릿 식별자와 ESLint 정책 정리](./phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/T04-template-identity-and-lint.md)
+[T05 초기 템플릿 문서와 최종 검증](./phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/T05-document-and-validate.md)
 
 ## Status
 
-- T03 구현·검증 완료, T04 진행 중
+- T04 구현·검증 완료, T05 진행 중
 
 ## Next Step (IMPORTANT)
 
-T04 청사진을 읽고 `package.json`, `config/env.schema.ts`, `eslint.config.mjs`의 템플릿 기본값 정리 시작
+T05 청사진을 읽고 `README.md`를 현재 템플릿 기능에 맞게 갱신 시작

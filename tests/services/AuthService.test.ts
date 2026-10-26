@@ -28,7 +28,7 @@ function createEnv(overrides: Partial<ServerEnv> = {}): ServerEnv {
     appEnv: "local",
     authEnabled: true,
     embeddedMode: false,
-    authCacheNamespace: "kpc_app",
+    authCacheNamespace: "azure-app-template",
     nextAuthUrl: "https://app.example.com",
     nextAuthSecret: "next-auth-secret",
     msalTenantId: "tenant-id",
@@ -100,7 +100,7 @@ describe("AuthService", () => {
     }).getNextAuthOptions();
 
     expect(normal.cookies).toBeUndefined();
-    expect(embedded.cookies?.state?.name).toBe("kpc_app-next-auth.state");
+    expect(embedded.cookies?.state?.name).toBe("azure-app-template-next-auth.state");
     expect(embedded.cookies?.state?.options).toMatchObject({
       httpOnly: true,
       sameSite: "none",

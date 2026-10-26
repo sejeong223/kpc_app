@@ -43,7 +43,7 @@ describe("parseServerEnv", () => {
       appEnv: "local",
       authEnabled: false,
       embeddedMode: false,
-      authCacheNamespace: "kpc_app",
+      authCacheNamespace: "azure-app-template",
       nextAuthUrl: undefined,
       nextAuthSecret: undefined,
       msalTenantId: undefined,
@@ -61,6 +61,15 @@ describe("parseServerEnv", () => {
       blobAccountKey: undefined,
       iframeAllowedDomains: [],
     });
+  });
+
+  it("accepts a project-specific authentication cache namespace", () => {
+    expect(
+      parseServerEnv({ AUTH_CACHE_NAMESPACE: "my-app" }).authCacheNamespace,
+    ).toBe("my-app");
+    expect(parseError({ AUTH_CACHE_NAMESPACE: "" }).message).toContain(
+      "AUTH_CACHE_NAMESPACE",
+    );
   });
 
   it("accepts certificate authentication", () => {

@@ -96,7 +96,7 @@ const rawServerEnvSchema = z
     AUTH_ENABLED: booleanFromEnv(false),
     EMBEDDED_MODE: booleanFromEnv(false),
     AUTH_CACHE_NAMESPACE: z.preprocess(
-      (value) => (value === undefined ? "kpc_app" : value),
+      (value) => (value === undefined ? "azure-app-template" : value),
       nonBlankString,
     ),
     NEXTAUTH_URL: optionalUrl,

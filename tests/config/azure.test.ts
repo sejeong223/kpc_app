@@ -13,7 +13,7 @@ function createEnv(overrides: Partial<ServerEnv> = {}): ServerEnv {
     appEnv: "local",
     authEnabled: false,
     embeddedMode: false,
-    authCacheNamespace: "kpc_app",
+    authCacheNamespace: "azure-app-template",
     redisClusterMode: false,
     azureUseManagedIdentity: false,
     iframeAllowedDomains: [],

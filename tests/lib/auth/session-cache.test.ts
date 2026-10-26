@@ -43,7 +43,7 @@ function createEnv(overrides: Partial<ServerEnv> = {}): ServerEnv {
     appEnv: "local",
     authEnabled: true,
     embeddedMode: false,
-    authCacheNamespace: "kpc_app",
+    authCacheNamespace: "azure-app-template",
     redisClusterMode: false,
     azureUseManagedIdentity: false,
     iframeAllowedDomains: [],
@@ -138,10 +138,17 @@ describe("session cache", () => {
   it("builds a neutral namespaced cache key", () => {
     expect(
       buildSessionCacheKey({
-        namespace: "kpc_app",
+        namespace: "azure-app-template",
         appEnv: "staging",
         accountId: "account-id",
       }),
-    ).toBe("kpc_app/staging/session-cache/account-id");
+    ).toBe("azure-app-template/staging/session-cache/account-id");
+    expect(
+      buildSessionCacheKey({
+        namespace: "custom-app",
+        appEnv: "staging",
+        accountId: "account-id",
+      }),
+    ).toBe("custom-app/staging/session-cache/account-id");
   });
 });
