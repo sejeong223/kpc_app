@@ -160,7 +160,7 @@ npm run azure:cosmos:provision -- --container records --partition-key /tenantId 
 | --- | --- |
 | `app` | Next.js App Router page와 API |
 | `components/auth` | 로그인 동작과 안내 |
-| `components/layout` | 기능 중심의 기본 내비게이션 셸 |
+| `components/layout` | `AppShell` 레이아웃 조립, `NavSidebar` 사이드바, `AppHeader` 상단 헤더와 각 CSS module |
 | `components/providers.tsx` | 인증 세션 공급 |
 | `config` | 앱·환경·Azure 설정 |
 | `lib/auth` | 인증, role, cache, popup 보안 정책 |

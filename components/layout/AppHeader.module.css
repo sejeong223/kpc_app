@@ -1,0 +1,13 @@
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 72px; padding: 0 38px; border-bottom: 1px solid #e6e9f0; background: #fff; }
+.location { display: flex; align-items: center; gap: 14px; font-size: 12px; }
+.location strong { color: #475569; font-weight: 500; }
+.breadcrumb { color: #94a3b8; }
+.breadcrumbDivider { color: #cbd5e1; }
+.menuButton { display: none; padding: 4px; border: 0; background: transparent; color: #475569; }
+
+@media (max-width: 760px) {
+  .topbar { height: 64px; padding: 0 20px; }
+  .location { gap: 10px; }
+  .breadcrumb, .breadcrumbDivider { display: none; }
+  .menuButton { display: flex; }
+}
