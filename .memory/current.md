@@ -10,12 +10,12 @@
 
 ## Active Task
 
-[T02 제안서 목업과 시각 회귀 자료 제거](./phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/T02-remove-proposal-mock.md)
+[T03 디자인 시스템 제거와 인증 화면 최소화](./phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/T03-remove-design-system.md)
 
 ## Status
 
-- T01 구현·검증 완료, T02 진행 중
+- T02 구현·검증 완료, T03 진행 중
 
 ## Next Step (IMPORTANT)
 
-T02 청사진을 읽고 `app/(authenticated)/proposals/page.tsx`와 제안서 전용 파일 제거 시작
+T03 청사진을 읽고 `app/layout.tsx`와 인증 화면을 기본 HTML로 전환 시작

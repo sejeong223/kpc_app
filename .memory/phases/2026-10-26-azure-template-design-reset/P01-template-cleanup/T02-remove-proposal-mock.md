@@ -1,6 +1,6 @@
 # Task: T02 제안서 목업과 시각 회귀 자료 제거
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -75,7 +75,7 @@
 - **Execution Flow / Logic**:
   1. `tests/visual/proposals` 전체를 삭제한다. `playwright.config.ts`가 이 폴더만 대상으로 하므로 설정과 두 npm script를 제거한다.
   2. `package.json`에서 `@playwright/test`만 이 Task의 의존성 삭제 대상으로 삼고 `npm.cmd install --package-lock-only --ignore-scripts`로 `package-lock.json`을 동기화한다.
-  3. `README.md`의 제안서 안내는 T04에서 갱신한다. 인증, Azure, `lib/pagination.ts`, `app/api/profile-image/route.ts`는 건드리지 않는다.
+  3. `README.md`의 제안서 안내는 T05에서 갱신한다. 인증, Azure, `lib/pagination.ts`, `app/api/profile-image/route.ts`는 건드리지 않는다.
   4. 테스트 실패 시 삭제된 제안서 import를 활성 코드에서 찾아 연결을 끊는다. 무관한 인증·Azure 로직을 제거하지 않는다.
 
 ## Acceptance Criteria
@@ -107,6 +107,6 @@ Task: T02-remove-proposal-mock
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 완료 (Git 로그 참조)
