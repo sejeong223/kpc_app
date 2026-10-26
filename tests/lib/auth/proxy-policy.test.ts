@@ -30,7 +30,7 @@ describe("proxy policy", () => {
     expect(
       shouldApplyAuthentication({
         authEnabled: true,
-        pathname: "/microsoft.svg",
+        pathname: "/assets/logo.svg",
       }),
     ).toBe(true);
     expect(

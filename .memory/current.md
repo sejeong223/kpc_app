@@ -6,16 +6,16 @@
 
 ## Active Phase
 
-[P01 템플릿 정리](./phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/phase.md)
+완료
 
 ## Active Task
 
-[T05 초기 템플릿 문서와 최종 검증](./phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/T05-document-and-validate.md)
+완료
 
 ## Status
 
-- T04 구현·검증 완료, T05 진행 중
+- P01의 T01부터 T05까지 모든 Task 구현·검증 완료
 
 ## Next Step (IMPORTANT)
 
-T05 청사진을 읽고 `README.md`를 현재 템플릿 기능에 맞게 갱신 시작
+현재 계획은 완료되었다. 새 작업은 별도 계획을 활성화한 뒤 진행한다.

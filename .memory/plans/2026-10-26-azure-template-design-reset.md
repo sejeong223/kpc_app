@@ -13,7 +13,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 제안서·디자인 제거, 템플릿 식별자·ESLint 정리, 전체 검증 | [P01](../phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/phase.md) |
+| P01 | `done` ✅ | 제안서·디자인 제거, 템플릿 식별자·ESLint 정리, 전체 검증 | [P01](../phases/2026-10-26-azure-template-design-reset/P01-template-cleanup/phase.md) |
 
 ## Boundaries
 

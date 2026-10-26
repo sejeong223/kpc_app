@@ -1,6 +1,6 @@
 # Task: T05 초기 템플릿 문서와 최종 검증
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -44,6 +44,7 @@ README를 디자인 없는 범용 Azure 앱 템플릿의 실제 사용법과 일
   - `package-lock.json` :: `packages[""].dependencies`, `devDependencies` — package.json 일치 확인; read-only
   - `vitest.config.ts` :: Vitest test include — 인증·Azure·페이지네이션 테스트 유지 확인; read-only
   - `eslint.config.mjs` :: `@typescript-eslint/no-explicit-any` 오류 정책 — T04 설정 유지 확인; read-only
+  - `tests/lib/auth/proxy-policy.test.ts` :: `shouldApplyAuthentication`의 임의 자산 경로 검증 — 삭제된 로고 파일명 잔재를 일반 자산 경로로 교체; modify
   - `config/env.schema.ts`, `config/azure.ts`, `proxy.ts`, `lib/auth/*`, `services/*`, `scripts/provision-cosmos.ts` :: 인프라 기반 보존 확인; read-only
   - `tests/config/*`, `tests/lib/auth/*`, `tests/lib/pagination.test.ts`, `tests/services/*`, `tests/scripts/*`, `tests/app/api/profile-image.test.ts` :: 범용 테스트 보존 확인; read-only
 
@@ -63,7 +64,7 @@ README를 디자인 없는 범용 Azure 앱 템플릿의 실제 사용법과 일
 - **Execution Flow / Logic**:
   1. `npm.cmd ci`로 잠금 파일과 설치 가능성을 확인한다. 의존성 설치 실패가 네트워크 문제라면 원인을 기록하고 lockfile 불일치와 구별한다.
   2. 전체 단위 테스트, 타입 검사, ESLint, 인증 비활성 프로덕션 빌드를 실행한다. 빌드 환경에서 `AUTH_ENABLED=false`, `EMBEDDED_MODE=false`를 명시해 Azure 자격 증명 없이 실행 가능한지 검증한다.
-  3. 활성 소스·테스트·설정·README에서 `proposals`, `Proposal`, `제안서`, `@/components/ui`, `microsoft.svg`, `tailwindcss`, `test:proposal`, `kpc_app` 참조가 없는지 확인한다. 이력용 `.memory`와 lockfile의 간접 패키지 이름은 검색 범위에 넣지 않는다.
+  3. `tests/lib/auth/proxy-policy.test.ts`의 삭제된 로고 경로는 `/assets/logo.svg`처럼 일반 자산 경로로 바꿔 보안 회귀 검증은 유지한다. 활성 소스·테스트·설정·README에서 `proposals`, `Proposal`, `제안서`, `@/components/ui`, `microsoft.svg`, `tailwindcss`, `test:proposal`, `kpc_app` 참조가 없는지 확인한다. 이력용 `.memory`와 lockfile의 간접 패키지 이름은 검색 범위에 넣지 않는다.
   4. 모든 검증 성공 후에만 Task 상태·phase 진행률·`current.md`를 memory-execute 규칙에 따라 갱신한다. 계획 단계에서는 검증이나 커밋을 실행하지 않는다.
 
 ## Acceptance Criteria
@@ -97,6 +98,6 @@ Task: T05-document-and-validate
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 완료 (Git 로그 참조)

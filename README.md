@@ -1,16 +1,16 @@
-# KPC App
+# Azure App Template
 
-KPC App은 Next.js 16으로 구성된 범용 Azure 사내 애플리케이션 템플릿입니다. 인증을 끄고 로컬 UI부터 시작할 수 있고, 필요할 때 Microsoft Entra ID와 Azure 데이터 서비스를 활성화할 수 있습니다.
+Next.js 16 기반의 범용 Azure 사내 애플리케이션 템플릿입니다. 인증과 Azure 자격 증명 없이 로컬에서 시작하고, 프로젝트에 필요할 때 Microsoft Entra ID와 Azure 데이터 서비스를 연결할 수 있습니다. 기본 화면은 새 기능의 시작 지점이며 업무 화면이나 디자인 시스템을 포함하지 않습니다.
 
 ## 포함 기능
 
 - 선택형 Microsoft Entra ID/NextAuth 로그인과 `User`, `Admin` App Role
 - iframe 환경을 위한 popup 로그인, CSP allowlist, cross-site cookie 설정
 - 개발용 메모리 세션 캐시와 운영용 Redis 캐시
-- Microsoft Graph 프로필 정보와 프로필 이미지
+- Microsoft Graph 프로필 정보와 재사용 가능한 프로필 이미지 API
 - Managed Identity 우선 Cosmos DB·Blob Storage 클라이언트
-- shadcn/ui 기반 공통 UI와 범용 페이지네이션
-- Vitest 단위 테스트, TypeScript, ESLint 품질 게이트
+- 범용 페이지네이션 계산 함수
+- Vitest 단위 테스트, TypeScript, 명시적 `any`를 오류로 처리하는 ESLint 품질 게이트
 
 ## 요구사항
 
@@ -53,6 +53,10 @@ Git Bash, macOS, Linux에서는 `npm ...`을 사용합니다. Windows PowerShell
    npm run dev
    ```
 
+`/`에는 프로젝트 시작 안내만 표시됩니다. 인증을 켜면 `/auth/login`, `/auth/logout`과 관리자 예시 `/admin`을 사용할 수 있습니다. `/admin`은 서버에서 `Admin` 역할을 검사하며 인증이 꺼져 있으면 404를 반환합니다. `/auth/login/popup`은 임베디드 로그인 흐름에 사용됩니다.
+
+`/api/profile-image`는 Microsoft Graph 프로필 이미지 API의 재사용 예시이고, `lib/pagination.ts`는 범용 계산 함수입니다. 둘 다 기본 화면에서는 호출하지 않습니다.
+
 ## Microsoft Entra ID 설정
 
 1. Entra ID에서 앱을 등록하고 tenant ID와 client ID를 확보합니다.
@@ -64,36 +68,6 @@ Git Bash, macOS, Linux에서는 `npm ...`을 사용합니다. Windows PowerShell
 
 인증을 켠 상태에서 인증서와 client secret을 모두 제공하거나 모두 누락하면 앱이 시작을 거부합니다.
 
-## 제안서 AI 원본 패리티 목업
-
-개발 서버를 실행한 뒤 `http://localhost:3000/proposals`에서 제안서 목업을 사용할 수 있습니다.
-
-```powershell
-npm.cmd run dev
-```
-
-- 제안 pipeline, 신규 RFP 등록, 관리자 검토·승인/반려
-- 문서 설정, fixture 기반 AI 분석, 요구사항과 작성 업무 관리
-- 3-pane 제안서 editor, 통합 검토, text download와 browser print
-- 자료 라이브러리와 팀·템플릿·AI 정책·알림 설정
-
-`AUTH_ENABLED=false`에서는 로컬 목업 사용자와 관리자 제어가 표시됩니다. 인증을 켜면 로그인 session의 역할에 따라 관리자 제어가 제한되며 `/admin`은 `Admin` 역할에만 노출됩니다.
-
-모든 제안 데이터와 설정은 browser session의 React state에만 존재하므로 새로고침하면 fixture 초기값으로 돌아갑니다. 실제 API, AI 호출, 파일 binary 업로드, 서버 저장은 구현하지 않았으며 출력은 UTF-8 text download와 browser print 목업입니다.
-
-제안서 영역의 source of truth는 `C:\Users\김세정\Documents\GitHub\KPC_AI`의 commit `8f074e51f7a16db063ef5206e6ac927c6e87c2a4`(`8f074e5`)입니다. `kpc_app`의 Next.js 인증·라우팅 셸 안에서 해당 commit의 Header, Sidebar, 제안 목록, 등록·검토, 작성 workflow, 자료실, 설정 화면과 상호작용을 동일하게 재현합니다. 구버전 축약 UI는 사용하지 않습니다.
-
-패리티 검증은 원본 Vite 앱과 대상 Next.js 앱을 각각 실행한 상태에서 다음 명령으로 수행합니다.
-
-```powershell
-$env:KPC_REFERENCE_URL='http://127.0.0.1:3002'
-npm.cmd run test:proposal-reference
-$env:KPC_TARGET_URL='http://127.0.0.1:3001'
-npm.cmd run test:proposal-visual
-```
-
-원본 baseline은 위 commit에서만 갱신할 수 있으며, 대상 결과로 baseline을 덮어쓰지 않습니다. 원본에도 연결 동작이 없는 `ProposalConvertModal` 진입점은 비활성 상태를 그대로 유지합니다.
-
 ## 환경변수
 
 | 변수 | 필수 조건 | Secret | 설명 |
@@ -104,7 +78,7 @@ npm.cmd run test:proposal-visual
 | `NEXT_PUBLIC_APP_DESCRIPTION` | 선택 | 아니오 | 앱 설명 |
 | `AUTH_ENABLED` | 항상 | 아니오 | Entra/NextAuth 기능 플래그 |
 | `EMBEDDED_MODE` | 항상 | 아니오 | iframe/popup 모드. `true`는 auth도 `true`여야 함 |
-| `AUTH_CACHE_NAMESPACE` | 항상 | 아니오 | Redis/메모리 세션 키 prefix |
+| `AUTH_CACHE_NAMESPACE` | 항상 | 아니오 | Redis/메모리 세션 키 prefix. 기본값 `azure-app-template` |
 | `NEXTAUTH_URL` | auth 켜짐 | 아니오 | 앱의 정확한 base URL. 운영에서 HTTPS 사용 |
 | `NEXTAUTH_SECRET` | auth 켜짐 | 예 | 충분히 긴 무작위 값 |
 | `MSAL_TENANT_ID` | auth 켜짐 | 아니오 | Entra tenant ID |
@@ -123,6 +97,12 @@ npm.cmd run test:proposal-visual
 | `BLOB_ACCOUNT_KEY` | Blob local key 모드 | 예 | Managed Identity면 불필요 |
 
 운영 secret은 환경변수 또는 비밀 관리 서비스로 주입하고 파일에 저장하지 마세요.
+
+## 프로젝트 식별자 변경
+
+npm 패키지명과 인증 캐시 기본 네임스페이스는 `azure-app-template`입니다. 템플릿을 복제할 때 프로젝트에 맞게 `package.json`, `package-lock.json`, `.env.example`의 `AUTH_CACHE_NAMESPACE` 및 `config/env.schema.ts` 기본값을 함께 바꾸세요.
+
+실제 `.env.local`이나 배포 환경에 이전 프로젝트의 네임스페이스가 명시되어 있으면 별도로 갱신해야 합니다. 네임스페이스를 바꾸면 기존 Redis 세션 키와 임베디드 로그인 상태 쿠키를 재사용하지 않으므로 사용자가 다시 로그인해야 할 수 있습니다.
 
 ## Popup과 iframe
 
@@ -177,7 +157,9 @@ npm run azure:cosmos:provision -- --container records --partition-key /tenantId 
 | 경로 | 역할 |
 | --- | --- |
 | `app` | Next.js App Router page와 API |
-| `components/ui` | 재사용 UI primitive |
+| `components/auth` | 로그인 동작과 안내 |
+| `components/layout` | 기능 중심의 기본 내비게이션 셸 |
+| `components/providers.tsx` | 인증 세션 공급 |
 | `config` | 앱·환경·Azure 설정 |
 | `lib/auth` | 인증, role, cache, popup 보안 정책 |
 | `services` | Auth, Graph, Cosmos, Blob client factory |
