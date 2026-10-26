@@ -3,8 +3,7 @@ import { hasRole, type AppRole } from "@/lib/auth/roles";
 export interface HeaderNavigationItem {
   id: string;
   label: string;
-  href?: `/${string}` | "/";
-  isMock?: boolean;
+  href: `/${string}` | "/";
   requiresAuth?: boolean;
   requiredRole?: AppRole;
 }
@@ -17,39 +16,14 @@ export interface AppConfig {
 }
 
 export const appConfig: AppConfig = {
-  name: process.env.NEXT_PUBLIC_APP_NAME ?? "KPC AI",
+  name: process.env.NEXT_PUBLIC_APP_NAME ?? "Azure App Template",
   description:
-    process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? "KPC Enterprise AI 업무 플랫폼",
+    process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? "Azure 기반 업무 애플리케이션 템플릿",
   headerNavigation: [
     {
-      id: "knowledge_ai",
-      label: "Knowledge AI",
-      isMock: true,
-    },
-    {
-      id: "ai_worker",
-      label: "AI Worker",
-      isMock: true,
-    },
-    {
-      id: "proposals",
-      label: "제안서 AI",
-      href: "/proposals",
-    },
-    {
-      id: "custom_ai",
-      label: "Custom AI",
-      isMock: true,
-    },
-    {
-      id: "ai_agent",
-      label: "AI Agent",
-      isMock: true,
-    },
-    {
-      id: "ai_community",
-      label: "AI Community",
-      isMock: true,
+      id: "home",
+      label: "홈",
+      href: "/",
     },
   ],
   profileNavigation: [

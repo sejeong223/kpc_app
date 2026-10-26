@@ -29,22 +29,21 @@ const navigation: readonly HeaderNavigationItem[] = [
 ];
 
 describe("appConfig", () => {
-  it("provides KPC branding and the ordered global navigation", () => {
-    expect(appConfig.name).toBe("KPC AI");
-    expect(appConfig.description).toBe("KPC Enterprise AI 업무 플랫폼");
-    expect(appConfig.headerNavigation.map((item) => item.label)).toEqual([
-      "Knowledge AI",
-      "AI Worker",
-      "제안서 AI",
-      "Custom AI",
-      "AI Agent",
-      "AI Community",
+  it("provides neutral branding and routes only to the home page", () => {
+    expect(appConfig.name).toBe("Azure App Template");
+    expect(appConfig.description).toBe("Azure 기반 업무 애플리케이션 템플릿");
+    expect(appConfig.headerNavigation).toEqual([
+      { id: "home", label: "홈", href: "/" },
     ]);
-    expect(appConfig.headerNavigation.find((item) => item.id === "proposals")).toMatchObject({
-      href: "/proposals",
-    });
-    expect(appConfig.headerNavigation.some((item) => item.id === "admin")).toBe(false);
-    expect(appConfig.profileNavigation.some((item) => item.id === "proposals")).toBe(false);
+    expect(appConfig.profileNavigation).toEqual([
+      {
+        id: "admin",
+        label: "관리자",
+        href: "/admin",
+        requiresAuth: true,
+        requiredRole: APP_ROLES.ADMIN,
+      },
+    ]);
   });
 
   it("keeps admin navigation in the role-filtered profile menu", () => {
