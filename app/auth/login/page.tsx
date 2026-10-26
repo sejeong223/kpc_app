@@ -27,7 +27,7 @@ export default async function LoginPage({
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-white">
+    <main>
       <LoginComponent
         callbackUrl={callbackUrl}
         embeddedMode={serverEnv.embeddedMode}

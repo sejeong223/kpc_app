@@ -6,6 +6,6 @@ import { APP_ROLES } from "@/lib/auth/roles";
 export default async function AdminLayout({
   children,
 }: Readonly<{ children: ReactNode }>): Promise<React.ReactNode> {
-  await requireRole(APP_ROLES.ADMIN, "/admin/general");
+  await requireRole(APP_ROLES.ADMIN, "/admin");
   return children;
 }

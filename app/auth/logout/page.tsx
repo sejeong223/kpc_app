@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Suspense, useEffect } from "react";
 
-import { Spinner } from "@/components/ui/spinner";
 import { sanitizeCallbackUrl } from "@/lib/auth/callback-url";
 
 function LogoutEffect() {
@@ -15,13 +14,13 @@ function LogoutEffect() {
     void signOut({ callbackUrl });
   }, [callbackUrl]);
 
-  return <Spinner />;
+  return <p role="status">로그아웃 중…</p>;
 }
 
 export default function LogoutPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-white">
-      <Suspense fallback={<Spinner />}>
+    <main>
+      <Suspense fallback={<p role="status">로그아웃 중…</p>}>
         <LogoutEffect />
       </Suspense>
     </main>

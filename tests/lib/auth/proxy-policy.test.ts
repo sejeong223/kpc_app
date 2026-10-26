@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildFrameAncestors,
   isAuthPath,
-  isPublicAuthAssetPath,
   shouldApplyAuthentication,
 } from "@/lib/auth/proxy-policy";
 
@@ -27,15 +26,13 @@ describe("proxy policy", () => {
     ).toBe(true);
   });
 
-  it("keeps the login logo public without opening similarly named routes", () => {
-    expect(isPublicAuthAssetPath("/microsoft.svg")).toBe(true);
-    expect(isPublicAuthAssetPath("/reports/export.csv")).toBe(false);
+  it("protects non-auth asset paths without a logo exception", () => {
     expect(
       shouldApplyAuthentication({
         authEnabled: true,
         pathname: "/microsoft.svg",
       }),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       shouldApplyAuthentication({
         authEnabled: true,

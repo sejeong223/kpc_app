@@ -3,7 +3,6 @@
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-import { Spinner } from "@/components/ui/spinner";
 import { LOGIN_SUCCESS_MESSAGE } from "@/lib/auth/login-message";
 
 export interface PopupLoginPageProps {
@@ -52,13 +51,11 @@ export default function PopupLoginPage({
   }, [callbackUrl, selectAccount, success]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-white p-6">
+    <main>
       {recoveryMessage ? (
-        <p role="alert" className="max-w-sm text-center text-sm">
-          {recoveryMessage}
-        </p>
+        <p role="alert">{recoveryMessage}</p>
       ) : (
-        <Spinner />
+        <p role="status">로그인 중…</p>
       )}
     </main>
   );

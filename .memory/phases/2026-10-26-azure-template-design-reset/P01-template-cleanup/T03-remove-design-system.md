@@ -1,6 +1,6 @@
 # Task: T03 디자인 시스템 제거와 인증 화면 최소화
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -122,6 +122,6 @@ Task: T03-remove-design-system
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 완료 (Git 로그 참조)
