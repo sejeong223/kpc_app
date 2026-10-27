@@ -108,13 +108,15 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || sidebar?.querySelector("[data-profile-popover]")) return;
       if (event.key === "Escape") {
         event.preventDefault();
         closeMenu();
       }
       if (event.key !== "Tab" || !sidebar) return;
-      const targets = Array.from(sidebar.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"))
-        .filter((element) => element.getClientRects().length > 0);
+      const targets = Array.from(sidebar.querySelectorAll<HTMLElement>(
+        "a[href], button, input, select, textarea, [tabindex]",
+      )).filter((element) => element.tabIndex >= 0 && !element.matches(":disabled, [aria-disabled='true']") && element.getClientRects().length > 0);
       const first = targets[0];
       const last = targets[targets.length - 1];
       if (event.shiftKey && document.activeElement === first) {

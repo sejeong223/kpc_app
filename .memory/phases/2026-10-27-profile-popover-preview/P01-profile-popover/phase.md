@@ -10,12 +10,12 @@
 | :--- | :--- | :--- | :--- |
 | T01 | `done` ✅ | 공용 세그먼트 선택·ON/OFF 스위치 | [T01](./T01-shared-toggle-controls.md) |
 | T02 | `done` ✅ | 프로필 시연 상태·역할별 메뉴·안내 화면 경계 | [T02](./T02-profile-preview-state.md) |
-| T03 | `in_progress` 🔵 | HTML 기준 3탭 팝오버·트리거·모바일·검증 | [T03](./T03-profile-popover-ui.md) |
+| T03 | `done` ✅ | HTML 기준 3탭 팝오버·트리거·모바일·검증 | [T03](./T03-profile-popover-ui.md) |
 
 ## Progress
 
-- done: 2/3 (active: T03)
-- T01·T02 구현·코드 검증 완료. T03 프로필 팝오버 연결 진행 준비.
+- done: 3/3 (active: 없음)
+- T01~T03 구현·자동 검사·독립 테스트 브라우저의 desktop/접힘/모바일 검증 완료. 실제 Azure/인증 연동은 제외.
 
 ## Dependencies
 

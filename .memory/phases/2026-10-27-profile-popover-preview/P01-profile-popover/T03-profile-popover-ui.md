@@ -1,6 +1,6 @@
 # Task: T03 HTML 기준 프로필 팝오버와 3개 탭 구현
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -221,14 +221,14 @@
 
 ## Acceptance Criteria
 
-- [ ] 프로필 버튼에서 HTML의 3개 탭 팝오버가 열리고 닫힌다.
-- [ ] 기준 크기·색·앵커·본문 스크롤과 펼침/접힘 프로필 위치가 유지된다.
-- [ ] 공용 세그먼트/스위치를 복제 없이 재사용하며 라벨·키보드·disabled가 정상 동작한다.
-- [ ] 일반/관리자 선택이 배지·아바타·메뉴15/7·관리자 안내 화면 이동에 일관되게 반영된다.
-- [ ] 알림 읽음과 환경 설정이 메모리 범위에서 동작하고 준비 중 버튼이 허위 저장/신청을 하지 않는다.
-- [ ] 모바일 입력·첫/두 번째 Escape·포커스 복귀·외부 클릭이 정상 동작한다.
-- [ ] 실제 로그인·로그아웃 경로·서버 역할 가드와 기존 divider 변경을 보존한다.
-- [ ] 자동 검사와 실제 브라우저 검증 결과를 구분해 실행 기록에 남긴다.
+- [x] 프로필 버튼에서 HTML의 3개 탭 팝오버가 열리고 닫힌다.
+- [x] 기준 크기·색·앵커·본문 스크롤과 펼침/접힘 프로필 위치가 유지된다.
+- [x] 공용 세그먼트/스위치를 복제 없이 재사용하며 라벨·키보드·disabled가 정상 동작한다.
+- [x] 일반/관리자 선택이 배지·아바타·메뉴15/7·관리자 안내 화면 이동에 일관되게 반영된다.
+- [x] 알림 읽음과 환경 설정이 메모리 범위에서 동작하고 준비 중 버튼이 허위 저장/신청을 하지 않는다.
+- [x] 모바일 입력·첫/두 번째 Escape·포커스 복귀·외부 클릭이 정상 동작한다.
+- [x] 실제 로그인·로그아웃 경로·서버 역할 가드와 기존 divider 변경을 보존한다.
+- [x] 자동 검사와 실제 브라우저 검증 결과를 구분해 실행 기록에 남긴다.
 
 ## Validation
 
@@ -269,6 +269,38 @@ Task: T03-profile-popover-ui
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 Task의 변경·완료 기록을 포함한 동일 커밋(Plan/Phase/Task 식별자로 조회)
+
+## Execution Result — 2026-10-27
+
+- ProfileMenu와 일반/업무 알림/환경 설정 패널3개를 추가하고 NavSidebar의 프로필 표시를 실제 버튼+Fluent Popover로 교체했다. 프로필 스타일도 해당 TSX로 옮겼다. 공용 SegmentedControl과 ToggleSwitch를 모든 해당 설정에서 재사용한다.
+- Popover inline/trapFocus, trigger의 aria-haspopup=dialog와 aria-controls 연결, 탭/tabpanel 연결을 구현했다. AppShell은 열린 내부 팝오버의 키 입력을 가로채지 않으며 Escape capture로 안쪽 팝오버만 먼저 닫는다.
+- 일반 탭의 토큰·작업 수는 시연 표시를 유지한다. 상세 분석/토큰 신청/비인증 로그아웃은 안내만 표시한다. 실제 인증 모드의 기존 /auth/logout 링크는 보존했다.
+- `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run test`(24개 파일·240개 테스트), AUTH_ENABLED=false의 `npm.cmd run build`, 공백 검사를 통과했다. build의 프로세스 환경변수는 원래 값으로 복원했다. 의존성과 .env는 수정하지 않았다.
+
+### 실제 브라우저 검증
+
+기존 설치된 Chrome을 별도 임시 프로필의 headless 모드로 실행해 localhost:3000의 실제 앱을 확인했다. Node 내장 WebSocket/CDP를 사용했으며 새 npm 패키지·프로젝트 테스트 의존성을 설치하지 않았다. 사용자 브라우저 프로필이나 탭은 조작하지 않았다. 검증 후 테스트 Chrome 프로세스를 종료했다.
+
+| 항목 | 관찰 결과 |
+| :--- | :--- |
+| 펼침 desktop1280×900 | 팝오버348×620px, 트리거181.140625×49px. CSS 간격8px·실측7.5px로 Floating positioning의 픽셀 반올림 허용1px 이내 |
+| 공용 스위치 | 실제 트랙34×20px·손잡이16px, OFF translateX0/ON14px, OFF rgb(212,214,219)/ON rgb(215,25,47) |
+| 조작 | 클릭·프로필 Enter/Space, 스위치 Space·label 클릭, radio ArrowRight, 요약메일 End 선택 정상 |
+| 역할 | 일반 사용자7개↔관리자15개, 프로필 배지 동기화, 일반 화면에서 팝오버 유지 |
+| 안내 화면 경계 | 관리자 화면에서 user선택 시 pipeline replace. 관리자 URL이 history에 남은 상태의 뒤로 가기도 user로는 가림/이동 |
+| 알림 | 한 건 읽음2→1, 모두 읽음0, 안 읽음 빈 상태와 badge/일반 카드 동기화, 기존 안내 URL 이동 |
+| 저장 범위 | 팝오버 닫기/열기·클라이언트 라우트 이동 후 설정 유지, 전체 새로고침 후 초기 관리자·기본 설정 복귀 |
+| 접힘54px | 프로필 트리거48px, 팝오버348px, 팝오버의 숨겨진 data-sidebar-label 없음 |
+| 낮은 높이500px | 팝오버 top17/bottom431/height414px, 본문 내부 스크롤 |
+| 모바일390px·320px | 동작·키보드 접근 확인. 320px에서 팝오버 x16/right320/width304/top17/bottom571로 viewport 내부 |
+| 모바일 포커스 | Tab14회가 내부에 유지됨. 첫 Escape는 프로필만 닫고 트리거로 복귀, 두 번째는 모바일 메뉴 닫기·body 스크롤 복원 |
+| 닫기와 이동 | Escape 포커스 복귀, 외부 메뉴 링크 클릭 시 팝오버 닫기·main-content 포커스 정상 |
+| 긴 표시 데이터 | 테스트 브라우저 DOM의 이름/메일을 일시적으로 길게 넣어 ellipsis를 확인하고 원문을 복원. 실세션은 변경하지 않음 |
+| 오류/요청 | Runtime exception0, 관찰한 신규 API/외부 서비스 요청0 |
+
+- desktop-general, desktop-preferences, collapsed-profile-final, mobile-preferences, notifications-empty 스크린샷을 실제로 캡처·확인했다. 임시 산출물은 시스템 temp의 kpc-profile-execute-_b3wvv0c 아래에 있으며 저장소에 포함하지 않는다.
+- 실계정 Microsoft 로그인과 실로그아웃·설정 저장/메일 발송·Azure 연동은 이번 UI 범위 밖으로 실행하지 않았다. 서버 권한 가드는 기존/신규 자동 테스트로 검증했으며 실인증 통합 검증과 구분한다.
+- 기존 NavSidebar 구분선 좌우6px·width auto는 working tree에 그대로 보존하고, Task 커밋 index에는 포함하지 않았다. 기능 외 새로 발견한 결함은 없다. 기존 도구의 메타데이터 갱신 안내 때문에 의존성을 임의 갱신하지 않았다.

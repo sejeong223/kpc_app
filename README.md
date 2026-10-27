@@ -66,9 +66,13 @@ Git Bash, macOS, Linux에서는 `npm ...`을 사용합니다. Windows PowerShell
 
 메뉴 원본은 `config/sidebar.ts`입니다. 메뉴마다 `/workspace/register`, `/workspace/pipeline`처럼 다른 URL을 사용하고 `app/(authenticated)/workspace/[screen]/page.tsx`에서 해당 메뉴의 간단한 안내를 표시합니다. 새로고침·직접 접근·뒤로/앞으로 이동을 지원하며, 등록되지 않은 screen은 404입니다. 기존 `/` 홈은 유지하고 상단 브랜드를 누르면 돌아갑니다.
 
-`AUTH_ENABLED=false`에서는 일반 7개와 관리자 8개, 총 15개 메뉴 및 안내 화면을 미리볼 수 있습니다. `AUTH_ENABLED=true`에서는 기존 앱 진입 인증이 적용되고, 관리자 메뉴는 Admin에게만 표시되며 해당 안내 페이지도 서버에서 다시 역할을 검사합니다. 이 미리보기 예외는 새 정적 안내 화면에만 적용합니다. 기존 `/admin` 관리자 예시는 인증이 꺼지면 계속 404이며, 실제 관리자 API·데이터 접근을 허용하지 않습니다.
+`AUTH_ENABLED=false`에서는 최초 관리자 미리보기로 일반 7개와 관리자 8개, 총 15개 메뉴를 표시합니다. 프로필에서 일반 사용자를 선택하면 일반 메뉴 7개만 표시하며 관리자 안내 화면을 보고 있었다면 검토 목록으로 이동합니다. `AUTH_ENABLED=true`에서는 기존 앱 진입 인증이 적용되고, 관리자 메뉴는 Admin에게만 표시되며 해당 안내 페이지도 서버에서 다시 역할을 검사합니다. 이 미리보기 예외는 새 정적 안내 화면에만 적용합니다. 기존 `/admin` 관리자 예시는 인증이 꺼지면 계속 404이며, 실제 관리자 API·데이터 접근을 허용하지 않습니다.
 
-하단 프로필은 표시 영역만 구현했습니다. 개발 모드의 이름·소속은 샘플이며 실제 로그인이나 관리자 역할을 생성하지 않습니다. 실제 세션에서는 사용자 이름·역할을 표시하고 기존 로그아웃 링크를 제공합니다. 프로필 팝업·모달, 토큰 사용량·신청, 알림, 권한 전환 및 실제 RFP·AI·제작·관리자 업무 기능은 구현 범위에 포함하지 않습니다.
+하단 프로필을 누르면 **일반·업무 알림·환경 설정** 팝오버가 열립니다. 일반 탭에서는 시연 사용량·작업 수와 역할 전환을, 업무 알림에서는 전체/안 읽음 필터·읽음 처리를, 환경 설정에서는 알림 스위치·요약 메일·화면 기본값 선택을 확인할 수 있습니다. 세그먼트 선택과 ON/OFF는 `components/ui/SegmentedControl.tsx`, `ToggleSwitch.tsx`를 재사용합니다. 접힌 사이드바와 모바일에서도 사용할 수 있습니다.
+
+이 값들은 `ProfilePreviewProvider`의 메모리에만 저장되어 팝오버를 닫거나 메뉴를 이동해도 유지되지만 전체 새로고침 시 초기화됩니다. 사용량 상세 분석·토큰 신청은 준비 중 안내만 표시하며, 설정 API·메일 발송·실제 토큰 집계·신청/승인 기능은 연결하지 않았습니다. 화면 기본값은 시연 선택 상태이며 아직 본문/슬라이드 편집기나 실제 목록/보드를 전환하지 않습니다. 실제 RFP·AI·제작·관리자 업무 기능도 이 범위에 포함하지 않습니다.
+
+개발 모드의 이름·소속·업무 수·알림은 샘플이며 실제 로그인이나 관리자 역할을 생성하지 않습니다. 인증 활성 시 프로필은 실제 세션 역할을 표시하고 미리보기 역할 전환을 비활성화하며, 로그아웃은 기존 `/auth/logout` 경로를 사용합니다. 인증 비활성 시 로그아웃은 안내만 표시합니다.
 
 사이드바·셸·헤더는 각 TSX 안에 `makeStyles`로 스타일 객체를 정의하고 `useStyles()`로 사용합니다. 상태별 클래스는 `mergeClasses`로 결합하며 CSS module을 추가하지 않습니다. `components/providers/FluentUiProvider.tsx`가 작업 영역의 Fluent 테마와 요청별 Griffel renderer를 제공하고 SSR 스타일의 중복 출력을 방지합니다. 로그인 화면과 홈 본문의 기존 스타일은 유지합니다.
 
@@ -186,6 +190,8 @@ Cosmos DB에서 테이블에 해당하는 저장 단위는 컨테이너이며 �
 | `app` | Next.js App Router page와 API |
 | `components/auth` | 로그인 동작과 안내 |
 | `components/layout` | `AppShell` 레이아웃 조립, `NavSidebar` 사이드바, `AppHeader` 상단 헤더. Fluent `makeStyles`를 각 TSX 내부에서 관리 |
+| `components/profile` | 프로필 팝오버·3개 탭·로컬 미리보기 상태 Provider·안내 화면 역할 경계 |
+| `components/ui` | 재사용 가능한 세그먼트 선택·ON/OFF 스위치 |
 | `components/providers.tsx` | 인증 세션 공급 |
 | `components/providers/FluentUiProvider.tsx` | 작업 영역의 Fluent 테마와 Griffel SSR 공급자 |
 | `config/sidebar.ts` | 최종 메뉴·URL·아이콘 키·메뉴 노출 권한의 단일 원본 |

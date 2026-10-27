@@ -4,7 +4,7 @@
 
 하단 프로필을 누르면 기준 HTML과 같은 작은 팝오버가 열리고, `일반`·`업무 알림`·`환경 설정` 탭을 이용할 수 있게 한다. 세그먼트 선택 컨트롤과 ON/OFF 스위치는 공용 컴포넌트로 만든다. 인증 비활성 환경에서는 일반 사용자·관리자를 선택하면 프로필과 사이드바 메뉴가 함께 바뀐다.
 
-사용자의 `$mea` 요청으로 순차 실행 중이다. T01 공용 컨트롤과 T02 프로필 상태·역할 경계의 구현·검증을 완료했으며 T03을 이어서 진행한다. Azure와 실제 인증은 연결하지 않는다.
+사용자의 `$mea` 요청으로 T01~T03 실행을 완료했다. 공용 컨트롤·역할 미리보기·프로필 팝오버를 구현하고 자동 검사와 실제 독립 브라우저 검증을 통과했다. Azure와 실제 인증은 연결하지 않았다.
 
 ## Source Decisions
 
@@ -20,7 +20,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 공용 컨트롤, 역할 미리보기, HTML 기준 프로필 팝오버 | [P01](../phases/2026-10-27-profile-popover-preview/P01-profile-popover/phase.md) |
+| P01 | `done` | 공용 컨트롤, 역할 미리보기, HTML 기준 프로필 팝오버 | [P01](../phases/2026-10-27-profile-popover-preview/P01-profile-popover/phase.md) |
 
 ## Tasks
 
@@ -28,7 +28,7 @@
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | 재사용 가능한 세그먼트 선택·ON/OFF 스위치 | `components/ui/SegmentedControl.tsx`, `components/ui/ToggleSwitch.tsx` |
 | T02 | `done` | 로컬 프로필 상태와 역할에 따른 메뉴·미리보기 화면 연동 | `config/profile-preview.ts`, `lib/profile-preview.ts`, `components/profile/ProfilePreviewProvider.tsx`, `components/profile/PreviewRoleBoundary.tsx`, `config/sidebar.ts`, 앱 레이아웃·workspace 페이지, 관련 테스트 |
-| T03 | `in_progress` | 하단 프로필에서 열리는 3탭 팝오버와 모바일·키보드 통합 | `components/profile/ProfileMenu.tsx`, 탭 컴포넌트 3개, `NavSidebar.tsx`, `AppShell.tsx`, `README.md` |
+| T03 | `done` | 하단 프로필에서 열리는 3탭 팝오버와 모바일·키보드 통합 | `components/profile/ProfileMenu.tsx`, 탭 컴포넌트 3개, `NavSidebar.tsx`, `AppShell.tsx`, `README.md` |
 
 ## UI Contract
 
@@ -79,13 +79,13 @@
 
 ## Completion Criteria
 
-- [ ] T01 공용 컨트롤을 역할·필터·환경 설정에서 재사용한다.
-- [ ] T02 로컬 역할과 메뉴가 일치하고 인증 활성 가드는 유지된다.
-- [ ] T03 HTML의 최종 3개 탭과 프로필 앵커·스크롤·푸터를 재현한다.
-- [ ] 준비 중 버튼·시연 데이터·새로고침 초기화 범위가 명확하다.
-- [ ] 펼침/접힘·모바일·낮은 화면·키보드·라우트 전환을 실제 브라우저에서 확인하고 결과를 구분해 기록한다.
-- [ ] 관련 단위 테스트·typecheck·lint·build를 Task 청사진에 따라 통과한다.
-- [ ] 각 Task를 한국어 커밋 하나로 저장하고 current를 차례로 전진한다.
+- [x] T01 공용 컨트롤을 역할·필터·환경 설정에서 재사용한다.
+- [x] T02 로컬 역할과 메뉴가 일치하고 인증 활성 가드는 유지된다.
+- [x] T03 HTML의 최종 3개 탭과 프로필 앵커·스크롤·푸터를 재현한다.
+- [x] 준비 중 버튼·시연 데이터·새로고침 초기화 범위가 명확하다.
+- [x] 펼침/접힘·모바일·낮은 화면·키보드·라우트 전환을 실제 브라우저에서 확인하고 결과를 구분해 기록한다.
+- [x] 관련 단위 테스트·typecheck·lint·build를 Task 청사진에 따라 통과한다.
+- [x] 각 Task를 한국어 커밋 하나로 저장하고 current를 차례로 전진한다.
 
 ## Granularity Rationale
 
@@ -94,3 +94,7 @@
 ## Adjacent Findings
 
 모바일 포커스 순회와 접힘 라벨 범위는 이번 팝오버가 정상 작동하는 데 필요한 부분이므로 T03에 포함한다. 이번 조사에서 별도 범위 확장이 필요한 새로운 인접 결함은 확인하지 않았다. 기존 Cosmos DB 설정 비교·audit 등 다른 주제는 이 계획에 추가하지 않는다.
+
+## Completion Record
+
+T01 `7f0ac19`, T02 `65d0254`, T03은 이 완료 기록과 동일 커밋의 Plan/Phase/Task 식별자로 확인한다. 자동 검사24개 테스트 파일·240개 테스트 및 typecheck/lint/build를 통과했다. 실제 브라우저 측정·모바일·역할·알림·설정·포커스 결과는 T03 실행 기록에 남겼다. 실계정 인증과 실제 저장/발송은 제외했다. 기존 divider 미커밋 변경은 보존한다.

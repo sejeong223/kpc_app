@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Avatar,
-  Badge,
   Button,
   Divider,
   makeStyles,
@@ -13,7 +11,6 @@ import {
 import {
   AppsRegular,
   ArrowUploadRegular,
-  ChevronUpRegular,
   ClipboardBulletListLtrRegular,
   DataBarVerticalRegular,
   DismissRegular,
@@ -25,7 +22,6 @@ import {
   SearchRegular,
   SettingsRegular,
   ShieldRegular,
-  SignOutRegular,
   SlideLayoutRegular,
   SparkleRegular,
   TextBulletListLtrRegular,
@@ -36,6 +32,7 @@ import { Fragment } from "react";
 
 import { useAuthRuntime } from "@/components/providers";
 import { useProfilePreview } from "@/components/profile/ProfilePreviewProvider";
+import ProfileMenu from "@/components/profile/ProfileMenu";
 import { getVisibleSidebarGroups, type SidebarIcon } from "@/config/sidebar";
 
 const icons = {
@@ -127,12 +124,6 @@ const useStyles = makeStyles({
       },
       '& [aria-current="page"]': { color: "#c8253b" },
       "& [data-sidebar-divider]": { width: "24px", margin: "6px auto", paddingRight: 0 },
-      "& [data-sidebar-profile]": {
-        width: "48px",
-        minWidth: "48px",
-        maxWidth: "48px",
-        columnGap: 0,
-      },
     },
   },
   header: {
@@ -222,68 +213,6 @@ const useStyles = makeStyles({
     rowGap: "8px",
     padding: "12.5px 0",
   },
-  profile: {
-    display: "flex",
-    alignItems: "center",
-    columnGap: "8px",
-    width: "181.141px",
-    minWidth: "181.141px",
-    maxWidth: "181.141px",
-    height: "49px",
-    boxSizing: "border-box",
-    flexShrink: 0,
-    padding: "7px 9px",
-    border: "1px solid #e3e5e9",
-    borderRadius: "10px",
-    backgroundColor: tokens.colorNeutralBackground1,
-  },
-  avatarWrap: { position: "relative", display: "flex", flexShrink: 0 },
-  avatar: { backgroundColor: "#414141", color: "#fff" },
-  adminAvatar: { backgroundColor: "#e60012" },
-  dot: {
-    position: "absolute",
-    top: "-2px",
-    right: "-2px",
-    width: "10px",
-    height: "10px",
-    borderRadius: tokens.borderRadiusCircular,
-    backgroundColor: "#e60012",
-    boxShadow: "0 0 0 2px #fff",
-  },
-  account: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", rowGap: "3px" },
-  accountLine: { display: "flex", alignItems: "center", columnGap: "6px", minWidth: 0 },
-  name: {
-    minWidth: 0,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    color: "#22252b",
-    fontSize: "12px",
-    lineHeight: "15px",
-    fontWeight: 700,
-  },
-  badge: {
-    flexShrink: 0,
-    height: "11px",
-    minWidth: 0,
-    padding: "1px 6px",
-    borderRadius: "3px",
-    fontSize: "9px",
-    lineHeight: "9px",
-    fontWeight: 700,
-    backgroundColor: "#faf0f1",
-    color: "#9b3a46",
-  },
-  department: { color: "#22252b", fontSize: "10px", lineHeight: "10px" },
-  profileChevron: { width: "14px", height: "14px", marginLeft: "auto", flexShrink: 0 },
-  logout: {
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-    color: "#626670",
-    fontSize: "10px",
-    textUnderlineOffset: "3px",
-  },
 });
 
 interface NavSidebarProps {
@@ -305,7 +234,7 @@ export default function NavSidebar({
 }: NavSidebarProps): React.ReactElement {
   const styles = useStyles();
   const { authEnabled, session } = useAuthRuntime();
-  const { state, profile } = useProfilePreview();
+  const { state } = useProfilePreview();
   const pathname = usePathname();
   const groups = getVisibleSidebarGroups({
     authEnabled,
@@ -313,9 +242,6 @@ export default function NavSidebar({
     roles: session?.user.roles,
     previewRole: state.previewRole,
   });
-  const isAdmin = profile.role === "admin";
-  const displayName = profile.name;
-  const roleLabel = isAdmin ? "관리자" : "일반 사용자";
   const navId = `${id}-navigation`;
 
   return (
@@ -380,32 +306,7 @@ export default function NavSidebar({
         ))}
       </nav>
       <div className={styles.footer}>
-        {authEnabled && session && (
-          <Link href="/auth/logout" className={styles.logout} aria-label="로그아웃">
-            <SignOutRegular aria-hidden="true" />
-            <span data-sidebar-label>로그아웃</span>
-          </Link>
-        )}
-        <div className={styles.profile} role="group" aria-label="사용자 프로필" data-sidebar-profile>
-          <span className={styles.avatarWrap}>
-            <Avatar
-              name={displayName}
-              initials={displayName.slice(0, 1)}
-              size={28}
-              className={mergeClasses(styles.avatar, isAdmin && styles.adminAvatar)}
-              aria-hidden="true"
-            />
-            <span className={styles.dot} aria-hidden="true" />
-          </span>
-          <div className={styles.account} data-sidebar-label>
-            <div className={styles.accountLine}>
-              <strong className={styles.name} title={displayName}>{displayName}</strong>
-              <Badge className={styles.badge} appearance="tint" size="small">{roleLabel}</Badge>
-            </div>
-            <span className={styles.department}>{profile.department ?? profile.organization}</span>
-          </div>
-          <ChevronUpRegular className={styles.profileChevron} aria-hidden="true" data-sidebar-label />
-        </div>
+        <ProfileMenu key={`${pathname}:${isOpen}:${isCollapsed}`} isCollapsed={isCollapsed} onNavigate={onNavigate} />
       </div>
     </aside>
   );

@@ -6,16 +6,16 @@
 
 ## Active Phase
 
-[P01 사용자 프로필 팝오버와 역할 미리보기](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/phase.md)
+없음 — [P01 완료](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/phase.md)
 
 ## Active Task
 
-[T03 HTML 기준 프로필 팝오버와 3개 탭 구현](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/T03-profile-popover-ui.md)
+없음 — [T03 완료 기록](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/T03-profile-popover-ui.md)
 
 ## Status
 
-- T01 공용 컨트롤, T02 프로필 상태·역할 경계 구현·검증 완료
-- P01: done 2/3, Active Task T03 in_progress
+- T01~T03 전체 구현·검증 완료
+- P01: done 3/3, 남은 Active Task 없음
 - 확정 결정: [프로필 팝오버·공용 토글·역할 미리보기 범위](./decisions/2026-10-27-profile-popover-preview.md)
 - 기준 HTML의 최종 프로필 팝오버: 일반·업무 알림·환경 설정 3탭
 - 사용자 확인: 상세 분석·토큰 신청은 안내만 표시, 역할 전환·알림 읽음·설정은 로컬 동작
@@ -23,11 +23,14 @@
 - 인증 비활성 최초 admin, 일반 사용자 선택 시 일반7/관리자 선택 시 전체15개 메뉴. 실제 인증 활성 시 세션 역할 우선
 - 상태는 레이아웃 Provider 메모리로 유지, 전체 새로고침 초기화. DB·쿠키·localStorage 저장 없음
 - 기존 NavSidebar 구분선 좌우6px·width auto 미커밋 변경을 보존하며 Task 변경에 자동 포함하지 않는다
-- 사용자의 `$mea` 요청으로 순차 실행 중. T01·T02 완료 후 T03을 자동으로 이어간다. 의존성 설치·Azure 연결은 하지 않는다.
+- 사용자의 `$mea` 요청 실행 완료. T01 7f0ac19, T02 65d0254, T03은 본 완료 기록과 같은 커밋. 의존성 설치·Azure 연결은 하지 않았다.
+
+- 검증: typecheck/lint/build 및 24개 파일240개 테스트 통과. 실제 독립 Chrome에서 펼침/접힘/모바일·역할·알림·설정·포커스를 확인했다.
+- 실계정 Microsoft 로그인·실제 설정 저장/발송은 실행하지 않았고 기존 서버 가드는 유지했다.
 
 ## Next Step (IMPORTANT)
 
-T03 청사진을 읽고 ProfileMenu와 일반·업무 알림·환경 설정 패널을 구현한다. T01 공용 컨트롤과 T02 Provider를 사용하며 NavSidebar footer·AppShell 모바일 포커스를 함께 연결한다. 검증 결과와 실제 화면 확인 제한을 구분해 기록한다.
+현재 계획의 남은 Task는 없다. 하단 프로필에서 일반·업무 알림·환경 설정과 역할 미리보기를 사용할 수 있다. 역할/설정/읽음은 메모리에만 유지되고 전체 새로고침하면 초기화된다. 상세 분석·토큰 신청·실제 API/로그인 연결은 별도 요청 범위로 진행한다. 기존 미커밋 구분선 변경은 계속 보존한다.
 
 ## Previous Plan
 
