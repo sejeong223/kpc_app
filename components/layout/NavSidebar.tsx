@@ -123,7 +123,7 @@ const useStyles = makeStyles({
         color: "#777d89",
       },
       '& [aria-current="page"]': { color: "#c8253b" },
-      "& [data-sidebar-divider]": { width: "24px", margin: "6px auto", paddingRight: 0 },
+      "& [data-sidebar-divider]": { margin: "6px", paddingRight: 0 },
     },
   },
   header: {
@@ -198,8 +198,9 @@ const useStyles = makeStyles({
   icon: { display: "none", width: "18px", height: "18px", flexShrink: 0 },
   divider: {
     flexGrow: 0,
+    width: "auto",
     minHeight: "1px",
-    margin: "8px 0",
+    margin: "8px 6px",
     paddingRight: "12px",
     "::before": { borderTopColor: "#e6e8ec" },
     "::after": { borderTopColor: "#e6e8ec" },

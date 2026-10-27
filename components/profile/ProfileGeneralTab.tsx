@@ -42,7 +42,6 @@ const useStyles = makeStyles({
   quickLabel: { fontSize: "10.5px", lineHeight: "16px", color: "#74747d", fontWeight: 700, whiteSpace: "nowrap" },
   meta: { color: "#74747d", fontSize: "10.5px", fontWeight: 400, lineHeight: "16px" },
   help: { margin: "6px 0 0", fontSize: "11px", lineHeight: "17px", color: "#74747d" },
-  sample: { margin: "-5px 0 0", textAlign: "right", fontSize: "10px", color: "#74747d" },
 });
 
 export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDialog }: ProfileActionPanelProps): React.ReactElement {
@@ -94,7 +93,6 @@ export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDia
         />
         <p className={styles.help}>{!rolePreviewEnabled ? "현재 로그인 권한을 사용합니다." : isAdmin ? "작성 자산 관리 · 운영 정책 메뉴가 열립니다" : "관리자로 바꾸면 작성 자산 관리 · 운영 정책 메뉴가 열립니다"}</p>
       </section>
-      <p className={styles.sample}>사용량·작업 수는 시연 데이터입니다.</p>
     </div>
   );
 }

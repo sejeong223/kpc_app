@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Dialog, DialogContent, DialogSurface, DialogTitle, makeStyles, shorthands } from "@fluentui/react-components";
-import { DismissRegular } from "@fluentui/react-icons";
+import { Dismiss12Regular } from "@fluentui/react-icons";
 import { useEffect, useId, useRef } from "react";
 
 export interface ModalFrameProps {
@@ -34,6 +34,7 @@ const useStyles = makeStyles({
   title: { display: "block", margin: 0, color: "#161616", fontFamily: "inherit", fontSize: "14px", fontWeight: 800, lineHeight: "21px", letterSpacing: "-.01em", ":focus": { outlineStyle: "none" } },
   subtitle: { margin: "3px 0 0", fontSize: "11px", color: "#74747d", overflowWrap: "anywhere" },
   close: { width: "32px", minWidth: "32px", height: "32px", padding: 0, borderRadius: "8px", color: "#55585f", flexShrink: 0 },
+  closeIcon: { width: "12px", height: "12px", fontSize: "12px" },
   body: {
     display: "flex", flexDirection: "column", gap: "12px",
     flex: 1, minHeight: 0, minWidth: 0, padding: "4px 18px 16px",
@@ -83,7 +84,7 @@ export default function ModalFrame({
             <DialogTitle ref={titleRef} id={id + "-title"} tabIndex={-1} className={styles.title}>{title}</DialogTitle>
             {subtitle && <p className={styles.subtitle} id={id + "-description"}>{subtitle}</p>}
           </div>
-          <Button type="button" appearance="subtle" className={styles.close} icon={<DismissRegular />} aria-label="모달 닫기" onClick={onClose} />
+          <Button type="button" appearance="subtle" className={styles.close} icon={{ children: <Dismiss12Regular />, className: styles.closeIcon }} aria-label="모달 닫기" onClick={onClose} />
         </header>
         <DialogContent ref={bodyRef} className={styles.body} tabIndex={0} role="region" aria-label={title + " 내용"} data-modal-body>{children}</DialogContent>
         <footer className={styles.footer}>{footer}</footer>

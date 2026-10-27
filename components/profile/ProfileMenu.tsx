@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Avatar, Badge, Button, makeStyles, mergeClasses, shorthands,
+  Avatar, Badge, Button, makeStyles, mergeClasses, shorthands, tabClassNames,
   Popover, PopoverSurface, PopoverTrigger, Tab, TabList,
 } from "@fluentui/react-components";
 import { ChevronDownRegular, ChevronUpRegular, DismissRegular } from "@fluentui/react-icons";
@@ -52,8 +52,9 @@ const useStyles = makeStyles({
     },
   },
   avatarWrap: { position: "relative", display: "flex", flexShrink: 0 },
-  avatar: { backgroundColor: "#414141", color: "#fff" },
+  avatar: { backgroundColor: "#414141", color: "#fff", fontSize: "12px", fontWeight: 700 },
   adminAvatar: { backgroundColor: "#e60012" },
+  avatarFace: { backgroundColor: "inherit", color: "inherit", border: 0, fontSize: "inherit", fontWeight: "inherit" },
   dot: {
     position: "absolute", top: "-2px", right: "-2px", width: "10px", height: "10px",
     borderRadius: "50%", backgroundColor: "#e60012", boxShadow: "0 0 0 2px #fff",
@@ -68,6 +69,7 @@ const useStyles = makeStyles({
     flexShrink: 0, height: "11px", minWidth: 0, padding: "1px 6px", borderRadius: "3px",
     fontSize: "9px", lineHeight: "9px", fontWeight: 700, backgroundColor: "#faf0f1", color: "#9b3a46",
   },
+  adminBadge: { ...shorthands.borderColor("#e60012") },
   department: { color: "#22252b", fontSize: "10px", lineHeight: "10px" },
   chevron: { width: "14px", height: "14px", marginLeft: "auto", flexShrink: 0 },
   surface: {
@@ -94,16 +96,30 @@ const useStyles = makeStyles({
   close: { width: "32px", minWidth: "32px", height: "32px", padding: 0, color: "#55585f", borderRadius: "8px" },
   tabs: { display: "flex", padding: "0 8px", flexShrink: 0, borderBottom: "1px solid #eff0f3" },
   tab: {
-    display: "inline-flex", flex: 1, justifyContent: "center", minWidth: 0,
+    // Fluent overlays visible and reserved label slots in the same grid cell.
+    display: "grid", flex: 1, gridTemplateColumns: "minmax(0, 1fr)",
+    alignItems: "center", justifyContent: "center", justifyItems: "center", minWidth: 0,
     height: "38px", padding: "0 4px", borderRadius: 0, borderBottom: "2px solid transparent",
     color: "#74747d", fontFamily: "inherit",
+    [`& .${tabClassNames.content}`]: { color: "#74747d" },
+    [`:enabled:hover .${tabClassNames.content}`]: { color: "#34363c" },
+    [`:enabled:active .${tabClassNames.content}`]: { color: "#34363c" },
     "::before": { display: "none" }, "::after": { display: "none" },
     ":hover": { color: "#34363c" },
   },
-  activeTab: { color: "#c91c2b", borderBottomColor: "#d7192f", ":hover": { color: "#c91c2b" } },
-  tabContent: { display: "inline-flex", alignItems: "center", gap: "5px", color: "inherit", fontSize: "12px", fontWeight: 750, whiteSpace: "nowrap" },
+  activeTab: {
+    color: "#c91c2b", borderBottomColor: "#d7192f", ":hover": { color: "#c91c2b" },
+    [`& .${tabClassNames.content}`]: { color: "#c91c2b" },
+    [`:enabled:hover .${tabClassNames.content}`]: { color: "#c91c2b" },
+    [`:enabled:active .${tabClassNames.content}`]: { color: "#c91c2b" },
+  },
+  tabContent: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: "100%", gap: "5px", color: "inherit", fontSize: "12px", fontWeight: 750, whiteSpace: "nowrap" },
   count: { minWidth: "17px", height: "17px", padding: "0 5px", borderRadius: "9px", backgroundColor: "#d7192f", color: "#fff", fontSize: "10px", fontWeight: 800 },
-  body: { flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "12px 14px", backgroundColor: "#fafbfc" },
+  body: {
+    flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "12px 14px", backgroundColor: "#fafbfc",
+    scrollbarWidth: "none",
+    "::-webkit-scrollbar": { display: "none" },
+  },
   notice: { marginTop: "12px", padding: "8px 10px", border: "1px solid #f3c7cd", borderRadius: "8px", color: "#9b3a46", backgroundColor: "#fff8f9", fontSize: "11px", lineHeight: "16px" },
   footer: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexShrink: 0, padding: "8px 10px 8px 16px", borderTop: "1px solid #eff0f3", backgroundColor: "#fff" },
   version: { fontSize: "10px", color: "#74747d" },
@@ -165,13 +181,13 @@ export default function ProfileMenu({ isCollapsed, onNavigate }: ProfileMenuProp
           data-sidebar-profile
         >
           <span className={styles.avatarWrap}>
-            <Avatar name={profile.name} initials={profile.name.slice(0, 1)} size={28} className={mergeClasses(styles.avatar, isAdmin && styles.adminAvatar)} aria-hidden="true" />
+            <Avatar name={profile.name} initials={{ children: profile.name.slice(0, 1), className: styles.avatarFace }} size={28} className={mergeClasses(styles.avatar, isAdmin && styles.adminAvatar)} aria-hidden="true" />
             <span className={styles.dot} aria-hidden="true" />
           </span>
           <span className={styles.account} data-profile-trigger-label>
             <span className={styles.accountLine}>
               <strong className={styles.name} title={profile.name}>{profile.name}</strong>
-              <Badge className={styles.badge} appearance="tint" size="small">{roleLabel}</Badge>
+              <Badge className={mergeClasses(styles.badge, isAdmin && styles.adminBadge)} appearance="tint" size="small">{roleLabel}</Badge>
             </span>
             <span className={styles.department}>{profile.department ?? profile.organization}</span>
           </span>
@@ -192,7 +208,7 @@ export default function ProfileMenu({ isCollapsed, onNavigate }: ProfileMenuProp
         }}
       >
         <header className={styles.header}>
-          <Avatar name={profile.name} initials={profile.name.slice(0, 1)} size={40} className={styles.headerAvatar} aria-hidden="true" />
+          <Avatar name={profile.name} initials={{ children: profile.name.slice(0, 1), className: styles.avatarFace }} size={40} className={styles.headerAvatar} aria-hidden="true" />
           <div className={styles.identity}>
             <div className={styles.identityLine}>
               <strong className={styles.headerName} title={profile.name}>{profile.name}</strong>

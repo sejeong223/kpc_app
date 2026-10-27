@@ -39,7 +39,7 @@ const useStyles = makeStyles({
   meta: { color: "#74747d", fontSize: "11px", overflowWrap: "anywhere" },
   pending: { display: "flex", alignItems: "flex-start", gap: "6px", fontSize: "11px", lineHeight: "17px", fontWeight: 700, padding: "6px 9px", borderRadius: "8px", backgroundColor: "#fff7e8", color: "#9a5b00", overflowWrap: "anywhere" },
   icon: { width: "14px", height: "14px", flexShrink: 0, marginTop: "2px" },
-  field: { display: "flex", flexDirection: "column", gap: "5px", minWidth: 0, "& > label": { fontFamily: "inherit", fontSize: "12px", fontWeight: 700 } },
+  field: { display: "flex", flexDirection: "column", gap: "5px", minWidth: 0, "& > label": { padding: 0, margin: 0, fontFamily: "inherit", fontSize: "11px", fontWeight: 700, color: "var(--ink3, #55585f)" } },
   choices: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px", minWidth: 0 },
   custom: { width: "110px", minWidth: 0, height: "30px", borderRadius: "8px", ...shorthands.borderColor("#dddde2"), fontFamily: "inherit", fontSize: "12px" },
   select: { width: "100%", minWidth: 0, height: "32px", borderRadius: "8px", ...shorthands.borderColor("#dddde2"), fontFamily: "inherit", fontSize: "12px" },

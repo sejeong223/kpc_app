@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, makeStyles, Toast, Toaster, ToastTitle, useToastController } from "@fluentui/react-components";
-import { AddRegular, ChevronLeftRegular } from "@fluentui/react-icons";
+import { Button, makeStyles, mergeClasses, shorthands, Toast, Toaster, ToastTitle, useToastController } from "@fluentui/react-components";
+import { AddRegular, ChevronLeft12Regular } from "@fluentui/react-icons";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -16,6 +16,18 @@ import TokenUsagePanel from "./TokenUsagePanel";
 
 const useStyles = makeStyles({
   button: { height: "30px", minWidth: 0, padding: "0 12px", borderRadius: "8px", fontFamily: "inherit", fontSize: "12px", fontWeight: 700 },
+  cancelButton: { height: "32px", border: "1px solid var(--line3, #dddde2)" },
+  backIcon: { width: "12px", height: "12px", fontSize: "12px" },
+  submitButton: {
+    height: "32px",
+    ":disabled": {
+      backgroundColor: "var(--red, #d7192f)", ...shorthands.borderColor("var(--red, #d7192f)"),
+      color: "#fff", opacity: 0.45, cursor: "not-allowed",
+    },
+    "&:disabled:hover, &:disabled:hover:active, &:disabled:active:focus-visible": {
+      backgroundColor: "#c31429", ...shorthands.borderColor("#c31429"), color: "#fff",
+    },
+  },
   spacer: { flex: 1 },
   toaster: { maxWidth: "calc(100vw - 32px)", zIndex: 4400 },
   toast: { width: "100%", maxWidth: "calc(100vw - 32px)", boxSizing: "border-box", fontFamily: "inherit", overflowWrap: "anywhere" },
@@ -95,11 +107,11 @@ export default function TokenDialogs(): React.ReactElement {
         <Button type="button" appearance="primary" className={styles.button} icon={<AddRegular />}
           onClick={() => openTokenDialog("request")}>토큰 추가 신청</Button>
       </> : <>
-        <Button type="button" appearance="subtle" className={styles.button} icon={<ChevronLeftRegular />}
+        <Button type="button" appearance="subtle" className={styles.button} icon={{ children: <ChevronLeft12Regular />, className: styles.backIcon }}
           onClick={() => openTokenDialog("usage")}>사용량 보기</Button>
         <span className={styles.spacer} />
-        <Button type="button" className={styles.button} onClick={close}>취소</Button>
-        <Button type="submit" form={formId} appearance="primary" className={styles.button} disabled={!requestValid}>신청하기</Button>
+        <Button type="button" className={mergeClasses(styles.button, styles.cancelButton)} onClick={close}>취소</Button>
+        <Button type="submit" form={formId} appearance="primary" className={mergeClasses(styles.button, styles.submitButton)} disabled={!requestValid}>신청하기</Button>
       </>}
     >
       {view === "usage" && <TokenUsagePanel snapshot={TOKEN_USAGE_SNAPSHOT} used={PROFILE_TOKEN_USAGE.used} limit={PROFILE_TOKEN_USAGE.limit} />}
