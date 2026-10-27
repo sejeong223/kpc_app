@@ -27,6 +27,9 @@ describe("profile preview state", () => {
     expect(first.notifications[0]).not.toBe(PROFILE_NOTIFICATION_SEED[0]);
     expect(first.preferences).not.toBe(second.preferences);
     expect(first.preferences).not.toBe(PROFILE_PREFERENCE_DEFAULTS);
+    expect(first.tokens).not.toBe(second.tokens);
+    expect(first.tokens.requestDraft).not.toBe(second.tokens.requestDraft);
+    expect(first.tokens.requests).not.toBe(second.tokens.requests);
   });
 
   it("marks one or all notifications read without altering earlier states", () => {
@@ -69,11 +72,35 @@ describe("profile preview state", () => {
     expect(getVisibleProfileNotifications([], "all")).toEqual([]);
     expect(getVisibleProfileNotifications([], "unread")).toEqual([]);
   });
+
+  it("delegates token actions while preserving other profile state and vice versa", () => {
+    const initial = createInitialProfilePreviewState();
+    const open = profilePreviewReducer(initial, { type: "token", action: { type: "open", view: "request" } });
+    expect(open.tokens.dialogView).toBe("request");
+    expect(open.notifications).toBe(initial.notifications);
+    expect(open.preferences).toBe(initial.preferences);
+    expect(open.previewRole).toBe(initial.previewRole);
+    expect(open.selectedTab).toBe(initial.selectedTab);
+    const reason = profilePreviewReducer(open, { type: "token", action: { type: "set-reason", value: "추가 신청" } });
+    const submitted = profilePreviewReducer(reason, {
+      type: "token", action: {
+        type: "submit", requestId: "one", submittedAt: "2026-10-27T01:00:00.000Z",
+        requesterName: "정소담", department: null,
+      },
+    });
+    expect(submitted.tokens.requests).toHaveLength(1);
+    const role = profilePreviewReducer(submitted, { type: "set-role", role: "user" });
+    const settings = profilePreviewReducer(role, { type: "set-preference", key: "comments", value: false });
+    const read = profilePreviewReducer(settings, { type: "mark-notification-read", id: "n1" });
+    expect(read.tokens).toBe(submitted.tokens);
+    expect(profilePreviewReducer(read, { type: "token", action: { type: "close" } })).toBe(read);
+    expect(initial.tokens.requests).toHaveLength(0);
+  });
 });
 
 describe("token display", () => {
   it.each([
-    [0, "0"], [999, "999"], [1000, "1K"], [72400, "72.4K"], [27600, "27.6K"], [100000, "100K"],
+    [0, "0"], [999, "999"], [1000, "1K"], [72400, "72.4K"], [27600, "27.6K"], [100000, "100K"], [112220, "112K"],
   ] as const)("formats %s as %s", (value, expected) => {
     expect(formatTokenCount(value)).toBe(expected);
   });

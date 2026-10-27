@@ -12,6 +12,7 @@ import {
   type ProfilePreviewState,
 } from "@/config/profile-preview";
 import { APP_ROLES, hasRole, type AppRole } from "@/lib/auth/roles";
+import { createInitialTokenPreviewState, tokenPreviewReducer } from "@/lib/token-preview";
 
 export function createInitialProfilePreviewState(): ProfilePreviewState {
   return {
@@ -20,6 +21,7 @@ export function createInitialProfilePreviewState(): ProfilePreviewState {
     notificationFilter: "all",
     notifications: PROFILE_NOTIFICATION_SEED.map((notification) => ({ ...notification })),
     preferences: { ...PROFILE_PREFERENCE_DEFAULTS },
+    tokens: createInitialTokenPreviewState(),
   };
 }
 
@@ -28,6 +30,10 @@ export function profilePreviewReducer(
   action: ProfilePreviewAction,
 ): ProfilePreviewState {
   switch (action.type) {
+    case "token": {
+      const tokens = tokenPreviewReducer(state.tokens, action.action);
+      return tokens === state.tokens ? state : { ...state, tokens };
+    }
     case "set-role":
       return { ...state, previewRole: action.role };
     case "set-tab":

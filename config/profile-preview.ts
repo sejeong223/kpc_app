@@ -1,4 +1,5 @@
 import type { SidebarScreen } from "@/config/sidebar";
+import type { TokenPreviewAction, TokenPreviewState } from "@/config/token-preview";
 
 export type PreviewRole = "user" | "admin";
 export type ProfileTab = "general" | "notifications" | "preferences";
@@ -44,6 +45,7 @@ export interface ProfilePreviewState {
   notificationFilter: NotificationFilter;
   notifications: ProfileNotification[];
   preferences: ProfilePreferences;
+  tokens: TokenPreviewState;
 }
 
 export type ProfilePreferenceAction = {
@@ -60,6 +62,7 @@ export type ProfilePreviewAction =
   | { type: "set-notification-filter"; filter: NotificationFilter }
   | { type: "mark-notification-read"; id: string }
   | { type: "mark-all-notifications-read" }
+  | { type: "token"; action: TokenPreviewAction }
   | ProfilePreferenceAction;
 
 // Display-only fixtures. These values never represent a session or server grants.
