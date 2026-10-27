@@ -21,8 +21,6 @@ import {
   EditRegular,
   HistoryRegular,
   MoneyRegular,
-  PanelLeftContract20Regular,
-  PanelLeftExpand20Regular,
   PeopleRegular,
   SearchRegular,
   SettingsRegular,
@@ -64,6 +62,26 @@ const groupLabels = {
   admin: "관리자 메뉴",
 };
 
+function CollapseIcon({ size = 18 }: { size?: number }): React.ReactElement {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" role="img" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="8" y1="4" x2="8" y2="20" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M14.5 8.5l-4 3.5 4 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ExpandIcon({ size = 18 }: { size?: number }): React.ReactElement {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" role="img" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="16" y1="4" x2="16" y2="20" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M9.5 8.5l4 3.5-4 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 const useStyles = makeStyles({
   root: {
     position: "fixed",
@@ -99,7 +117,7 @@ const useStyles = makeStyles({
       "& [data-sidebar-icon]": { display: "block" },
       "& [data-sidebar-header]": { paddingLeft: "10px", paddingRight: "10px" },
       "& nav": { padding: "8px 0" },
-      "& [data-sidebar-group]": { alignItems: "center", rowGap: "4px" },
+      "& [data-sidebar-group]": { alignItems: "center", rowGap: "4px", paddingRight: 0 },
       "& [data-sidebar-link]": {
         justifyContent: "center",
         width: "38px",
@@ -108,7 +126,7 @@ const useStyles = makeStyles({
         color: "#777d89",
       },
       '& [aria-current="page"]': { color: "#c8253b" },
-      "& [data-sidebar-divider]": { width: "24px", margin: "6px auto" },
+      "& [data-sidebar-divider]": { width: "24px", margin: "6px auto", paddingRight: 0 },
       "& [data-sidebar-profile]": {
         width: "48px",
         minWidth: "48px",
@@ -144,7 +162,6 @@ const useStyles = makeStyles({
     color: "#616773",
     "@media (max-width: 760px)": { display: "none" },
   },
-  toggleIcon: { width: "19px", height: "19px", flexShrink: 0 },
   mobileClose: {
     display: "none",
     minWidth: "30px",
@@ -160,7 +177,7 @@ const useStyles = makeStyles({
     scrollbarWidth: "thin",
     scrollbarColor: "#d6d9df #fafafa",
   },
-  group: { display: "flex", flexDirection: "column", rowGap: "2px" },
+  group: { display: "flex", flexDirection: "column", rowGap: "2px", paddingRight: "12px" },
   link: {
     display: "flex",
     alignItems: "center",
@@ -191,7 +208,8 @@ const useStyles = makeStyles({
   divider: {
     flexGrow: 0,
     minHeight: "1px",
-    margin: "8px 6px",
+    margin: "8px 0",
+    paddingRight: "12px",
     "::before": { borderTopColor: "#e6e8ec" },
     "::after": { borderTopColor: "#e6e8ec" },
   },
@@ -315,9 +333,7 @@ export default function NavSidebar({
         <Button
           className={styles.toggle}
           appearance="subtle"
-          icon={isCollapsed
-            ? <PanelLeftExpand20Regular className={styles.toggleIcon} aria-hidden="true" />
-            : <PanelLeftContract20Regular className={styles.toggleIcon} aria-hidden="true" />}
+          icon={isCollapsed ? <ExpandIcon /> : <CollapseIcon />}
           aria-label={isCollapsed ? "왼쪽 메뉴 펼치기" : "왼쪽 메뉴 접기"}
           aria-expanded={!isCollapsed}
           aria-controls={navId}
