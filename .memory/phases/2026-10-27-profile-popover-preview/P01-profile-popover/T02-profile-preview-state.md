@@ -1,6 +1,6 @@
 # Task: T02 프로필 시연 상태와 역할별 메뉴·화면 연동
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -265,12 +265,12 @@
 
 ## Acceptance Criteria
 
-- [ ] 프로필 상태가 client-safe 모델·순수 함수·전용 Provider로 분리되어 있다.
-- [ ] 기본 admin/선택 user의 메뉴가 15/7개이며 상태가 시연 데이터에만 영향을 준다.
-- [ ] auth 활성 역할·서버 가드·기존 관리자 예시 정책은 유지된다.
-- [ ] user 미리보기에서는 관리자 안내 내용이 렌더되지 않고 pipeline으로 이동할 수 있는 경계가 있다.
-- [ ] 기존 구분선 미커밋 변경과 T01 공용 컨트롤을 보존한다.
-- [ ] 관련 신규 테스트와 기존 서버 인가 회귀 테스트가 통과한다.
+- [x] 프로필 상태가 client-safe 모델·순수 함수·전용 Provider로 분리되어 있다.
+- [x] 기본 admin/선택 user의 메뉴가 15/7개이며 상태가 시연 데이터에만 영향을 준다.
+- [x] auth 활성 역할·서버 가드·기존 관리자 예시 정책은 유지된다.
+- [x] user 미리보기에서는 관리자 안내 내용이 렌더되지 않고 pipeline으로 이동할 수 있는 경계가 있다.
+- [x] 기존 구분선 미커밋 변경과 T01 공용 컨트롤을 보존한다.
+- [x] 관련 신규 테스트와 기존 서버 인가 회귀 테스트가 통과한다.
 
 ## Validation
 
@@ -296,6 +296,15 @@ Task: T02-profile-preview-state
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 Task의 변경·완료 기록을 포함한 동일 커밋(Plan/Phase/Task 식별자로 조회)
+
+## Execution Result — 2026-10-27
+
+- client-safe 프로필 fixture·순수 reducer·토큰/역할 selector와 레이아웃 Provider를 추가했다. 상태는 메모리에만 유지한다.
+- 실제 Session은 변경하지 않으며, 인증 활성일 때 역할 변경 dispatch를 차단하고 실제 역할이 표시/메뉴를 결정한다.
+- 미리보기 일반7/관리자15 메뉴와 관리자 안내 화면의 즉시 가림·pipeline replace 경계를 구현했다.
+- 관련5개 테스트 파일91개 통과, 타입 검사·대상 ESLint·공백 검사 통과. 이후 변경된 테스트2개 파일도 재검증했다.
+- SSR의 내용 가림과 실제 브라우저 redirect 검증을 구분한다. 클릭/뒤로 가기/모바일 확인은 T03에서 진행한다.
+- 기존 divider 좌우6px·width auto는 working tree에 보존하고 이번 Task index에는 포함하지 않았다. 추가 범위 밖 결함은 확인하지 않았다.

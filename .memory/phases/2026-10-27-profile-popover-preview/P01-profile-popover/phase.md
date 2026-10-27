@@ -9,13 +9,13 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` ✅ | 공용 세그먼트 선택·ON/OFF 스위치 | [T01](./T01-shared-toggle-controls.md) |
-| T02 | `in_progress` 🔵 | 프로필 시연 상태·역할별 메뉴·안내 화면 경계 | [T02](./T02-profile-preview-state.md) |
-| T03 | `pending` | HTML 기준 3탭 팝오버·트리거·모바일·검증 | [T03](./T03-profile-popover-ui.md) |
+| T02 | `done` ✅ | 프로필 시연 상태·역할별 메뉴·안내 화면 경계 | [T02](./T02-profile-preview-state.md) |
+| T03 | `in_progress` 🔵 | HTML 기준 3탭 팝오버·트리거·모바일·검증 | [T03](./T03-profile-popover-ui.md) |
 
 ## Progress
 
-- done: 1/3 (active: T02)
-- T01 공용 컨트롤 구현·코드 검증 완료. T02 진행 준비.
+- done: 2/3 (active: T03)
+- T01·T02 구현·코드 검증 완료. T03 프로필 팝오버 연결 진행 준비.
 
 ## Dependencies
 

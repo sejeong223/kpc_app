@@ -57,4 +57,18 @@ describe("sidebar visibility", () => {
     expect(JSON.stringify(sidebarGroups)).toBe(original);
     expect(getVisibleSidebarGroups({ authEnabled: false, authenticated: false }).flatMap((group) => group.items)).toHaveLength(15);
   });
+
+  it.each([
+    { authEnabled: false, authenticated: false, previewRole: "user", roles: [], count: 7 },
+    { authEnabled: false, authenticated: false, previewRole: "admin", roles: [], count: 15 },
+    { authEnabled: true, authenticated: true, previewRole: "admin", roles: ["User"], count: 7 },
+    { authEnabled: true, authenticated: true, previewRole: "user", roles: ["Admin"], count: 15 },
+    { authEnabled: true, authenticated: false, previewRole: "admin", roles: ["Admin"], count: 0 },
+    { authEnabled: true, authenticated: true, previewRole: "admin", roles: ["Owner"], count: 7 },
+  ] as const)("keeps preview $previewRole separate from session roles $roles", ({ count, ...context }) => {
+    const before = JSON.stringify(sidebarGroups);
+    const items = getVisibleSidebarGroups(context).flatMap((group) => group.items);
+    expect(items.map((item) => item.label)).toEqual(expectedLabels.slice(0, count));
+    expect(JSON.stringify(sidebarGroups)).toBe(before);
+  });
 });

@@ -4,7 +4,7 @@
 
 하단 프로필을 누르면 기준 HTML과 같은 작은 팝오버가 열리고, `일반`·`업무 알림`·`환경 설정` 탭을 이용할 수 있게 한다. 세그먼트 선택 컨트롤과 ON/OFF 스위치는 공용 컴포넌트로 만든다. 인증 비활성 환경에서는 일반 사용자·관리자를 선택하면 프로필과 사이드바 메뉴가 함께 바뀐다.
 
-사용자의 `$mea` 요청으로 순차 실행 중이다. T01 공용 컨트롤 구현·코드 검증을 완료했으며 T02와 T03을 이어서 진행한다. Azure와 실제 인증은 연결하지 않는다.
+사용자의 `$mea` 요청으로 순차 실행 중이다. T01 공용 컨트롤과 T02 프로필 상태·역할 경계의 구현·검증을 완료했으며 T03을 이어서 진행한다. Azure와 실제 인증은 연결하지 않는다.
 
 ## Source Decisions
 
@@ -27,8 +27,8 @@
 | Task | Status | 관찰 가능한 결과 | 주요 파일 |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | 재사용 가능한 세그먼트 선택·ON/OFF 스위치 | `components/ui/SegmentedControl.tsx`, `components/ui/ToggleSwitch.tsx` |
-| T02 | `in_progress` | 로컬 프로필 상태와 역할에 따른 메뉴·미리보기 화면 연동 | `config/profile-preview.ts`, `lib/profile-preview.ts`, `components/profile/ProfilePreviewProvider.tsx`, `components/profile/PreviewRoleBoundary.tsx`, `config/sidebar.ts`, 앱 레이아웃·workspace 페이지, 관련 테스트 |
-| T03 | `pending` | 하단 프로필에서 열리는 3탭 팝오버와 모바일·키보드 통합 | `components/profile/ProfileMenu.tsx`, 탭 컴포넌트 3개, `NavSidebar.tsx`, `AppShell.tsx`, `README.md` |
+| T02 | `done` | 로컬 프로필 상태와 역할에 따른 메뉴·미리보기 화면 연동 | `config/profile-preview.ts`, `lib/profile-preview.ts`, `components/profile/ProfilePreviewProvider.tsx`, `components/profile/PreviewRoleBoundary.tsx`, `config/sidebar.ts`, 앱 레이아웃·workspace 페이지, 관련 테스트 |
+| T03 | `in_progress` | 하단 프로필에서 열리는 3탭 팝오버와 모바일·키보드 통합 | `components/profile/ProfileMenu.tsx`, 탭 컴포넌트 3개, `NavSidebar.tsx`, `AppShell.tsx`, `README.md` |
 
 ## UI Contract
 

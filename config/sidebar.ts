@@ -1,4 +1,5 @@
 import { APP_ROLES, hasRole, type AppRole } from "@/lib/auth/roles";
+import type { PreviewRole } from "@/config/profile-preview";
 
 export type SidebarScreen =
   | "register"
@@ -51,6 +52,7 @@ export interface SidebarNavigationContext {
   authEnabled: boolean;
   authenticated: boolean;
   roles?: readonly string[];
+  previewRole?: PreviewRole;
 }
 
 function navigationItem(
@@ -108,16 +110,15 @@ export function getVisibleSidebarGroups(
 ): SidebarNavigationGroup[] {
   if (context.authEnabled && !context.authenticated) return [];
 
-  // Auth-disabled previews contain static UI only. The server page independently
-  // enforces Admin access as soon as authentication is enabled.
+  // Preview roles only select static UI. Real authorization always uses session roles.
   return sidebarGroups
     .map((group) => ({
       ...group,
       items: group.items.filter(
         (item) =>
-          !context.authEnabled ||
-          !item.requiredRole ||
-          hasRole(context.roles, item.requiredRole),
+          context.authEnabled
+            ? !item.requiredRole || hasRole(context.roles, item.requiredRole)
+            : !item.requiredRole || (context.previewRole ?? "admin") === "admin",
       ),
     }))
     .filter((group) => group.items.length > 0);

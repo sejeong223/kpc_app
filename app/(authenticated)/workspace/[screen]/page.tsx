@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import PreviewRoleBoundary from "@/components/profile/PreviewRoleBoundary";
 import { serverEnv } from "@/config/env";
 import { getSidebarItemByScreen } from "@/config/sidebar";
 import { requireRole } from "@/lib/auth/guards";
@@ -22,9 +23,11 @@ export default async function WorkspaceScreenPage({
   }
 
   return (
-    <section aria-labelledby="workspace-screen-title">
-      <h1 id="workspace-screen-title">{item.label}</h1>
-      <p>{`${item.label} 화면입니다.`}</p>
-    </section>
+    <PreviewRoleBoundary requiredRole={item.requiredRole}>
+      <section aria-labelledby="workspace-screen-title">
+        <h1 id="workspace-screen-title">{item.label}</h1>
+        <p>{`${item.label} 화면입니다.`}</p>
+      </section>
+    </PreviewRoleBoundary>
   );
 }

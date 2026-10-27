@@ -35,8 +35,8 @@ import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 
 import { useAuthRuntime } from "@/components/providers";
+import { useProfilePreview } from "@/components/profile/ProfilePreviewProvider";
 import { getVisibleSidebarGroups, type SidebarIcon } from "@/config/sidebar";
-import { APP_ROLES, hasRole } from "@/lib/auth/roles";
 
 const icons = {
   "document-add": DocumentAddRegular,
@@ -305,17 +305,17 @@ export default function NavSidebar({
 }: NavSidebarProps): React.ReactElement {
   const styles = useStyles();
   const { authEnabled, session } = useAuthRuntime();
+  const { state, profile } = useProfilePreview();
   const pathname = usePathname();
   const groups = getVisibleSidebarGroups({
     authEnabled,
     authenticated: session !== null,
     roles: session?.user.roles,
+    previewRole: state.previewRole,
   });
-  const isAdmin = hasRole(session?.user.roles, APP_ROLES.ADMIN);
-  const displayName = authEnabled
-    ? session?.user.name?.trim() || session?.user.email || "사용자"
-    : "정소담";
-  const roleLabel = authEnabled ? (isAdmin ? "관리자" : "일반") : "미리보기";
+  const isAdmin = profile.role === "admin";
+  const displayName = profile.name;
+  const roleLabel = isAdmin ? "관리자" : "일반 사용자";
   const navId = `${id}-navigation`;
 
   return (
@@ -392,7 +392,7 @@ export default function NavSidebar({
               name={displayName}
               initials={displayName.slice(0, 1)}
               size={28}
-              className={mergeClasses(styles.avatar, (isAdmin || !authEnabled) && styles.adminAvatar)}
+              className={mergeClasses(styles.avatar, isAdmin && styles.adminAvatar)}
               aria-hidden="true"
             />
             <span className={styles.dot} aria-hidden="true" />
@@ -402,7 +402,7 @@ export default function NavSidebar({
               <strong className={styles.name} title={displayName}>{displayName}</strong>
               <Badge className={styles.badge} appearance="tint" size="small">{roleLabel}</Badge>
             </div>
-            <span className={styles.department}>{authEnabled ? "KPC" : "AI사업본부"}</span>
+            <span className={styles.department}>{profile.department ?? profile.organization}</span>
           </div>
           <ChevronUpRegular className={styles.profileChevron} aria-hidden="true" data-sidebar-label />
         </div>

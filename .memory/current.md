@@ -10,12 +10,12 @@
 
 ## Active Task
 
-[T02 프로필 시연 상태와 역할별 메뉴·화면 연동](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/T02-profile-preview-state.md)
+[T03 HTML 기준 프로필 팝오버와 3개 탭 구현](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/T03-profile-popover-ui.md)
 
 ## Status
 
-- T01 공용 컨트롤 구현·타입·lint 검증 완료
-- P01: done 1/3, Active Task T02 in_progress
+- T01 공용 컨트롤, T02 프로필 상태·역할 경계 구현·검증 완료
+- P01: done 2/3, Active Task T03 in_progress
 - 확정 결정: [프로필 팝오버·공용 토글·역할 미리보기 범위](./decisions/2026-10-27-profile-popover-preview.md)
 - 기준 HTML의 최종 프로필 팝오버: 일반·업무 알림·환경 설정 3탭
 - 사용자 확인: 상세 분석·토큰 신청은 안내만 표시, 역할 전환·알림 읽음·설정은 로컬 동작
@@ -23,11 +23,11 @@
 - 인증 비활성 최초 admin, 일반 사용자 선택 시 일반7/관리자 선택 시 전체15개 메뉴. 실제 인증 활성 시 세션 역할 우선
 - 상태는 레이아웃 Provider 메모리로 유지, 전체 새로고침 초기화. DB·쿠키·localStorage 저장 없음
 - 기존 NavSidebar 구분선 좌우6px·width auto 미커밋 변경을 보존하며 Task 변경에 자동 포함하지 않는다
-- 사용자의 `$mea` 요청으로 순차 실행 중. T01 커밋 후 T02 → T03을 자동으로 이어간다. 의존성 설치·Azure 연결은 하지 않는다.
+- 사용자의 `$mea` 요청으로 순차 실행 중. T01·T02 완료 후 T03을 자동으로 이어간다. 의존성 설치·Azure 연결은 하지 않는다.
 
 ## Next Step (IMPORTANT)
 
-T02 청사진을 읽고 프로필 fixture·순수 reducer·Provider와 역할별 메뉴/안내 화면 경계를 구현한다. 실제 인증 Session과 서버 가드는 유지한다. 그 다음 T03 팝오버를 연결한다.
+T03 청사진을 읽고 ProfileMenu와 일반·업무 알림·환경 설정 패널을 구현한다. T01 공용 컨트롤과 T02 Provider를 사용하며 NavSidebar footer·AppShell 모바일 포커스를 함께 연결한다. 검증 결과와 실제 화면 확인 제한을 구분해 기록한다.
 
 ## Previous Plan
 

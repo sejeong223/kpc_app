@@ -10,6 +10,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/config/env", () => ({ serverEnv: mocks.env }));
 vi.mock("@/lib/auth/guards", () => ({ requireRole: mocks.requireRole }));
 vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
+vi.mock("@/components/profile/PreviewRoleBoundary", () => ({
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 import WorkspaceScreenPage from "@/app/(authenticated)/workspace/[screen]/page";
 
