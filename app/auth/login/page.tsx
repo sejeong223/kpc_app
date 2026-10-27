@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
 import LoginComponent from "@/components/auth/LoginComponent";
-import styles from "@/components/auth/LoginComponent.module.css";
 import { serverEnv } from "@/config/env";
 import { evaluateAppAccess } from "@/lib/auth/access-policy";
 import { sanitizeCallbackUrl } from "@/lib/auth/callback-url";
@@ -32,7 +31,7 @@ export default async function LoginPage({
   }
 
   return (
-    <main className={styles.page}>
+    <main style={{ display: "grid", minHeight: "100svh", placeItems: "center", padding: "40px 24px", background: "#fff" }}>
       <LoginComponent
         authEnabled={serverEnv.authEnabled}
         callbackUrl={callbackUrl}
