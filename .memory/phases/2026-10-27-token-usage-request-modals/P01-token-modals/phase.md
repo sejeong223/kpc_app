@@ -9,13 +9,14 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done ✅` | 사용량 데이터·신청 모델·Provider·단위 검증 | [T01](./T01-token-preview-model.md) |
-| T02 | `in_progress 🔵` | 공용 모달·두 화면·프로필 연결·키보드/모바일 검증 | [T02](./T02-token-modal-ui.md) |
+| T02 | `done ✅` | 공용 모달·두 화면·프로필 연결·키보드/모바일 검증 | [T02](./T02-token-modal-ui.md) |
 
 ## Progress
 
-- done: 1/2 (active: T02)
+- done: 2/2 (active: 없음)
 - 선행 조건: 완료된 프로필 팝오버 기능. T02는 T01의 타입·Provider API를 사용한다.
-- T01 구현 및 typecheck/lint/대상96개 테스트 통과. T02 화면 구현 진행.
+- T01 82f2428, T02는 이 완료 기록과 같은 커밋. 구현·검증 완료, 남은 Task 없음.
+- typecheck/lint/build/전체304개 테스트 및 독립 Chrome의 데스크톱·모바일·키보드 동작 검증 완료.
 
 ## References
 

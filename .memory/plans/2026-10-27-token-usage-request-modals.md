@@ -50,7 +50,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 사용량·신청 상태와 공용 모달 UI 구현·검증 | [P01](../phases/2026-10-27-token-usage-request-modals/P01-token-modals/phase.md) |
+| P01 | `done` | 사용량·신청 상태와 공용 모달 UI 구현·검증 | [P01](../phases/2026-10-27-token-usage-request-modals/P01-token-modals/phase.md) |
 
 ## Task Structure
 
@@ -77,7 +77,11 @@
 ## Completion
 
 - [x] T01 데이터·리듀서·Provider·단위 검증
-- [ ] T02 모달 UI·실제 브라우저·회귀 검증
-- [ ] P01 done 2/2 및 current 포인터 종료
+- [x] T02 모달 UI·실제 브라우저·회귀 검증
+- [x] P01 done 2/2 및 current 포인터 종료
 
 이 계획 작성 단계에서는 애플리케이션 검증 명령과 Git 커밋을 실행하지 않는다. 실행 단계에서 각 Task의 명령과 한국어 커밋 메시지를 사용한다.
+
+## Execution Result
+
+2026-10-27 P01의2개 Task 구현·검증 완료. T01 82f2428, T02는 완료 기록 커밋. 전체304개 테스트·typecheck/lint/build 및 실제 브라우저 검증 통과. 세부 기록은 각 Task의 Execution Notes에 보존한다. 실제 API/DB·승인·Azure는 연결하지 않았고 기존 미커밋 UI 변경은 별도로 보존했다.

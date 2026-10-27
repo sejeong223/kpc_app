@@ -6,29 +6,29 @@
 
 ## Active Phase
 
-[P01 사용량 분석·토큰 신청 모달](./phases/2026-10-27-token-usage-request-modals/P01-token-modals/phase.md)
+없음 — [P01 완료](./phases/2026-10-27-token-usage-request-modals/P01-token-modals/phase.md)
 
 ## Active Task
 
-[T02 공용 모달과 사용량·토큰 신청 화면](./phases/2026-10-27-token-usage-request-modals/P01-token-modals/T02-token-modal-ui.md)
+없음 — [T02 완료 기록](./phases/2026-10-27-token-usage-request-modals/P01-token-modals/T02-token-modal-ui.md)
 
 ## Status
 
-- T01 구현·검증 완료. P01: done 1/2, active T02. typecheck/lint 및 토큰·프로필·역할 경계96개 테스트 통과.
+- P01: done2/2, 남은 Active Task 없음. 사용자의 $mea 요청 실행 완료.
+- T01 82f2428: 사용량 데이터·신청 검증/상태·Provider. T02는 본 완료 기록과 같은 커밋: 공용 모달·두 화면·진입/전환/신청·모바일 포커스.
 - 확정 결정: [사용량 분석·토큰 신청 모달 범위](./decisions/2026-10-27-token-usage-request-modals.md)
-- 이전의 상세 분석·신청 안내만 표시 결정을 이번 두 모달 범위에 한해 대체한다. 기존 역할/알림/설정은 보존한다.
-- 사용자 확인: 일별 값의 비율을 유지하면서 합계를 상단·프로젝트와 같은72.4K로 보정한다. 고정 집계20일/31일, 월말 예상112220→112K.
-- 공용 ModalFrame(Fluent Dialog), SegmentedControl chips, TSX makeStyles. 사용량760px/신청560px, 좁은 화면은 가변폭, 본문 스크롤바 숨김.
-- 추가 신청은 +30K/+50K/+100K/직접입력·프로젝트·사유 검증, 로컬 pending 내역·Toast까지. 기본50K/재진입 사유초기화/프로젝트유지. 승인 전 실제 한도100K는 증가시키지 않는다.
-- 인증 레이아웃 Provider 메모리로 상태 유지, 전체 새로고침 초기화. 실제 신청 API/DB·승인/거절·메일·Azure 연결은 후속 범위다. 서버 가드·실제 세션 역할·개발 역할 미리보기 규칙을 바꾸지 않는다.
-- ProfileMenu를 닫은 다음 모달을 열고 AppShell과 형제인 컨트롤러를 유지한다. 모바일 Tab/Escape 가드·body 잠금·포커스 복귀를 확인한다.
-- 기존 미커밋 UI 3개 보존: NavSidebar.tsx 3삽입/2삭제, ProfileGeneralTab.tsx 0삽입/2삭제, ProfileMenu.tsx 25삽입/9삭제. 기존 변경을 자동 stage/commit하지 않는다.
-- 탭 grid 중앙 정렬·선택 빨간 글자/밑줄·관리자 빨간 avatar/badge·팝업 검정 avatar/흰 글자·삭제된 시연 문구·구분선 좌우6px 변경을 유지한다.
-- T01에서 Provider API까지 추가했다. 새 모달의 실제 DOM·모바일·키보드 동작은 T02에서 검증한다.
+- 일반 탭의 사용량 상세 분석/토큰 추가 신청과 Token 업무 알림에서 진입한다. Fluent Dialog 하나에서 사용량760px/신청560px으로 전환하며 모바일에서는 줄어든다.
+- 사용자 승인대로 일별 비율을 유지해 합계를72.4K로 보정했다. 고정20일/31일 기준 월말 예상112220→112K, 잔여27.6K, 실제 한도100K.
+- 신청은 기본50K·양의 정수 K·프로젝트·사유2자 검증 후 로컬 pending으로 등록한다. 연속 제출 방지, 최신 대기 안내와 미리보기 Toast. 요청만으로 실제 한도를 올리지 않는다.
+- 모달 재진입 시 요청량/사유 초기화·프로젝트 유지. 레이아웃 메모리에서 경로/역할 변경 후 요청 유지, 전체 새로고침하면 초기화한다.
+- typecheck/lint/build 및25개 파일304개 테스트 통과. 독립 Chrome의1440×900/390×844/320×568/1024×500에서 폭·스크롤·본문/푸터 접근·Tab/Escape·중복 제출·재진입·설정 회귀·경로 포커스 확인. 콘솔/hydration 오류·외부 요청 없음.
+- 공용 DialogContent의 기본 음수 여백을 제거하고 본문 키보드 스크롤을 제공한다. 기존 프로필 탭 중앙 정렬/색상·avatar·스크롤바 숨김을 보존한다.
+- 기존 미커밋 UI 변경은 별도 보존: NavSidebar 3삽입/2삭제, ProfileGeneralTab 0삽입/2삭제, ProfileMenu 25삽입/9삭제. 원래 수정은 기능 커밋에서 자동 포함하지 않는다.
+- 실제 접수/집계 API·DB·승인/거절·메일·Azure는 미연결. 서버 인증·인가·실제 세션 역할과 개발 미리보기 규칙을 유지했다. 의존성·.env·스킬은 변경하지 않았다.
 
 ## Next Step (IMPORTANT)
 
-T02 청사진을 읽고 공용 ModalFrame·사용량/신청 패널·프로필 진입을 구현한다. 사용자의 `$mea` 요청에 따라 확인 질문 없이 남은 Task를 자동 진행한다. T02 검증 후 한국어 커밋과 완료 포인터를 남긴다.
+현재 계획의 남은 Task는 없다. 프로필에서 사용량 분석과 토큰 신청 미리보기를 확인할 수 있다. 실제 신청/승인·사용량 연동이 필요하면 별도 범위를 정해 진행한다. 기존 사용자 UI 미커밋 변경은 그대로 남겨 둔다.
 
 ## Previous Plan
 

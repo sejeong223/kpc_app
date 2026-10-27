@@ -108,7 +108,8 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || sidebar?.querySelector("[data-profile-popover]")) return;
+      if (event.defaultPrevented || sidebar?.querySelector("[data-profile-popover]")
+        || document.querySelector("[data-modal-frame]")) return;
       if (event.key === "Escape") {
         event.preventDefault();
         closeMenu();

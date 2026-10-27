@@ -6,10 +6,11 @@ import {
 } from "@fluentui/react-components";
 import { ChevronDownRegular, ChevronUpRegular, DismissRegular } from "@fluentui/react-icons";
 import Link from "next/link";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { useAuthRuntime } from "@/components/providers";
 import type { ProfileTab } from "@/config/profile-preview";
+import type { TokenDialogView } from "@/config/token-preview";
 import { getUnreadNotificationCount } from "@/lib/profile-preview";
 
 import ProfileGeneralTab from "./ProfileGeneralTab";
@@ -25,6 +26,7 @@ export interface ProfileMenuProps {
 export interface ProfileActionPanelProps {
   onNavigate(): void;
   onNotice(message: string): void;
+  onOpenTokenDialog(view: TokenDialogView): void;
 }
 
 const tabs: readonly { value: ProfileTab; label: string }[] = [
@@ -111,10 +113,14 @@ const useStyles = makeStyles({
 export default function ProfileMenu({ isCollapsed, onNavigate }: ProfileMenuProps): React.ReactElement {
   const styles = useStyles();
   const { authEnabled, session } = useAuthRuntime();
-  const { profile, state, dispatch } = useProfilePreview();
+  const { profile, state, dispatch, openTokenDialog } = useProfilePreview();
   const [open, setOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const modalFrame = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (modalFrame.current !== null) cancelAnimationFrame(modalFrame.current);
+  }, []);
   const id = useId();
   const unread = getUnreadNotificationCount(state.notifications);
   const isAdmin = profile.role === "admin";
@@ -128,6 +134,16 @@ export default function ProfileMenu({ isCollapsed, onNavigate }: ProfileMenuProp
   };
   const navigate = () => { setOpen(false); setNotice(null); onNavigate(); };
   const onNotice = (message: string) => setNotice(message || null);
+  const openTokenModal = (view: TokenDialogView) => {
+    setOpen(false);
+    setNotice(null);
+    const trigger = triggerRef.current;
+    if (modalFrame.current !== null) cancelAnimationFrame(modalFrame.current);
+    modalFrame.current = requestAnimationFrame(() => {
+      modalFrame.current = null;
+      openTokenDialog(view, trigger);
+    });
+  };
 
   return (
     <Popover
@@ -208,8 +224,8 @@ export default function ProfileMenu({ isCollapsed, onNavigate }: ProfileMenuProp
           ))}
         </TabList>
         <div className={styles.body} role="tabpanel" id={`${id}-panel-${activeTab}`} aria-labelledby={`${id}-tab-${activeTab}`}>
-          {activeTab === "general" && <ProfileGeneralTab onNavigate={navigate} onNotice={onNotice} />}
-          {activeTab === "notifications" && <ProfileNotificationsTab onNavigate={navigate} onNotice={onNotice} />}
+          {activeTab === "general" && <ProfileGeneralTab onNavigate={navigate} onNotice={onNotice} onOpenTokenDialog={openTokenModal} />}
+          {activeTab === "notifications" && <ProfileNotificationsTab onNavigate={navigate} onNotice={onNotice} onOpenTokenDialog={openTokenModal} />}
           {activeTab === "preferences" && <ProfilePreferencesTab onNotice={onNotice} />}
           {notice && <div className={styles.notice} role="status" aria-live="polite">{notice}</div>}
         </div>

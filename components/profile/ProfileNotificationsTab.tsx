@@ -42,7 +42,7 @@ const useStyles = makeStyles({
   empty: { padding: "28px 12px", color: "#74747d", fontSize: "12px", textAlign: "center" },
 });
 
-export default function ProfileNotificationsTab({ onNavigate, onNotice }: ProfileActionPanelProps): React.ReactElement {
+export default function ProfileNotificationsTab({ onNavigate, onNotice, onOpenTokenDialog }: ProfileActionPanelProps): React.ReactElement {
   const styles = useStyles();
   const { state, dispatch } = useProfilePreview();
   const id = useId();
@@ -83,7 +83,8 @@ export default function ProfileNotificationsTab({ onNavigate, onNotice }: Profil
         ) : (
           <Button key={notification.id} appearance="transparent" className={className} aria-label={label} aria-describedby={descriptionId} onClick={() => {
             dispatch({ type: "mark-notification-read", id: notification.id });
-            onNotice("사용량 상세 분석은 준비 중입니다.");
+            if (notification.kind === "token") onOpenTokenDialog("usage");
+            else onNotice("사용량 상세 분석은 준비 중입니다.");
           }}>{content}</Button>
         );
       })}

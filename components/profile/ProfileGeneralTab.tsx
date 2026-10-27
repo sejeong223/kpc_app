@@ -1,12 +1,13 @@
 "use client";
 
 import { Button, makeStyles, mergeClasses, ProgressBar, shorthands } from "@fluentui/react-components";
-import { AddRegular, ChevronRightRegular, DataBarVerticalRegular, MoneyRegular, PeopleRegular, ShieldRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
+import { AddRegular, ChevronRightRegular, ClockRegular, DataBarVerticalRegular, MoneyRegular, PeopleRegular, ShieldRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
 import Link from "next/link";
 
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import { PROFILE_TOKEN_USAGE, PROFILE_WORK_COUNTS, type PreviewRole } from "@/config/profile-preview";
 import { formatTokenCount, getProfileTokenSummary, getUnreadNotificationCount } from "@/lib/profile-preview";
+import { getLatestPendingTokenRequest } from "@/lib/token-preview";
 
 import type { ProfileActionPanelProps } from "./ProfileMenu";
 import { useProfilePreview } from "./ProfilePreviewProvider";
@@ -29,6 +30,7 @@ const useStyles = makeStyles({
   statLabel: { display: "block", fontSize: "10px", lineHeight: "15px", color: "#74747d", fontWeight: 700 },
   statValue: { fontSize: "13px", lineHeight: "20px", fontWeight: 850, fontVariantNumeric: "tabular-nums" },
   actions: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" },
+  pending: { display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", padding: "6px 9px", borderRadius: "8px", backgroundColor: "#fff7e8", color: "#9a5b00", fontSize: "11px", fontWeight: 700, overflowWrap: "anywhere" },
   action: { minWidth: 0, height: "26px", padding: "0 9px", gap: "5px", borderRadius: "7px", fontFamily: "inherit", fontSize: "11px", fontWeight: 700, whiteSpace: "nowrap" },
   primary: { backgroundColor: "#d7192f", color: "#fff", ...shorthands.borderColor("#d7192f"), ":hover": { backgroundColor: "#c31429", color: "#fff" }, ":hover:active": { backgroundColor: "#b01225", color: "#fff" } },
   adminLink: { display: "flex", alignItems: "center", gap: "6px", marginTop: "8px", padding: "8px 2px 0", borderTop: "1px dashed #e6e7eb", color: "#34363c", fontSize: "11.5px", fontWeight: 750, textDecorationLine: "none", ":hover": { color: "#c91c2b" } },
@@ -43,13 +45,14 @@ const useStyles = makeStyles({
   sample: { margin: "-5px 0 0", textAlign: "right", fontSize: "10px", color: "#74747d" },
 });
 
-export default function ProfileGeneralTab({ onNavigate, onNotice }: ProfileActionPanelProps): React.ReactElement {
+export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDialog }: ProfileActionPanelProps): React.ReactElement {
   const styles = useStyles();
   const { state, profile, rolePreviewEnabled, dispatch } = useProfilePreview();
   const summary = getProfileTokenSummary(PROFILE_TOKEN_USAGE.used, PROFILE_TOKEN_USAGE.limit, PROFILE_TOKEN_USAGE.warningThreshold);
   const unread = getUnreadNotificationCount(state.notifications);
   const isAdmin = profile.role === "admin";
   const available = summary.status !== "unavailable";
+  const pending = getLatestPendingTokenRequest(state.tokens.requests);
 
   return (
     <div className={styles.root}>
@@ -67,9 +70,10 @@ export default function ProfileGeneralTab({ onNavigate, onNotice }: ProfileActio
             <div className={styles.stat} key={label}><span className={styles.statLabel}>{label}</span><b className={styles.statValue}>{available ? formatTokenCount(Number(value)) : "—"}</b></div>
           ))}
         </div>
+        {pending && <div className={styles.pending} role="status"><ClockRegular className={styles.icon} aria-hidden="true" /><span>추가 신청 {pending.amountK}K · 관리자 승인 대기</span></div>}
         <div className={styles.actions}>
-          <Button className={styles.action} icon={<DataBarVerticalRegular className={styles.icon} />} onClick={() => onNotice("사용량 상세 분석은 준비 중입니다.")}>사용량 상세 분석</Button>
-          <Button className={mergeClasses(styles.action, styles.primary)} icon={<AddRegular className={styles.icon} />} onClick={() => onNotice("토큰 추가 신청은 준비 중입니다.")}>토큰 추가 신청</Button>
+          <Button className={styles.action} icon={<DataBarVerticalRegular className={styles.icon} />} onClick={() => onOpenTokenDialog("usage")}>사용량 상세 분석</Button>
+          <Button className={mergeClasses(styles.action, styles.primary)} icon={<AddRegular className={styles.icon} />} onClick={() => onOpenTokenDialog("request")}>토큰 추가 신청</Button>
         </div>
         {isAdmin && <Link href="/workspace/tokens" className={styles.adminLink} onClick={onNavigate}><PeopleRegular className={styles.icon} aria-hidden="true" />전사 토큰 · 비용 관리<ChevronRightRegular className={styles.arrow} aria-hidden="true" /></Link>}
       </section>

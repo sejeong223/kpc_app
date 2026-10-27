@@ -1,6 +1,6 @@
 "use client";
 
-import { makeStyles, mergeClasses, Radio, RadioGroup, radioClassNames } from "@fluentui/react-components";
+import { makeStyles, mergeClasses, Radio, RadioGroup, radioClassNames, shorthands } from "@fluentui/react-components";
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -16,6 +16,7 @@ export interface SegmentedControlProps<T extends string> {
   disabled?: boolean;
   fullWidth?: boolean;
   className?: string;
+  variant?: "segmented" | "chips";
 }
 
 const useStyles = makeStyles({
@@ -71,6 +72,22 @@ const useStyles = makeStyles({
     boxShadow: "0 1px 2px rgba(0,0,0,.08)",
     "@media (forced-colors: active)": { outline: "1px solid Highlight" },
   },
+  chips: { padding: 0, gap: "6px", flexWrap: "wrap", backgroundColor: "transparent", borderRadius: 0 },
+  chipOption: { borderRadius: "14px", height: "28px" },
+  chipInput: {
+    ":enabled:checked": {
+      ["& ~ ." + radioClassNames.label]: { color: "#c91c2b" },
+    },
+    ":enabled:not(:checked)": {
+      ["& ~ ." + radioClassNames.label]: { color: "#55585f" },
+    },
+  },
+  chipLabel: {
+    height: "28px", padding: "0 10px", border: "1px solid #dddde2",
+    borderRadius: "14px", backgroundColor: "#fff", color: "#55585f", fontWeight: 650,
+    boxSizing: "border-box",
+  },
+  chipSelected: { ...shorthands.borderColor("#d7192f"), backgroundColor: "#fff8f9", color: "#c91c2b", fontWeight: 800, boxShadow: "none" },
 });
 
 export default function SegmentedControl<T extends string>({
@@ -81,6 +98,7 @@ export default function SegmentedControl<T extends string>({
   disabled = false,
   fullWidth = false,
   className,
+  variant = "segmented",
 }: SegmentedControlProps<T>): React.ReactElement {
   const styles = useStyles();
 
@@ -90,7 +108,7 @@ export default function SegmentedControl<T extends string>({
       layout="horizontal"
       value={value}
       disabled={disabled}
-      className={mergeClasses(styles.root, fullWidth && styles.fullWidth, className)}
+      className={mergeClasses(styles.root, variant === "chips" && styles.chips, fullWidth && styles.fullWidth, className)}
       onChange={(_, data) => {
         const option = options.find((item) => item.value === data.value);
         if (!disabled && option && !option.disabled) onChange(option.value);
@@ -101,12 +119,16 @@ export default function SegmentedControl<T extends string>({
           key={option.value}
           value={option.value}
           disabled={disabled || option.disabled}
-          className={mergeClasses(styles.option, fullWidth && styles.stretch)}
-          input={{ className: styles.input }}
+          className={mergeClasses(styles.option, variant === "chips" && styles.chipOption, fullWidth && styles.stretch)}
+          input={{ className: mergeClasses(styles.input, variant === "chips" && styles.chipInput) }}
           indicator={{ className: styles.indicator }}
           label={{
             children: option.label,
-            className: mergeClasses(styles.label, value === option.value && styles.selected),
+            className: mergeClasses(
+              styles.label, value === option.value && styles.selected,
+              variant === "chips" && styles.chipLabel,
+              variant === "chips" && value === option.value && styles.chipSelected,
+            ),
           }}
         />
       ))}
