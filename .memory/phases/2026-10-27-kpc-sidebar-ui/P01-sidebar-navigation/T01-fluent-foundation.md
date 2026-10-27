@@ -150,7 +150,7 @@ Task: T01-fluent-foundation
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: 본 Task 완료 커밋에 포함 (`feat(ui): Fluent UI 테마와 서버 렌더링 기반 추가`)
+- commit: `3bda94e` — `feat(ui): Fluent UI 테마와 서버 렌더링 기반 추가`
 
 ## Execution Result
 

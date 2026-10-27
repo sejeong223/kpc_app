@@ -10,12 +10,12 @@
 
 ## Active Task
 
-[T02 최종 메뉴 카탈로그·안내 라우트·서버 인가](./phases/2026-10-27-kpc-sidebar-ui/P01-sidebar-navigation/T02-menu-routes.md)
+[T03 Fluent UI 사이드바·셸·헤더 통합](./phases/2026-10-27-kpc-sidebar-ui/P01-sidebar-navigation/T03-sidebar-ui.md)
 
 ## Status
 
-- MEA 자동 연속 실행 중, T01 구현·검증 완료
-- P01: done 1/3, Active Task T02
+- MEA 자동 연속 실행 중, T01·T02 구현·검증 완료
+- P01: done 2/3, Active Task T03
 - 확정 결정: [사이드바 범위·Fluent UI·개발 미리보기](./decisions/2026-10-27-kpc-sidebar-ui.md)
 - 이전 `dadam_app` 참고 스타일 전면 변경 요청은 사용자 지시로 중단. 해당 구현 변경 없음.
 - 일반 7개·관리자 8개 메뉴와 안내 URL만 구현하며 프로필 모달·실제 업무 기능은 제외한다.
@@ -24,7 +24,7 @@
 
 ## Next Step (IMPORTANT)
 
-T02 청사진을 읽고 `config/sidebar.ts`의 최종 15개 메뉴와 `/workspace/[screen]` 안내 화면·서버 인가를 구현한다. `/mea`에 따라 남은 Task를 자동으로 이어간다.
+T03 청사진을 읽고 `NavSidebar`, `AppShell`, `AppHeader`에 Fluent UI와 메뉴 이동을 연결한다. 반응형·접힘·프로필 표시를 완성하고 전체 검증한다. `/mea`에 따라 자동으로 이어간다.
 
 ## Previous Plan
 
