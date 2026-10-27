@@ -2,33 +2,38 @@
 
 ## Active Plan
 
-[Cosmos DB 설계 스킬 프로젝트 세팅](./plans/2026-10-27-cosmosdb-skill-setup.md)
+[사용자 프로필 팝오버와 역할 미리보기](./plans/2026-10-27-profile-popover-preview.md)
 
 ## Active Phase
 
-없음 — [P01 완료](./phases/2026-10-27-cosmosdb-skill-setup/P01-project-skill/phase.md)
+[P01 사용자 프로필 팝오버와 역할 미리보기](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/phase.md)
 
 ## Active Task
 
-없음 — [T01 완료 기록](./phases/2026-10-27-cosmosdb-skill-setup/P01-project-skill/T01-install-and-wire-skill.md)
+[T02 프로필 시연 상태와 역할별 메뉴·화면 연동](./phases/2026-10-27-profile-popover-preview/P01-profile-popover/T02-profile-preview-state.md)
 
 ## Status
 
-- 사용자의 `$mea` 요청으로 전체 계획 실행 완료
-- P01: done 1/1, 남은 Active Task 없음
-- 확정 결정: [Cosmos DB 스킬 설치 범위와 적용 방식](./decisions/2026-10-27-cosmosdb-skill-setup.md)
-- 대상: 프로젝트 `.agents/skills/cosmosdb-best-practices`, 공식 commit `51ed7e9b6dc01039902b8f9d33d4f077d2ead1ef` 고정
-- 완료: 공식 스킬·LICENSE 설치, 출처 manifest와 scoped LF 규칙, AGENTS.md·README 연결, 실제 로컬 파일·rule 링크 검증
-- 원본 두 버전 표기를 구별하고 기존 Cosmos DB 연결·생성 스크립트는 유지한다. 설정 비교 기능 확장은 제외한다
-- 원본 146개 파일 전체 blob hash·SKILL.md/라이선스 SHA-256·140개 rule 링크 검증 통과. 원본과 LICENSE를 포함해 총 147개 설치
-- 로컬 SKILL.md와 모델링·파티션 키·쿼리 규칙 실제 읽기 완료. 다음 요청의 스킬 목록 인식은 아직 관찰하지 않음
-- 애플리케이션·의존성·사용자 전역 스킬은 유지했고 Azure 연결·리소스 생성은 수행하지 않음
+- T01 공용 컨트롤 구현·타입·lint 검증 완료
+- P01: done 1/3, Active Task T02 in_progress
+- 확정 결정: [프로필 팝오버·공용 토글·역할 미리보기 범위](./decisions/2026-10-27-profile-popover-preview.md)
+- 기준 HTML의 최종 프로필 팝오버: 일반·업무 알림·환경 설정 3탭
+- 사용자 확인: 상세 분석·토큰 신청은 안내만 표시, 역할 전환·알림 읽음·설정은 로컬 동작
+- 공용 SegmentedControl/ToggleSwitch, 기존 Fluent UI v9·TSX 내부 makeStyles 사용
+- 인증 비활성 최초 admin, 일반 사용자 선택 시 일반7/관리자 선택 시 전체15개 메뉴. 실제 인증 활성 시 세션 역할 우선
+- 상태는 레이아웃 Provider 메모리로 유지, 전체 새로고침 초기화. DB·쿠키·localStorage 저장 없음
+- 기존 NavSidebar 구분선 좌우6px·width auto 미커밋 변경을 보존하며 Task 변경에 자동 포함하지 않는다
+- 사용자의 `$mea` 요청으로 순차 실행 중. T01 커밋 후 T02 → T03을 자동으로 이어간다. 의존성 설치·Azure 연결은 하지 않는다.
 
 ## Next Step (IMPORTANT)
 
-현재 계획의 남은 Task는 없다. 다음 Cosmos DB 설계 요청에서 `$cosmosdb-best-practices` 또는 `.agents/skills/cosmosdb-best-practices/SKILL.md`로 스킬을 읽고, 업무 데이터·주요 조회·쓰기 패턴을 확인한 뒤 기존 인터뷰 → 계획 → 실행 흐름을 따른다. 실제 컨테이너 설계·생성은 별도 사용자 요청 범위에서 진행한다.
+T02 청사진을 읽고 프로필 fixture·순수 reducer·Provider와 역할별 메뉴/안내 화면 경계를 구현한다. 실제 인증 Session과 서버 가드는 유지한다. 그 다음 T03 팝오버를 연결한다.
 
 ## Previous Plan
+
+[Cosmos DB 설계 스킬 프로젝트 세팅 — 완료](./plans/2026-10-27-cosmosdb-skill-setup.md)
+
+P01-T01 완료, commit `7afc087`. 공식 원본146개+LICENSE·규칙 링크140개를 검증했고, 후속 요청에서 스킬 목록 인식과 실제 로컬 SKILL/rule 읽기도 확인했다. 이 프로필 계획에서는 Cosmos DB 스킬·서비스·프로비저닝을 변경하지 않는다.
 
 [사이드바 접기 아이콘과 관리자 기준 프로필 배치 보정 — 구현·자동 검증 완료](./plans/2026-10-27-sidebar-controls-profile.md)
 
