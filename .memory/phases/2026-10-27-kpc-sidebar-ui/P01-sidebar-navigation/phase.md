@@ -10,7 +10,7 @@
 | :--- | :--- | :--- | :--- |
 | T01 | `done` ✅ | Fluent UI 의존성·테마·서버 렌더링 설정 | [T01](./T01-fluent-foundation.md) |
 | T02 | `done` ✅ | 최종 15개 메뉴 카탈로그·안내 라우트·권한 테스트 | [T02](./T02-menu-routes.md) |
-| T03 | `in_progress` 🔵 | 사이드바 UI·셸·헤더 통합과 최종 검증 | [T03](./T03-sidebar-ui.md) |
+| T03 | `done` ✅ | 사이드바 UI·셸·헤더 구현 및 자동 검증 완료, 실제 UI 확인 제한 기록 | [T03](./T03-sidebar-ui.md) |
 
 ## Dependencies
 
@@ -18,5 +18,5 @@
 
 ## Progress
 
-- done: 2/3 (active: T03)
-- T01·T02 구현·검증 완료, T03 실행 준비
+- done: 3/3 (active: 없음)
+- T01~T03 구현·자동 검증 완료. T03의 실제 브라우저 시각·조작 확인은 Computer Use 자동 검토 제한으로 미실시이며 해당 Task의 Validation Limitations에 기록했다.

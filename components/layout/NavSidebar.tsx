@@ -1,145 +1,390 @@
 "use client";
 
+import {
+  Avatar,
+  Badge,
+  Button,
+  Divider,
+  makeStyles,
+  mergeClasses,
+  tokens,
+  Tooltip,
+} from "@fluentui/react-components";
+import {
+  AppsRegular,
+  ArrowUploadRegular,
+  ChevronLeftRegular,
+  ChevronRightRegular,
+  ChevronUpRegular,
+  ClipboardBulletListLtrRegular,
+  DataBarVerticalRegular,
+  DismissRegular,
+  DocumentAddRegular,
+  EditRegular,
+  HistoryRegular,
+  MoneyRegular,
+  PeopleRegular,
+  SearchRegular,
+  SettingsRegular,
+  ShieldRegular,
+  SignOutRegular,
+  SlideLayoutRegular,
+  SparkleRegular,
+  TextBulletListLtrRegular,
+} from "@fluentui/react-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Fragment } from "react";
 
 import { useAuthRuntime } from "@/components/providers";
-import {
-  appConfig,
-  getVisibleNavigation,
-  type HeaderNavigationItem,
-} from "@/config/app";
+import { getVisibleSidebarGroups, type SidebarIcon } from "@/config/sidebar";
+import { APP_ROLES, hasRole } from "@/lib/auth/roles";
+
+const icons = {
+  "document-add": DocumentAddRegular,
+  clipboard: ClipboardBulletListLtrRegular,
+  analysis: SearchRegular,
+  upload: ArrowUploadRegular,
+  list: TextBulletListLtrRegular,
+  settings: SettingsRegular,
+  edit: EditRegular,
+  prompts: SparkleRegular,
+  skills: AppsRegular,
+  template: SlideLayoutRegular,
+  policy: ShieldRegular,
+  tokens: MoneyRegular,
+  users: PeopleRegular,
+  dashboard: DataBarVerticalRegular,
+  history: HistoryRegular,
+} satisfies Record<SidebarIcon, typeof DocumentAddRegular>;
+
+const groupLabels = {
+  proposal: "제안 메뉴",
+  project: "프로젝트 메뉴",
+  admin: "관리자 메뉴",
+};
+
+const useStyles = makeStyles({
+  root: {
+    position: "fixed",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 30,
+    display: "flex",
+    flexDirection: "column",
+    width: "var(--nav-sidebar-width, 220px)",
+    height: "100svh",
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
+    color: "#25272d",
+    "@media (max-width: 760px)": {
+      width: "220px",
+      transform: "translateX(-100%)",
+      visibility: "hidden",
+      transitionProperty: "transform, visibility",
+      transitionDuration: "180ms",
+      transitionTimingFunction: "ease",
+    },
+  },
+  open: {
+    "@media (max-width: 760px)": {
+      transform: "translateX(0)",
+      visibility: "visible",
+    },
+  },
+  collapsed: {
+    "@media (min-width: 761px)": {
+      "& [data-sidebar-label]": { display: "none" },
+      "& [data-sidebar-icon]": { display: "block" },
+      "& [data-sidebar-header]": { paddingLeft: "10px", paddingRight: "10px" },
+      "& nav": { padding: "8px 0" },
+      "& [data-sidebar-group]": { alignItems: "center", rowGap: "4px" },
+      "& [data-sidebar-link]": {
+        justifyContent: "center",
+        width: "38px",
+        height: "38px",
+        padding: 0,
+        color: "#777d89",
+      },
+      '& [aria-current="page"]': { color: "#c8253b" },
+      "& [data-sidebar-divider]": { width: "24px", margin: "6px auto" },
+      "& [data-sidebar-profile]": {
+        width: "48px",
+        minWidth: "48px",
+        maxWidth: "48px",
+        columnGap: 0,
+      },
+    },
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexShrink: 0,
+    height: "58px",
+    padding: "0 10px 0 17px",
+    borderBottom: "1px solid #e9eaef",
+  },
+  brand: {
+    minWidth: 0,
+    color: "#18191e",
+    fontSize: "13px",
+    fontWeight: 850,
+    letterSpacing: "-0.26px",
+    whiteSpace: "nowrap",
+    textDecorationLine: "none",
+  },
+  toggle: {
+    width: "34px",
+    minWidth: "34px",
+    height: "36px",
+    padding: 0,
+    flexShrink: 0,
+    color: "#616773",
+    "@media (max-width: 760px)": { display: "none" },
+  },
+  mobileClose: {
+    display: "none",
+    minWidth: "30px",
+    padding: 0,
+    "@media (max-width: 760px)": { display: "inline-flex" },
+  },
+  navigation: {
+    flex: 1,
+    minHeight: 0,
+    overflowY: "auto",
+    overflowX: "hidden",
+    padding: "7px 11px 8px",
+    scrollbarWidth: "thin",
+    scrollbarColor: "#d6d9df #fafafa",
+  },
+  group: { display: "flex", flexDirection: "column", rowGap: "2px" },
+  link: {
+    display: "flex",
+    alignItems: "center",
+    flexShrink: 0,
+    height: "34.5px",
+    padding: "9px",
+    borderRadius: "9px",
+    color: "#626670",
+    fontSize: "11px",
+    lineHeight: "16.5px",
+    fontWeight: 650,
+    textDecorationLine: "none",
+    whiteSpace: "nowrap",
+    ":hover": { backgroundColor: "#eff0f3", color: "#34363c" },
+    ":focus-visible": { outlineColor: tokens.colorBrandStroke1, outlineOffset: "-2px" },
+  },
+  active: {
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+    fontWeight: 800,
+    boxShadow: "inset 3px 0 0 #dc2036",
+    ":hover": {
+      backgroundColor: tokens.colorBrandBackground2,
+      color: tokens.colorBrandForeground1,
+    },
+  },
+  icon: { display: "none", width: "18px", height: "18px", flexShrink: 0 },
+  divider: {
+    flexGrow: 0,
+    minHeight: "1px",
+    margin: "8px 6px",
+    "::before": { borderTopColor: "#e6e8ec" },
+    "::after": { borderTopColor: "#e6e8ec" },
+  },
+  footer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    flexShrink: 0,
+    rowGap: "8px",
+    padding: "12.5px 0",
+  },
+  profile: {
+    display: "flex",
+    alignItems: "center",
+    columnGap: "8px",
+    width: "fit-content",
+    minWidth: "152px",
+    maxWidth: "calc(100% - 24px)",
+    height: "49px",
+    padding: "7px 9px",
+    border: "1px solid #e3e5e9",
+    borderRadius: "10px",
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  avatarWrap: { position: "relative", display: "flex", flexShrink: 0 },
+  avatar: { backgroundColor: "#414141", color: "#fff" },
+  adminAvatar: { backgroundColor: "#e60012" },
+  dot: {
+    position: "absolute",
+    top: "-2px",
+    right: "-2px",
+    width: "10px",
+    height: "10px",
+    borderRadius: tokens.borderRadiusCircular,
+    backgroundColor: "#e60012",
+    boxShadow: "0 0 0 2px #fff",
+  },
+  account: { minWidth: 0, display: "flex", flexDirection: "column", rowGap: "3px" },
+  accountLine: { display: "flex", alignItems: "center", columnGap: "6px", minWidth: 0 },
+  name: {
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    color: "#22252b",
+    fontSize: "12px",
+    lineHeight: "15px",
+    fontWeight: 700,
+  },
+  badge: {
+    flexShrink: 0,
+    height: "11px",
+    minWidth: 0,
+    padding: "1px 6px",
+    borderRadius: "3px",
+    fontSize: "9px",
+    lineHeight: "9px",
+    fontWeight: 700,
+    backgroundColor: "#faf0f1",
+    color: "#9b3a46",
+  },
+  department: { color: "#22252b", fontSize: "10px", lineHeight: "10px" },
+  profileChevron: { width: "14px", height: "14px", marginLeft: "auto", flexShrink: 0 },
+  logout: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    color: "#626670",
+    fontSize: "10px",
+    textUnderlineOffset: "3px",
+  },
+});
 
 interface NavSidebarProps {
   id: string;
   isOpen: boolean;
+  isCollapsed: boolean;
   onNavigate(): void;
+  onCollapseToggle(): void;
+  onClose(): void;
 }
 
 export default function NavSidebar({
   id,
   isOpen,
+  isCollapsed,
   onNavigate,
+  onCollapseToggle,
+  onClose,
 }: NavSidebarProps): React.ReactElement {
+  const styles = useStyles();
   const { authEnabled, session } = useAuthRuntime();
   const pathname = usePathname();
-  const context = {
+  const groups = getVisibleSidebarGroups({
     authEnabled,
     authenticated: session !== null,
     roles: session?.user.roles,
-  };
-  const navigation = getVisibleNavigation(appConfig.headerNavigation, context);
-  const management = getVisibleNavigation(appConfig.profileNavigation, context);
-  const displayName =
-    session?.user.name?.trim() || session?.user.email || "내 워크스페이스";
-
-  const renderNavigation = (items: HeaderNavigationItem[]) =>
-    items.map((item) => {
-      const isActive =
-        pathname === item.href ||
-        (item.href !== "/" && pathname.startsWith(`${item.href}/`));
-
-      return (
-        <Link
-          key={item.id}
-          href={item.href}
-          className={`nav-sidebar-link ${isActive ? "nav-sidebar-active" : ""}`}
-          aria-current={isActive ? "page" : undefined}
-          onClick={onNavigate}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            {item.id === "admin" ? (
-              <>
-                <path d="m12 3 8 4v5c0 4-5 8-8 9-3-1-8-5-8-9V7z" />
-                <path d="m9 12 2 2 4-4" />
-              </>
-            ) : (
-              <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
-            )}
-          </svg>
-          {item.label}
-        </Link>
-      );
-    });
+  });
+  const isAdmin = hasRole(session?.user.roles, APP_ROLES.ADMIN);
+  const displayName = authEnabled
+    ? session?.user.name?.trim() || session?.user.email || "사용자"
+    : "정소담";
+  const roleLabel = authEnabled ? (isAdmin ? "관리자" : "일반") : "미리보기";
+  const navId = `${id}-navigation`;
 
   return (
     <aside
       id={id}
-      className={`nav-sidebar ${isOpen ? "nav-sidebar-open" : ""}`}
-      aria-label="워크스페이스 메뉴"
+      aria-label="제안서 메뉴"
+      role={isOpen ? "dialog" : undefined}
+      aria-modal={isOpen || undefined}
+      className={mergeClasses(styles.root, isOpen && styles.open, isCollapsed && styles.collapsed)}
     >
-      <Link href="/" className="nav-sidebar-brand" onClick={onNavigate}>
-        <span className="nav-sidebar-brand-mark" aria-hidden="true">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-            <rect x="3" y="3" width="7" height="7" rx="1.5" />
-            <rect x="14" y="3" width="7" height="7" rx="1.5" />
-            <rect x="3" y="14" width="7" height="7" rx="1.5" />
-            <rect x="14" y="14" width="7" height="7" rx="1.5" />
-          </svg>
-        </span>
-        <span>
-          <strong>{appConfig.name}</strong>
-          <span className="nav-sidebar-brand-caption">Workspace</span>
-        </span>
-      </Link>
-      <nav className="nav-sidebar-navigation" aria-label="주 메뉴">
-        <p className="nav-sidebar-group-label">워크스페이스</p>
-        {renderNavigation(navigation)}
-        {management.length > 0 && (
-          <>
-            <p className="nav-sidebar-group-label">관리</p>
-            {renderNavigation(management)}
-          </>
-        )}
-      </nav>
-      <div className="nav-sidebar-footer">
-        <span className="nav-sidebar-avatar" aria-hidden="true">
-          {session ? displayName.slice(0, 1).toUpperCase() : "W"}
-        </span>
-        <div className="nav-sidebar-account-copy">
-          <strong>{displayName}</strong>
-          <span>{session ? "Microsoft 계정" : "Workspace"}</span>
-          {authEnabled && session && (
-            <Link className="nav-sidebar-logout-link" href="/auth/logout">로그아웃</Link>
-          )}
-        </div>
+      <div className={styles.header} data-sidebar-header>
+        <Link href="/" className={styles.brand} data-sidebar-label onClick={onNavigate}>
+          KPC | 제안서 AI
+        </Link>
+        <Button
+          className={styles.toggle}
+          appearance="subtle"
+          icon={isCollapsed ? <ChevronRightRegular /> : <ChevronLeftRegular />}
+          aria-label={isCollapsed ? "왼쪽 메뉴 펼치기" : "왼쪽 메뉴 접기"}
+          aria-expanded={!isCollapsed}
+          aria-controls={navId}
+          onClick={onCollapseToggle}
+        />
+        <Button
+          className={styles.mobileClose}
+          appearance="subtle"
+          icon={<DismissRegular />}
+          aria-label="메뉴 닫기"
+          onClick={onClose}
+          data-sidebar-close
+        />
       </div>
-      <style>{componentStyles}</style>
+      <nav id={navId} className={styles.navigation} aria-label="주 메뉴">
+        {groups.map((group, index) => (
+          <Fragment key={group.id}>
+            {index > 0 && <Divider className={styles.divider} data-sidebar-divider />}
+            <div className={styles.group} role="group" aria-label={groupLabels[group.id]} data-sidebar-group>
+              {group.items.map((item) => {
+                const Icon = icons[item.icon];
+                const active = pathname === item.href;
+                const link = (
+                  <Link
+                    href={item.href}
+                    className={mergeClasses(styles.link, active && styles.active)}
+                    aria-label={item.label}
+                    aria-current={active ? "page" : undefined}
+                    onClick={onNavigate}
+                    data-sidebar-link
+                  >
+                    <Icon className={styles.icon} aria-hidden="true" data-sidebar-icon />
+                    <span data-sidebar-label>{item.label}</span>
+                  </Link>
+                );
+                return isCollapsed ? (
+                  <Tooltip key={item.id} content={item.label} relationship="description" positioning="after" withArrow>
+                    {link}
+                  </Tooltip>
+                ) : <Fragment key={item.id}>{link}</Fragment>;
+              })}
+            </div>
+          </Fragment>
+        ))}
+      </nav>
+      <div className={styles.footer}>
+        <div className={styles.profile} role="group" aria-label="사용자 프로필" data-sidebar-profile>
+          <span className={styles.avatarWrap}>
+            <Avatar
+              name={displayName}
+              initials={displayName.slice(0, 1)}
+              size={28}
+              className={mergeClasses(styles.avatar, (isAdmin || !authEnabled) && styles.adminAvatar)}
+              aria-hidden="true"
+            />
+            <span className={styles.dot} aria-hidden="true" />
+          </span>
+          <div className={styles.account} data-sidebar-label>
+            <div className={styles.accountLine}>
+              <strong className={styles.name} title={displayName}>{displayName}</strong>
+              <Badge className={styles.badge} appearance="tint" size="small">{roleLabel}</Badge>
+            </div>
+            <span className={styles.department}>{authEnabled ? "KPC" : "AI사업본부"}</span>
+          </div>
+          <ChevronUpRegular className={styles.profileChevron} aria-hidden="true" data-sidebar-label />
+        </div>
+        {authEnabled && session && (
+          <Link href="/auth/logout" className={styles.logout} aria-label="로그아웃">
+            <SignOutRegular aria-hidden="true" />
+            <span data-sidebar-label>로그아웃</span>
+          </Link>
+        )}
+      </div>
     </aside>
   );
 }
-
-const componentStyles = `
-.nav-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 30; display: flex; width: var(--nav-sidebar-width, 248px); flex-direction: column; background: #fff; border-right: 1px solid #e6e9f0; }
-.nav-sidebar-brand { display: flex; gap: 12px; align-items: center; min-height: 96px; padding: 24px; text-decoration: none; }
-.nav-sidebar-brand-mark { display: grid; width: 38px; height: 38px; flex-shrink: 0; place-items: center; color: #4f46e5; background: #eef0ff; border: 1px solid #e5e7ff; border-radius: 11px; }
-.nav-sidebar-brand strong { display: block; font-size: 13px; letter-spacing: -.3px; }
-.nav-sidebar-brand-caption { display: block; margin-top: 5px; font-size: 11px; color: #94a3b8; letter-spacing: .5px; }
-.nav-sidebar-navigation { flex: 1; padding: 16px; }
-.nav-sidebar-group-label { margin: 0 12px 12px; color: #94a3b8; font-size: 10px; font-weight: 600; letter-spacing: .8px; }
-.nav-sidebar-group-label:not(:first-child) { margin-top: 32px; }
-.nav-sidebar-link { display: flex; gap: 12px; min-height: 44px; align-items: center; margin-top: 4px; padding: 10px 13px; border-radius: 8px; color: #64748b; text-decoration: none; font-size: 13px; font-weight: 500; }
-.nav-sidebar-link:hover { background: #f8fafc; color: #334155; }
-.nav-sidebar-active, .nav-sidebar-active:hover { color: #4f46e5; background: #eef0ff; font-weight: 600; }
-.nav-sidebar-footer { display: flex; align-items: center; gap: 11px; margin: 16px; padding: 18px 8px 6px; border-top: 1px solid #edf0f5; }
-.nav-sidebar-avatar { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 600; }
-.nav-sidebar-account-copy { min-width: 0; }
-.nav-sidebar-account-copy strong { display: block; overflow: hidden; color: #475569; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; }
-.nav-sidebar-account-copy span { display: block; margin-top: 5px; color: #94a3b8; font-size: 10px; }
-.nav-sidebar-logout-link { display: inline-block; margin-top: 9px; color: #64748b; font-size: 10px; text-underline-offset: 3px; }
-
-@media (max-width: 760px) {
-  .nav-sidebar { transform: translateX(-100%); transition: transform 180ms ease; }
-  .nav-sidebar-open { transform: translateX(0); }
-}
-`;

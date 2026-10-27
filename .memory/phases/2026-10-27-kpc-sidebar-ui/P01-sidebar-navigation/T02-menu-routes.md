@@ -197,7 +197,7 @@ Task: T02-menu-routes
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: 본 Task 완료 커밋에 포함 (`feat(navigation): 사이드바 메뉴별 안내 화면과 권한 검사 추가`)
+- commit: `a45d839` — `feat(navigation): 사이드바 메뉴별 안내 화면과 권한 검사 추가`
 
 ## Execution Result
 

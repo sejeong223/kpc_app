@@ -1,6 +1,6 @@
 # Azure App Template
 
-Next.js 16 기반의 범용 Azure 사내 애플리케이션 템플릿입니다. 왼쪽 사이드바와 중앙 콘텐츠 영역을 갖춘 기본 워크스페이스, Microsoft 로그인 화면을 제공합니다. 인증과 Azure 자격 증명 없이 로컬에서 시작하고, 프로젝트에 필요할 때 Microsoft Entra ID와 Azure 데이터 서비스를 연결할 수 있습니다.
+Next.js 16 기반의 Azure 사내 애플리케이션 템플릿입니다. Fluent UI v9로 구성한 KPC 사이드바와 중앙 콘텐츠 영역, Microsoft 로그인 화면을 제공합니다. 인증과 Azure 자격 증명 없이 로컬에서 시작하고, 프로젝트에 필요할 때 Microsoft Entra ID와 Azure 데이터 서비스를 연결할 수 있습니다.
 
 ## 포함 기능
 
@@ -10,6 +10,7 @@ Next.js 16 기반의 범용 Azure 사내 애플리케이션 템플릿입니다. 
 - Microsoft Graph 프로필 정보와 재사용 가능한 프로필 이미지 API
 - Managed Identity 우선 Cosmos DB·Blob Storage 클라이언트
 - 범용 페이지네이션 계산 함수
+- Fluent UI v9 사이드바·아이콘·테마, 메뉴별 안내 화면과 App Router 스타일 SSR
 - Vitest 단위 테스트, TypeScript, 명시적 `any`를 오류로 처리하는 ESLint 품질 게이트
 
 ## 요구사항
@@ -58,6 +59,20 @@ Git Bash, macOS, Linux에서는 `npm ...`을 사용합니다. Windows PowerShell
 `/auth/login`에는 Microsoft 로그인 화면이 준비되어 있습니다. 인증 연결 전에는 로그인 버튼이 비활성화됩니다. `/admin`은 별도로 `Admin` 역할을 검사하며 인증이 꺼져 있으면 404를 반환합니다. `/auth/login/popup`은 임베디드 로그인 흐름에 사용됩니다.
 
 `/api/profile-image`는 Microsoft Graph 프로필 이미지 API의 재사용 예시이고, `lib/pagination.ts`는 범용 계산 함수입니다. 둘 다 기본 화면에서는 호출하지 않습니다.
+
+## 사이드바 UI와 메뉴 미리보기
+
+사이드바는 제공된 KPC 목업의 최종 메뉴를 사용합니다. 위에서부터 RFP 등록·검토 목록, 구분선, AI 분석·파일 업로드·목차·제작 설정·제작, 구분선, 프롬프트 세트·Skill·Template·운영 정책·토큰·비용 관리·사용자 설정·대시보드·활동 로그 순서입니다. 데스크톱에서는 220px/54px로 펼치고 접을 수 있으며, 접힌 메뉴의 이름은 툴팁으로 확인합니다. 모바일에서는 헤더 메뉴 버튼으로 열고 닫습니다.
+
+메뉴 원본은 `config/sidebar.ts`입니다. 메뉴마다 `/workspace/register`, `/workspace/pipeline`처럼 다른 URL을 사용하고 `app/(authenticated)/workspace/[screen]/page.tsx`에서 해당 메뉴의 간단한 안내를 표시합니다. 새로고침·직접 접근·뒤로/앞으로 이동을 지원하며, 등록되지 않은 screen은 404입니다. 기존 `/` 홈은 유지하고 상단 브랜드를 누르면 돌아갑니다.
+
+`AUTH_ENABLED=false`에서는 일반 7개와 관리자 8개, 총 15개 메뉴 및 안내 화면을 미리볼 수 있습니다. `AUTH_ENABLED=true`에서는 기존 앱 진입 인증이 적용되고, 관리자 메뉴는 Admin에게만 표시되며 해당 안내 페이지도 서버에서 다시 역할을 검사합니다. 이 미리보기 예외는 새 정적 안내 화면에만 적용합니다. 기존 `/admin` 관리자 예시는 인증이 꺼지면 계속 404이며, 실제 관리자 API·데이터 접근을 허용하지 않습니다.
+
+하단 프로필은 표시 영역만 구현했습니다. 개발 모드의 이름·소속은 샘플이며 실제 로그인이나 관리자 역할을 생성하지 않습니다. 실제 세션에서는 사용자 이름·역할을 표시하고 기존 로그아웃 링크를 제공합니다. 프로필 팝업·모달, 토큰 사용량·신청, 알림, 권한 전환 및 실제 RFP·AI·제작·관리자 업무 기능은 구현 범위에 포함하지 않습니다.
+
+사이드바·셸·헤더는 각 TSX 안에 `makeStyles`로 스타일 객체를 정의하고 `useStyles()`로 사용합니다. 상태별 클래스는 `mergeClasses`로 결합하며 CSS module을 추가하지 않습니다. `components/providers/FluentUiProvider.tsx`가 작업 영역의 Fluent 테마와 요청별 Griffel renderer를 제공하고 SSR 스타일의 중복 출력을 방지합니다. 로그인 화면과 홈 본문의 기존 스타일은 유지합니다.
+
+Fluent 패키지의 큰 export 목록이 개발 시 전체 모듈 탐색을 유발하지 않도록 `next.config.ts`의 `experimental.optimizePackageImports`에 컴포넌트·아이콘 패키지를 지정했습니다. Next.js 버전은 유지하며 별도 변환 플러그인은 설치하지 않습니다.
 
 ## Microsoft Entra ID 설정
 
@@ -160,9 +175,12 @@ npm run azure:cosmos:provision -- --container records --partition-key /tenantId 
 | --- | --- |
 | `app` | Next.js App Router page와 API |
 | `components/auth` | 로그인 동작과 안내 |
-| `components/layout` | `AppShell` 레이아웃 조립, `NavSidebar` 사이드바, `AppHeader` 상단 헤더. 스타일은 각 TSX 내부에서 관리 |
+| `components/layout` | `AppShell` 레이아웃 조립, `NavSidebar` 사이드바, `AppHeader` 상단 헤더. Fluent `makeStyles`를 각 TSX 내부에서 관리 |
 | `components/providers.tsx` | 인증 세션 공급 |
-| `config` | 앱·환경·Azure 설정 |
+| `components/providers/FluentUiProvider.tsx` | 작업 영역의 Fluent 테마와 Griffel SSR 공급자 |
+| `config/sidebar.ts` | 최종 메뉴·URL·아이콘 키·메뉴 노출 권한의 단일 원본 |
+| `app/(authenticated)/workspace/[screen]` | 메뉴별 안내 화면과 관리자 서버 인가 |
+| `config` | 앱 메타데이터·환경·Azure 설정 |
 | `lib/auth` | 인증, role, cache, popup 보안 정책 |
 | `services` | Auth, Graph, Cosmos, Blob client factory |
 | `scripts` | 명시적 운영/프로비저닝 CLI |
