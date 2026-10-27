@@ -26,6 +26,7 @@
 - 기존 NavSidebar 구분선 여백, ProfileGeneralTab 시연 문구 삭제, ProfileMenu 탭 정렬·선택 색상·아바타·스크롤바 수정은 기능 커밋에서 제외해 보존했다. 2026-10-27 사용자가 전체 변경사항 커밋을 요청해 후속 UI 수정과 함께 포함한다.
 - 후속 UI 보정: 신청 폼 라벨11px/700/ink3 및 padding·margin0, 취소 테두리line3, 취소/신청 높이32px, 신청 비활성 빨간 배경·흰 글자·opacity0.45, 왼쪽 화살표ChevronLeft12Regular와 닫기Dismiss12Regular를12px로 적용했다.
 - 후속 수정 검증: typecheck·변경된6개 TSX의 ESLint·diff check 통과. 앞선 브라우저 확인에서 비활성/hover/활성 스타일과 라벨 여백을 확인했다. UI 스타일 변경으로 업무 로직은 변경하지 않았다.
+- 사용량 화면 추가 보정: 월말 예상 라벨은 #74747d, 예상 수치는 #161616, 한도 초과 예상은 #b0620a/700으로 분리했다. 단위 K Token 문구는 굵기850으로 적용했다. 해당 수정의 typecheck·ESLint·diff check를 통과했고 사용자 요청에 따라 함께 커밋한다.
 - 실제 접수/집계 API·DB·승인/거절·메일·Azure는 미연결. 서버 인증·인가·실제 세션 역할과 개발 미리보기 규칙을 유지했다. 의존성·.env·스킬은 변경하지 않았다.
 
 ## Next Step (IMPORTANT)

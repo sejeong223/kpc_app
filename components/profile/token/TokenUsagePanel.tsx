@@ -23,12 +23,13 @@ const useStyles = makeStyles({
     padding: "10px 12px", border: "1px solid #e6e7eb", borderRadius: "10px", minWidth: 0,
   },
   kpiLabel: { fontSize: "10.5px", fontWeight: 700, color: "#74747d" },
-  kpiValue: { fontSize: "18px", fontWeight: 900, lineHeight: "27px", fontVariantNumeric: "tabular-nums" },
+  kpiValue: { fontSize: "18px", fontWeight: 900, lineHeight: "27px", fontVariantNumeric: "tabular-nums", color: "#161616" },
   meta: { fontSize: "11px", color: "#74747d", fontWeight: 400 },
   warning: {
-    ...shorthands.borderColor("#f3d19c"), backgroundColor: "#fffaf0", color: "#b0620a",
-    "& span": { color: "#b0620a" },
+    ...shorthands.borderColor("#f3d19c"), backgroundColor: "#fffaf0",
   },
+  warningText: { color: "#b0620a", fontWeight: 700 },
+  chartUnit: { fontWeight: 850 },
   card: { minWidth: 0, border: "1px solid #e6e7eb", borderRadius: "12px", padding: "12px 14px" },
   heading: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", margin: "0 0 10px", fontSize: "12px", fontWeight: 850 },
   chart: { display: "flex", alignItems: "flex-end", gap: "4px", height: "110px" },
@@ -90,10 +91,10 @@ export default function TokenUsagePanel({ snapshot, used, limit }: TokenUsagePan
         <div className={styles.kpi}><span className={styles.kpiLabel}>사용</span><b className={styles.kpiValue}>{displayCount(summary.used)}</b><span className={styles.meta}>{available ? summary.percent + "%" : "—"}</span></div>
         <div className={styles.kpi}><span className={styles.kpiLabel}>잔여</span><b className={styles.kpiValue}>{displayCount(summary.remaining)}</b></div>
         <div className={styles.kpi}><span className={styles.kpiLabel}>개인 한도</span><b className={styles.kpiValue}>{displayCount(summary.limit)}</b></div>
-        <div className={mergeClasses(styles.kpi, overEstimate && styles.warning)}><span className={styles.kpiLabel}>월말 예상</span><b className={styles.kpiValue}>{displayCount(estimate)}</b><span className={styles.meta}>{available ? overEstimate ? "한도 초과 예상" : "한도 내" : "—"}</span></div>
+        <div className={mergeClasses(styles.kpi, overEstimate && styles.warning)}><span className={styles.kpiLabel}>월말 예상</span><b className={styles.kpiValue}>{displayCount(estimate)}</b><span className={mergeClasses(styles.meta, overEstimate && styles.warningText)}>{available ? overEstimate ? "한도 초과 예상" : "한도 내" : "—"}</span></div>
       </div>
       <section className={styles.card} aria-label="일별 사용량">
-        <h3 className={styles.heading}>일별 사용량 <span className={styles.meta}>단위 K Token</span></h3>
+        <h3 className={styles.heading}>일별 사용량 <span className={mergeClasses(styles.meta, styles.chartUnit)}>단위 K Token</span></h3>
         {snapshot.daily.length ? <div className={styles.chart} role="list" aria-label="10월 일별 Token 사용량">
           {snapshot.daily.map(({ day, tokens }) => {
             const label = "10." + String(day).padStart(2, "0") + " · " + (tokens / 1000) + "K";
