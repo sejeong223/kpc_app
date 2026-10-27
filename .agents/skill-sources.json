@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "cosmosdb-best-practices": {
+      "repository": "https://github.com/AzureCosmosDB/cosmosdb-agent-kit",
+      "ref": "51ed7e9b6dc01039902b8f9d33d4f077d2ead1ef",
+      "sourcePath": "skills/cosmosdb-best-practices",
+      "installedPath": ".agents/skills/cosmosdb-best-practices",
+      "skillMetadataVersion": "1.0.0",
+      "packageMetadataVersion": "1.3.0",
+      "license": "MIT",
+      "skillSha256": "00e0c45a266c82b52fe79d725f59307f4a997d608073776e6cd28141a7d27392",
+      "licenseSourcePath": "LICENSE",
+      "licenseSha256": "59be3807818335eeec97829762294bd25780c6514454a25b19ff58ed4eafe380",
+      "upstreamFileCount": 146,
+      "upstreamRuleMarkdownCount": 142,
+      "linkedRuleCount": 140
+    }
+  }
+}

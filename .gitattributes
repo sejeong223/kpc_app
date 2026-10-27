@@ -1,0 +1,3 @@
+# Preserve the upstream bytes of the vendored Cosmos DB skill on Windows.
+# Keep upstream end-of-line spaces, including Markdown hard breaks.
+/.agents/skills/cosmosdb-best-practices/** text eol=lf whitespace=-blank-at-eol

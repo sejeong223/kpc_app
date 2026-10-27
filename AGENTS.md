@@ -42,3 +42,13 @@
    - Git 커밋 (청사진에 적힌 커밋 메시지 사용)
    - 상위 `phase.md`의 진행률 갱신
    - `.memory/current.md`의 `Active Task`를 다음 Task로 전진
+
+## Cosmos DB 스킬 사용 규칙
+
+- Cosmos DB for NoSQL 데이터 모델·컨테이너·파티션 키·쿼리·SDK·프로비저닝 작업 전에 `.agents/skills/cosmosdb-best-practices/SKILL.md`를 먼저 읽는다.
+- 요약 목차만으로 판단하지 않고 해당 작업과 관련된 `rules/*.md` 본문을 읽는다. 사용한 실제 파일 경로와 `.agents/skill-sources.json`의 고정 소스 commit을 작업 기록에 남긴다.
+- 기존 인터뷰 → 계획 → 실행 workflow를 유지한다. `services/CosmosDBService.ts`와 `scripts/provision-cosmos.ts`를 우선 검토해 기존 연결·생성 경로를 중복 구현하지 않는다.
+- 현재 프로젝트는 TypeScript의 `@azure/cosmos`를 사용한다. Java·.NET 전용 API나 설정을 그대로 복사하지 말고 해당 SDK에서 지원하는지 확인한다.
+- 업무별 주요 조회·쓰기 패턴과 예상 규모를 확인한 뒤 데이터 모델과 파티션 키 후보를 비교한다. 대표 데이터 측정 없이 비용·성능을 확정하지 않는다.
+- 리소스 생성·설정 변경은 사용자가 요청한 범위에서 별도 프로비저닝으로 처리한다. 스킬 읽기나 앱 시작으로 Azure 리소스를 자동 생성하지 않고, 기존 컨테이너 설정 불일치를 자동 삭제·재생성으로 해결하지 않는다.
+- 이 규칙을 UI나 비대상 데이터베이스 작업에 무조건 적용하지 않는다. 사용자의 명시적 요청이 프로젝트 관례보다 우선한다.

@@ -156,6 +156,16 @@ npm run azure:cosmos:provision -- --container records --partition-key /tenantId
 npm run azure:cosmos:provision -- --container records --partition-key /tenantId --throughput 400
 ```
 
+### Cosmos DB 설계 스킬
+
+공식 `cosmosdb-best-practices` 스킬을 이 프로젝트의 [`.agents/skills/cosmosdb-best-practices/SKILL.md`](.agents/skills/cosmosdb-best-practices/SKILL.md)에 설치했습니다. [Azure Cosmos DB Agent Kit](https://github.com/AzureCosmosDB/cosmosdb-agent-kit)의 commit `51ed7e9b6dc01039902b8f9d33d4f077d2ead1ef`를 고정했으며, 출처·두 메타데이터 버전·검증 해시는 [`.agents/skill-sources.json`](.agents/skill-sources.json)에 기록합니다. 스킬 원문과 MIT LICENSE를 보존하고, 해당 폴더에만 LF 줄바꿈을 적용합니다.
+
+다음 요청에서 `$cosmosdb-best-practices`를 명시해 사용하거나, Cosmos DB 컨테이너 설계·파티션 키·쿼리 작업을 요청하면 됩니다. `AGENTS.md`는 해당 작업 전에 로컬 SKILL.md와 관련 규칙을 읽도록 연결합니다. 새 스킬의 대화 목록 인식은 다음 요청에서 확인하며, 목록에 보이지 않으면 위 실제 경로를 읽도록 요청할 수 있습니다.
+
+Cosmos DB에서 테이블에 해당하는 저장 단위는 컨테이너이며 데이터는 JSON 문서로 저장합니다. 실제 작업은 업무 데이터와 주요 조회·쓰기 패턴을 확인하고 기존 인터뷰 → 계획 → 실행 흐름으로 설계합니다. 이번 세팅에서는 샘플 컨테이너나 파티션 키를 정하지 않았습니다. 스킬 설치는 Azure 로그인·권한·네트워크 설정을 대신하지 않으며 실제 리소스 생성도 수행하지 않습니다.
+
+설치한 스킬은 설계 지침입니다. VS Code 전용 `cosmosdb-nosql-query-generation`·`cosmosdb-nosql-query-editor` 도구, MCP 서버, 에뮬레이터가 함께 설치된 것은 아닙니다. 원본 갱신은 별도 검토 후 고정 commit·출처 기록·파일 검증을 함께 갱신합니다.
+
 ## npm scripts
 
 | Script | 용도 |
