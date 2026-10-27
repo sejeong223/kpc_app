@@ -13,8 +13,6 @@ import {
 import {
   AppsRegular,
   ArrowUploadRegular,
-  ChevronLeftRegular,
-  ChevronRightRegular,
   ChevronUpRegular,
   ClipboardBulletListLtrRegular,
   DataBarVerticalRegular,
@@ -23,6 +21,8 @@ import {
   EditRegular,
   HistoryRegular,
   MoneyRegular,
+  PanelLeftContract20Regular,
+  PanelLeftExpand20Regular,
   PeopleRegular,
   SearchRegular,
   SettingsRegular,
@@ -144,6 +144,7 @@ const useStyles = makeStyles({
     color: "#616773",
     "@media (max-width: 760px)": { display: "none" },
   },
+  toggleIcon: { width: "19px", height: "19px", flexShrink: 0 },
   mobileClose: {
     display: "none",
     minWidth: "30px",
@@ -199,6 +200,7 @@ const useStyles = makeStyles({
     flexDirection: "column",
     alignItems: "center",
     flexShrink: 0,
+    width: "100%",
     rowGap: "8px",
     padding: "12.5px 0",
   },
@@ -206,10 +208,12 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     columnGap: "8px",
-    width: "fit-content",
-    minWidth: "152px",
-    maxWidth: "calc(100% - 24px)",
+    width: "181.141px",
+    minWidth: "181.141px",
+    maxWidth: "181.141px",
     height: "49px",
+    boxSizing: "border-box",
+    flexShrink: 0,
     padding: "7px 9px",
     border: "1px solid #e3e5e9",
     borderRadius: "10px",
@@ -228,7 +232,7 @@ const useStyles = makeStyles({
     backgroundColor: "#e60012",
     boxShadow: "0 0 0 2px #fff",
   },
-  account: { minWidth: 0, display: "flex", flexDirection: "column", rowGap: "3px" },
+  account: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", rowGap: "3px" },
   accountLine: { display: "flex", alignItems: "center", columnGap: "6px", minWidth: 0 },
   name: {
     minWidth: 0,
@@ -311,7 +315,9 @@ export default function NavSidebar({
         <Button
           className={styles.toggle}
           appearance="subtle"
-          icon={isCollapsed ? <ChevronRightRegular /> : <ChevronLeftRegular />}
+          icon={isCollapsed
+            ? <PanelLeftExpand20Regular className={styles.toggleIcon} aria-hidden="true" />
+            : <PanelLeftContract20Regular className={styles.toggleIcon} aria-hidden="true" />}
           aria-label={isCollapsed ? "왼쪽 메뉴 펼치기" : "왼쪽 메뉴 접기"}
           aria-expanded={!isCollapsed}
           aria-controls={navId}
@@ -358,6 +364,12 @@ export default function NavSidebar({
         ))}
       </nav>
       <div className={styles.footer}>
+        {authEnabled && session && (
+          <Link href="/auth/logout" className={styles.logout} aria-label="로그아웃">
+            <SignOutRegular aria-hidden="true" />
+            <span data-sidebar-label>로그아웃</span>
+          </Link>
+        )}
         <div className={styles.profile} role="group" aria-label="사용자 프로필" data-sidebar-profile>
           <span className={styles.avatarWrap}>
             <Avatar
@@ -378,12 +390,6 @@ export default function NavSidebar({
           </div>
           <ChevronUpRegular className={styles.profileChevron} aria-hidden="true" data-sidebar-label />
         </div>
-        {authEnabled && session && (
-          <Link href="/auth/logout" className={styles.logout} aria-label="로그아웃">
-            <SignOutRegular aria-hidden="true" />
-            <span data-sidebar-label>로그아웃</span>
-          </Link>
-        )}
       </div>
     </aside>
   );
