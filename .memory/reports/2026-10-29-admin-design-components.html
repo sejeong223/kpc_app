@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPC 관리자 UI · 디자인 컴포넌트 가이드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script>if (typeof Chart !== "undefined") { Chart.defaults.animation = false; }</script>
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.04);
+      --text: #EDEDED; --text-secondary: #888;
+      --accent: #3b82f6; --accent-secondary: #8b5cf6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.06);
+      --text: #0f172a; --text-secondary: #64748b;
+      --accent: #2563eb; --accent-secondary: #7c3aed;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em; font-feature-settings: 'cv11', 'ss01';
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4,h5,h6 {
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      text-wrap: balance;
+    }
+    h1 { font-weight: 700; }
+    h2 { font-weight: 600; }
+    body, p, li, td, th, span, label { font-weight: 400; }
+    p,li,td,th,span,label { color: var(--text); }
+    .text-secondary { color: var(--text-secondary); }
+
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 24px;
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 0 0 1px var(--border), 0 8px 16px rgba(0,0,0,0.08);
+    }
+
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .animate.delay-4 { animation-delay: 0.4s; }
+    .animate.delay-5 { animation-delay: 0.5s; }
+    .animate.delay-6 { animation-delay: 0.6s; }
+
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu, .reveal { display: revert; opacity: 1 !important; transform: none !important; }
+      .card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #666; } }
+
+
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+
+    .skip-to-content {
+      position: absolute; top: -40px; left: 6px; background: var(--accent);
+      color: white; padding: 8px 12px; text-decoration: none;
+      border-radius: 4px; opacity: 0; pointer-events: none;
+      transition: all 0.2s; z-index: 10000;
+    }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+
+
+    details { overflow: hidden; }
+    details summary { cursor: pointer; list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    ::details-content {
+      transition: block-size 0.3s ease, opacity 0.3s ease;
+      block-size: 0; opacity: 0; overflow: hidden;
+    }
+    details[open]::details-content { block-size: auto; opacity: 1; }
+
+
+    [popover] {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px; max-width: 320px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2); color: var(--text);
+    }
+    [popover]::backdrop { background: rgba(0,0,0,0.3); }
+
+
+    html.theme-light { --bg:#f6f5f2;--surface:#ffffff;--surface-hover:#efeeeb;--border:#deddd8;--text:#202328;--text-secondary:#62666d;--accent:#b51d32;--accent-secondary:#285b63;--positive:#0d7a4a;--negative:#c91c2b;--warning:#9a5b0b; }
+    html.theme-dark { --bg:#16191c;--surface:#20252a;--surface-hover:#2a3036;--border:#3b434c;--text:#f3f1ed;--text-secondary:#b6bdc5;--accent:#ff8a99;--accent-secondary:#91c7cf;--positive:#6ddba5;--negative:#ff8f9c;--warning:#ecc27b; }
+    body { font-family:'Inter','Noto Sans KR','Malgun Gothic',sans-serif;font-size:16px;line-height:1.7; }
+    main { max-width:1240px;margin:auto;padding:56px 40px 32px; }
+    h1 { font-size:clamp(2.5rem,5vw,4.5rem);line-height:1.18;letter-spacing:-.065em;max-width:880px;margin:24px 0; }
+    h2 { font-size:clamp(2rem,3vw,2.6rem);line-height:1.25;margin:8px 0 18px; }
+    h3 { font-size:1.5rem;line-height:1.35;margin-bottom:12px; }
+    p { margin:8px 0 16px; } a { color:var(--accent-secondary);text-underline-offset:4px; }
+    section { margin:64px 0; } .eyebrow { color:var(--accent);font-size:.875rem;font-weight:700;letter-spacing:.12em; }
+    .masthead { display:flex;gap:16px;align-items:center;font-weight:700;font-size:.9rem;padding-right:40px; }
+    .logo-mark { display:grid;place-items:center;background:var(--accent);color:var(--bg);width:40px;height:40px;border-radius:10px;font-size:1.1rem; }
+    .intro { max-width:760px;color:var(--text-secondary);font-size:1.1rem; }
+    .rule { height:1px;background:var(--border);margin:32px 0; } .accent-text { color:var(--accent); }
+    .grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px; } .duo { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px; }
+    .card { border-radius:16px;min-width:0; } .stat { font-size:2.4rem;font-weight:700;letter-spacing:-.05em;line-height:1.2; }
+    .small { font-size:.875rem;color:var(--text-secondary); } .muted { color:var(--text-secondary); }
+    .tag { display:inline-block;padding:4px 10px;border:1px solid var(--border);border-radius:6px;font-size:.8rem;font-weight:600;margin:3px 4px 3px 0; }
+    .tag.good { color:var(--positive); } .tag.pending { color:var(--warning); }
+    .section-head { display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px; } .section-head p { max-width:480px; }
+    .toolbar { display:flex;gap:20px;flex-wrap:wrap;align-items:end;margin:24px 0; }
+    label { display:grid;gap:6px;font-size:.9rem; } input,select,button { font:inherit; }
+    select,input[type=search] { min-height:44px;border:1px solid var(--border);border-radius:8px;padding:8px 12px;background:var(--surface);color:var(--text);max-width:100%; }
+    input[type=range] { width:170px;accent-color:var(--accent);min-height:32px; }
+    button { cursor:pointer; } :focus-visible { outline:3px solid var(--accent-secondary);outline-offset:3px; }
+    .pill { min-height:44px;border:1px solid var(--border);padding:8px 14px;border-radius:999px;background:var(--surface);color:var(--text); }
+    .pill[aria-pressed=true] { color:var(--bg);background:var(--text);border-color:var(--text); }
+    .demo { --demo-brand:#d7192f;--demo-soft:#fff0f2;--demo-radius:12px;background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden; }
+    .demo-top { padding:18px 24px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center; }
+    .dot { width:8px;height:8px;border-radius:50%;background:var(--demo-brand); }
+    .demo-body { padding:28px; } .demo-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px; }
+    .demo-card { padding:22px;border:1px solid var(--border);border-radius:var(--demo-radius);background:var(--bg); }
+    .demo-card strong { display:block;font-size:2rem;line-height:1.6; }
+    .demo .demo-selected { border-color:var(--demo-brand);box-shadow:inset 0 3px var(--demo-brand); }
+    .demo-label { font-size:.8rem;letter-spacing:.06em;color:var(--text-secondary); }
+    .demo-progress { height:8px;background:var(--border);border-radius:9px;margin:12px 0;overflow:hidden; }
+    .demo-progress span { display:block;width:72.4%;height:100%;background:var(--demo-brand); }
+    .demo-btn { min-height:44px;border:0;border-radius:calc(var(--demo-radius) * .67);padding:10px 16px;background:var(--demo-brand);color:#fff;font-weight:600; }
+    .preview-strip { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border); }
+    .swatches { display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px; }
+    .swatch-color { height:68px;border:1px solid var(--border);border-radius:10px;margin-bottom:12px; }
+    code { font-family:Consolas,monospace;font-size:.85em;overflow-wrap:anywhere; } .code-path { display:block;margin-top:12px;color:var(--accent-secondary); }
+    pre { white-space:pre-wrap;overflow-wrap:anywhere;padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:.9rem; }
+    .token-values { display:flex;flex-wrap:wrap;gap:12px;margin:20px 0; } .token-values div { flex:1;min-width:100px;border:1px solid var(--border);padding:16px; }
+    .component-card { display:flex;flex-direction:column; } .component-card .code-path { margin-top:auto;padding-top:16px; }
+    .catalog-count { margin-bottom:12px;color:var(--text-secondary); } .component-card[hidden] { display:none; }
+    .flow { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;counter-reset:flow; }
+    .flow article { position:relative;border-top:3px solid var(--accent-secondary);background:var(--surface);padding:24px 20px;border-radius:0 0 12px 12px; }
+    .flow article::before { counter-increment:flow;content:'0' counter(flow);display:block;font-size:.85rem;color:var(--accent-secondary);font-weight:700;margin-bottom:22px; }
+    .flow h3 { font-size:1.5rem; } .flow p { font-size:.9rem; }
+    .mapping { border-top:1px solid var(--border); } .map-row { display:grid;grid-template-columns:190px 1fr 1fr;gap:20px;padding:24px 0;border-bottom:1px solid var(--border); }
+    .map-row h3 { font-size:1.5rem;margin:0; } .map-row p { margin:0; } .map-row code { color:var(--accent-secondary); }
+    .role-view { display:grid;grid-template-columns:1fr 1.4fr;gap:24px; } .menu-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;list-style:none; }
+    .menu-list li { background:var(--bg);padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:.9rem; } .menu-divider { border-top:2px solid var(--accent);margin:16px 0;padding-top:12px; }
+    .step { border:1px solid var(--border);border-radius:12px;padding:20px 24px;background:var(--surface);margin:12px 0; }
+    .step summary { font-size:1.1rem;font-weight:600; } .step summary::after { content:'＋';float:right;color:var(--accent); } .step[open] summary::after { content:'－'; }
+    .step .section-body { padding-top:20px; } .checklist { padding-left:24px; } .checklist li { margin:10px 0; }
+    footer { border-top:1px solid var(--border);padding:28px 0;font-size:.9rem;color:var(--text-secondary); }
+    .notice { border-left:3px solid var(--warning);padding:12px 20px;background:var(--surface);margin-top:24px; }
+    .sr-only { position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap; }
+    @media(max-width:1024px) { .flow{grid-template-columns:repeat(2,minmax(0,1fr));}.swatches{grid-template-columns:repeat(3,minmax(0,1fr));}.grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media(max-width:768px) { main{padding:28px 16px;}section{margin:52px 0;}.grid,.duo,.role-view,.demo-grid{grid-template-columns:1fr;}.section-head{display:block;}.map-row{grid-template-columns:1fr;gap:10px;}.demo-body{padding:18px;}.demo-top{padding:16px;}.intro{font-size:1rem;}.card{padding:20px;} }
+    @media(max-width:375px) { .flow{grid-template-columns:1fr;}.swatches{grid-template-columns:repeat(2,minmax(0,1fr));}.card{padding:16px;} }
+    @media print { html.theme-dark,html.theme-light{--bg:#fff;--surface:#fff;--surface-hover:#f7f7f7;--border:#ccc;--text:#151515;--text-secondary:#555;--accent:#a21d30;--accent-secondary:#285b63;--positive:#0d7a4a;--negative:#c91c2b;--warning:#85520c;}main{padding:0;max-width:none;}.viz-menu,.toolbar,.skip-to-content,.demo-btn{display:none!important;}section{margin:32px 0;}.animate{animation:none!important;}h1{font-size:2.5rem;}h2{font-size:2rem;}.component-card[hidden]{display:flex;}.card,.flow article,.map-row{break-inside:avoid;}details::details-content{block-size:auto!important;opacity:1!important;content-visibility:visible!important;} }
+
+  </style>
+</head>
+<body>
+
+
+
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="문서 메뉴" aria-controls="vizMenuDropdown" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+      <button onclick="downloadImage()"><span>📥</span><span>PNG 저장</span></button>
+      <button onclick="window.print()"><span>🖨️</span><span>인쇄 / PDF</span></button>
+    </div>
+  </div>
+
+
+  <a href="#main-content" class="skip-to-content">본문으로 이동</a>
+
+  <main id="main-content" role="main">
+
+<header class="animate">
+  <div class="masthead"><span class="logo-mark" aria-hidden="true">K</span> KPC · 관리자 UI 설계 기록 <span class="small">2026.10.29</span></div>
+  <h1>디자인이 바뀌어도<br><span class="accent-text">기능은 이어지도록.</span></h1>
+  <p class="intro">1차 기획의 관리자 화면을 공통 컴포넌트와 mock 데이터 계층으로 구현했습니다. 이 문서는 실제 코드의 재사용 구조와 디자인 교체 지점을 설명하는 전달용 가이드입니다.</p>
+  <div><span class="tag good">T01–T08 구현·검증 완료</span><span class="tag pending">T09 화면 검증 대기</span><span class="tag">실제 DB 연결 전</span></div>
+  <div class="rule"></div>
+  <div class="grid"><div><div class="stat">4개 화면</div><p class="muted">사용자 설정 · 모델·토큰 관리<br>활동 로그 · 대시보드</p></div><div><div class="stat">3개 역할</div><p class="muted">슈퍼 관리자 · 관리자 · 일반 사용자<br>역할과 리소스별 CRUD를 함께 검사</p></div><div><div class="stat">328개</div><p class="muted">자동 테스트 통과<br>브라우저 시각·키보드 검증은 별도</p></div></div>
+</header>
+<section aria-labelledby="playground-title">
+  <div class="section-head"><div><div class="eyebrow">01 / DESIGN PLAYGROUND</div><h2 id="playground-title">스타일 교체를 체험해 보세요</h2></div><p class="muted">색상과 모서리만 바꿔도 같은 카드가 달라집니다. 아래는 구조 설명용 축약 예시이며, 실제 앱의 캡처는 아닙니다.</p></div>
+  <div class="toolbar"><label>브랜드 색상<select id="brandSelect"><option value="red">KPC 레드 · 현재</option><option value="blue">블루 · 비교 예시</option><option value="green">그린 · 비교 예시</option></select></label><label for="radiusRange">카드 모서리 <output id="radiusValue">12px</output><input id="radiusRange" type="range" min="0" max="24" value="12" step="2"></label><button class="pill" id="resetPreview">원래 값으로</button></div>
+  <div class="demo" id="demoPreview"><div class="demo-top"><i class="dot" aria-hidden="true"></i><span>공통 컴포넌트 예시</span><span class="small">AdminMetric + AdminCard</span></div><div class="demo-body"><div class="demo-grid"><div class="demo-card demo-selected"><span class="demo-label">전체 사용자</span><strong>18명</strong><span class="small">역할 카드 선택 → 목록 필터</span></div><div class="demo-card"><span class="demo-label">개인 토큰 사용량</span><strong>72.4K <span class="small">/ 100K</span></strong><div class="demo-progress" role="img" aria-label="개인 한도 대비 72.4퍼센트 사용"><span></span></div></div><div class="demo-card"><span class="demo-label">처리 상태</span><strong>승인 대기</strong><span class="small">버튼 노출은 권한으로 결정</span></div></div><div class="preview-strip"><code id="previewCode">--kpc-brand: #d7192f; --kpc-radius-card: 12px;</code><button class="demo-btn" id="sampleAction">저장 버튼 예시</button></div><p id="demoMessage" class="small" role="status">이 예시는 스타일만 변경합니다. 실제 사용자·토큰 데이터는 저장하지 않습니다.</p></div></div>
+</section>
+<section aria-labelledby="tokens-title">
+  <div class="eyebrow">02 / DESIGN TOKENS</div><h2 id="tokens-title">시각 규칙을 한곳에 모았습니다</h2><p class="muted">현재 원본: <code>app/admin-theme.css</code>. 공통 카드와 Fluent 테마가 CSS 변수를 참조합니다.</p>
+  <div class="swatches"><div><div class="swatch-color" style="background:#d7192f"></div><strong>브랜드</strong><br><code>--kpc-brand<br>#d7192f</code></div><div><div class="swatch-color" style="background:#fff0f2"></div><strong>선택 배경</strong><br><code>--kpc-brand-soft<br>#fff0f2</code></div><div><div class="swatch-color" style="background:#f8f9fa"></div><strong>페이지 배경</strong><br><code>--kpc-bg<br>#f8f9fa</code></div><div><div class="swatch-color" style="background:#ffffff"></div><strong>카드 배경</strong><br><code>--kpc-card<br>#ffffff</code></div><div><div class="swatch-color" style="background:#161616"></div><strong>본문</strong><br><code>--kpc-ink<br>#161616</code></div><div><div class="swatch-color" style="background:#e6e7eb"></div><strong>구분선</strong><br><code>--kpc-line<br>#e6e7eb</code></div></div>
+  <div class="duo" style="margin-top:28px"><article class="card"><h3>크기와 간격</h3><div class="token-values"><div style="border-radius:8px">컨트롤<br><strong>8px</strong></div><div style="border-radius:12px">카드<br><strong>12px</strong></div><div style="border-radius:16px">모달<br><strong>16px</strong></div></div><p>간격 기준 단위는 4px. Tailwind의 <code>tw:</code> 접두사를 사용하고 Preflight를 제외해 기존 화면 스타일에 영향을 줄입니다.</p></article><article class="card"><h3>타이포그래피</h3><p>현재 앱의 기준은 본문 12px · 보조 11px · 제목 18px입니다. 이 설명 문서는 읽기 편하도록 본문 16px를 사용합니다.</p><p class="small">폰트 크기 변수는 선언되어 있지만 일부 컴포넌트는 명시적 크기를 사용합니다. 최종 디자인의 글자 크기·밀도 변경 시 공통 UI와 개별 패널도 함께 점검해야 합니다.</p><code class="code-path">app/admin-theme.css<br>components/providers/FluentUiProvider.tsx</code></article></div>
+</section>
+<section aria-labelledby="catalog-title">
+  <div class="eyebrow">03 / COMPONENT CATALOG</div><h2 id="catalog-title">화면마다 다시 만들지 않는 요소</h2><p class="muted">레이아웃은 Tailwind, 입력과 상호작용은 기존 Fluent UI를 재사용합니다. 기존 ModalFrame과 페이지 계산 유틸리티도 연결했습니다.</p>
+  <div class="toolbar"><label>컴포넌트 검색<input id="componentSearch" type="search" placeholder="표, 모달, 필터, 카드…"></label><div id="componentFilters" style="display:flex;gap:8px;flex-wrap:wrap"><button class="pill" data-filter="all" aria-pressed="true">전체</button><button class="pill" data-filter="layout" aria-pressed="false">레이아웃</button><button class="pill" data-filter="data" aria-pressed="false">데이터 표현</button><button class="pill" data-filter="interaction" aria-pressed="false">입력·상태</button></div></div>
+  <p class="catalog-count" id="catalogCount" role="status">9개 컴포넌트 그룹</p>
+  <div class="grid" id="componentGrid">
+    <article class="card component-card" data-kind="layout"><span class="eyebrow">FRAME</span><h3>페이지·카드</h3><p><code>AdminPage / AdminCard</code></p><p>제목, 설명, 액션 영역과 카드 경계를 공통화합니다. 화면 내부는 children으로 조합합니다.</p><code class="code-path">components/admin/ui/AdminPrimitives.tsx</code></article>
+    <article class="card component-card" data-kind="data"><span class="eyebrow">METRIC</span><h3>요약 지표</h3><p><code>AdminMetric</code></p><p>label, value, caption, tone. 선택 가능한 지표는 버튼으로 렌더링하며 aria-pressed로 상태를 알립니다.</p><code class="code-path">components/admin/ui/AdminPrimitives.tsx</code></article>
+    <article class="card component-card" data-kind="data"><span class="eyebrow">TABLE</span><h3>목록·상세 표</h3><p><code>AdminTable</code></p><p>타입이 있는 columns, 선택, 정렬, 상세 펼침을 조합합니다. 빈 상태와 표 내부 가로 스크롤을 제공합니다.</p><code class="code-path">components/admin/ui/AdminTable.tsx</code></article>
+    <article class="card component-card" data-kind="interaction"><span class="eyebrow">NAVIGATION</span><h3>탭·페이지 이동</h3><p><code>AdminTabs / AdminPager</code></p><p>Fluent TabList와 기존 페이지 계산을 재사용합니다. 화면 탭과 목록 페이지는 각자 상태를 관리합니다.</p><code class="code-path">components/admin/ui/AdminTabs.tsx<br>components/admin/ui/AdminPager.tsx</code></article>
+    <article class="card component-card" data-kind="interaction"><span class="eyebrow">FILTER</span><h3>기간·검색 필터</h3><p><code>AdminPeriodFilter</code></p><p>기간은 공통 컴포넌트, 사용자·액션 검색은 업무 패널에서 조합합니다. 사용자·로그 검색은 250ms 지연합니다.</p><code class="code-path">components/admin/ui/AdminPeriodFilter.tsx</code></article>
+    <article class="card component-card" data-kind="interaction"><span class="eyebrow">STATE</span><h3>로딩·오류·권한</h3><p><code>AdminAsyncState</code></p><p>로딩, 빈 결과, 오류, 접근 제한을 같은 표현으로 보여 줍니다. 재시도 액션도 한곳에서 관리합니다.</p><code class="code-path">components/admin/ui/AdminAsyncState.tsx</code></article>
+    <article class="card component-card" data-kind="data"><span class="eyebrow">CHART</span><h3>막대·추이 차트</h3><p><code>AdminSeriesChart / AdminBreakdown</code></p><p>HTML·SVG로 시각화하고 보조 표로 같은 수치를 제공합니다. 빈 배열·0·단일 값 좌표 계산을 검증했습니다.</p><code class="code-path">components/admin/ui/AdminCharts.tsx<br>lib/admin/chart-data.ts</code></article>
+    <article class="card component-card" data-kind="interaction"><span class="eyebrow">DIALOG</span><h3>모달 프레임</h3><p><code>ModalFrame</code></p><p>기존 공통 모달의 제목·본문·footer를 재사용합니다. 사용자·그룹 편집과 삭제 확인, 토큰 신청에 적용합니다.</p><code class="code-path">components/ui/ModalFrame.tsx</code></article>
+    <article class="card component-card" data-kind="interaction"><span class="eyebrow">CONTROL</span><h3>입력·선택·버튼</h3><p><code>Button / Field / Input / Select / Checkbox</code></p><p>Fluent 컴포넌트의 동작을 유지하고 브랜드 값은 Provider로 전달합니다. 입력 검증은 Zod·서비스가 담당합니다.</p><code class="code-path">components/providers/FluentUiProvider.tsx</code></article>
+  </div>
+</section>
+<section aria-labelledby="layers-title">
+<div class="eyebrow">04 / CHANGE BOUNDARIES</div><h2 id="layers-title">디자인과 데이터의 변경 지점</h2>
+<div class="flow"><article><h3>표현</h3><p>색상·모서리·레이아웃<br>CSS 변수 + Fluent + Tailwind</p><code>admin-theme.css<br>AdminPrimitives.tsx</code></article><article><h3>화면 조합</h3><p>업무별 필터·입력 폼<br>사용자 / 모델·토큰 / 로그 / 대시보드</p><code>components/admin/</code></article><article><h3>조회·명령</h3><p>React Query 훅<br>역할·부서·revision별 캐시</p><code>hooks/admin/<br>use-admin-data.ts</code></article><article><h3>데이터 계약</h3><p>AdminDataService + Zod<br>현재는 Provider별 메모리 저장소</p><code>services/admin/<br>MockAdminDataService.ts</code></article></div>
+<div class="notice"><strong>Cosmos DB 연결 시</strong><p>서비스 인터페이스를 경계로 서버 API·실제 저장소 구현을 추가합니다. 서버 세션에서 역할·부서를 확인하고 모든 입력·권한을 다시 검증해야 합니다. 현재의 클라이언트 mock 검사는 실제 보안 경계가 아닙니다.</p><p class="small">이번 작업은 컨테이너·파티션 키·SDK 연동 설계 및 Azure 리소스 생성을 포함하지 않습니다.</p></div>
+</section>
+<section aria-labelledby="screen-title">
+<div class="eyebrow">05 / SCREEN MAP</div><h2 id="screen-title">공통 요소가 네 화면으로 조합됩니다</h2>
+<div class="mapping"><article class="map-row"><div><h3>사용자 설정</h3><code>/workspace/users</code></div><p>사용자 · 그룹 · 역할별 권한<br>역할 카드 / 검색 / 목록 / CRUD 체크박스</p><p>공통 카드 + 표 + 페이지 이동<br>사용자·디렉터리·그룹 모달</p></article><article class="map-row"><div><h3>모델·토큰 관리</h3><code>/workspace/policy</code></div><p>모델 설정 + 토큰·비용 관리의 2개 탭<br>업무별 모델 / 단가·환율 / 한도 / 승인</p><p>공통 탭 + 기간 + 지표 + 표<br>금액 입력과 과거 비용 스냅샷 분리</p></article><article class="map-row"><div><h3>활동 로그</h3><code>/workspace/audit</code></div><p>기간 / 사용자 / 액션 / 결과<br>이벤트별 상세 펼침 + CSV</p><p>공통 필터 + 정렬 표 + 페이지 이동<br>최근 90일 활동 범위 적용</p></article><article class="map-row"><div><h3>대시보드</h3><code>/workspace/dashboard</code></div><p>RFP 현황 · 사용량 추이<br>활동 분석 · 사용자 활동</p><p>공통 지표 + 탭 + 차트 + 보조 표<br>활동 집계와 RFP 조회 기간 구분</p></article></div>
+<p class="small">기존 <code>/workspace/tokens</code> 주소는 <code>/workspace/policy?tab=tokens</code>로 이동합니다. 프롬프트 세트·Skill·Template의 본문 구현은 이번 범위에 포함하지 않았습니다.</p>
+</section>
+<section aria-labelledby="roles-title">
+<div class="eyebrow">06 / ROLE &amp; VISIBILITY</div><h2 id="roles-title">구분선과 역할의 의미</h2><div class="toolbar"><label>메뉴 노출 예시<select id="roleSelect"><option value="super_admin">슈퍼 관리자 · 전사 관리자</option><option value="department_admin">관리자 · 부서 관리자</option><option value="user">일반 사용자</option></select></label></div>
+<div class="role-view"><article class="card"><h3>사이드바</h3><ul class="menu-list"><li>RFP 등록</li><li>검토 목록</li><li>AI 분석</li><li>파일 업로드</li><li>목차</li><li>제작 설정</li><li>제작</li></ul><div class="menu-divider"><span class="small">이 선 아래는 관리자 이상</span></div><div id="adminMenuItems"></div></article><article class="card"><h3 id="roleHeading">전사 범위로 관리</h3><p id="roleDescription">사용자·그룹·역할별 권한, 모델·가격·토큰 정책을 관리합니다.</p><p>메뉴 노출은 역할로, 본문과 버튼은 리소스별 CRUD로 제어합니다. 금지된 버튼은 조건부 렌더링으로 생성하지 않습니다.</p><p>개인 사용량 조회와 토큰 신청은 프로필에서 제공합니다. 부서 관리자는 자기 부서 신청만 승인·반려할 수 있습니다.</p><code class="code-path">config/sidebar.ts<br>config/admin-permissions.ts<br>lib/admin/permissions.ts</code><p class="small">실제 인증의 User/Admin 역할은 유지했습니다. 3단계 업무 역할의 Entra 연동은 후속 작업입니다. 위 선택기는 이 문서의 설명만 바꿉니다.</p></article></div>
+</section>
+<section aria-labelledby="handoff-title">
+<div class="eyebrow">07 / DESIGN HANDOFF</div><h2 id="handoff-title">최종 디자인을 받으면 바꿀 순서</h2>
+<details class="step" name="handoff" open><summary>01. 색상과 기본 크기</summary><div class="section-body"><p><code>app/admin-theme.css</code>에서 브랜드·중립·상태 색상을 맞추고 <code>FluentUiProvider.tsx</code>의 토큰 매핑을 확인합니다. 모달·프로필 등 기존 UI의 직접 지정 값은 함께 점검해야 합니다.</p><pre><code>:root {
+  --kpc-brand: #d7192f;
+  --kpc-radius-card: 12px;
+}</code></pre><button class="pill" id="copyTokenCode">예시 코드 복사</button><span id="copyStatus" class="small" role="status"></span></div></details>
+<details class="step" name="handoff"><summary>02. 공통 컴포넌트와 밀도</summary><div class="section-body"><p><code>AdminPrimitives / AdminTable / AdminTabs / AdminCharts</code>의 여백·높이·글자 크기·상태 표시를 맞춥니다. 업무 로직에 종속되지 않은 props와 의미 있는 HTML, label, aria 속성은 유지합니다.</p><p>현재 일부 숫자형 크기와 간격은 컴포넌트에 지정되어 있습니다. 모든 디자인 변경이 CSS 변수 한 파일만으로 끝나는 구조는 아닙니다.</p></div></details>
+<details class="step" name="handoff"><summary>03. 화면별 구성과 반응형</summary><div class="section-body"><p>정보의 순서와 그리드가 바뀌면 각 Page·Panel에서 배치를 조정합니다. 320~1440px 폭, 낮은 높이에서 모달 본문 스크롤, 표 내부 가로 스크롤을 확인합니다.</p><p>현재 실제 브라우저 검증은 도구 중단으로 미완료입니다. 외주 디자인 적용 전후 모두 키보드·포커스·SSR 초기 스타일 확인이 필요합니다.</p></div></details>
+<details class="step" name="handoff"><summary>04. 저장·권한·집계 회귀</summary><div class="section-body"><p>스타일 변경 후에도 신청 50K → 승인 → 개인 한도 100K에서 150K로 반영되는 흐름을 보존합니다. 비용은 사용 당시 단가·환율 스냅샷을 유지하며, 권한 변경 시 이전 범위 캐시를 재사용하지 않습니다.</p><pre><code>npm test
+npm run typecheck
+npm run lint
+npm run build</code></pre></div></details>
+</section>
+<section aria-labelledby="review-title">
+  <div class="eyebrow">08 / REVIEW STATUS</div><h2 id="review-title">전달할 때 함께 확인할 항목</h2><div class="duo"><article class="card"><h3>디자인 업체 전달 목록</h3><ul class="checklist"><li>선택·hover·pressed·disabled·오류 상태</li><li>표 행 밀도, 긴 텍스트, 빈 결과와 로딩</li><li>역할별 본문·버튼 차이와 모바일 줄바꿈</li><li>모달 최대 높이, Tab·Escape·포커스 복귀</li><li>토큰 한도 경고와 상태 색상의 대비</li></ul></article><article class="card"><h3>현재 검증 범위</h3><p><span class="tag good">테스트 328 / 328</span><span class="tag good">타입·린트·빌드 통과</span></p><p>실브라우저의 6개 뷰포트, 키보드, hydration·콘솔 확인은 미검증입니다. T09는 완료 처리하지 않았습니다.</p><p>이 HTML도 구조·스크립트 정적 검증만 수행했습니다. 밝은/어두운 테마는 문서 기능이며, 앱에 다크 모드를 추가한 것은 아닙니다.</p><a href="2026-10-29-admin-mock-ui-validation.md">검증 보고서 보기 →</a></article></div>
+</section>
+<footer><strong>KPC 관리자 UI · 디자인 컴포넌트 가이드</strong><p>구현 기준: 2026-10-29-admin-mock-ui 계획 · 예시 데이터 기준일 2026.10.20<br>콘텐츠와 주요 조작은 파일 단독으로 동작합니다. 웹폰트·PNG 내보내기는 CDN 연결이 필요하며 인쇄/PDF 저장도 사용할 수 있습니다.</p></footer>
+
+  </main>
+
+  <script>
+    function toggleMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
+      if (dropdown) { dropdown.classList.toggle('open'); document.querySelector('.viz-menu-toggle').setAttribute('aria-expanded',String(dropdown.classList.contains('open'))); }
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.viz-menu')) {
+        var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
+        if (dropdown) { dropdown.classList.remove('open'); document.querySelector('.viz-menu-toggle').setAttribute('aria-expanded','false'); }
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        var dropdown = document.getElementById('vizMenuDropdown') || document.getElementById('vizMenu');
+        if (dropdown) { dropdown.classList.remove('open'); document.querySelector('.viz-menu-toggle').setAttribute('aria-expanded','false'); }
+      }
+    });
+    var savedTheme = null; try { savedTheme=localStorage.getItem('kpc-design-guide-theme'); } catch {};
+    var currentTheme = savedTheme === 'dark' ? 'dark' : 'light';
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      document.getElementById('themeIcon').textContent = t === 'dark' ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = t === 'dark' ? '어두운 테마' : '밝은 테마';
+      try { localStorage.setItem('kpc-design-guide-theme', t); } catch {}
+      currentTheme = t;
+      if (typeof onThemeChange === 'function') onThemeChange();
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+    document.querySelectorAll('[data-reveal]').forEach(el => el.classList.add('reveal'));
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    function animateCounters() {
+      document.querySelectorAll('[data-count]').forEach(function(el) {
+        if (el.dataset.counted) return;
+        el.dataset.counted = '1';
+        var target = parseFloat(el.dataset.count), prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
+        var start = performance.now(), duration = 1200;
+        (function tick(now) {
+          var p = Math.min((now - start) / duration, 1), eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + Math.round(target * eased).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        })(start);
+      });
+    }
+    var counterEl = document.querySelector('[data-count]');
+    if (counterEl) {
+      var cObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) { if (e.isIntersecting) { animateCounters(); cObs.disconnect(); } });
+      }, { threshold: 0.3 });
+      cObs.observe(counterEl);
+    }
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        if (typeof htmlToImage === 'undefined') { window.alert('PNG 저장 도구에 연결할 수 없습니다. 인쇄 / PDF 저장을 사용해 주세요.'); return; }
+        document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible');});
+        var url = await htmlToImage.toPng(document.body, { quality: 1, pixelRatio: 2, filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); } });
+        var a = document.createElement('a'); a.href = url;
+        a.download = document.title.replace(/\s+/g, '-').toLowerCase() + '.png'; a.click();
+      } catch(e) { console.error('PNG 저장 실패:', e); window.alert('PNG 저장에 실패했습니다. 인쇄 / PDF 저장을 사용해 주세요.'); } finally { menu.style.display = ''; }
+    }
+    var brandSelect = document.getElementById('brandSelect');
+    var radiusRange = document.getElementById('radiusRange');
+    var brandColors = {red:'#d7192f',blue:'#2459b8',green:'#087760'};
+    function updatePreview() {
+      var color = brandColors[brandSelect.value];
+      document.getElementById('demoPreview').style.setProperty('--demo-brand',color);
+      document.getElementById('demoPreview').style.setProperty('--demo-radius',radiusRange.value+'px');
+      document.getElementById('radiusValue').textContent=radiusRange.value+'px';
+      document.getElementById('previewCode').textContent='--kpc-brand: '+color+'; --kpc-radius-card: '+radiusRange.value+'px;';
+    }
+    brandSelect.addEventListener('change',updatePreview);
+    radiusRange.addEventListener('input',updatePreview);
+    document.getElementById('resetPreview').addEventListener('click',function(){brandSelect.value='red';radiusRange.value='12';updatePreview();});
+    document.getElementById('sampleAction').addEventListener('click',function(){document.getElementById('demoMessage').textContent='저장 동작의 버튼 표현 예시입니다. 실제 앱은 useMutation → 서비스 검증 → revision 갱신 순서로 저장합니다.';});
+    var selectedFilter='all';
+    function filterComponents(){
+      var text=document.getElementById('componentSearch').value.trim().toLowerCase();var count=0;
+      document.querySelectorAll('.component-card').forEach(function(card){card.hidden=!((selectedFilter==='all'||card.dataset.kind===selectedFilter)&&card.textContent.toLowerCase().includes(text));if(!card.hidden)count++;});
+      document.getElementById('catalogCount').textContent=count+'개 컴포넌트 그룹'+(count===0?' · 검색 조건을 바꿔 주세요.':'');
+    }
+    document.getElementById('componentSearch').addEventListener('input',filterComponents);
+    document.querySelectorAll('[data-filter]').forEach(function(button){button.addEventListener('click',function(){selectedFilter=button.dataset.filter;document.querySelectorAll('[data-filter]').forEach(function(b){b.setAttribute('aria-pressed',String(b===button));});filterComponents();});});
+    var roleInfo={super_admin:['전사 범위로 관리','사용자·그룹·역할별 권한, 모델·가격·토큰 정책을 관리합니다.'],department_admin:['소속 부서 범위로 조회','자기 부서의 사용자·로그·대시보드·사용량을 조회하고 토큰 신청을 승인·반려합니다. 전사 설정은 수정할 수 없습니다.'],user:['업무 메뉴와 개인 프로필','구분선 위 7개 업무 메뉴만 보입니다. 개인 토큰 조회·신청은 프로필에서 제공합니다.']};
+    function updateRole(){
+      var role=document.getElementById('roleSelect').value;var host=document.getElementById('adminMenuItems');host.replaceChildren();
+      if(role!=='user'){var list=document.createElement('ul');list.className='menu-list';['프롬프트 세트','Skill','Template','모델·토큰 관리','사용자 설정','대시보드','활동 로그'].forEach(function(name){var item=document.createElement('li');item.textContent=name;list.append(item);});host.append(list);}else{var p=document.createElement('p');p.className='small';p.textContent='관리자 메뉴를 렌더링하지 않습니다.';host.append(p);}
+      document.getElementById('roleHeading').textContent=roleInfo[role][0];document.getElementById('roleDescription').textContent=roleInfo[role][1];
+    }
+    document.getElementById('roleSelect').addEventListener('change',updateRole);updateRole();
+    document.getElementById('copyTokenCode').addEventListener('click',async function(){try{await navigator.clipboard.writeText(':root {\n  --kpc-brand: #d7192f;\n  --kpc-radius-card: 12px;\n}');document.getElementById('copyStatus').textContent=' 복사했습니다.';}catch{document.getElementById('copyStatus').textContent=' 브라우저에서 복사를 허용하지 않습니다. 위 코드를 직접 선택해 주세요.';}});
+
+    var printOpenStates=[];
+    window.addEventListener('beforeprint',function(){printOpenStates=Array.from(document.querySelectorAll('details')).map(function(d){var state={element:d,open:d.open,name:d.getAttribute('name')};d.removeAttribute('name');d.open=true;return state;});});
+    window.addEventListener('afterprint',function(){printOpenStates.forEach(function(state){state.element.open=state.open;if(state.name)state.element.setAttribute('name',state.name);});});
+
+  </script>
+</body>
+</html>

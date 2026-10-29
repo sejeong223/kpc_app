@@ -18,7 +18,7 @@ describe("profile preview state", () => {
   it("creates independent states without sharing the seed or nested preferences", () => {
     const first = createInitialProfilePreviewState();
     const second = createInitialProfilePreviewState();
-    expect(first.previewRole).toBe("admin");
+    expect(first.previewRole).toBe("super_admin");
     expect(first.selectedTab).toBe("general");
     expect(first.preferences).toEqual(PROFILE_PREFERENCE_DEFAULTS);
     expect(first.notifications).toEqual(PROFILE_NOTIFICATION_SEED);
@@ -29,7 +29,6 @@ describe("profile preview state", () => {
     expect(first.preferences).not.toBe(PROFILE_PREFERENCE_DEFAULTS);
     expect(first.tokens).not.toBe(second.tokens);
     expect(first.tokens.requestDraft).not.toBe(second.tokens.requestDraft);
-    expect(first.tokens.requests).not.toBe(second.tokens.requests);
   });
 
   it("marks one or all notifications read without altering earlier states", () => {
@@ -58,7 +57,7 @@ describe("profile preview state", () => {
     state = profilePreviewReducer(state, { type: "set-notification-filter", filter: "unread" });
     state = profilePreviewReducer(state, { type: "mark-notification-read", id: "n1" });
     const user = profilePreviewReducer(state, { type: "set-role", role: "user" });
-    const admin = profilePreviewReducer(user, { type: "set-role", role: "admin" });
+    const admin = profilePreviewReducer(user, { type: "set-role", role: "super_admin" });
     expect(user.previewRole).toBe("user");
     expect(admin).toEqual(state);
     expect(admin.selectedTab).toBe("preferences");
@@ -82,19 +81,13 @@ describe("profile preview state", () => {
     expect(open.previewRole).toBe(initial.previewRole);
     expect(open.selectedTab).toBe(initial.selectedTab);
     const reason = profilePreviewReducer(open, { type: "token", action: { type: "set-reason", value: "추가 신청" } });
-    const submitted = profilePreviewReducer(reason, {
-      type: "token", action: {
-        type: "submit", requestId: "one", submittedAt: "2026-10-27T01:00:00.000Z",
-        requesterName: "정소담", department: null,
-      },
-    });
-    expect(submitted.tokens.requests).toHaveLength(1);
+    const submitted = profilePreviewReducer(reason, { type: "token", action: { type: "close" } });
     const role = profilePreviewReducer(submitted, { type: "set-role", role: "user" });
     const settings = profilePreviewReducer(role, { type: "set-preference", key: "comments", value: false });
     const read = profilePreviewReducer(settings, { type: "mark-notification-read", id: "n1" });
     expect(read.tokens).toBe(submitted.tokens);
     expect(profilePreviewReducer(read, { type: "token", action: { type: "close" } })).toBe(read);
-    expect(initial.tokens.requests).toHaveLength(0);
+    expect(initial.tokens.requestDraft.reason).toBe("");
   });
 });
 
@@ -137,31 +130,31 @@ function session(user: Partial<Session["user"]> = {}): Session {
 }
 
 describe("display roles remain separate from authentication", () => {
-  it.each(["user", "admin"] as const)("uses the display fixture for preview %s", (previewRole) => {
+  it.each(["user", "super_admin"] as const)("uses the display fixture for preview %s", (previewRole) => {
     const profile = resolveProfileDisplay({ authEnabled: false, session: null, previewRole });
     expect(profile).toMatchObject({ name: "정소담", role: previewRole, isPreview: true, department: "AI사업본부" });
   });
 
   it("prefers the actual User role to a preview administrator", () => {
     const actual = session({ name: "  실제 사용자  ", email: "person@example.invalid" });
-    expect(resolveProfileDisplay({ authEnabled: true, session: actual, previewRole: "admin" })).toEqual({
+    expect(resolveProfileDisplay({ authEnabled: true, session: actual, previewRole: "super_admin" })).toEqual({
       name: "실제 사용자", email: "person@example.invalid", department: null, organization: "KPC", role: "user", isPreview: false,
     });
     expect(actual.user.roles).toEqual(["User"]);
   });
 
   it("uses the actual Admin role regardless of the preview choice", () => {
-    expect(resolveProfileDisplay({ authEnabled: true, session: session({ roles: [APP_ROLES.ADMIN] }), previewRole: "user" }).role).toBe("admin");
+    expect(resolveProfileDisplay({ authEnabled: true, session: session({ roles: [APP_ROLES.ADMIN] }), previewRole: "user" }).role).toBe("super_admin");
   });
 
   it("falls back from a blank name to email, then to 사용자", () => {
-    expect(resolveProfileDisplay({ authEnabled: true, session: session({ name: " ", email: " person@example.invalid " }), previewRole: "admin" }).name).toBe("person@example.invalid");
-    expect(resolveProfileDisplay({ authEnabled: true, session: null, previewRole: "admin" })).toMatchObject({ name: "사용자", email: null, role: "user", isPreview: false });
+    expect(resolveProfileDisplay({ authEnabled: true, session: session({ name: " ", email: " person@example.invalid " }), previewRole: "super_admin" }).name).toBe("person@example.invalid");
+    expect(resolveProfileDisplay({ authEnabled: true, session: null, previewRole: "super_admin" })).toMatchObject({ name: "사용자", email: null, role: "user", isPreview: false });
   });
 
   it("hides only admin-required preview content from the preview user", () => {
     expect(shouldHidePreviewScreen(false, "user", APP_ROLES.ADMIN)).toBe(true);
-    expect(shouldHidePreviewScreen(false, "admin", APP_ROLES.ADMIN)).toBe(false);
+    expect(shouldHidePreviewScreen(false, "super_admin", APP_ROLES.ADMIN)).toBe(false);
     expect(shouldHidePreviewScreen(false, "user")).toBe(false);
     expect(shouldHidePreviewScreen(false, "user", APP_ROLES.USER)).toBe(false);
     expect(shouldHidePreviewScreen(true, "user", APP_ROLES.ADMIN)).toBe(false);

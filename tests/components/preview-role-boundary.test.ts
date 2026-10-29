@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_ROLES } from "@/lib/auth/roles";
 
 const mocks = vi.hoisted(() => ({
-  runtime: { authEnabled: false, state: { previewRole: "user" as "user" | "admin" } },
+  runtime: { authEnabled: false, state: { previewRole: "user" as "user" | "super_admin" } },
   replace: vi.fn(),
 }));
 
@@ -40,7 +40,7 @@ describe("preview screen content boundary", () => {
   });
 
   it("preserves administrator preview content", () => {
-    mocks.runtime.state.previewRole = "admin";
+    mocks.runtime.state.previewRole = "super_admin";
     expect(render(APP_ROLES.ADMIN)).toContain("restricted preview content");
   });
 

@@ -5,9 +5,10 @@ import { AddRegular, ChevronRightRegular, ClockRegular, DataBarVerticalRegular, 
 import Link from "next/link";
 
 import SegmentedControl from "@/components/ui/SegmentedControl";
-import { PROFILE_TOKEN_USAGE, PROFILE_WORK_COUNTS, type PreviewRole } from "@/config/profile-preview";
+import { PROFILE_WORK_COUNTS, type PreviewRole } from "@/config/profile-preview";
 import { formatTokenCount, getProfileTokenSummary, getUnreadNotificationCount } from "@/lib/profile-preview";
-import { getLatestPendingTokenRequest } from "@/lib/token-preview";
+import { getLatestPendingTokenRequest, toTokenRequestPreview } from "@/lib/token-preview";
+import { useAdminAccess, useAdminSelf } from "@/hooks/admin/use-admin-data";
 
 import type { ProfileActionPanelProps } from "./ProfileMenu";
 import { useProfilePreview } from "./ProfilePreviewProvider";
@@ -47,11 +48,12 @@ const useStyles = makeStyles({
 export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDialog }: ProfileActionPanelProps): React.ReactElement {
   const styles = useStyles();
   const { state, profile, rolePreviewEnabled, dispatch } = useProfilePreview();
-  const summary = getProfileTokenSummary(PROFILE_TOKEN_USAGE.used, PROFILE_TOKEN_USAGE.limit, PROFILE_TOKEN_USAGE.warningThreshold);
+  const self = useAdminSelf(), access = useAdminAccess();
+  const summary = getProfileTokenSummary(self.data?.usedTokens ?? NaN, self.data?.limitTokens ?? NaN, self.data?.warningPercent);
   const unread = getUnreadNotificationCount(state.notifications);
-  const isAdmin = profile.role === "admin";
+  const isAdmin = profile.role !== "user";
   const available = summary.status !== "unavailable";
-  const pending = getLatestPendingTokenRequest(state.tokens.requests);
+  const pending = getLatestPendingTokenRequest((self.data?.requests ?? []).map((r) => toTokenRequestPreview(r, access.data?.departments ?? [])));
 
   return (
     <div className={styles.root}>
@@ -60,6 +62,7 @@ export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDia
           <span className={styles.title}><MoneyRegular className={styles.icon} aria-hidden="true" />이번 달 AI Token</span>
           <b className={mergeClasses(styles.percent, summary.status === "warning" && styles.warning, summary.status === "over" && styles.over)}>{available ? `${summary.percent}%` : "—"}</b>
         </h3>
+        {!self.data && <p role="status">{self.isError ? "사용량을 불러오지 못했습니다." : "사용량을 불러오는 중입니다."}{self.isError && <Button size="small" onClick={() => void self.refetch()}>다시 시도</Button>}</p>}
         <ProgressBar
           aria-label="이번 달 AI Token 사용률" value={summary.progressPercent / 100}
           className={styles.progress} bar={{ className: mergeClasses(styles.progressBar, summary.status === "warning" && styles.warningBar, summary.status === "over" && styles.overBar) }}
@@ -70,11 +73,12 @@ export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDia
           ))}
         </div>
         {pending && <div className={styles.pending} role="status"><ClockRegular className={styles.icon} aria-hidden="true" /><span>추가 신청 {pending.amountK}K · 관리자 승인 대기</span></div>}
+        {self.data?.requests[0] && self.data.requests[0].status !== "pending" && <p role="status">최근 신청 · {self.data.requests[0].status === "approved" ? "승인 완료" : "반려"}</p>}
         <div className={styles.actions}>
           <Button className={styles.action} icon={<DataBarVerticalRegular className={styles.icon} />} onClick={() => onOpenTokenDialog("usage")}>사용량 상세 분석</Button>
-          <Button className={mergeClasses(styles.action, styles.primary)} icon={<AddRegular className={styles.icon} />} onClick={() => onOpenTokenDialog("request")}>토큰 추가 신청</Button>
+          <Button className={mergeClasses(styles.action, styles.primary)} icon={<AddRegular className={styles.icon} />} disabled={!self.data} onClick={() => onOpenTokenDialog("request")}>토큰 추가 신청</Button>
         </div>
-        {isAdmin && <Link href="/workspace/tokens" className={styles.adminLink} onClick={onNavigate}><PeopleRegular className={styles.icon} aria-hidden="true" />전사 토큰 · 비용 관리<ChevronRightRegular className={styles.arrow} aria-hidden="true" /></Link>}
+        {isAdmin && <Link href="/workspace/policy?tab=tokens" className={styles.adminLink} onClick={onNavigate}><PeopleRegular className={styles.icon} aria-hidden="true" />{profile.role === "super_admin" ? "전사" : "부서"} 토큰 · 비용 관리<ChevronRightRegular className={styles.arrow} aria-hidden="true" /></Link>}
       </section>
       <section className={styles.card} aria-label="내 작업">
         <h3 className={styles.heading}><span className={styles.title}><TextBulletListLtrRegular className={styles.icon} aria-hidden="true" />내 작업</span></h3>
@@ -88,7 +92,7 @@ export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDia
         <h3 className={styles.heading}><span className={styles.title}><ShieldRegular className={styles.icon} aria-hidden="true" />권한 테스트 모드</span><span className={styles.meta}>시연용</span></h3>
         <SegmentedControl<PreviewRole>
           ariaLabel="미리보기 권한" fullWidth disabled={!rolePreviewEnabled} value={profile.role}
-          options={[{ value: "user", label: "일반 사용자" }, { value: "admin", label: "관리자" }]}
+          options={[{ value: "user", label: "일반 사용자" }, { value: "department_admin", label: "관리자" }, { value: "super_admin", label: "슈퍼 관리자" }]}
           onChange={(role) => dispatch({ type: "set-role", role })}
         />
         <p className={styles.help}>{!rolePreviewEnabled ? "현재 로그인 권한을 사용합니다." : isAdmin ? "작성 자산 관리 · 운영 정책 메뉴가 열립니다" : "관리자로 바꾸면 작성 자산 관리 · 운영 정책 메뉴가 열립니다"}</p>

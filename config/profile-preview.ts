@@ -1,7 +1,8 @@
+import type { AdminRole } from "@/types/admin";
 import type { SidebarScreen } from "@/config/sidebar";
 import type { TokenPreviewAction, TokenPreviewState } from "@/config/token-preview";
 
-export type PreviewRole = "user" | "admin";
+export type PreviewRole = AdminRole;
 export type ProfileTab = "general" | "notifications" | "preferences";
 export type NotificationFilter = "all" | "unread";
 export type NotificationKind = "ai" | "comment" | "deadline" | "token";

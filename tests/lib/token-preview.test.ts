@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { createAdminSeed } from "@/config/admin-seed";
+import { buildSelfUsage } from "@/lib/admin/selectors";
+import { toTokenUsageSnapshot } from "@/lib/token-preview";
 
 import { PROFILE_TOKEN_USAGE } from "@/config/profile-preview";
 import {
   TOKEN_PROJECT_OPTIONS, TOKEN_USAGE_SNAPSHOT,
-  type TokenPreviewAction, type TokenProjectId, type TokenRequestDraft,
+  type TokenProjectId, type TokenRequestDraft,
 } from "@/config/token-preview";
 import {
   createInitialTokenPreviewState, estimateMonthEndUsage, getLatestPendingTokenRequest,
@@ -13,15 +16,21 @@ import {
 const draft: TokenRequestDraft = {
   amountChoice: "50", customAmountK: "", projectId: "mois", reason: "  검수 반영  ",
 };
-const submit: TokenPreviewAction & { type: "submit" } = {
-  type: "submit", requestId: "req-1", submittedAt: "2026-10-27T01:00:00.000Z",
-  requesterName: "정소담", department: "AI사업본부",
-};
 function validState() {
   return { ...createInitialTokenPreviewState(), dialogView: "request" as const, requestDraft: { ...draft } };
 }
 
 describe("token usage snapshot", () => {
+  it("새 원장의 합계를 유지하고 빈 날짜와 기능 비율을 파생한다", () => {
+    const state = createAdminSeed(), self = state.users[0];
+    const view = buildSelfUsage(state, { userId: self.id, name: self.name, email: self.email, role: "user", departmentId: self.departmentId });
+    const snapshot = toTokenUsageSnapshot(view);
+    expect(snapshot.daily).toEqual(TOKEN_USAGE_SNAPSHOT.daily);
+    expect(snapshot.byProject.map((r) => r.tokens)).toEqual(TOKEN_USAGE_SNAPSHOT.byProject.map((r) => r.tokens));
+    expect(snapshot.byFeature.reduce((n, r) => n + r.percent, 0)).toBe(100);
+    expect(toTokenUsageSnapshot({ ...view, usedTokens: 0, usage: [] }).byFeature.every((f) => f.percent === 0)).toBe(true);
+    expect(snapshot.recent.every((r) => !r.timeLabel.startsWith("10.19"))).toBe(true);
+  });
   it("keeps daily and project totals consistent with the profile, and features at 100%", () => {
     const snapshot = TOKEN_USAGE_SNAPSHOT;
     expect(snapshot.daily.map((item) => item.day)).toEqual(Array.from({ length: 20 }, (_, index) => index + 1));
@@ -52,6 +61,11 @@ describe("token usage snapshot", () => {
 });
 
 describe("token request validation", () => {
+  it("10억 한도와 1000자 사유의 경계를 검증한다", () => {
+    expect(validateTokenRequestDraft({ ...draft, amountChoice: "custom", customAmountK: "1" }, 999999000).ok).toBe(true);
+    expect(validateTokenRequestDraft({ ...draft, amountChoice: "custom", customAmountK: "2" }, 999999000).ok).toBe(false);
+    expect(validateTokenRequestDraft({ ...draft, reason: "가".repeat(1001) }, 100000).ok).toBe(false);
+  });
   it.each(["30", "50", "100"] as const)("accepts the %sK preset", (amountChoice) => {
     const result = validateTokenRequestDraft({ ...draft, amountChoice }, 100000);
     expect(result).toEqual({
@@ -71,16 +85,6 @@ describe("token request validation", () => {
     "9007199254740992", "9007199254741"])("rejects invalid custom input %s", (customAmountK) => {
     const value = { ...draft, amountChoice: "custom" as const, customAmountK };
     expect(getRequestedTokenAmountK(value)).toBeNull();
-    expect(validateTokenRequestDraft(value, 100000)).toMatchObject({ ok: false, errors: { amount: expect.any(String) } });
-  });
-
-  it("checks token conversion and projected limit at the safe integer boundary", () => {
-    const amountK = Math.floor(Number.MAX_SAFE_INTEGER / 1000);
-    const value = { ...draft, amountChoice: "custom" as const, customAmountK: String(amountK) };
-    expect(validateTokenRequestDraft(value, 0).ok).toBe(true);
-    expect(validateTokenRequestDraft(value, Number.MAX_SAFE_INTEGER - amountK * 1000).ok).toBe(true);
-    expect(validateTokenRequestDraft(value, Number.MAX_SAFE_INTEGER - amountK * 1000 + 1).ok).toBe(false);
-    expect(validateTokenRequestDraft({ ...value, customAmountK: String(amountK - 100) }, 100000).ok).toBe(true);
     expect(validateTokenRequestDraft(value, 100000)).toMatchObject({ ok: false, errors: { amount: expect.any(String) } });
   });
 
@@ -114,10 +118,9 @@ describe("local token request state", () => {
     const first = createInitialTokenPreviewState();
     const second = createInitialTokenPreviewState();
     expect(first).toEqual({
-      dialogView: null, requestDraft: { amountChoice: "50", customAmountK: "", projectId: "mois", reason: "" }, requests: [],
+      dialogView: null, requestDraft: { amountChoice: "50", customAmountK: "", projectId: "mois", reason: "" },
     });
     expect(first.requestDraft).not.toBe(second.requestDraft);
-    expect(first.requests).not.toBe(second.requests);
     expect(getLatestPendingTokenRequest([])).toBeNull();
   });
 
@@ -146,44 +149,5 @@ describe("local token request state", () => {
     expect(tokenPreviewReducer(closed, { type: "set-reason", value: "수정" })).toBe(closed);
     const state = validState();
     expect(tokenPreviewReducer(state, { type: "set-project", projectId: "unknown" as TokenProjectId })).toBe(state);
-  });
-
-  it("submits pending requests without granting allowance, and allows another request", () => {
-    const before = { ...PROFILE_TOKEN_USAGE };
-    const state = validState();
-    const first = tokenPreviewReducer(state, submit);
-    expect(first.dialogView).toBeNull();
-    expect(first.requests).toHaveLength(1);
-    expect(first.requests[0]).toMatchObject({
-      id: "req-1", amountK: 50, amountTokens: 50000, requesterName: "정소담", department: "AI사업본부",
-      reason: "검수 반영", status: "pending", createdAt: submit.submittedAt,
-    });
-    expect(state.requests).toEqual([]);
-    const next = tokenPreviewReducer(tokenPreviewReducer(first, { type: "open", view: "request" }),
-      { type: "set-reason", value: "두 번째 사유" });
-    const second = tokenPreviewReducer(next, { ...submit, requestId: "req-2", department: null });
-    expect(second.requests).toHaveLength(2);
-    expect(second.requests[1]).toBe(first.requests[0]);
-    expect(getLatestPendingTokenRequest(second.requests)?.id).toBe("req-2");
-    expect(second.requests[0].department).toBeNull();
-    expect(PROFILE_TOKEN_USAGE).toEqual(before);
-    expect(tokenPreviewReducer(next, submit)).toBe(next);
-  });
-
-  it.each([
-    { requestId: "" }, { requestId: " " }, { requesterName: " " },
-    { submittedAt: "invalid" }, { submittedAt: "2026" }, { submittedAt: "2026-02-30T00:00:00.000Z" },
-  ])("ignores invalid submission metadata %j", (invalid) => {
-    const state = validState();
-    expect(tokenPreviewReducer(state, { ...submit, ...invalid })).toBe(state);
-  });
-
-  it("rejects incomplete drafts and submissions outside the request dialog", () => {
-    const empty = tokenPreviewReducer(createInitialTokenPreviewState(), { type: "open", view: "request" });
-    expect(tokenPreviewReducer(empty, submit)).toBe(empty);
-    const closed = createInitialTokenPreviewState();
-    expect(tokenPreviewReducer(closed, submit)).toBe(closed);
-    const usage = { ...validState(), dialogView: "usage" as const };
-    expect(tokenPreviewReducer(usage, submit)).toBe(usage);
   });
 });

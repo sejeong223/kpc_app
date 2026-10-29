@@ -16,7 +16,7 @@ import { createInitialTokenPreviewState, tokenPreviewReducer } from "@/lib/token
 
 export function createInitialProfilePreviewState(): ProfilePreviewState {
   return {
-    previewRole: "admin",
+    previewRole: "super_admin",
     selectedTab: "general",
     notificationFilter: "all",
     notifications: PROFILE_NOTIFICATION_SEED.map((notification) => ({ ...notification })),
@@ -115,7 +115,7 @@ export function resolveProfileDisplay({ authEnabled, session, previewRole }: {
     email,
     department: null,
     organization: "KPC",
-    role: hasRole(session?.user.roles, APP_ROLES.ADMIN) ? "admin" : "user",
+    role: hasRole(session?.user.roles, APP_ROLES.ADMIN) ? "super_admin" : "user",
     isPreview: false,
   };
 }

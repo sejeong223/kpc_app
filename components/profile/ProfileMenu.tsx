@@ -1,4 +1,5 @@
 "use client";
+import { ADMIN_ROLE_LABELS } from "@/config/admin-permissions";
 
 import {
   Avatar, Badge, Button, makeStyles, mergeClasses, shorthands, tabClassNames,
@@ -139,8 +140,8 @@ export default function ProfileMenu({ isCollapsed, onNavigate }: ProfileMenuProp
   }, []);
   const id = useId();
   const unread = getUnreadNotificationCount(state.notifications);
-  const isAdmin = profile.role === "admin";
-  const roleLabel = isAdmin ? "관리자" : "일반 사용자";
+  const isAdmin = profile.role !== "user";
+  const roleLabel = ADMIN_ROLE_LABELS[profile.role];
   const activeTab = state.selectedTab;
 
   const closeAndFocus = () => {

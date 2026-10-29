@@ -1,0 +1,32 @@
+:root {
+  --kpc-bg: #f8f9fa;
+  --kpc-card: #fff;
+  --kpc-line: #e6e7eb;
+  --kpc-line-soft: #eff0f3;
+  --kpc-line-strong: #dddde2;
+  --kpc-ink: #161616;
+  --kpc-secondary: #55585f;
+  --kpc-muted: #74747d;
+  --kpc-brand: #d7192f;
+  --kpc-brand-hover: #c31429;
+  --kpc-brand-pressed: #b01225;
+  --kpc-brand-foreground: #cc1930;
+  --kpc-brand-ink: #c91c2b;
+  --kpc-brand-soft: #fff0f2;
+  --kpc-brand-soft-hover: #ffe5e9;
+  --kpc-neutral-subtle: #fafafa;
+  --kpc-success: #0d7a4a;
+  --kpc-warning: #9a5b0b;
+  --kpc-danger: #c91c2b;
+  --kpc-info: #2563eb;
+  --kpc-purple: #7952b3;
+  --kpc-chart-soft: #edb4bd;
+  --kpc-radius-card: 12px;
+  --kpc-radius-control: 8px;
+  --kpc-radius-dialog: 16px;
+  --kpc-space-unit: 4px;
+  --kpc-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --kpc-font-body: 12px;
+  --kpc-font-small: 11px;
+  --kpc-font-title: 18px;
+}

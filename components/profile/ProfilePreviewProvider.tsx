@@ -3,10 +3,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type Dispatch } from "react";
 
 import { useAuthRuntime } from "@/components/providers";
-import { PROFILE_TOKEN_USAGE, type ProfileDisplay, type ProfilePreviewAction, type ProfilePreviewState } from "@/config/profile-preview";
-import type { TokenDialogView, TokenRequestPreview, TokenSubmitResult } from "@/config/token-preview";
+import { type ProfileDisplay, type ProfilePreviewAction, type ProfilePreviewState } from "@/config/profile-preview";
+import type { TokenDialogView } from "@/config/token-preview";
 import { createInitialProfilePreviewState, profilePreviewReducer, resolveProfileDisplay } from "@/lib/profile-preview";
-import { validateTokenRequestDraft } from "@/lib/token-preview";
 
 export interface ProfilePreviewContextValue {
   authEnabled: boolean;
@@ -16,7 +15,6 @@ export interface ProfilePreviewContextValue {
   dispatch: Dispatch<ProfilePreviewAction>;
   openTokenDialog(view: TokenDialogView, returnFocusTo?: HTMLElement | null): void;
   closeTokenDialog(options?: { restoreFocus?: boolean }): void;
-  submitTokenRequest(): TokenSubmitResult;
 }
 
 const ProfilePreviewContext = createContext<ProfilePreviewContextValue | null>(null);
@@ -26,7 +24,6 @@ export default function ProfilePreviewProvider({ children }: { children: React.R
   const [state, reducerDispatch] = useReducer(profilePreviewReducer, undefined, createInitialProfilePreviewState);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const focusFrame = useRef<number | null>(null);
-  const submissionLocked = useRef(false);
   const profile = useMemo(() => resolveProfileDisplay({
     authEnabled, session, previewRole: state.previewRole,
   }), [authEnabled, session, state.previewRole]);
@@ -55,34 +52,12 @@ export default function ProfilePreviewProvider({ children }: { children: React.R
     if (focusFrame.current !== null) cancelAnimationFrame(focusFrame.current);
     focusFrame.current = null;
     if (returnFocusTo !== undefined) returnFocusRef.current = returnFocusTo;
-    if (view === "request") submissionLocked.current = false;
     dispatch({ type: "token", action: { type: "open", view } });
   }, [dispatch]);
   const closeTokenDialog = useCallback((options?: { restoreFocus?: boolean }) => {
     dispatch({ type: "token", action: { type: "close" } });
     if (options?.restoreFocus !== false) restoreTokenFocus();
   }, [dispatch, restoreTokenFocus]);
-  const submitTokenRequest = useCallback((): TokenSubmitResult => {
-    if (state.tokens.dialogView !== "request" || submissionLocked.current) {
-      return { ok: false, errors: { form: "신청 화면을 다시 열어 주세요." } };
-    }
-    const result = validateTokenRequestDraft(state.tokens.requestDraft, PROFILE_TOKEN_USAGE.limit);
-    if (!result.ok) return result;
-    submissionLocked.current = true;
-    const request: TokenRequestPreview = {
-      ...result.value, id: crypto.randomUUID(), createdAt: new Date().toISOString(),
-      requesterName: profile.name, department: profile.department, status: "pending",
-    };
-    dispatch({
-      type: "token",
-      action: {
-        type: "submit", requestId: request.id, submittedAt: request.createdAt,
-        requesterName: request.requesterName, department: request.department,
-      },
-    });
-    restoreTokenFocus();
-    return { ok: true, request };
-  }, [dispatch, profile, restoreTokenFocus, state.tokens]);
   const value = useMemo<ProfilePreviewContextValue>(() => ({
     authEnabled,
     rolePreviewEnabled: !authEnabled,
@@ -91,8 +66,7 @@ export default function ProfilePreviewProvider({ children }: { children: React.R
     dispatch,
     openTokenDialog,
     closeTokenDialog,
-    submitTokenRequest,
-  }), [authEnabled, profile, state, dispatch, openTokenDialog, closeTokenDialog, submitTokenRequest]);
+  }), [authEnabled, profile, state, dispatch, openTokenDialog, closeTokenDialog]);
 
   return <ProfilePreviewContext.Provider value={value}>{children}</ProfilePreviewContext.Provider>;
 }

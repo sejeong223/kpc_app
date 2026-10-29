@@ -23,6 +23,7 @@ const useStyles = makeStyles({
   },
   content: {
     width: "100%",
+    minWidth: 0,
     maxWidth: "1320px",
     flex: 1,
     margin: "0 auto",
@@ -30,6 +31,7 @@ const useStyles = makeStyles({
     ":focus": { outlineStyle: "none" },
     "@media (max-width: 760px)": { padding: "30px 20px" },
   },
+  adminContent: { padding: "22px 28px", backgroundColor: "var(--kpc-bg)", "@media (max-width: 760px)": { padding: "20px 16px" } },
   footer: {
     display: "flex",
     alignItems: "center",
@@ -162,7 +164,7 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
           isMenuOpen={menuOpen}
           onMenuToggle={() => setMenuOpen((open) => !open)}
         />
-        <main id="main-content" ref={mainRef} className={styles.content} tabIndex={-1}>{children}</main>
+        <main id="main-content" ref={mainRef} className={mergeClasses(styles.content, ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent)} tabIndex={-1}>{children}</main>
         <footer className={styles.footer}>{appConfig.name}<span>나만의 업무 공간</span></footer>
       </div>
     </div>

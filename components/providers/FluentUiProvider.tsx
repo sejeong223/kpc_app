@@ -15,16 +15,16 @@ import { useRef, useState } from "react";
 
 const workspaceTheme: Theme = {
   ...webLightTheme,
-  colorBrandBackground: "#d7192f",
-  colorBrandBackgroundHover: "#c31429",
-  colorBrandBackgroundPressed: "#b01225",
-  colorBrandForeground1: "#cc1930",
-  colorBrandForeground2: "#c91c2b",
-  colorBrandBackground2: "#fff0f2",
-  colorBrandBackground2Hover: "#ffe5e9",
-  colorBrandStroke1: "#d7192f",
-  colorNeutralBackground2: "#fafafa",
-  colorNeutralStroke2: "#e6e7eb",
+  colorBrandBackground: "var(--kpc-brand)",
+  colorBrandBackgroundHover: "var(--kpc-brand-hover)",
+  colorBrandBackgroundPressed: "var(--kpc-brand-pressed)",
+  colorBrandForeground1: "var(--kpc-brand-foreground)",
+  colorBrandForeground2: "var(--kpc-brand-ink)",
+  colorBrandBackground2: "var(--kpc-brand-soft)",
+  colorBrandBackground2Hover: "var(--kpc-brand-soft-hover)",
+  colorBrandStroke1: "var(--kpc-brand)",
+  colorNeutralBackground2: "var(--kpc-neutral-subtle)",
+  colorNeutralStroke2: "var(--kpc-line)",
 };
 
 interface FluentUiProviderProps {

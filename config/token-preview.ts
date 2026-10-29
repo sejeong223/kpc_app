@@ -1,3 +1,4 @@
+import type { RequestStatus } from "@/types/admin";
 export type TokenDialogView = "usage" | "request";
 export type TokenAmountChoice = "30" | "50" | "100" | "custom";
 export type TokenProjectId = "mois" | "edu" | "sample" | "outside";
@@ -39,7 +40,7 @@ export interface TokenRequestPreview extends ValidatedTokenRequest {
   id: string;
   requesterName: string;
   department: string | null;
-  status: "pending";
+  status: RequestStatus;
   createdAt: string;
 }
 export interface TokenRequestErrors {
@@ -57,7 +58,6 @@ export type TokenSubmitResult =
 export interface TokenPreviewState {
   dialogView: TokenDialogView | null;
   requestDraft: TokenRequestDraft;
-  requests: TokenRequestPreview[];
 }
 export type TokenPreviewAction =
   | { type: "open"; view: TokenDialogView }
@@ -65,9 +65,7 @@ export type TokenPreviewAction =
   | { type: "set-amount"; choice: TokenAmountChoice }
   | { type: "set-custom-amount"; value: string }
   | { type: "set-project"; projectId: TokenProjectId }
-  | { type: "set-reason"; value: string }
-  | { type: "submit"; requestId: string; submittedAt: string;
-      requesterName: string; department: string | null };
+  | { type: "set-reason"; value: string };
 
 // Display-only fixtures, unrelated to server grants, billing or project membership.
 export const TOKEN_PROJECT_OPTIONS: readonly Readonly<TokenProjectOption>[] = [

@@ -1,18 +1,22 @@
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   env: { authEnabled: false },
   requireRole: vi.fn(),
+  redirect: vi.fn((url: string) => { throw new Error("NEXT_REDIRECT:" + url); }),
   notFound: vi.fn(() => { throw new Error("NEXT_NOT_FOUND"); }),
 }));
 
 vi.mock("@/config/env", () => ({ serverEnv: mocks.env }));
 vi.mock("@/lib/auth/guards", () => ({ requireRole: mocks.requireRole }));
-vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
+vi.mock("next/navigation", () => ({ notFound: mocks.notFound, redirect: mocks.redirect }));
 vi.mock("@/components/profile/PreviewRoleBoundary", () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
+
+vi.mock("@/components/admin/AdminScreenRouter", () => ({ default: ({ screen, requestedTab }: { screen: string; requestedTab: string | null }) => createElement("div", { "data-admin-screen": screen, "data-tab": requestedTab }, "관리자 화면") }));
 
 import WorkspaceScreenPage from "@/app/(authenticated)/workspace/[screen]/page";
 
@@ -20,7 +24,7 @@ const screens = [
   ["register", "RFP 등록"], ["pipeline", "검토 목록"], ["analysis", "AI 분석"],
   ["files", "파일 업로드"], ["toc", "목차"], ["setup", "제작 설정"], ["write", "제작"],
   ["prompt-sets", "프롬프트 세트"], ["skills", "Skill"], ["templates", "Template"],
-  ["policy", "운영 정책"], ["tokens", "토큰·비용 관리"], ["users", "사용자 설정"],
+  ["policy", "모델·토큰 관리"], ["users", "사용자 설정"],
   ["dashboard", "대시보드"], ["audit", "활동 로그"],
 ] as const;
 
@@ -37,8 +41,11 @@ describe("workspace placeholder pages", () => {
 
   it.each(screens)("previews %s without authenticating or assigning a role", async (screen, label) => {
     const markup = renderToStaticMarkup(await page(screen));
-    expect(markup).toContain(`<h1 id="workspace-screen-title">${label}</h1>`);
-    expect(markup).toContain(`<p>${label} 화면입니다.</p>`);
+    if (["users", "policy", "audit", "dashboard"].includes(screen)) expect(markup).toContain('data-admin-screen="' + screen + '"');
+    else {
+      expect(markup).toContain('<h1 id="workspace-screen-title">' + label + '</h1>');
+      expect(markup).toContain('<p>' + label + ' 화면입니다.</p>');
+    }
     expect(mocks.requireRole).not.toHaveBeenCalled();
   });
 
@@ -82,4 +89,10 @@ describe("workspace placeholder pages", () => {
     expect(mocks.notFound).toHaveBeenCalledOnce();
     expect(mocks.requireRole).not.toHaveBeenCalled();
   });
+});
+
+it("레거시 토큰 URL은 서버 권한 검사 이후 통합 탭으로 이동한다", async () => {
+  mocks.env.authEnabled = true; mocks.requireRole.mockResolvedValue(undefined);
+  await expect(page("tokens")).rejects.toThrow("NEXT_REDIRECT:/workspace/policy?tab=tokens");
+  expect(mocks.requireRole).toHaveBeenLastCalledWith("Admin", "/workspace/tokens");
 });

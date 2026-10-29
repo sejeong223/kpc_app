@@ -9,7 +9,7 @@ import {
 
 const expectedLabels = [
   "RFP 등록", "검토 목록", "AI 분석", "파일 업로드", "목차", "제작 설정", "제작",
-  "프롬프트 세트", "Skill", "Template", "운영 정책", "토큰·비용 관리", "사용자 설정", "대시보드", "활동 로그",
+  "프롬프트 세트", "Skill", "Template", "모델·토큰 관리", "사용자 설정", "대시보드", "활동 로그",
 ];
 
 describe("sidebar catalog", () => {
@@ -17,9 +17,9 @@ describe("sidebar catalog", () => {
     const items = sidebarGroups.flatMap((group) => group.items);
     expect(sidebarGroups.map((group) => group.id)).toEqual(["proposal", "project", "admin"]);
     expect(items.map((item) => item.label)).toEqual(expectedLabels);
-    expect(new Set(items.map((item) => item.id)).size).toBe(15);
-    expect(new Set(items.map((item) => item.href)).size).toBe(15);
-    expect(items.filter((item) => item.requiredRole === "Admin")).toHaveLength(8);
+    expect(new Set(items.map((item) => item.id)).size).toBe(14);
+    expect(new Set(items.map((item) => item.href)).size).toBe(14);
+    expect(items.filter((item) => item.requiredRole === "Admin")).toHaveLength(7);
     expect(items.slice(0, 7).every((item) => item.requiredRole === undefined)).toBe(true);
     for (const item of items) expect(item.href).toBe(`/workspace/${item.id}`);
   });
@@ -38,10 +38,10 @@ describe("sidebar catalog", () => {
 
 describe("sidebar visibility", () => {
   it.each([
-    { name: "auth-disabled preview", authEnabled: false, authenticated: false, roles: [], count: 15 },
+    { name: "auth-disabled preview", authEnabled: false, authenticated: false, roles: [], count: 14 },
     { name: "anonymous", authEnabled: true, authenticated: false, roles: ["Admin"], count: 0 },
     { name: "User", authEnabled: true, authenticated: true, roles: ["User"], count: 7 },
-    { name: "Admin", authEnabled: true, authenticated: true, roles: ["Admin"], count: 15 },
+    { name: "Admin", authEnabled: true, authenticated: true, roles: ["Admin"], count: 14 },
     { name: "unrecognized role", authEnabled: true, authenticated: true, roles: ["admin", " Admin", "Owner"], count: 7 },
   ])("shows the expected menus for $name", ({ count, ...context }) => {
     const groups = getVisibleSidebarGroups(context);
@@ -55,16 +55,16 @@ describe("sidebar visibility", () => {
     const original = JSON.stringify(sidebarGroups);
     getVisibleSidebarGroups({ authEnabled: true, authenticated: true, roles: ["User"] });
     expect(JSON.stringify(sidebarGroups)).toBe(original);
-    expect(getVisibleSidebarGroups({ authEnabled: false, authenticated: false }).flatMap((group) => group.items)).toHaveLength(15);
+    expect(getVisibleSidebarGroups({ authEnabled: false, authenticated: false }).flatMap((group) => group.items)).toHaveLength(14);
   });
 
   it.each([
     { authEnabled: false, authenticated: false, previewRole: "user", roles: [], count: 7 },
-    { authEnabled: false, authenticated: false, previewRole: "admin", roles: [], count: 15 },
-    { authEnabled: true, authenticated: true, previewRole: "admin", roles: ["User"], count: 7 },
-    { authEnabled: true, authenticated: true, previewRole: "user", roles: ["Admin"], count: 15 },
-    { authEnabled: true, authenticated: false, previewRole: "admin", roles: ["Admin"], count: 0 },
-    { authEnabled: true, authenticated: true, previewRole: "admin", roles: ["Owner"], count: 7 },
+    { authEnabled: false, authenticated: false, previewRole: "super_admin", roles: [], count: 14 },
+    { authEnabled: true, authenticated: true, previewRole: "super_admin", roles: ["User"], count: 7 },
+    { authEnabled: true, authenticated: true, previewRole: "user", roles: ["Admin"], count: 14 },
+    { authEnabled: true, authenticated: false, previewRole: "super_admin", roles: ["Admin"], count: 0 },
+    { authEnabled: true, authenticated: true, previewRole: "super_admin", roles: ["Owner"], count: 7 },
   ] as const)("keeps preview $previewRole separate from session roles $roles", ({ count, ...context }) => {
     const before = JSON.stringify(sidebarGroups);
     const items = getVisibleSidebarGroups(context).flatMap((group) => group.items);
