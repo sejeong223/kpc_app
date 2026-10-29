@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import CommentsWorkspace from "@/components/comments/CommentsWorkspace";
 import PreviewRoleBoundary from "@/components/profile/PreviewRoleBoundary";
 import { serverEnv } from "@/config/env";
 import { getSidebarItemByScreen } from "@/config/sidebar";
@@ -24,10 +25,10 @@ export default async function WorkspaceScreenPage({
 
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
-      <section aria-labelledby="workspace-screen-title">
+      {screen === "write" ? <CommentsWorkspace /> : <section aria-labelledby="workspace-screen-title">
         <h1 id="workspace-screen-title">{item.label}</h1>
         <p>{`${item.label} 화면입니다.`}</p>
-      </section>
+      </section>}
     </PreviewRoleBoundary>
   );
 }

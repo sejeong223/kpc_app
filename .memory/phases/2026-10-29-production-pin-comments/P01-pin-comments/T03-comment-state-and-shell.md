@@ -322,7 +322,7 @@ Task: T03-comment-state-and-shell
 
 - [x] 구현 완료
 - [ ] 검증 통과
-- commit: git log -1 --format=%h --grep='Task: T03-comment-state-and-shell'
+- commit: 62b9e58
 
 ## Execution Result (2026-10-29)
 

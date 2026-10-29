@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -12,6 +13,9 @@ vi.mock("@/lib/auth/guards", () => ({ requireRole: mocks.requireRole }));
 vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
 vi.mock("@/components/profile/PreviewRoleBoundary", () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
+}));
+vi.mock("@/components/comments/CommentsWorkspace", () => ({
+  default: () => createElement("section", { "data-comment-surface": true }, "제작 코멘트"),
 }));
 
 import WorkspaceScreenPage from "@/app/(authenticated)/workspace/[screen]/page";
@@ -37,8 +41,12 @@ describe("workspace placeholder pages", () => {
 
   it.each(screens)("previews %s without authenticating or assigning a role", async (screen, label) => {
     const markup = renderToStaticMarkup(await page(screen));
-    expect(markup).toContain(`<h1 id="workspace-screen-title">${label}</h1>`);
-    expect(markup).toContain(`<p>${label} 화면입니다.</p>`);
+    if (screen === "write") expect(markup).toContain("data-comment-surface");
+    else {
+      expect(markup).toContain(`<h1 id="workspace-screen-title">${label}</h1>`);
+      expect(markup).toContain(`<p>${label} 화면입니다.</p>`);
+      expect(markup).not.toContain("data-comment-surface");
+    }
     expect(mocks.requireRole).not.toHaveBeenCalled();
   });
 

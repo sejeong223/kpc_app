@@ -11,13 +11,15 @@
 | :--- | :--- | :--- | :--- |
 | T01 | done | 데이터 타입·본문·멘션·권한·상태 전이 | [T01](./T01-comment-domain.md) |
 | T02 | done | IndexedDB 저장소와 초기화·원자성 검증 | [T02](./T02-indexeddb-repository.md) |
-| T03 | in_progress | 초안·비동기 controller/Provider와 전체 헤더 정리 | [T03](./T03-comment-state-and-shell.md) |
-| T04 | pending | 제작 핀·팝업·멘션·크기 조절 및 실제 브라우저 검증 | [T04](./T04-pin-comment-ui.md) |
+| T03 | in_progress | 구현·자동 검증 완료, 실제 브라우저 검증 대기 | [T03](./T03-comment-state-and-shell.md) |
+| T04 | in_progress | 핀·팝업 UI 구현·자동 검증 완료, 실제 브라우저 검증 대기 | [T04](./T04-pin-comment-ui.md) |
 
 ## Progress
 
-- done: 2/4 (active: T03)
+- done: 2/4, implementation: 4/4 (active: T03 브라우저 검증)
 - T01·T02 도메인·멘션·저장소 45개 테스트와 타입·ESLint 검증 통과.
+- 후속 사용자 요청에 따라 T03·T04 구현 완료. 전체 404개 테스트·typecheck·lint·build 통과. T03 커밋62b9e58, T04는 Task footer로 조회한다.
+- Computer Use 안전 차단으로 실제 브라우저 검증을 완료하지 못했다. DOM 테스트 19개는 기능 연결의 증거이며, 육안/터치/실제 브라우저 DB 영속성 증거와 구분한다.
 - 순서: T01 → T02 → T03 → T04.
 
 ## Completion criteria
