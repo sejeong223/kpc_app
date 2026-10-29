@@ -10,14 +10,14 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | done | 데이터 타입·본문·멘션·권한·상태 전이 | [T01](./T01-comment-domain.md) |
-| T02 | in_progress | IndexedDB 저장소와 초기화·원자성 검증 | [T02](./T02-indexeddb-repository.md) |
-| T03 | pending | 초안·비동기 controller/Provider와 전체 헤더 정리 | [T03](./T03-comment-state-and-shell.md) |
+| T02 | done | IndexedDB 저장소와 초기화·원자성 검증 | [T02](./T02-indexeddb-repository.md) |
+| T03 | in_progress | 초안·비동기 controller/Provider와 전체 헤더 정리 | [T03](./T03-comment-state-and-shell.md) |
 | T04 | pending | 제작 핀·팝업·멘션·크기 조절 및 실제 브라우저 검증 | [T04](./T04-pin-comment-ui.md) |
 
 ## Progress
 
-- done: 1/4 (active: T02)
-- T01 도메인·멘션 34개 테스트와 타입·ESLint 검증 통과.
+- done: 2/4 (active: T03)
+- T01·T02 도메인·멘션·저장소 45개 테스트와 타입·ESLint 검증 통과.
 - 순서: T01 → T02 → T03 → T04.
 
 ## Completion criteria

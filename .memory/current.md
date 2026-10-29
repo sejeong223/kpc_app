@@ -10,12 +10,12 @@
 
 ## Active Task
 
-[T02 IndexedDB 저장소와 복원](./phases/2026-10-29-production-pin-comments/P01-pin-comments/T02-indexeddb-repository.md)
+[T03 코멘트 상태 연결과 공용 헤더 정리](./phases/2026-10-29-production-pin-comments/P01-pin-comments/T03-comment-state-and-shell.md)
 
 ## Status
 
-- P01: done1/4. T01 완료, T02 실행 준비.
-- MEA 자동 실행 중. T01 모델·멘션·권한 규칙 구현 및 34개 테스트·타입·ESLint 검증 완료.
+- P01: done2/4. T01·T02 완료, T03 실행 준비.
+- MEA 자동 실행 중. T01 cae7075: 모델·멘션·권한 규칙. T02: IndexedDB 저장소 및 초기화·트랜잭션·복원. 합계 45개 테스트·타입·ESLint 검증 완료.
 - 결정: [2026-10-29 제작 핀 코멘트](./decisions/2026-10-29-production-pin-comments.md).
 - 순서: T01 도메인·멘션 → T02 IndexedDB → T03 controller·Provider·전체 헤더 정리 → T04 핀·코멘트 UI 및 브라우저 검증.
 - 공용 헤더는 모든 메뉴에서 제거한다. 모바일 메뉴 열기 버튼은 독립 배치하고 workspace-sidebar-trigger ID 및 기존 토큰 모달 포커스 연결을 유지한다.
@@ -27,7 +27,7 @@
 
 ## Next Step (IMPORTANT)
 
-T02 청사진을 읽고 lib/comments/repository.ts 및 저장소 테스트를 구현한다. 최초 예시·쓰기 원자성·재개방 복원을 검증하고 T03으로 전진한다.
+T03 청사진을 읽고 controller·CommentsProvider·전체 헤더 제거와 모바일 메뉴 이동을 구현한다. 초안 수명·저장 경쟁 상태·기존 탐색과 포커스를 검증하고 T04로 전진한다.
 
 사용자 명령이 /memory-execute 또는 current 보고 이어서 해줘이면 한 Task를 수행한다. /mea이면 이 워크스페이스의 현재 계획에 남은 Task 전부를 순서대로 수행한다.
 

@@ -1,6 +1,6 @@
 # Task: T02 IndexedDB 저장소와 복원
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -194,11 +194,11 @@ interface StoredCommentUser extends CommentUser { namespace: string }
 
 ## Acceptance Criteria
 
-- [ ] 브라우저 네이티브 저장소를 사용하며 테스트 adapter는 앱 번들에 포함되지 않는다.
-- [ ] DB 재개방 후 모든 등록 변경이 복원된다.
-- [ ] 샘플 초기화·대화 생성·전체 삭제의 원자성과 번호 유일성을 검증한다.
-- [ ] 저장 실패·도메인 권한 오류·revision 충돌을 구분하고 부분 성공으로 숨기지 않는다.
-- [ ] 전체 삭제 후 빈 상태를 보존하고 다른 계정 데이터는 건드리지 않는다.
+- [x] 브라우저 네이티브 저장소를 사용하며 테스트 adapter는 앱 번들에 포함되지 않는다.
+- [x] DB 재개방 후 모든 등록 변경이 복원된다.
+- [x] 샘플 초기화·대화 생성·전체 삭제의 원자성과 번호 유일성을 검증한다.
+- [x] 저장 실패·도메인 권한 오류·revision 충돌을 구분하고 부분 성공으로 숨기지 않는다.
+- [x] 전체 삭제 후 빈 상태를 보존하고 다른 계정 데이터는 건드리지 않는다.
 
 ## Validation
 
@@ -223,6 +223,13 @@ Task: T02-indexeddb-repository
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: git log -1 --format=%h --grep='Task: T02-indexeddb-repository'
+
+## Execution Result
+
+- 저장소 11개 테스트와 기존 도메인·멘션을 합한 45개 테스트 통과. typecheck·대상 ESLint·diff check 통과.
+- 동시 초기화·번호 할당, 재개방 복원, 부분 쓰기 롤백, 빈 상태 보존, 권한·revision 충돌·연결 재시도를 검증했다.
+- 테스트 전용 fake-indexeddb 6.2.6을 추가했다. 설치 audit은 의존성 취약점 25건을 보고했으며, 전체 의존성 보안 업데이트는 이 기능 범위 밖이므로 자동 수정하지 않았다.
+- 실제 브라우저 영속성은 T04에서 검증한다.

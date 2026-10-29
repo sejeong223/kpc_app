@@ -230,7 +230,7 @@ Task: T01-comment-domain
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: 이 파일을 완료 처리한 커밋 (git log -1 --format=%h -- 해당 파일로 조회)
+- commit: cae7075
 
 ## Execution Result
 
