@@ -1,6 +1,6 @@
 # Task: T03 코멘트 상태 연결과 공용 헤더 정리
 
-## Status: pending
+## Status: in_progress
 
 ## Goal
 
@@ -320,6 +320,24 @@ Task: T03-comment-state-and-shell
 
 ## Progress
 
-- [ ] 구현 완료
+- [x] 구현 완료
 - [ ] 검증 통과
-- commit: pending
+- commit: git log -1 --format=%h --grep='Task: T03-comment-state-and-shell'
+
+## Execution Result (2026-10-29)
+
+- controller·CommentsProvider·레이아웃 연결·전체 AppHeader 제거·모바일 독립 메뉴 버튼 구현을 작업 트리에 보존했다.
+- 지정 테스트 116개 통과: controller 13개, 저장소 및 기존 프로필·토큰 회귀 포함. typecheck와 대상 ESLint 통과. AppHeader 검색 0건, diff check 통과.
+- 지연 저장 테스트로 중복 전송 방지, 새 입력/선택 보존, 실패 시 초안 보존, dispose 후 늦은 결과 무시, 수정 충돌의 명시적 rebase를 확인했다.
+- 미완료: 1440×900/390×844 실제 브라우저의 헤더·모바일 메뉴·Tab/Esc·토큰 모달 포커스 검증.
+- 브라우저 연결 inventory가 비어 있었고, Windows Chrome 화면 읽기에서 현재 URL을 충분히 확인할 수 없다는 Computer Use 안전 차단이 발생하여 이 턴의 UI 자동화가 종료됐다. 다른 자동화 경로로 우회하지 않았다.
+- 로컬 3000/3001 listener를 확인했다. 3100 별도 dev server는 기존 .next/dev/lock으로 시작되지 않았고 기존 프로세스를 종료하거나 설정을 변경하지 않았다.
+- 당시 필수 검증이 남아 done 처리·T03 커밋·T04 진행을 보류했다.
+
+### 후속 실행 — 사용자 요청: 남은 작업 구현
+
+- 사용자가 남은 구현을 명시적으로 요청하여 T04 구현도 진행했다. T03의 실제 브라우저 검증을 완료한 것으로 간주하지 않는다.
+- jsdom 27.4.0을 테스트 전용 의존성으로 추가했다. 기존 AppShell·ProfilePreviewProvider·TokenDialogs를 실행하는 DOM 테스트 3개로 헤더 미노출, 메뉴 열기/닫기, inert/스크롤 복원, 코멘트 UI 중지, Escape 및 토큰 사용량/신청 모달의 트리거 포커스 복귀를 확인했다.
+- 최종 전체 404개 테스트, typecheck, 전체 lint, 프로덕션 build 통과. 마지막 테스트 도우미 정리 후 해당 3개 테스트와 전체 lint도 다시 통과했다.
+- 구현 체크포인트를 이 Task의 한국어 메시지로 커밋한다. Status는 실제 브라우저 검증 대기이므로 in_progress를 유지한다.
+- 남은 확인: 실제 1440×900/390×844 렌더링과 모바일 Tab 순환. jsdom은 CSS 배치·Tabster의 실제 브라우저 포커스 동작을 보증하지 않는다. 기존 Tab 처리 로직은 유지했다.

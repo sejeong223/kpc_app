@@ -225,7 +225,7 @@ Task: T02-indexeddb-repository
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: git log -1 --format=%h --grep='Task: T02-indexeddb-repository'
+- commit: 4eaa63e
 
 ## Execution Result
 
