@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, makeStyles, shorthands } from "@fluentui/react-components";
+import { Button, makeStyles, shorthands, tokens } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { Send20Regular } from "@fluentui/react-icons";
 import { useEffect, useId, useRef, useState } from "react";
 import { COMMENT_PLACEHOLDER, type CommentDraft, type CommentUser } from "@/config/comments";
@@ -8,13 +9,13 @@ import { findMentionQuery, insertMention, reconcileMentionEdits, type MentionQue
 
 const useStyles = makeStyles({
   root: { position: "relative", minWidth: 0 },
-  input: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "56px", maxHeight: "120px", resize: "none", padding: "10px", border: "1px solid #e6e7eb", borderRadius: "8px", fontFamily: "inherit", fontSize: "12px", lineHeight: "1.5", backgroundColor: "#fafafa", color: "#30313b", ":focus": { outline: "2px solid #d7192f33", ...shorthands.borderColor("#d7192f") }, "@media (max-height: 500px)": { minHeight: "40px", maxHeight: "64px" } },
-  controls: { display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px", marginTop: "8px" },
-  hint: { color: "#94949c", fontSize: "10px", marginRight: "auto" },
-  send: { minWidth: "32px", width: "32px", height: "32px", padding: 0, border: 0, borderRadius: "7px", backgroundColor: "#d7192f", color: "#fff", ":hover": { backgroundColor: "#b91427", color: "#fff" }, ":disabled": { backgroundColor: "#9ca3af", color: "#fff", opacity: 1 } },
-  suggestions: { position: "absolute", zIndex: 4, bottom: "100%", left: 0, right: 0, maxHeight: "160px", overflowY: "auto", marginBottom: "6px", padding: "4px", border: "1px solid #e6e7eb", borderRadius: "8px", backgroundColor: "#fff", boxShadow: "0 4px 16px #10111422" },
-  option: { display: "block", width: "100%", textAlign: "left", padding: "8px", border: 0, borderRadius: "4px", backgroundColor: "transparent", fontFamily: "inherit", fontSize: "12px", cursor: "pointer", '&[aria-selected="true"]': { backgroundColor: "#fff1f2", color: "#d7192f" } },
-  empty: { padding: "8px", fontSize: "12px", color: "#74747d" },
+  input: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "56px", maxHeight: "120px", resize: "none", padding: "10px", border: `1px solid ${tokens.colorNeutralStroke1}`, borderRadius: dadamUi.controlRadius, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, ":focus": { outline: dadamUi.focusRing, ...shorthands.borderColor(tokens.colorBrandStroke1) }, ":disabled": { backgroundColor: tokens.colorNeutralBackgroundDisabled, color: tokens.colorNeutralForegroundDisabled }, "@media (max-height: 500px)": { minHeight: "40px", maxHeight: "64px" } },
+  controls: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end", gap: "8px", marginTop: "8px" },
+  hint: { color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, marginRight: "auto" },
+  send: { minWidth: "32px", width: "32px", height: "32px", padding: 0, border: 0, borderRadius: dadamUi.controlRadius, backgroundColor: tokens.colorBrandBackground, color: tokens.colorNeutralForegroundOnBrand, ":enabled:hover": { backgroundColor: tokens.colorBrandBackgroundHover, color: tokens.colorNeutralForegroundOnBrand }, ":enabled:active": { backgroundColor: tokens.colorBrandBackgroundPressed, color: tokens.colorNeutralForegroundOnBrand }, ":disabled, &:disabled:hover, &:disabled:active": { backgroundColor: tokens.colorNeutralBackgroundDisabled, color: tokens.colorNeutralForegroundDisabled, opacity: 1 } },
+  suggestions: { position: "absolute", zIndex: 4, bottom: "100%", left: 0, right: 0, maxHeight: "160px", overflowY: "auto", marginBottom: "6px", padding: "4px", border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1, boxShadow: dadamUi.popoverShadow },
+  option: { display: "block", width: "100%", textAlign: "left", padding: "8px", border: 0, borderRadius: dadamUi.controlRadius, backgroundColor: "transparent", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400, cursor: "pointer", '&[aria-selected="true"]': { backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2 } },
+  empty: { padding: "8px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground3 },
 });
 export interface CommentComposerProps {
   mode: "new" | "reply" | "edit"; draft: CommentDraft; users: CommentUser[]; disabled: boolean; submitDisabled: boolean; autoFocus?: boolean;

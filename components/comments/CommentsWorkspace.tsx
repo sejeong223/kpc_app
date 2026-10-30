@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses } from "@fluentui/react-components";
+import { Button, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
+import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import { useEffect, useRef, useState } from "react";
 import type { CommentPoint } from "@/config/comments";
 import { clientPointToRatio, getPopupLimits, keepPinInsideSurface, placeCommentPopup, ratioToClientPoint, type CommentBounds, type PixelPoint } from "@/lib/comments/geometry";
@@ -12,12 +14,12 @@ import { useComments } from "./CommentsProvider";
 
 const DRAFT_ID = "pending-comment";
 const useStyles = makeStyles({
-  surface: { position: "relative", flex: 1, width: "100%", minHeight: "100svh", overflow: "visible", backgroundColor: "#f8f9fb", ":focus": { outline: "none" } },
+  surface: { position: "relative", flex: 1, width: "100%", minHeight: "100svh", overflow: "visible", backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1, ":focus": { outline: "none" } },
   creating: { cursor: "crosshair" },
-  intro: { padding: "88px 32px 24px", pointerEvents: "none", color: "#74747d", userSelect: "none", "@media (max-width: 760px)": { padding: "88px 20px 24px" } },
-  title: { fontSize: "20px", fontWeight: 700, color: "#30313b", margin: "0 0 10px" },
-  text: { fontSize: "13px", lineHeight: "1.7", margin: 0 },
-  alert: { position: "relative", zIndex: 3, margin: "16px 24px", padding: "12px", border: "1px solid #efc1c8", borderRadius: "8px", color: "#a31525", backgroundColor: "#fff1f2", fontSize: "12px" },
+  intro: { padding: "88px 32px 24px", pointerEvents: "none", color: tokens.colorNeutralForeground3, userSelect: "none", "@media (max-width: 760px)": { padding: "88px 20px 24px" } },
+  title: { fontSize: "20px", lineHeight: "28px", fontWeight: 700, color: tokens.colorNeutralForeground1, margin: "0 0 10px" },
+  text: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, margin: 0 },
+  alert: { position: "relative", zIndex: 3, margin: "16px 24px", padding: "12px", border: `1px solid ${tokens.colorStatusDangerBorder1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
   hidden: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 },
 });
 interface Measurement { surface: CommentBounds; viewport: CommentBounds }
@@ -131,7 +133,7 @@ export default function CommentsWorkspace(): React.ReactElement {
     requestAnimationFrame(() => (Array.from(surface.current?.querySelectorAll<HTMLElement>("[data-comment-pin]") ?? []).find(el => el.dataset.commentPin === selectedId) ?? surface.current?.querySelector<HTMLElement>("[data-comment-create]"))?.focus({ preventScroll: true }));
   };
 
-  return <section ref={surface} data-comment-surface className={mergeClasses(styles.surface, state.pinMode && styles.creating)} aria-labelledby="workspace-screen-title" tabIndex={0}
+  return <DadamThemeScope><section ref={surface} data-comment-surface className={mergeClasses(styles.surface, state.pinMode && styles.creating)} aria-labelledby="workspace-screen-title" tabIndex={0}
     onClick={e => {
       if (!ready || state.busy || !state.pinMode || (e.target instanceof Element && e.target.closest("[data-comment-control], [data-comment-pin], button, a, input, textarea, select"))) return;
       const point = clientPointToRatio({ x: e.clientX, y: e.clientY }, boundsOf(e.currentTarget)); if (point) controller?.placePin(point);
@@ -169,5 +171,5 @@ export default function CommentsWorkspace(): React.ReactElement {
     })}
     {previewMessage && previewRect && <CommentPreview message={previewMessage} position={previewRect} width={previewRect.width} now={now} />}
     {selectedTip && limits && <CommentPopover key={selectedId} anchor={selectedTip} limits={limits} now={now} onClose={closeAndFocus} />}
-  </section>;
+  </section></DadamThemeScope>;
 }

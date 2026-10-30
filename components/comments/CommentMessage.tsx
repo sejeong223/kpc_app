@@ -1,18 +1,19 @@
 "use client";
 
-import { makeStyles } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import type { CommentDraft, CommentMessage } from "@/config/comments";
 import { splitCommentText } from "@/lib/comments/mentions";
 import { formatCommentTime } from "@/lib/comments/format";
 import CommentActionsMenu from "./CommentActionsMenu";
 
 const useStyles = makeStyles({
-  message: { padding: "12px 0", borderBottom: "1px solid #f0f0f3" },
-  meta: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", minWidth: 0 },
-  author: { fontSize: "12px", fontWeight: 700, overflowWrap: "anywhere" },
-  time: { marginLeft: "auto", color: "#74747d", fontSize: "11px", flexShrink: 0 },
-  body: { fontSize: "12px", lineHeight: "1.5", whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: "#30313b" },
-  mention: { color: "#d7192f", backgroundColor: "#fff1f2", borderRadius: "3px" },
+  message: { padding: "12px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
+  meta: { display: "flex", alignItems: "center", columnGap: "8px", rowGap: "4px", flexWrap: "wrap", marginBottom: "6px", minWidth: 0 },
+  author: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700, overflowWrap: "anywhere" },
+  time: { marginLeft: "auto", color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, flexShrink: 0 },
+  body: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: tokens.colorNeutralForeground1 },
+  mention: { color: tokens.colorBrandForeground2, backgroundColor: tokens.colorBrandBackground2, borderRadius: "3px" },
 });
 export function CommentBody({ draft }: { draft: CommentDraft }): React.ReactElement {
   const styles = useStyles();

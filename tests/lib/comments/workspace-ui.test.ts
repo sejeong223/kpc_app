@@ -11,6 +11,17 @@ import CommentsWorkspace from "@/components/comments/CommentsWorkspace";
 
 const identity = resolveCommentIdentity({ authEnabled: false, session: null, displayName: "정소담" })!;
 let controller: CommentController, repository: IndexedDbCommentRepository, factory: IDBFactory, root: Root, host: HTMLDivElement;
+type SidebarWidth = 200 | 64;
+let sidebarWidth: SidebarWidth;
+const surfaceObservers = new Map<ResizeObserver, ResizeObserverCallback>();
+function surfaceLeft(): number { return window.innerWidth <= 760 ? 0 : sidebarWidth; }
+async function changeSidebarWidth(width: SidebarWidth): Promise<void> {
+  sidebarWidth = width;
+  await act(async () => {
+    for (const [observer, callback] of surfaceObservers) callback([], observer);
+  });
+  await tick();
+}
 vi.mock("@/components/comments/CommentsProvider", () => ({
   useComments: () => ({ controller, identity, state: useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot) }),
 }));
@@ -52,14 +63,20 @@ async function createDraft() { await click(button("핀 생성")); await click(el
 
 beforeEach(async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
+  sidebarWidth = 200; surfaceObservers.clear();
+  vi.stubGlobal("ResizeObserver", class implements ResizeObserver {
+    constructor(private readonly callback: ResizeObserverCallback) {}
+    observe(target: Element) { if (target.hasAttribute("data-comment-surface")) surfaceObservers.set(this, this.callback); }
+    unobserve(target: Element) { if (target.hasAttribute("data-comment-surface")) surfaceObservers.delete(this); }
+    disconnect() { surfaceObservers.delete(this); }
+  });
   vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => Number(setTimeout(() => cb(performance.now()), 0)));
   vi.stubGlobal("cancelAnimationFrame", (id: number) => clearTimeout(id));
   Object.defineProperty(window, "innerWidth", { configurable: true, value: 1440 }); Object.defineProperty(window, "innerHeight", { configurable: true, value: 900 });
   window.matchMedia = vi.fn().mockImplementation(query => ({ matches: false, media: query, onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent() { return false; } }));
   vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
     const surface = this.hasAttribute("data-comment-surface");
-    const left = window.innerWidth <= 760 ? 0 : 220;
+    const left = surfaceLeft();
     return DOMRect.fromRect({ x: surface ? left : Number.parseFloat(this.style.left) || 0, y: surface ? 0 : Number.parseFloat(this.style.top) || 0,
       width: surface ? window.innerWidth - left : Number.parseFloat(this.style.width) || 360, height: surface ? window.innerHeight : Number.parseFloat(this.style.height) || 360 });
   });
@@ -146,15 +163,75 @@ describe("comment workspace interaction with the real controller and isolated In
   });
   it("commits only the final drag point and cancels a later drag on Escape", async () => {
     const pin = element('[data-comment-pin="seed-thread-open"]'), spy = vi.spyOn(controller, "moveThread");
+    const origin = { x: surfaceLeft() + Number.parseFloat(pin.style.left), y: Number.parseFloat(pin.style.top) };
     await act(async () => {
-      pin.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, isPrimary: true, button: 0, pointerId: 7, clientX: 525, clientY: 270 }));
+      pin.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, isPrimary: true, button: 0, pointerId: 7, clientX: origin.x, clientY: origin.y }));
       window.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: 600, clientY: 320 }));
       window.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: 650, clientY: 350 }));
       window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 7, clientX: 650, clientY: 350 }));
     });
-    await settle(); expect(spy).toHaveBeenCalledTimes(1); expect(controller.getSnapshot().snapshot!.threads[0].xRatio).toBeCloseTo((650 - 220) / 1220);
+    await settle(); expect(spy).toHaveBeenCalledTimes(1); expect(controller.getSnapshot().snapshot!.threads[0].xRatio).toBeCloseTo((650 - surfaceLeft()) / (window.innerWidth - surfaceLeft()));
     await act(async () => { pin.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, isPrimary: true, button: 0, pointerId: 8, clientX: 650, clientY: 350 })); window.dispatchEvent(new PointerEvent("pointermove", { pointerId: 8, clientX: 900, clientY: 500 })); });
     await key(pin, "Escape"); expect(spy).toHaveBeenCalledTimes(1);
+  });
+  it("remeasures expanded/collapsed widths without resizing the window or writing stored pin coordinates", async () => {
+    const original = { ...controller.getSnapshot().snapshot!.threads.find(t => t.id === "seed-thread-open")! };
+    const move = vi.spyOn(controller, "moveThread");
+    expect(surfaceObservers.size).toBe(1);
+    expect(element("[data-comment-surface]").closest("[data-dadam-theme]")).not.toBeNull();
+    for (const width of [200, 64, 200] as const) {
+      await changeSidebarWidth(width);
+      const pin = element('[data-comment-pin="seed-thread-open"]');
+      const relativeX = Number.parseFloat(pin.style.left);
+      expect(window.innerWidth).toBe(1440);
+      expect(element("[data-comment-surface]").getBoundingClientRect().left).toBe(width);
+      expect(relativeX).toBeCloseTo(original.xRatio * (1440 - width));
+      expect(width + relativeX).toBeCloseTo(width + original.xRatio * (1440 - width));
+      expect(Number.parseFloat(pin.style.top)).toBeCloseTo(original.yRatio * 900);
+      expect(controller.getSnapshot().snapshot!.threads.find(t => t.id === original.id)).toEqual(original);
+    }
+    expect(move).not.toHaveBeenCalled();
+    const reopened = new IndexedDbCommentRepository({ factory });
+    try { expect((await reopened.load(identity)).threads.find(t => t.id === original.id)).toEqual(original); }
+    finally { reopened.close(); }
+  });
+  it("keeps the selected thread and reply draft inside the collapsed work area", async () => {
+    const original = { ...controller.getSnapshot().snapshot!.threads.find(t => t.id === "seed-thread-open")! };
+    const move = vi.spyOn(controller, "moveThread");
+    await click(element('[data-comment-pin="seed-thread-open"]')); await type("접어도 남아 있는 답글");
+    await changeSidebarWidth(64);
+    expect(controller.getSnapshot().view).toEqual({ kind: "thread", threadId: original.id });
+    expect(element<HTMLTextAreaElement>("textarea").value).toBe("접어도 남아 있는 답글");
+    const rect = element("[data-comment-popup]").getBoundingClientRect();
+    expect(rect.left).toBeGreaterThanOrEqual(surfaceLeft() + 12);
+    expect(rect.right).toBeLessThanOrEqual(window.innerWidth - 12);
+    expect(rect.width).toBeLessThanOrEqual(window.innerWidth * .5);
+    expect(rect.height).toBeLessThanOrEqual(window.innerHeight * .8);
+    expect(move).not.toHaveBeenCalled();
+    expect(controller.getSnapshot().snapshot!.threads.find(t => t.id === original.id)).toEqual(original);
+    expect((await repository.load(identity)).threads.find(t => t.id === original.id)).toEqual(original);
+  });
+  it("uses zero sidebar width on mobile even with a saved collapsed sidebar", async () => {
+    const original = { ...controller.getSnapshot().snapshot!.threads.find(t => t.id === "seed-thread-open")! };
+    const move = vi.spyOn(controller, "moveThread");
+    await changeSidebarWidth(64);
+    await click(element('[data-comment-pin="seed-thread-open"]')); await type("모바일 전환 중 답글");
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 844 });
+    await act(async () => { window.dispatchEvent(new Event("resize")); }); await tick();
+    expect(sidebarWidth).toBe(64); expect(surfaceLeft()).toBe(0);
+    expect(element("[data-comment-surface]").getBoundingClientRect().left).toBe(0);
+    const pin = element('[data-comment-pin="seed-thread-open"]');
+    expect(Number.parseFloat(pin.style.left)).toBeCloseTo(original.xRatio * 390);
+    expect(Number.parseFloat(pin.style.top)).toBeCloseTo(original.yRatio * 844);
+    const rect = element("[data-comment-popup]").getBoundingClientRect();
+    expect(rect.left).toBeGreaterThanOrEqual(12); expect(rect.right).toBeLessThanOrEqual(378);
+    expect(rect.width).toBeLessThanOrEqual(366); expect(rect.height).toBeLessThanOrEqual(844 * .8);
+    expect(controller.getSnapshot().view).toEqual({ kind: "thread", threadId: original.id });
+    expect(element<HTMLTextAreaElement>("textarea").value).toBe("모바일 전환 중 답글");
+    expect(move).not.toHaveBeenCalled();
+    expect(controller.getSnapshot().snapshot!.threads.find(t => t.id === original.id)).toEqual(original);
+    expect((await repository.load(identity)).threads.find(t => t.id === original.id)).toEqual(original);
   });
   it("keeps input and shows an error after a failed write", async () => {
     await createDraft(); await type("실패 후에도 유지");
@@ -187,7 +264,7 @@ describe("comment workspace interaction with the real controller and isolated In
     const style = element("[data-comment-popup]").style;
     expect(Number.parseFloat(style.width)).toBeLessThanOrEqual(width > 760 ? width * .5 : width - 24);
     expect(Number.parseFloat(style.height)).toBeLessThanOrEqual(height * .8);
-    expect(Number.parseFloat(style.left)).toBeGreaterThanOrEqual(width > 760 ? 232 : 12);
+    expect(Number.parseFloat(style.left)).toBeGreaterThanOrEqual(surfaceLeft() + 12);
     expect(Number.parseFloat(style.left) + Number.parseFloat(style.width)).toBeLessThanOrEqual(width - 12);
   });
 });

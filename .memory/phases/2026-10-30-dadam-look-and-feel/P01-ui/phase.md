@@ -1,6 +1,6 @@
 # Phase: P01 dadam UI 단계적 적용
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -13,7 +13,7 @@
 | T01 | `done` | 공통 테마 범위와 사이드바 상태 디자인 | [T01](./T01-theme-sidebar.md) |
 | T02 | `done` | 프로필 전체 탭과 공통 컨트롤 | [T02](./T02-profile-controls.md) |
 | T03 | `done` | 토큰 모달·폼·알림 및 사이드바 계열 완료 | [T03](./T03-token-dialogs.md) |
-| T04 | `in_progress` | 코멘트 디자인과 화면 폭별 좌표 회귀 | [T04](./T04-comment-design.md) |
+| T04 | `done` | 코멘트 디자인과 화면 폭별 좌표 회귀 | [T04](./T04-comment-design.md) |
 
 ## Execution Rules
 
@@ -24,6 +24,6 @@
 
 ## Progress
 
-- done: 3/4 (active: T04)
+- done: 4/4 (active: none)
 - sidebar/profile/token milestone: done — T01~T03 회귀 117개 및 typecheck/lint/build 통과
-- comment milestone: pending — T04 검증·커밋 후 완료
+- comment milestone: done — 코멘트103개/최종전체411개 및 typecheck/lint/build 통과

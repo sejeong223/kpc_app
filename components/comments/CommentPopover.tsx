@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, makeStyles } from "@fluentui/react-components";
+import { Button, makeStyles, shorthands, tokens } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { Checkmark16Regular, Dismiss16Regular } from "@fluentui/react-icons";
 import { useEffect, useRef, useState } from "react";
 import { COMMENT_VISUALS, type CommentDraft } from "@/config/comments";
@@ -13,19 +14,20 @@ import { useComments } from "./CommentsProvider";
 
 const EMPTY: CommentDraft = { text: "", mentions: [] };
 const useStyles = makeStyles({
-  root: { position: "fixed", zIndex: 10, display: "flex", flexDirection: "column", boxSizing: "border-box", backgroundColor: "#fff", border: "1px solid #e6e7eb", borderRadius: "12px", boxShadow: "0 18px 48px rgba(16,17,20,.16), 0 2px 6px rgba(16,17,20,.06)", overflow: "hidden", color: "#30313b" },
-  header: { display: "flex", alignItems: "center", gap: "4px", minHeight: "48px", padding: "8px 16px", boxSizing: "border-box", flexShrink: 0, borderBottom: "1px solid #eeeef1", position: "relative", zIndex: 2 },
-  title: { fontSize: "13px", fontWeight: 700, margin: 0, marginRight: "auto", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ":focus": { outline: "none" } },
-  action: { minWidth: "30px", height: "30px", padding: "0 6px", fontSize: "12px", flexShrink: 0 },
+  root: { position: "fixed", zIndex: 10, display: "flex", flexDirection: "column", boxSizing: "border-box", backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.surfaceRadius, boxShadow: dadamUi.dialogShadow, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400, overflow: "hidden", color: tokens.colorNeutralForeground1 },
+  header: { display: "flex", alignItems: "center", gap: "4px", minHeight: "48px", padding: "8px 16px", boxSizing: "border-box", flexShrink: 0, borderBottom: `1px solid ${tokens.colorNeutralStroke2}`, position: "relative", zIndex: 2 },
+  title: { fontSize: dadamUi.titleSize, lineHeight: dadamUi.titleLineHeight, fontWeight: 700, margin: 0, marginRight: "auto", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ":focus": { outline: "none" } },
+  action: { minWidth: "30px", height: "30px", padding: "0 6px", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, borderRadius: dadamUi.controlRadius, flexShrink: 0 },
   body: { flex: 1, minHeight: 0, overflowY: "auto", padding: "0 16px", overscrollBehavior: "contain" },
-  footer: { padding: "12px 20px 20px 16px", borderTop: "1px solid #eeeef1", flexShrink: 0, maxHeight: "65%", overflowY: "auto" },
-  note: { color: "#74747d", fontSize: "12px", lineHeight: "1.6", margin: "12px 0" },
-  error: { padding: "8px 16px", fontSize: "12px", color: "#a31525", backgroundColor: "#fff1f2", overflowY: "auto", maxHeight: "25%", flexShrink: 0 },
-  conflict: { padding: "8px", border: "1px solid #efc1c8", borderRadius: "6px", marginBottom: "8px", fontSize: "12px" },
-  confirm: { padding: "16px", overflowY: "auto", minHeight: 0, flex: 1, fontSize: "12px", lineHeight: "1.6" },
+  footer: { padding: "12px 20px 20px 16px", borderTop: `1px solid ${tokens.colorNeutralStroke2}`, flexShrink: 0, maxHeight: "65%", overflowY: "auto" },
+  note: { color: tokens.colorNeutralForeground3, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, margin: "12px 0" },
+  error: { padding: "8px 16px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, overflowY: "auto", maxHeight: "25%", flexShrink: 0 },
+  conflict: { padding: "8px", border: `1px solid ${tokens.colorStatusWarningBorder1}`, backgroundColor: tokens.colorStatusWarningBackground1, borderRadius: dadamUi.cardRadius, marginBottom: "8px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
+  confirm: { padding: "16px", overflowY: "auto", minHeight: 0, flex: 1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
+  danger: { color: tokens.colorStatusDangerForeground1, border: `1px solid ${tokens.colorStatusDangerBorder1}`, ":enabled:hover": { backgroundColor: tokens.colorStatusDangerBackground1, color: tokens.colorStatusDangerForeground1 }, ":disabled": { color: tokens.colorNeutralForegroundDisabled, ...shorthands.borderColor(tokens.colorNeutralStrokeDisabled) } },
   confirmButtons: { display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" },
-  handle: { position: "absolute", border: 0, padding: 0, backgroundColor: "transparent", touchAction: "none", zIndex: 5, ":focus-visible": { outline: "2px solid #d7192f", outlineOffset: "-2px" } },
-  grip: { display: "block", position: "absolute", right: "5px", bottom: "5px", width: "10px", height: "10px", backgroundImage: "repeating-linear-gradient(135deg, transparent 0 3px, #b3b3bc 3px 4px)" },
+  handle: { position: "absolute", border: 0, padding: 0, backgroundColor: "transparent", touchAction: "none", zIndex: 5, ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "-2px" } },
+  grip: { display: "block", position: "absolute", right: "5px", bottom: "5px", width: "10px", height: "10px", backgroundImage: `repeating-linear-gradient(135deg, transparent 0 3px, ${tokens.colorNeutralStroke1} 3px 4px)` },
 });
 interface Props { anchor: PixelPoint; limits: PopupLimits; now: number; onClose(): void }
 type Confirmation = { kind: "thread" | "reply"; id: string } | null;
@@ -94,7 +96,7 @@ export default function CommentPopover({ anchor, limits, now, onClose }: Props):
     {confirmation ? <div className={styles.confirm} role="alertdialog" aria-modal={false} aria-labelledby="comment-delete-title" aria-describedby="comment-delete-description">
       <strong id="comment-delete-title">{confirmation.kind === "thread" ? "대화를 삭제할까요?" : "답글을 삭제할까요?"}</strong>
       <p id="comment-delete-description">{confirmation.kind === "thread" ? `이 핀과 첫 의견, 답글 ${Math.max(0, messages.length - 1)}개가 함께 삭제됩니다.` : "선택한 답글만 삭제됩니다."}</p>
-      <div className={styles.confirmButtons}><Button ref={cancelButton} onClick={() => { setConfirmation(null); focusComposer(); }}>취소</Button><Button disabled={state.busy || unavailable} onClick={() => void deleteConfirmed()}>삭제</Button></div>
+      <div className={styles.confirmButtons}><Button ref={cancelButton} onClick={() => { setConfirmation(null); focusComposer(); }}>취소</Button><Button className={styles.danger} disabled={state.busy || unavailable} onClick={() => void deleteConfirmed()}>삭제</Button></div>
     </div> : <>
       <div ref={body} className={styles.body}>
         {isNew && <p className={styles.note}>이 위치에 남길 의견을 작성해 주세요.</p>}

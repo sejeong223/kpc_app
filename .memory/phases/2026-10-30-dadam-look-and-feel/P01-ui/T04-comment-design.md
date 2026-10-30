@@ -1,6 +1,6 @@
 # Task: T04 코멘트 디자인과 화면 폭별 좌표 회귀
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -208,11 +208,11 @@ async function changeSidebarWidth(width: SidebarWidth): Promise<void>;
 
 ## Acceptance Criteria
 
-- [ ] 생성·핀 4상태·미리보기·대화·입력·멘션·메뉴가 공통 dadam 서체/색상을 사용한다. 오류/삭제/경고는 의미색을 유지한다.
-- [ ] 핀 크기/꼬리/기준좌표·hit영역, popup 크기/경계/resize 및 모든 기존 동작이 보존된다.
-- [ ] config에는 CSS 토큰 의존성을 넣지 않고 데이터·DB schema/version·기존 저장 레코드를 보존한다.
-- [ ] 승인된 테스트 조건200/64/0과 ResizeObserver 재측정·좌표/초안/저장 보존 회귀가 통과한다.
-- [ ] 아래 최종 검증 통과 후 Plan/P01/Task를 완료하고 current에 남은 Task 없음으로 기록한다.
+- [x] 생성·핀 4상태·미리보기·대화·입력·멘션·메뉴가 공통 dadam 서체/색상을 사용한다. 오류/삭제/경고는 의미색을 유지한다.
+- [x] 핀 크기/꼬리/기준좌표·hit영역, popup 크기/경계/resize 및 모든 기존 동작이 보존된다.
+- [x] config에는 CSS 토큰 의존성을 넣지 않고 데이터·DB schema/version·기존 저장 레코드를 보존한다.
+- [x] 승인된 테스트 조건200/64/0과 ResizeObserver 재측정·좌표/초안/저장 보존 회귀가 통과한다.
+- [x] 아래 최종 검증 통과 후 Plan/P01/Task를 완료하고 current에 남은 Task 없음으로 기록한다.
 
 ## Validation
 
@@ -242,6 +242,16 @@ Task: T04-comment-design
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: `git log -1 --format=%h --grep='Task: T04-comment-design'`
+
+## Execution Result
+
+- 코멘트 section을 DadamThemeScope로 감싸고 생성/핀/미리보기/본문/입력/메뉴/팝업의 서체·색·모서리·그림자를 공통화했다. 파란 동작 강조와 오류·삭제·충돌 의미색을 분리했다.
+- COMMENT_VISUALS의 직접 색상과 미지원 굵기만 정리하고 핀 크기·꼬리 transform·popup 기하 상수 및 controller/repository/geometry/DB 스키마는 보존했다.
+- 승인된 UI fixture를 펼침200/접힘64/모바일0으로 정비했다. 실제 ResizeObserver callback을 통한 200→64→200 재측정, 모바일 전환, 초안·thread 선택·revision·정규화 좌표 보존과 moveThread 0회 및 저장소 재조회 일치를 확인했다. 기존 drag 검증도 시작점을 가상 핀 위치로 계산한다.
+- 코멘트 8개 파일 103개 테스트 통과. 최종 전체 35개 파일 411개 테스트, typecheck, 전체 lint, production build, git diff --check 통과. 브라우저/E2E/스크린샷·육안·검증용 dev server는 요청대로 실행하지 않았다.
+- 학습: 좌표 저장은 비율이고 화면 위치만 현재 surface 폭으로 환산한다. 예: x = xRatio * surfaceWidth. 접힘 재측정은 저장 revision을 증가시키지 않아야 하므로 이를 DOM+저장소 회귀로 검증했다.
+- 주의: scope의 display:contents는 inline이며 fixed popup의 기준점을 바꾸는 transform/contain을 추가하지 않는다. 토큰은 미리보기, 코멘트는 기존 IndexedDB 저장이다.
+- 추가 처리: 사용자 승인된 예전220px 테스트 가정 보완. 그 밖의 인접 결함은 특이사항 없음. T01~T04 완료.

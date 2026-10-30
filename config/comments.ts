@@ -3,8 +3,8 @@ export const COMMENT_DB_NAME = "kpc-pin-comments";
 export const COMMENT_DB_VERSION = 1;
 export const COMMENT_PLACEHOLDER = "의견 남기기 (@이름 멘션) · Enter 등록";
 export const COMMENT_VISUALS = {
-  red: "#d7192f", gray: "#9ca3af", white: "#fff", pinSize: 24,
-  pinFontSize: 10.5, pinFontWeight: 850, popupDefaultWidth: 360,
+  pinSize: 24,
+  pinFontSize: 10.5, pinFontWeight: 700, popupDefaultWidth: 360,
   popupDefaultHeight: 360, popupMinWidth: 320, popupMinHeight: 240,
   popupLabelWidth: 420, mobileBreakpoint: 760,
 } as const;

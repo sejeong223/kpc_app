@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses, shorthands } from "@fluentui/react-components";
+import { Button, makeStyles, mergeClasses, shorthands, tokens } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { CommentAdd20Regular } from "@fluentui/react-icons";
 
-import { COMMENT_VISUALS } from "@/config/comments";
 
 import { useComments } from "./CommentsProvider";
 
@@ -15,18 +15,19 @@ const useStyles = makeStyles({
     zIndex: 5,
     minHeight: "40px",
     padding: "8px 14px",
-    borderRadius: "8px",
-    backgroundColor: "#fff",
-    border: "1px solid #e6e7eb",
-    color: "#475569",
-    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.06)",
-    ":hover": { backgroundColor: "#fff5f6", ...shorthands.borderColor(COMMENT_VISUALS.red), color: COMMENT_VISUALS.red },
-    ":disabled": { backgroundColor: "#f3f4f6", ...shorthands.borderColor("#e6e7eb"), color: COMMENT_VISUALS.gray },
+    borderRadius: dadamUi.controlRadius,
+    fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 500,
+    backgroundColor: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    color: tokens.colorNeutralForeground2,
+    boxShadow: tokens.shadow2,
+    ":enabled:hover": { backgroundColor: tokens.colorBrandBackground2, ...shorthands.borderColor(tokens.colorBrandStroke1), color: tokens.colorBrandForeground2 },
+    ":disabled, &:disabled:hover, &:disabled:active": { backgroundColor: tokens.colorNeutralBackgroundDisabled, ...shorthands.borderColor(tokens.colorNeutralStrokeDisabled), color: tokens.colorNeutralForegroundDisabled, opacity: 1 },
   },
   active: {
-    backgroundColor: "#fff1f2",
-    ...shorthands.borderColor(COMMENT_VISUALS.red),
-    color: COMMENT_VISUALS.red,
+    backgroundColor: tokens.colorBrandBackground2,
+    ...shorthands.borderColor(tokens.colorBrandStroke1),
+    color: tokens.colorBrandForeground2,
   },
 });
 

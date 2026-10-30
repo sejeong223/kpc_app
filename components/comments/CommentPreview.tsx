@@ -1,14 +1,15 @@
 "use client";
 
-import { makeStyles } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import type { CommentMessage } from "@/config/comments";
 import type { PixelPoint } from "@/lib/comments/geometry";
 import { formatCommentTime } from "@/lib/comments/format";
 import { CommentBody } from "./CommentMessage";
 const useStyles = makeStyles({
-  root: { position: "fixed", zIndex: 9, pointerEvents: "none", padding: "12px", backgroundColor: "#fff", border: "1px solid #e6e7eb", borderRadius: "12px", boxShadow: "0 6px 24px #10111416", boxSizing: "border-box" },
-  meta: { display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "6px", fontSize: "12px", fontWeight: 700 },
-  time: { fontSize: "11px", color: "#74747d", fontWeight: 400, flexShrink: 0 },
+  root: { position: "fixed", zIndex: 9, pointerEvents: "none", padding: "12px", backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.surfaceRadius, boxShadow: dadamUi.popoverShadow, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, boxSizing: "border-box" },
+  meta: { display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "6px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
+  time: { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, fontWeight: 400, flexShrink: 0 },
   body: { display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" },
 });
 export default function CommentPreview({ message, position, now, width }: { message: CommentMessage; position: PixelPoint; now: number; width: number }): React.ReactElement {

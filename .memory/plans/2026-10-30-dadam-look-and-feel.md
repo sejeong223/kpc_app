@@ -1,5 +1,7 @@
 # Plan: KPC dadam 룩앤필 단계적 적용
 
+## Status: done
+
 ## Goal
 
 기본형 dadam의 Spoqa 서체, Fluent 파란 강조색, 중립 표면·구분선·상태 표현을 KPC의 사이드바와 활성 메뉴 → 프로필 전체 탭 → 토큰 사용량·신청 창 → 코멘트에 순차 적용한다. 공통 스타일을 재사용하되 로그인과 일반 본문 테마는 그대로 유지한다. 사이드바 계열 T01~T03 검증이 끝나야 T04 코멘트 구현을 시작한다.
@@ -14,7 +16,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 공통 테마와 사이드바부터 코멘트까지 순차 스타일 적용 | [P01](../phases/2026-10-30-dadam-look-and-feel/P01-ui/phase.md) |
+| P01 | `done` | 공통 테마와 사이드바부터 코멘트까지 순차 스타일 적용 | [P01](../phases/2026-10-30-dadam-look-and-feel/P01-ui/phase.md) |
 
 ## Task Sequence
 
@@ -59,9 +61,9 @@
 
 ## Completion
 
-- done: 3/4
-- T01~T04가 각자 검증·한국어 커밋·진행 문서 동기화를 마치면 Plan done.
-- `/memory-execute`는 current의 한 Task, `/mea`는 이 계획의 남은 Task를 순차 실행한다. 이번 계획 작성은 구현 실행 요청이 아니다.
+- done: 4/4
+- T01~T04 검증·한국어 커밋·진행 문서 동기화 완료. 남은 Task 없음.
+- 후속 `/mea` 실행으로 4개 Task를 순차 완료했다. 최종 전체35개 파일/411개 테스트, typecheck/lint/build 통과. 브라우저 검증은 지속 정책에 따라 제외했다.
 
 ## Planning Validation (2026-10-30)
 
@@ -69,3 +71,10 @@
 - 이전 current를 history에 원문 그대로 보존했으며 SHA-256 일치를 확인했다.
 - 계획 시작 전후 NavSidebar SHA-256이 동일하다. 이번 작업의 변경은 `.memory/` 문서뿐이며 기존 구현/미커밋 변경을 보존했다.
 - 문서 공백 검사와 git diff check 통과. 앱 테스트/typecheck/lint/build 및 브라우저 검증은 계획 단계에서 실행하지 않았다.
+
+## Execution Commits
+
+- T01: 3fa09e4 — 공통 테마·사이드바
+- T02: b8761d5 — 프로필·공통 컨트롤
+- T03: 3f56457 — 토큰 모달·알림
+- T04: 이 완료 기록을 포함한 커밋. 조회: git log -1 --format=%h --grep='Task: T04-comment-design'

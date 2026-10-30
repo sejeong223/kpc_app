@@ -1,14 +1,16 @@
 "use client";
 
-import { Button, makeStyles } from "@fluentui/react-components";
+import { Button, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { MoreHorizontal20Regular } from "@fluentui/react-icons";
 import { useEffect, useId, useRef, useState } from "react";
 
 const useStyles = makeStyles({
   root: { position: "relative", display: "inline-flex", flexShrink: 0 },
   trigger: { minWidth: "30px", width: "30px", height: "30px", padding: 0 },
-  menu: { position: "absolute", right: 0, top: "32px", zIndex: 3, minWidth: "144px", padding: "4px", backgroundColor: "#fff", border: "1px solid #e6e7eb", borderRadius: "8px", boxShadow: "0 6px 24px #10111422", display: "flex", flexDirection: "column" },
-  item: { justifyContent: "flex-start", fontSize: "12px" },
+  menu: { position: "absolute", right: 0, top: "32px", zIndex: 3, minWidth: "144px", padding: "4px", backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, boxShadow: dadamUi.popoverShadow, display: "flex", flexDirection: "column" },
+  item: { justifyContent: "flex-start", minHeight: dadamUi.controlHeight, fontFamily: tokens.fontFamilyBase, color: tokens.colorNeutralForeground2, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
+  danger: { color: tokens.colorStatusDangerForeground1, ":enabled:hover": { backgroundColor: tokens.colorStatusDangerBackground1, color: tokens.colorStatusDangerForeground1 } },
 });
 interface Props { label: string; disabled: boolean; deleteLabel: string; onEdit(): void; onDelete(): void }
 export default function CommentActionsMenu({ label, disabled, deleteLabel, onEdit, onDelete }: Props): React.ReactElement {
@@ -32,7 +34,7 @@ export default function CommentActionsMenu({ label, disabled, deleteLabel, onEdi
       if (next >= 0) { e.preventDefault(); e.stopPropagation(); items[next]?.focus(); }
     }}>
       <Button className={styles.item} appearance="subtle" role="menuitem" disabled={disabled} onClick={() => { setOpen(false); onEdit(); }}>수정</Button>
-      <Button className={styles.item} appearance="subtle" role="menuitem" disabled={disabled} onClick={() => { setOpen(false); onDelete(); }}>{deleteLabel}</Button>
+      <Button className={mergeClasses(styles.item, styles.danger)} appearance="subtle" role="menuitem" disabled={disabled} onClick={() => { setOpen(false); onDelete(); }}>{deleteLabel}</Button>
     </div>}
   </div>;
 }
