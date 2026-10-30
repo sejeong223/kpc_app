@@ -12,6 +12,18 @@ beforeEach(() => { let id = 0; service = new MockAdminDataService({ seed: create
 const submit: AdminCommand = { type: "submit-token-request", submissionId: "once", projectId: null, amountTokens: 50000, reason: "추가 분석" };
 
 describe("관리자 mock의 경계와 트랜잭션", () => {
+  it("한국어 검색 CSV는 15열과 원본·수식 방지를 보존한다",async()=>{
+    const seed=createAdminSeed(),detail='={"revision":"v1"}';
+    seed.audits=[{...seed.audits[0],occurredAt:seed.logicalNow,departmentId:"d-ai",action:"apply",resource:"templates",detail}];
+    const local=new MockAdminDataService({seed}),filter={...audit,targetSearch:"PPT 서식 적용"};
+    const rows=await local.getAudit(admin,filter),csv=await local.exportAudit(admin,filter);
+    expect(rows.rows.total).toBe(1);expect(csv.startsWith("\uFEFF")).toBe(true);
+    const lines=csv.slice(1).split("\r\n"),cells=(line:string)=>[...line.matchAll(/"((?:[^"]|"")*)"(?:,|$)/g)].map(match=>match[1].replace(/""/g,'"'));
+    expect(cells(lines[0])).toHaveLength(15);expect(cells(lines[0])[14]).toBe("원본 세부 정보");
+    expect(cells(lines[1])[4]).toBe("PPT 서식 적용");expect(cells(lines[1])[14]).toBe("'"+detail);
+    expect((await local.getAudit(admin,filter)).rows.items.find(item=>item.id===seed.audits[0].id)?.detail).toBe(detail);
+    expect((await local.getAudit(admin,audit)).rows.total).toBe(2);
+  });
   it("조회·검색·내보내기에서 부서 범위를 먼저 제한한다", async () => {
     expect((await service.getUsers(dept, users)).rows.items).toHaveLength(3);
     expect((await service.getUsers(dept, { ...users, search: "이서연" })).rows.items).toHaveLength(0);

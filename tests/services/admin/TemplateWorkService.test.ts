@@ -1,10 +1,19 @@
 import { expect,it } from "vitest";
+import JSZip from "jszip";
 import { applyTemplate } from "@/lib/pptx/template-apply";
 import { loadZipLibrary } from "@/lib/pptx/zip";
 import { fixtureFile,setupXmlDom } from "../../lib/pptx/fixture";
 import { templateDraft } from "./asset-fixture";
 import { auditQuery,reviseSkill,target,workHarness } from "./work-fixture";
 setupXmlDom();
+it("현재 작업 스냅샷은 비동기 조회와 같고 반환 사본 변경과 다른 사용자를 격리한다",async()=>{
+  const h=await workHarness(),snapshot=h.works.getWorkSnapshot(h.otherActor,h.view.work.id);
+  expect(snapshot).toEqual(await h.works.getWork(h.otherActor,h.view.work.id));expect(snapshot.fileRefId).toBe(h.source.id);
+  snapshot.work.options.selectedSlides=[];
+  expect(h.works.getWorkSnapshot(h.otherActor,h.view.work.id).work.options.selectedSlides).toHaveLength(4);
+  expect(()=>h.works.getWorkSnapshot(h.departmentActor,h.view.work.id)).toThrow();
+  h.works.dispose();expect(()=>h.works.getWorkSnapshot(h.otherActor,h.view.work.id)).toThrow();h.files.dispose();
+});
 it("원본 변경은 기존 다운로드를 유지하고 명시적 최신 적용만 버전을 교체한다",async()=>{
   const h=await workHarness();const done=(await h.works.execute(h.otherActor,{type:"apply-work",target:target(h.view),mode:"pinned"}))!;
   expect(done.work.status).toBe("succeeded");const original=await h.works.download(h.otherActor,done.work.id,done.work.result!.id);
@@ -40,7 +49,7 @@ it("Template 파일 교체 시 기본 매핑으로 초기화하고 다른 사용
   const source=await h.service.importTemplate(h.departmentActor,await fixtureFile());
   await h.service.executeAsset(h.departmentActor,{type:"update-template",target:{id:h.template.assetId,version:1},status:"active",visibility:{all:true,targets:[]},value:templateDraft(source)});await reviseSkill(h);
   const done=(await h.works.execute(h.otherActor,{type:"apply-work",target:target(edited),mode:"latest"}))!;
-  expect(done.work.template.revision).toBe(2);expect(done.work.skill.revision).toBe(2);expect(done.work.options.layout).toBe(false);expect(done.work.options.selectedSlides).toHaveLength(4);
+  expect(done.fileRefId).toBe(source.id);expect(done.work.template.revision).toBe(2);expect(done.work.skill.revision).toBe(2);expect(done.work.options.layout).toBe(false);expect(done.work.options.selectedSlides).toHaveLength(4);
   expect(h.files.getSource(h.source.id).document.slides).toHaveLength(4);
   await expect(h.works.getWork(h.departmentActor,done.work.id)).rejects.toMatchObject({code:"FORBIDDEN"});
   await expect(h.works.download(h.otherActor,done.work.id,"변조")).rejects.toMatchObject({code:"CONFLICT"});
@@ -49,9 +58,24 @@ it("Template 파일 교체 시 기본 매핑으로 초기화하고 다른 사용
 });
 it("동일 파일의 최신 매핑을 반영하되 작업의 배치 옵션은 유지한다",async()=>{
   const h=await workHarness();
-  const edited=(await h.works.execute(h.otherActor,{type:"update-work-options",target:target(h.view),options:{...h.view.work.options,layout:true}}))!;
+  const edited=(await h.works.execute(h.otherActor,{type:"update-work-options",target:target(h.view),options:{...h.view.work.options,layout:true,selectedSlides:[1]}}))!;
   await h.service.executeAsset(h.departmentActor,{type:"update-template",target:{id:h.template.assetId,version:1},status:"active",visibility:{all:true,targets:[]},value:{...templateDraft(h.source),pageTypes:{0:"body",1:"table",2:"body",3:"table"},excluded:[h.files.getSource(h.source.id).document.slides[0].objects[0].id]}});
   const done=(await h.works.execute(h.otherActor,{type:"apply-work",target:target(edited),mode:"latest"}))!;
-  expect(done.work.options.layout).toBe(true);expect(done.work.options.pageTypes[0]).toBe("body");expect(done.work.options.excluded).toHaveLength(1);
+  expect(done.work.options.layout).toBe(true);expect(done.work.options.selectedSlides).toEqual([1]);expect(done.work.options.pageTypes[0]).toBe("body");expect(done.work.options.excluded).toHaveLength(1);
   await expect(h.works.execute(h.otherActor,{type:"update-work-options",target:target(done),options:{...done.work.options,selectedSlides:[199]}})).rejects.toMatchObject({code:"VALIDATION"});
+});
+it("설명만 바꾼 최신 적용은 선택 2쪽만 수정하고 나머지 XML을 보존한다",async()=>{
+  const h=await workHarness();
+  const edited=(await h.works.execute(h.otherActor,{type:"update-work-options",target:target(h.view),options:{...h.view.work.options,selectedSlides:[1]}}))!;
+  const pinned=(await h.works.execute(h.otherActor,{type:"apply-work",target:target(edited),mode:"pinned"}))!;
+  await h.service.executeAsset(h.departmentActor,{type:"update-template",target:{id:h.template.assetId,version:1},status:"active",visibility:{all:true,targets:[]},value:{...templateDraft(h.source),description:"설명 수정"}});
+  const latest=(await h.works.execute(h.otherActor,{type:"apply-work",target:target(pinned),mode:"latest"}))!;
+  expect(latest.work.options.selectedSlides).toEqual([1]);
+  const before=await JSZip.loadAsync(h.files.getSource(h.source.id).document.bytes);
+  const output=await h.works.download(h.otherActor,latest.work.id,latest.work.result!.id),after=await JSZip.loadAsync(output.bytes);
+  for(const index of [1,3,4]){const path=`ppt/slides/slide${index}.xml`;expect(await after.file(path)!.async("string")).toBe(await before.file(path)!.async("string"));}
+  expect(await after.file("ppt/slides/slide2.xml")!.async("string")).not.toBe(await before.file("ppt/slides/slide2.xml")!.async("string"));
+  await reviseSkill(h);const skillOnly=(await h.works.execute(h.otherActor,{type:"apply-work",target:target(latest),mode:"latest"}))!;
+  expect(skillOnly.work.options).toEqual(latest.work.options);
+  h.works.dispose();h.files.dispose();
 });

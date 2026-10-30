@@ -1,0 +1,21 @@
+import { expect,it } from "vitest";
+import { buildDefaultOptions,resolveReapplyOptions } from "@/lib/admin/assets/work-policy";
+import { workHarness } from "../../../services/admin/work-fixture";
+import { setupXmlDom } from "../../pptx/fixture";
+setupXmlDom();
+it("동일 파일의 최신 매핑만 합치고 빈 선택·옵션과 원본을 보존한다",async()=>{
+  const h=await workHarness();
+  const detail=await h.service.getAsset(h.departmentActor,h.template.assetId);
+  if(detail.revision.kind!=="template")throw new Error("검증 자료 오류");
+  const pinned=detail.revision,candidate=structuredClone(pinned);candidate.id="next-revision";
+  candidate.definition.pageTypes={0:"body"};candidate.definition.roles={"sample":"title"};candidate.definition.excluded=["sample"];
+  const current={...buildDefaultOptions(pinned),selectedSlides:[],layout:true,images:true};
+  const same=resolveReapplyOptions(current,pinned,candidate);
+  expect(same).toEqual({...current,pageTypes:{0:"body"},roles:{sample:"title"},excluded:["sample"]});
+  same.selectedSlides.push(2);same.pageTypes[0]="table";
+  expect(current.selectedSlides).toEqual([]);expect(candidate.definition.pageTypes[0]).toBe("body");
+  expect(resolveReapplyOptions(current,pinned,pinned)).toEqual(current);
+  candidate.definition.fileRefId="replacement-file";
+  expect(resolveReapplyOptions(current,pinned,candidate)).toEqual(buildDefaultOptions(candidate));
+  h.works.dispose();h.files.dispose();
+});

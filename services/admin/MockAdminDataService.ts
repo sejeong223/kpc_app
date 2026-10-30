@@ -1,3 +1,4 @@
+import { getAuditOperation } from "@/lib/admin/audit-operation";
 import { z } from "zod";
 import { TemplateFileStore } from "./TemplateFileStore";
 import { IdSchema } from "@/lib/admin/record-schema";
@@ -203,7 +204,7 @@ export class MockAdminDataService implements AdminDataService {
   }
   async exportAudit(input: AdminActor, query: AuditQuery): Promise<string> {
     const actor = this.access(input, "audit"), q = parse(AuditQuerySchema, query);
-    const csv = makeCsv(["시간", "사용자", "이메일", "액션", "세부 작업", "리소스", "대상", "대상 ID", "결과", "실패 사유", "Token", "IP", "브라우저", "요청 ID"], auditRows(this.state, actor, q).map((a) => [a.occurredAt, a.actorName, a.actorEmail, a.action, a.detail, a.resource, a.targetLabel, a.targetId, a.outcome, a.failureReason, a.tokens, a.ip, a.userAgent, a.requestId]));
+    const csv = makeCsv(["시간", "사용자", "이메일", "액션", "세부 작업", "리소스", "대상", "대상 ID", "결과", "실패 사유", "Token", "IP", "브라우저", "요청 ID", "원본 세부 정보"], auditRows(this.state, actor, q).map((a) => [a.occurredAt, a.actorName, a.actorEmail, a.action, getAuditOperation(a).label, a.resource, a.targetLabel, a.targetId, a.outcome, a.failureReason, a.tokens, a.ip, a.userAgent, a.requestId, a.detail]));
     const draft = this.draft(); this.addAudit(draft, actor, "export", "audit", "audit", "활동 로그", actor.role === "department_admin" ? actor.departmentId : null, "활동 로그 CSV 내보내기 · " + JSON.stringify({ ...q, page: undefined, pageSize: undefined })); this.commit(draft); return csv;
   }
   async execute(input: AdminActor, raw: AdminCommand): Promise<CommandReceipt> {

@@ -1,3 +1,4 @@
+import { getAuditOperation,countAuditOperations } from "@/lib/admin/audit-operation";
 import { sumMoney } from "@/lib/admin/cost";
 import { clampActivityPeriod, toKoreanDay } from "@/lib/admin/dates";
 import type { AdminActor, AdminAuditEvent, AdminDepartment, AdminStoreState, AdminUsage, AuditList, AuditQuery, DashboardQuery, DashboardView, MoneyTotal, NamedCount, PageInput, PageResult, Period, RfpStatus, SelfUsageView, TokenOverview, TokenQuery, UserList, UserQuery } from "@/types/admin";
@@ -48,7 +49,7 @@ export function selectTokens(state: AdminStoreState, actor: AdminActor, query: T
 }
 export function auditRows(state: AdminStoreState, actor: AdminActor, query: AuditQuery, ignoreOutcome = false): AdminAuditEvent[] {
   return state.audits.filter((a) => inScope(actor, a.departmentId) && inPeriod(a.occurredAt, query)
-    && matches(a.actorName + " " + a.actorEmail, query.userSearch) && matches(a.targetLabel + " " + a.targetId + " " + a.detail, query.targetSearch)
+    && matches(a.actorName + " " + a.actorEmail, query.userSearch) && matches(a.targetLabel + " " + a.targetId + " " + a.detail + " " + getAuditOperation(a).label, query.targetSearch)
     && (query.action === "all" || a.action === query.action) && (query.resource === "all" || a.resource === query.resource)
     && (ignoreOutcome || query.outcome === "all" || a.outcome === query.outcome))
     .sort((a, b) => { const av = a[query.sortKey], bv = b[query.sortKey]; const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv), "ko"); return cmp * (query.direction === "asc" ? 1 : -1) || b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id); });
@@ -61,7 +62,7 @@ export function selectAudit(state: AdminStoreState, actor: AdminActor, query: Au
 const emptyCounts = (): Record<RfpStatus, number> => ({ review: 0, writing: 0, submitted: 0, won: 0, lost: 0, dropped: 0 });
 const rfpCounts = (rows: AdminStoreState["rfps"]): Record<RfpStatus, number> => rows.reduce((counts, row) => { counts[row.status]++; return counts; }, emptyCounts());
 const nextDay = (day: string, count = 1): string => new Date(Date.parse(day + "T00:00:00Z") + count * 86400000).toISOString().slice(0, 10);
-function breakdown(audits: readonly AdminAuditEvent[], key: "action" | "resource" | "detail"): NamedCount[] {
+function breakdown(audits: readonly AdminAuditEvent[], key: "action" | "resource"): NamedCount[] {
   return [...new Set(audits.map((a) => a[key]))].map((id) => ({ id, label: id, count: audits.filter((a) => a[key] === id).length, failures: audits.filter((a) => a[key] === id && a.outcome === "failure").length })).sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
 }
 export function buildDashboard(state: AdminStoreState, actor: AdminActor, query: DashboardQuery): DashboardView {
@@ -93,7 +94,7 @@ export function buildDashboard(state: AdminStoreState, actor: AdminActor, query:
     tokens: tokenTotal(usage), cost: costTotal(usage), registrations, distribution: rfpCounts(selected), selectedRfpCount: selected.length, wonBudgetKrw: selected.filter((r) => r.status === "won").reduce((n, r) => n + r.budgetKrw, 0),
     departments: visibleDepartments(state, actor).map((d) => { const rows = rfps.filter((r) => r.departmentId === d.id); return { id: d.id, name: d.name, counts: rfpCounts(rows), total: rows.length, wonBudgetKrw: rows.filter((r) => r.status === "won").reduce((n, r) => n + r.budgetKrw, 0) }; }),
     rfps: paginate(filtered.map((r) => ({ ...r, pmName: state.users.find((u) => u.id === r.pmId)?.name ?? "삭제된 사용자", departmentName: state.departments.find((d) => d.id === r.departmentId)?.name ?? "미지정" })), { page: query.rfpPage, pageSize: 10 }),
-    trends, actions: breakdown(audits, "action"), resources: breakdown(audits, "resource"), details: breakdown(audits, "detail"),
+    trends, actions: breakdown(audits, "action"), resources: breakdown(audits, "resource"), details: countAuditOperations(audits),
     users: [...userIds].map((id) => {
       const events = audits.filter((a) => a.actorId === id), userUsage = usage.filter((u) => u.userId === id), current = state.users.find((u) => u.id === id);
       const snapshot = [...events].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0];

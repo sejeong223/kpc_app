@@ -1,5 +1,5 @@
 import { checkPptxAbort } from "./errors";
-import {NS,children,one,all,attrNumber,relativePart,relationships,xmlPart,openPackage,type Relationship} from './pptx-xml';
+import {NS,children,one,all,attrNumber,readXmlBoolean,relativePart,relationships,xmlPart,openPackage,type Relationship} from './pptx-xml';
 import type {ZipArchive,ZipLibrary} from './zip';
 import type {TemplateDocument,TemplateSlide,TemplateObject,TextStyle,Box,ObjectRole,TemplateImage,TemplateReadOptions,GroupMember} from '@/types/pptx-template';
 import {TEMPLATE_LIMITS} from './limits';
@@ -40,7 +40,7 @@ function style(body:Element|undefined,ctx:ReadContext,fallback?:Element,role:Obj
   const face=one(props,NS.a,'ea')?.getAttribute('typeface')||one(props,NS.a,'latin')?.getAttribute('typeface')||one(def,NS.a,'ea')?.getAttribute('typeface')||one(def,NS.a,'latin')?.getAttribute('typeface')||(role==='title'?ctx.major:ctx.minor);
   const resolved=face.startsWith('+mj')?ctx.major:face.startsWith('+mn')?ctx.minor:face;
   const bodyPr=one(body,NS.a,'bodyPr'),within=one(ppr,NS.a,'lnSpc'),alignment=ppr?.getAttribute('algn');
-  return {face:resolved,size:attrNumber(props,'sz',attrNumber(def,'sz',role==='title'?3200:1800))/100,bold:(props?.getAttribute('b')??def?.getAttribute('b'))==='1',
+  return {face:resolved,size:attrNumber(props,'sz',attrNumber(def,'sz',role==='title'?3200:1800))/100,bold:readXmlBoolean(props?.getAttribute('b')||def?.getAttribute('b')),
     color:color(props,ctx,color(def,ctx,color(one(one(shape,NS.p,'style'),NS.a,'fontRef'),ctx,'#263345'))),align:alignment==='ctr'?'center':alignment==='r'?'right':'left',lh:attrNumber(one(within,NS.a,'spcPct'),'val',100000)/100000,
     para:attrNumber(one(one(ppr,NS.a,'spcAft'),NS.a,'spcPts'),'val')/100,padV:cm(attrNumber(bodyPr,'tIns',45720)),padH:cm(attrNumber(bodyPr,'lIns',91440))};
 }
@@ -58,8 +58,8 @@ async function readObject(node:Element,index:number,ctx:ReadContext,source:Templ
   let role:ObjectRole=['title','ctrTitle'].includes(phType)?'title':phType==='subTitle'?'sub':'body';
   const obj:TemplateObject={...r,id:`${ctx.path}#${index}`,name,kind:'unsupported',role:'keep',inferred:false,text,style:style(body,ctx,fallback,role,node),fill:color(one(node,NS.p,'spPr'),ctx,'transparent'),stroke:color(one(one(node,NS.p,'spPr'),NS.a,'ln'),ctx,'transparent'),geometry:all(node,NS.a,'prstGeom')[0]?.getAttribute('prst')??'rect',rotation:attrNumber(xf,'rot')/60000,cells:[],columnWidths:[],rowHeights:[],cellStyles:[],cellFills:[],imageData:'',imageWidth:0,imageHeight:0,crop:[0,0,0,0],reasons:[],notices:[],inherited:!transform(node)&&!!fallback,merged:false,index,source};
   if(r.w<=0||r.h<=0)obj.reasons.push('위치·크기를 확인할 수 없습니다. 레이아웃/마스터 상속이나 특수 좌표를 사용합니다.');
-  if(obj.rotation!==0||xf?.getAttribute('flipH')==='1'||xf?.getAttribute('flipV')==='1')obj.reasons.push('회전/반전된 요소는 배치와 텍스트 기준이 달라 원본을 유지합니다.');
-  if(nv?.getAttribute('hidden')==='1')obj.reasons.push('숨김 요소의 의도를 보존하기 위해 수정하지 않습니다.');
+  if(obj.rotation!==0||readXmlBoolean(xf?.getAttribute('flipH'))||readXmlBoolean(xf?.getAttribute('flipV')))obj.reasons.push('회전/반전된 요소는 배치와 텍스트 기준이 달라 원본을 유지합니다.');
+  if(readXmlBoolean(nv?.getAttribute('hidden')))obj.reasons.push('숨김 요소의 의도를 보존하기 위해 수정하지 않습니다.');
   if(source!=='slide')obj.notices.push('공유 디자인입니다. 공유 디자인 편집에서 변경을 예약하면 연결된 슬라이드 전체에 반영합니다.');
   if(kind==='grpSp'){
     if(source==='slide')obj.reasons.push('일반 Skill 적용에서는 그룹을 유지합니다.');
@@ -96,7 +96,7 @@ async function readObject(node:Element,index:number,ctx:ReadContext,source:Templ
     if(all(node,NS.p,'videoFile').length||all(node,NS.a,'videoFile').length)obj.reasons.push('동영상 포스터와 재생 관계를 보존합니다.');
   }else if(kind==='graphicFrame'){
     const tbl=all(node,NS.a,'tbl')[0];
-    if(tbl){obj.kind='table';obj.role='table';const rows=children(tbl).filter(e=>e.localName==='tr');obj.cells=rows.map(row=>children(row).filter(e=>e.localName==='tc').map(cell=>textValue(textBody(cell))));obj.text=obj.cells.map(row=>row.join(' | ')).join('\n');obj.rowHeights=rows.map(row=>cm(attrNumber(row,'h')));obj.columnWidths=all(tbl,NS.a,'gridCol').map(col=>cm(attrNumber(col,'w')));obj.cellStyles=rows.map(row=>children(row).filter(e=>e.localName==='tc').map(cell=>{const st=style(textBody(cell),ctx),pr=one(cell,NS.a,'tcPr');return {...st,padH:cm(attrNumber(pr,'marL',91440)),padV:cm(attrNumber(pr,'marT',45720))};}));obj.cellFills=rows.map(row=>children(row).filter(e=>e.localName==='tc').map(cell=>color(one(cell,NS.a,'tcPr'),ctx,'#FFFFFF')));obj.style=obj.cellStyles[0]?.[0]??obj.style;obj.merged=all(tbl,NS.a,'tc').some(cell=>['gridSpan','rowSpan'].some(k=>attrNumber(cell,k,1)>1)||['hMerge','vMerge'].some(k=>cell.getAttribute(k)==='1'));
+    if(tbl){obj.kind='table';obj.role='table';const rows=children(tbl).filter(e=>e.localName==='tr');obj.cells=rows.map(row=>children(row).filter(e=>e.localName==='tc').map(cell=>textValue(textBody(cell))));obj.text=obj.cells.map(row=>row.join(' | ')).join('\n');obj.rowHeights=rows.map(row=>cm(attrNumber(row,'h')));obj.columnWidths=all(tbl,NS.a,'gridCol').map(col=>cm(attrNumber(col,'w')));obj.cellStyles=rows.map(row=>children(row).filter(e=>e.localName==='tc').map(cell=>{const st=style(textBody(cell),ctx),pr=one(cell,NS.a,'tcPr');return {...st,padH:cm(attrNumber(pr,'marL',91440)),padV:cm(attrNumber(pr,'marT',45720))};}));obj.cellFills=rows.map(row=>children(row).filter(e=>e.localName==='tc').map(cell=>color(one(cell,NS.a,'tcPr'),ctx,'#FFFFFF')));obj.style=obj.cellStyles[0]?.[0]??obj.style;obj.merged=all(tbl,NS.a,'tc').some(cell=>['gridSpan','rowSpan'].some(k=>attrNumber(cell,k,1)>1)||['hMerge','vMerge'].some(k=>readXmlBoolean(cell.getAttribute(k))));
       if(obj.merged)obj.notices.push('병합 셀: 글자·여백·정렬만 적용하며 행 높이/열 너비/분할은 원본을 유지합니다.');
       if(obj.cells.length>300||obj.columnWidths.length>50)obj.reasons.push('300행/50열을 넘는 표는 처리 범위를 벗어납니다.');
       if(!rows.length||!obj.columnWidths.length||obj.rowHeights.some(h=>h<=0)||obj.columnWidths.some(w=>w<=0))obj.reasons.push('행·열 개수 또는 크기가 올바르지 않은 표는 원본을 유지합니다.');
@@ -115,8 +115,8 @@ async function readGroupMembers(root:Element,rootIndex:number,ctx:ReadContext,so
     const xf=transform(node),off=one(xf,NS.a,'off'),ext=one(xf,NS.a,'ext'),chOff=one(xf,NS.a,'chOff'),chExt=one(xf,NS.a,'chExt');
     const cx=cm(attrNumber(chExt,'cx')),cy=cm(attrNumber(chExt,'cy')),sx=cm(attrNumber(ext,'cx'))/cx,sy=cm(attrNumber(ext,'cy'))/cy;
     const nv=one(one(node,NS.p,'nvGrpSpPr'),NS.p,'cNvPr'),name=nv?.getAttribute('name')??'그룹';
-    const hidden=['1','true'].includes(nv?.getAttribute('hidden')??'');
-    const rotated=attrNumber(xf,'rot')!==0||['1','true'].includes(xf?.getAttribute('flipH')??'')||['1','true'].includes(xf?.getAttribute('flipV')??'');
+    const hidden=readXmlBoolean(nv?.getAttribute('hidden'));
+    const rotated=attrNumber(xf,'rot')!==0||readXmlBoolean(xf?.getAttribute('flipH'))||readXmlBoolean(xf?.getAttribute('flipV'));
     const valid=parent.valid&&!!xf&&cx>0&&cy>0&&sx>0&&sy>0&&Number.isFinite(sx)&&Number.isFinite(sy)&&!rotated;
     const map:GroupMap={sx:parent.sx*sx,sy:parent.sy*sy,tx:parent.tx+parent.sx*(cm(attrNumber(off,'x'))-cm(attrNumber(chOff,'x'))*sx),ty:parent.ty+parent.sy*(cm(attrNumber(off,'y'))-cm(attrNumber(chOff,'y'))*sy),valid};
     const restrictions=[...contextReasons,...(hidden?['상위 그룹이 숨김 상태입니다.']:[]),...(!valid?['상위 그룹의 회전·반전 또는 특수 좌표 때문에 크기·간격 계산을 제한합니다.']:[]),...(Math.abs(sx-1)>.0001||Math.abs(sy-1)>.0001?['상위 그룹이 확대·축소되어 크기·간격 계산을 제한합니다.']:[])];
@@ -160,7 +160,7 @@ export async function readTemplate(bytes:Uint8Array,filename:string,library:ZipL
     if(!objects.some(o=>o.role==='title')){const candidate=objects.filter(o=>o.kind==='text'&&o.role!=='keep'&&!o.reasons.length).sort((a,b)=>b.style.size-a.style.size||a.y-b.y)[0];if(candidate&&candidate.y<height*.35){candidate.role='title';candidate.inferred=true;}}
     const decorations:TemplateObject[]=[];
     for(const [source,shared,sharedPath] of [['master',master,masterPath],['layout',layout,layoutPath]] as const){
-      if(!shared||['0','false'].includes(doc.documentElement.getAttribute('showMasterSp')??'')||source==='master'&&['0','false'].includes(layout?.documentElement.getAttribute('showMasterSp')??''))continue;
+      if(!shared||!readXmlBoolean(doc.documentElement.getAttribute('showMasterSp'),true)||source==='master'&&!readXmlBoolean(layout?.documentElement.getAttribute('showMasterSp'),true))continue;
       const cached=sharedCache.get(sharedPath);if(cached){decorations.push(...cached);continue;}
       const sharedTree=all(shared,NS.p,'spTree')[0];if(!sharedTree)continue;
       const context={...ctx,path:sharedPath,rels:await relationships(zip,sharedPath),layout:null,master:null};

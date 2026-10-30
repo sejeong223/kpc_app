@@ -1,0 +1,12 @@
+{
+  "command": "npm.cmd run test:admin-review -- --grep \"디자인 컴포넌트 HTML\"",
+  "reason": "최종 목차와 검증 보고서 링크 추가 후 재검사",
+  "stats": {
+    "startTime": "2026-10-30T04:10:45.581Z",
+    "duration": 5225.886,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

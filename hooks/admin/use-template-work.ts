@@ -11,7 +11,8 @@ export function useTemplateWorks(){
 }
 export function useTemplateWork(id:string|null){
   const {actor,works,revision,access}=useAdminRuntime(),workRevision=useSyncExternalStore(works.subscribe,works.getRevision,()=>0);
-  return useQuery<WorkView,Error>({queryKey:adminQueryKey({actor,revision,kind:"work",filter:{workId:id??"",workRevision}}),queryFn:()=>works.getWork(actor,id!),enabled:typeof window!=="undefined"&&Boolean(id&&access?.grants.skills.read&&access.grants.templates.read&&works.canAccess(actor,id)),gcTime:0});
+  const enabled=typeof window!=="undefined"&&Boolean(id&&access?.grants.skills.read&&access.grants.templates.read&&works.canAccess(actor,id));
+  return useQuery<WorkView,Error>({queryKey:adminQueryKey({actor,revision,kind:"work",filter:{workId:id??"",workRevision}}),queryFn:()=>works.getWork(actor,id!),enabled,initialData:()=>{if(!enabled||!id)return undefined;try{return works.getWorkSnapshot(actor,id);}catch{return undefined;}},gcTime:0});
 }
 export function useTemplateWorkCommand(){const {actor,works}=useAdminRuntime();return useMutation<WorkView|null,Error,WorkCommand>({mutationFn:command=>works.execute(actor,command),gcTime:0});}
 export function useTemplateDownload(){const {actor,works}=useAdminRuntime();return useMutation<WorkDownload,Error,{workId:string;resultId:string}>({mutationFn:input=>works.download(actor,input.workId,input.resultId),gcTime:0});}

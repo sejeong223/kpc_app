@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "coverage/**",
+    // 브라우저 검증 도구가 생성한 보고서·추적 파일은 소스가 아니다.
+    "playwright-report/**",
+    "test-results/**",
     "next-env.d.ts",
   ]),
 

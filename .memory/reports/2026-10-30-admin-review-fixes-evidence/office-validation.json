@@ -1,0 +1,50 @@
+[
+  {
+    "file": "flipH-1-output.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  },
+  {
+    "file": "flipH-true-output.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  },
+  {
+    "file": "flipV-1-output.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  },
+  {
+    "file": "flipV-true-output.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  },
+  {
+    "file": "hidden-1-output.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  },
+  {
+    "file": "hidden-true-output.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  },
+  {
+    "file": "selected-before.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  },
+  {
+    "file": "selected-latest.pptx",
+    "slides": 4,
+    "rendered": 4,
+    "readOnly": true
+  }
+]

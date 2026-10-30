@@ -34,7 +34,12 @@ export default function TemplateEditorDialog({open,detail,readOnly,onClose,onApp
   const allowed=Boolean(access?.grants.templates.read&&(!detail||latest.data?.asset.capabilities.read));
   const editable=allowed&&!readOnly&&Boolean(detail?access?.grants.templates.update&&latest.data?.asset.capabilities.update:access?.grants.templates.create);
   const dirty=JSON.stringify(draft)!==baseline,disabled=!editable||command.isPending||Boolean(progress);
-  const close=()=>{if(command.isPending)return;session.cancel();if(dirty&&editable)setConfirmClose(true);else onClose();};
+  function invalidateImport(mode:"cancel"|"clear",message?:string){
+    request.current++;
+    if(mode==="clear")session.clear();else session.cancel();
+    setProgress(null);setFileError(message??null);importing.reset();
+  }
+  const close=()=>{if(command.isPending)return;invalidateImport("cancel");if(dirty&&editable)setConfirmClose(true);else onClose();};
   async function select(file:File){
     if(!editable)return;const sequence=++request.current;setProgress("파일 구조를 분석합니다.");setFileError(null);setFilename(file.name);setExtraction(null);setDraft(current=>({...current,value:{...current.value,fileRefId:null,pageTypes:{},roles:{},excluded:[]}}));
     try{const source=await session.select(file,importing.mutateAsync,setProgress);if(!source||sequence!==request.current)return;setExtraction(source.extraction);setDraft(current=>({...current,value:{...current.value,name:current.value.name||file.name.replace(/\.(pptx|potx)$/i,"").slice(0,80),short:current.value.short||"템플릿",fileRefId:source.id,pageTypes:Object.fromEntries(source.extraction.slides.map(slide=>[String(slide.index),slide.type])),roles:{},excluded:[]}}));}
@@ -56,7 +61,7 @@ export default function TemplateEditorDialog({open,detail,readOnly,onClose,onApp
       {onApply&&latest.data?.asset.capabilities.apply&&access?.grants.skills.read&&<Button disabled={dirty||Boolean(progress)||command.isPending} onClick={()=>{if(detail)onApply(detail.asset.id);}}>저장된 버전으로 적용 테스트</Button>}
       {!editable&&<p>조회 전용입니다. 수정은 소유 부서 관리자에게 요청하거나 목록에서 사본을 복제하세요.</p>}
       <div className="tw:grid tw:items-start tw:gap-3 tw:lg:grid-cols-3">
-        <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-3">{editable&&<TemplateFileInput disabled={command.isPending} filename={filename} progress={progress} error={fileError} onSelect={file=>void select(file)} onCancel={()=>{session.clear();setProgress(null);setFileError("파일 분석을 취소했습니다. 다시 선택할 수 있습니다.");}} onUseExample={()=>void import("@/config/pptx-demo").then(module=>select(module.createDemoTemplateFile()))}/>}
+        <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-3">{editable&&<TemplateFileInput disabled={command.isPending} filename={filename} progress={progress} error={fileError} onSelect={file=>void select(file)} onCancel={()=>invalidateImport("clear","파일 분석을 취소했습니다. 다시 선택할 수 있습니다.")} onUseExample={()=>void import("@/config/pptx-demo").then(module=>select(module.createDemoTemplateFile()))}/>}
           {(["name","short"] as const).map(key=><Field key={key} label={key==="name"?"Template 이름":"약칭"} required validationState={errors[key]?"error":"none"} validationMessage={errors[key]}><Input disabled={disabled} value={draft.value[key]} maxLength={key==="name"?80:20} onChange={(_,data)=>setDraft({...draft,value:{...draft.value,[key]:data.value}})}/></Field>)}
           <Field label="설명"><Textarea disabled={disabled} value={draft.value.description} maxLength={1000} onChange={(_,data)=>setDraft({...draft,value:{...draft.value,description:data.value}})}/></Field>
           <Field label="소유 부서"><Select disabled={disabled||Boolean(detail)||actor.role!=="super_admin"} value={draft.ownerDepartmentId??""} onChange={(_,data)=>setDraft({...draft,ownerDepartmentId:data.value||null})}>{actor.role==="super_admin"&&<option value="">전사 소유</option>}{access?.departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</Select></Field>

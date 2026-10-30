@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "azure:cosmos:provision": "tsx scripts/provision-cosmos.ts"
+    "azure:cosmos:provision": "tsx scripts/provision-cosmos.ts",
+    "test:admin-review": "playwright test --config playwright.admin-review.config.ts"
   },
   "dependencies": {
     "@azure/core-auth": "^1.11.0",
@@ -36,6 +37,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",

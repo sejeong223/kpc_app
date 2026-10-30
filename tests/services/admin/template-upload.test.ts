@@ -30,3 +30,14 @@ it("권한 회수 뒤 읽기는 막고 본인 임시 파일은 정리할 수 있
   await expect(h.service.getTemplatePreview(h.otherActor,source.id)).rejects.toMatchObject({code:"INACTIVE_USER"});
   h.service.discardTemplateImport(h.otherActor,source.id);expect(()=>h.files.getSource(source.id)).toThrow();
 });
+it.each(["success","failure"] as const)("취소 후 늦은 %s와 진행은 새 업로드를 덮지 않는다",async outcome=>{
+  const h=assetHarness(),discarded:string[]=[],messages:string[]=[],gate=deferred<void>(),file=await fixtureFile();
+  const one=await h.service.importTemplate(h.departmentActor,file),two=await h.service.importTemplate(h.departmentActor,file);
+  const session=new TemplateImportSession(id=>{discarded.push(id);h.service.discardTemplateImport(h.departmentActor,id);});
+  const pending=session.select(file,async({onProgress})=>{onProgress("첫 분석");await gate.promise;onProgress("늦은 진행");if(outcome==="failure")throw new Error("늦은 실패");return one;},message=>messages.push(message));
+  session.cancel();
+  expect((await session.select(file,async()=>two,message=>messages.push(message)))?.id).toBe(two.id);
+  gate.resolve();expect(await pending).toBeNull();expect(messages).toEqual(["첫 분석"]);
+  expect(h.files.getSource(two.id)).toBeDefined();if(outcome==="success")expect(discarded).toContain(one.id);
+  session.cancel();expect(h.files.getSource(two.id)).toBeDefined();session.clear();expect(()=>h.files.getSource(two.id)).toThrow();h.files.dispose();
+});

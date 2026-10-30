@@ -1,6 +1,7 @@
 import JSZip from "jszip";
 import { expect, it } from "vitest";
 import { readTemplate } from "@/lib/pptx/template-read";
+import { getAuditOperation } from "@/lib/admin/audit-operation";
 import { loadZipLibrary } from "@/lib/pptx/zip";
 import { setupXmlDom } from "../lib/pptx/fixture";
 import { auditQuery, reviseSkill, target, workHarness } from "../services/admin/work-fixture";
@@ -23,6 +24,8 @@ it("실제 파일 등록부터 적용·재분석·최신 전환까지 원문과 
   const audit = await h.service.getAudit(h.superActor, { ...auditQuery, action: "apply" });
   expect(audit.rows.total).toBe(1);
   expect(audit.rows.items[0]).toMatchObject({ tokens: 0, usageId: null, outcome: "success" });
+  expect(getAuditOperation(audit.rows.items[0]).label).toBe("PPT 서식 적용");
+  expect(audit.rows.items[0].detail).toContain(done.work.template.revisionId);
   expect(await h.service.getSelf(h.otherActor)).toEqual(usageBefore);
   await reviseSkill(h);
   const newer = await h.works.getWork(h.otherActor, done.work.id);

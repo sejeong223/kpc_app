@@ -1,8 +1,9 @@
 "use client";
+import { getAuditOperation } from "@/lib/admin/audit-operation";
 import { Badge } from "@fluentui/react-components";
 import AdminTable from "@/components/admin/ui/AdminTable";
-import { AUDIT_ACTION_LABELS, AUDIT_RESOURCE_LABELS, FEATURE_LABELS } from "@/config/admin-labels";
-import { AuditSortKeySchema, UsageFeatureSchema } from "@/lib/admin/schemas";
+import { AUDIT_ACTION_LABELS, AUDIT_RESOURCE_LABELS } from "@/config/admin-labels";
+import { AuditSortKeySchema } from "@/lib/admin/schemas";
 import type { AdminAuditEvent, AuditSortKey } from "@/types/admin";
 import AuditDetail from "./AuditDetail";
 interface AuditTableProps { rows: readonly AdminAuditEvent[]; sortKey: AuditSortKey; direction: "asc" | "desc"; expandedId: string | null; onExpand(id: string | null): void; onSort(key: AuditSortKey): void }
@@ -11,7 +12,7 @@ export default function AuditTable({ rows, sortKey, direction, expandedId, onExp
     { id: "occurredAt", label: "시간", sortable: true, render: (e) => <span className="tw:whitespace-nowrap">{new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(e.occurredAt))}</span> },
     { id: "actorName", label: "사용자", sortable: true, render: (e) => <div><strong className="tw:whitespace-nowrap">{e.actorName}</strong><div className="tw:text-[11px] tw:text-(--kpc-muted)">{e.actorEmail}</div></div> },
     { id: "action", label: "액션", sortable: true, render: (e) => <Badge appearance="tint">{AUDIT_ACTION_LABELS[e.action]}</Badge> },
-    { id: "detail", label: "세부 작업", render: (e) => { const feature = UsageFeatureSchema.safeParse(e.detail); return <span className="tw:block tw:min-w-24 tw:max-w-48 tw:break-words">{feature.success ? FEATURE_LABELS[feature.data] : e.detail}</span>; } },
+    { id: "detail", label: "세부 작업", render: (e) => { return <span className="tw:block tw:min-w-24 tw:max-w-48 tw:break-words">{getAuditOperation(e).label}</span>; } },
     { id: "resource", label: "리소스", sortable: true, render: (e) => AUDIT_RESOURCE_LABELS[e.resource] },
     { id: "target", label: "대상", render: (e) => <span className="tw:block tw:min-w-32 tw:max-w-56 tw:break-words">{e.targetLabel}</span> },
     { id: "targetId", label: "대상 ID", render: (e) => <span className="tw:block tw:max-w-28 tw:break-all tw:text-[11px] tw:text-(--kpc-muted)">{e.targetId}</span> },

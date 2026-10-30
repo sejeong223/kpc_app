@@ -1,7 +1,7 @@
 import { AdminDataError,validationError } from "@/lib/admin/errors";
 import { IdSchema } from "@/lib/admin/record-schema";
 import { TemplateWorkSchema,WorkCommandSchema } from "@/lib/admin/assets/work-schemas";
-import { assetRef,buildDefaultOptions,canDownloadWork,resolveLatestCandidates } from "@/lib/admin/assets/work-policy";
+import { assetRef,buildDefaultOptions,canDownloadWork,resolveLatestCandidates,resolveReapplyOptions } from "@/lib/admin/assets/work-policy";
 import { toEngineSkill } from "@/lib/pptx/skill-adapter";
 import { PptxError,safePptxFilename } from "@/lib/pptx/errors";
 import { validateOptionsForDocument } from "@/lib/pptx/options-schema";
@@ -57,10 +57,11 @@ export class TemplateWorkService implements TemplateWorkDataService {
   private view(actor:AdminActor,entry:Entry):WorkView {
     const current=this.resolve(actor,entry);let canApplyLatest=false;
     try{resolveLatestCandidates(this.context.host,actor,entry.work);canApplyLatest=!entry.run;}catch{/* 비활성·삭제 자산도 고정 버전은 유지한다. */}
-    return {work:structuredClone(entry.work),templateName:current.template.revision.name,skillName:current.skill.revision.name,newer:{template:current.template.asset.currentRevision>entry.work.template.revision,skill:current.skill.asset.currentRevision>entry.work.skill.revision},canReapply:!entry.run,canApplyLatest,canDownload:canDownloadWork(entry.work,true)};
+    return {work:structuredClone(entry.work),fileRefId:entry.fileRefId,templateName:current.template.revision.name,skillName:current.skill.revision.name,newer:{template:current.template.asset.currentRevision>entry.work.template.revision,skill:current.skill.asset.currentRevision>entry.work.skill.revision},canReapply:!entry.run,canApplyLatest,canDownload:canDownloadWork(entry.work,true)};
   }
   async getWorks(actor:AdminActor){this.assertActor(actor);await this.context.host.getAccess(actor);return [...this.entries.values()].filter(e=>this.canAccess(actor,e.work.id)).map(entry=>{const view=this.view(actor,entry);return {id:entry.work.id,createdAt:entry.work.createdAt,updatedAt:entry.work.updatedAt,status:entry.work.status,templateName:view.templateName,skillName:view.skillName};});}
-  async getWork(actor:AdminActor,id:string){return this.view(actor,this.accessible(actor,id));}
+  getWorkSnapshot(actor:AdminActor,id:string){return this.view(actor,this.accessible(actor,id));}
+  async getWork(actor:AdminActor,id:string){return this.getWorkSnapshot(actor,id);}
   private stop(entry:Entry,code:"CANCELLED"|"FORBIDDEN",message:string){entry.run?.controller.abort();entry.run=null;entry.work.status="cancelled";entry.work.progress="";entry.work.error={code,message};entry.work.version++;}
   private checkRun(actor:AdminActor,entry:Entry,token:symbol,inputRevision:number){
     this.assertActor(actor);if(entry.run?.token!==token||entry.run.controller.signal.aborted||!this.entries.has(entry.work.id))throw new PptxError("CANCELLED","작업 실행이 취소되었습니다.");
@@ -95,8 +96,7 @@ export class TemplateWorkService implements TemplateWorkDataService {
     const pinned=this.resolve(actor,entry);const candidate=mode==="latest"?resolveLatestCandidates(this.context.host,actor,entry.work):pinned;
     const {template,skill}=candidate;
     if(template.revision.kind!=="template"||skill.revision.kind!=="skill"||pinned.template.revision.kind!=="template")throw new AdminDataError("VALIDATION","자산 종류가 올바르지 않습니다.");
-    const fileRefId=template.revision.definition.fileRefId;let options:TemplateOptions=structuredClone(entry.work.options);
-    if(template.revision.id!==pinned.template.revision.id){options=buildDefaultOptions(template.revision);if(fileRefId===entry.fileRefId){options.layout=entry.work.options.layout;options.images=entry.work.options.images;options.sharedEdits=structuredClone(entry.work.options.sharedEdits);}}
+    const fileRefId=template.revision.definition.fileRefId,options=resolveReapplyOptions(entry.work.options,pinned.template.revision,template.revision);
     const refs={template:assetRef(template),skill:assetRef(skill)},baseInput=entry.work.inputRevision,token=Symbol(),controller=new AbortController();
     entry.run={controller,token};entry.work.status="running";entry.work.error=null;entry.work.version++;entry.work.progress="원본을 준비합니다.";this.emit();
     try{

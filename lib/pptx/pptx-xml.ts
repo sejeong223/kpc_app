@@ -67,3 +67,8 @@ export async function openPackage(bytes:Uint8Array,lib:ZipLibrary):Promise<ZipAr
   if(!all(types,NS.ct,'Override').some(e=>e.getAttribute('PartName')==='/ppt/presentation.xml'&&['application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml','application/vnd.openxmlformats-officedocument.presentationml.template.main+xml'].includes(e.getAttribute('ContentType')??'')))throw new Error('일반 .pptx/.potx 형식만 지원합니다. 구형 .ppt, 매크로 파일, Strict OOXML은 변환 후 사용하세요.');
   return zip;
 }
+
+export function readXmlBoolean(raw:string|null|undefined,fallback=false):boolean {
+  const value=raw?.trim();
+  return value==='true'||value==='1'?true:value==='false'||value==='0'?false:fallback;
+}

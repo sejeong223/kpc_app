@@ -36,6 +36,7 @@ it.each(["acl","group","group-delete","read-grant","locked","department"] as con
   else h.works.setActor({...h.otherActor,departmentId:"d-product"});
   h.finish.resolve();expect(await h.pending).toBeNull();expect(h.works.canAccess(h.otherActor,h.view.work.id)).toBe(false);
   expect(()=>h.works.getPreview(h.otherActor,h.view.work.id,"after")).toThrow();
+  expect(()=>h.works.getWorkSnapshot(h.otherActor,h.view.work.id)).toThrow();
   expect((await h.service.getAudit(h.superActor,{...auditQuery,action:"apply"})).rows.total).toBe(0);
 });
 it("실행 중 새 버전이 생겨도 캡처한 입력을 유지하고 새 버전 알림을 남긴다",async()=>{

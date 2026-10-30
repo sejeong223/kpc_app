@@ -7,6 +7,15 @@ export function assetRef(value:ResolvedAsset):AppliedAssetRef { return {assetId:
 export function buildDefaultOptions(revision:TemplateAssetRevision):TemplateOptions {
   return {layout:false,images:false,selectedSlides:revision.definition.extraction.slides.map(s=>s.index),pageTypes:structuredClone(revision.definition.pageTypes),roles:structuredClone(revision.definition.roles),excluded:[...revision.definition.excluded],sharedEdits:[]};
 }
+export function resolveReapplyOptions(current:TemplateOptions,pinned:TemplateAssetRevision,candidate:TemplateAssetRevision):TemplateOptions {
+  if(pinned.id===candidate.id)return structuredClone(current);
+  const options=buildDefaultOptions(candidate);
+  if(pinned.definition.fileRefId===candidate.definition.fileRefId){
+    const retained=structuredClone(current);
+    options.selectedSlides=retained.selectedSlides;options.layout=retained.layout;options.images=retained.images;options.sharedEdits=retained.sharedEdits;
+  }
+  return options;
+}
 export function canDownloadWork(work:TemplateWork,currentlyAllowed:boolean):boolean { return currentlyAllowed&&work.status!=="running"&&work.result!==null&&work.result.inputRevision===work.inputRevision; }
 export function resolveLatestCandidates(host:AssetRuntimeHost,actor:AdminActor,work:TemplateWork) {
   return {template:host.resolveAsset(actor,{assetId:work.template.assetId},"new"),skill:host.resolveAsset(actor,{assetId:work.skill.assetId},"new")};

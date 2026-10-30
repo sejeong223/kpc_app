@@ -1,37 +1,36 @@
 # Current Context
 
 ## Active Plan
-[Skill·Template 관리자 UI와 실제 PPT 적용 테스트](./plans/2026-10-30-skill-template-ui.md)
+[관리자 재검증 발견 사항 개선](./plans/2026-10-30-admin-review-fixes.md)
 
 ## Active Phase
-[P01 Skill·Template 관리자 UI](./phases/2026-10-30-skill-template-ui/P01-skill-template-ui/phase.md)
+[P01 관리자 재검증 개선](./phases/2026-10-30-admin-review-fixes/P01-admin-review-fixes/phase.md)
 
 ## Active Task
-없음 — T01~T10 완료 ([마지막 Task](./phases/2026-10-30-skill-template-ui/P01-skill-template-ui/T10-integration-guide.md))
+없음 — [T07](./phases/2026-10-30-admin-review-fixes/P01-admin-review-fixes/T07-integration-validation.md)까지 7개 Task 완료.
 
 ## Status
-- T01~T10 구현·검증 완료. done: 10/10.
-- 모든 Task를 검증한 이번 범위만 단일 커밋한다. 중간 커밋/push 없음.
+- done: 7/7. 단위·통합 444개 / 브라우저 47개 / typecheck·lint·build 통과.
+- T01~T07 단일 통합 커밋. 실제 SHA는 커밋 후 이 문서에 사후 기록한다.
+- [최종 검증 보고서](./reports/2026-10-30-admin-review-fixes-validation.md)
 
 ## Next Step (IMPORTANT)
-현재 계획에 남은 Active Task는 없다. 후속 요청 전까지 새 기능/기존 관리자 T09를 자동 실행하지 않는다.
+현재 개선 계획의 실행 대상은 없다. 범위 밖 후속과 이전 관리자 계획 T09는 별도 작업이며 자동으로 완료하거나 실행하지 않는다.
 
-- [검증 기록](./reports/2026-10-30-skill-template-validation.md)
-- [디자인 컴포넌트 HTML](./reports/2026-10-30-skill-template-design-components.html)
+## 실행 원칙
+- 각 Task 구현·검증 성공 후 done과 phase/current를 갱신한다. 중간 커밋은 `deferred`로 기록하고 T07의 필수 검증 완료 후 이번 범위만 한 번 커밋한다. push 없음.
+- 이전 결과 보존/명시적 최신 재적용/비활성·삭제 후 고정 작업/현재 권한 회수 차단 계약을 유지한다.
+- 같은 파일에서 선택 슬라이드를 유지하고 실제 파일 교체 시 새 기본값으로 초기화한다. 공유 디자인의 연결 전체 영향은 유지한다.
+- 검증 전용 Playwright 개발 의존성은 T07에서만 추가한다. 운영 패키지 보안 업그레이드·실제 Entra/Cosmos/Blob·일반 제작·전역 브랜드 편집은 제외한다.
+- 기존 `package-lock.json`의 libc 30행 삭제 및 이전 Task 10개의 commit 기록 변경을 보존·분리한다.
 
-## 핵심 경계
-- Skill·Template은 관리자 전용 별도 메뉴다. 적용 테스트는 관리자 메뉴 안에 제공하고 제작 설정·제작 연결은 후속이다.
-- 슈퍼 관리자는 전사, 부서 관리자는 자기 부서 자산을 관리한다. 다른 부서 공개 자산은 조회·적용·권한 있는 복제만 가능하다.
-- 작업은 적용 당시 버전과 결과를 유지하며, 명시적인 최신 재적용만 새 설정을 반영한다.
-- 비활성/삭제는 새 선택을 막고 기존 작업은 유지한다. 현재 권한 회수는 기존 작업 적용·다운로드도 차단한다.
-- 공유 디자인 편집은 현재 PPT 작업에만 반영한다. 전역 브랜드 색상 변경·새 로고 삽입은 사용자 선택으로 후속에 남겼다.
-- 관리 데이터는 mock, PPTX/POTX 분석·변환은 실제다. 메뉴 이동 동안 유지하고 새로고침하면 초기화한다.
-- 실제 인증 User/Admin 가드를 유지하며 3단계 업무 역할은 mock이다. Cosmos/Blob/AI/RAG/LLM/리소스 프로비저닝은 제외한다.
-- 기존 package-lock.json의 libc 삭제 변경을 보존하고 이번 변경과 구분한다.
+## References
+- [확정 결정](./decisions/2026-10-30-admin-review-fixes.md)
+- [원본 재검증](./reports/2026-10-30-full-review.md)
+- [계획 조사 기록](./reports/2026-10-30-admin-review-plan-notes.md)
+- [범위 밖 후속 목록](./reports/2026-10-30-admin-review-followups.md)
+- [이전 current 원문](./reports/2026-10-30-current-before-admin-review-fixes.md)
 
-## Previous Plan — 미완료 항목 보존
-[관리자 mock UI](./plans/2026-10-29-admin-mock-ui.md)는 T01~T08 done, [T09 브라우저 검증](./phases/2026-10-29-admin-mock-ui/P01-admin-mock-ui/T09-integration-validation.md)은 미완료다. 새 계획 시작을 기존 검증 완료로 표시하지 않는다.
-
-- [이전 current 원문 보관본](./reports/2026-10-30-current-before-skill-template-ui.md)
-- [이번 계획 조사 기록](./reports/2026-10-30-skill-template-plan-notes.md)
-- [확정 설계](./decisions/2026-10-30-skill-template-ui.md)
+## Previous Plans — 상태 보존
+- [Skill·Template](./plans/2026-10-30-skill-template-ui.md): T01~T10 done, 커밋 `790835657f82a27871ff5e1ec80632ca115c69c7`. 기존 기능 완료와 발견된 후속 결함 수정 완료를 구분한다.
+- [관리자 mock UI](./plans/2026-10-29-admin-mock-ui.md): T01~T08 done, [T09](./phases/2026-10-29-admin-mock-ui/P01-admin-mock-ui/T09-integration-validation.md) 미완료. 이번 계획으로 완료 표시하지 않는다.
