@@ -41,7 +41,7 @@ describe("workspace placeholder pages", () => {
 
   it.each(screens)("previews %s without authenticating or assigning a role", async (screen, label) => {
     const markup = renderToStaticMarkup(await page(screen));
-    if (["users", "policy", "audit", "dashboard"].includes(screen)) expect(markup).toContain('data-admin-screen="' + screen + '"');
+    if (["users", "policy", "audit", "dashboard", "skills", "templates"].includes(screen)) expect(markup).toContain('data-admin-screen="' + screen + '"');
     else {
       expect(markup).toContain('<h1 id="workspace-screen-title">' + label + '</h1>');
       expect(markup).toContain('<p>' + label + ' 화면입니다.</p>');

@@ -1,13 +1,13 @@
 "use client";
 
-interface AdminPageProps { title: string; description?: string; actions?: React.ReactNode; children: React.ReactNode }
+interface AdminPageProps { title: string; description?: string; dataNotice?:string|null; actions?: React.ReactNode; children: React.ReactNode }
 interface AdminCardProps { title?: string; actions?: React.ReactNode; children: React.ReactNode; className?: string }
 interface AdminMetricProps { label: string; value: string; caption?: string; selected?: boolean; onClick?: () => void; tone?: "neutral" | "brand" | "success" | "warning" | "danger" }
-export function AdminPage({ title, description, actions, children }: AdminPageProps): React.ReactElement {
+export function AdminPage({ title, description, dataNotice="예시 데이터 · 기준일 2026.10.20", actions, children }: AdminPageProps): React.ReactElement {
   return <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-4 tw:text-(--kpc-ink) tw:text-[12px] tw:leading-relaxed">
     <header className="tw:flex tw:flex-wrap tw:items-start tw:justify-between tw:gap-3">
       <div><h1 className="tw:m-0 tw:text-[18px] tw:font-bold">{title}</h1>{description && <p className="tw:mt-1 tw:mb-0 tw:text-(--kpc-secondary)">{description}</p>}
-        <p className="tw:mt-2 tw:mb-0 tw:text-[11px] tw:text-(--kpc-muted)">예시 데이터 · 기준일 2026.10.20</p></div>
+        {dataNotice&&<p className="tw:mt-2 tw:mb-0 tw:text-[11px] tw:text-(--kpc-muted)">{dataNotice}</p>}</div>
       {actions && <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">{actions}</div>}
     </header>{children}
   </div>;

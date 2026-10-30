@@ -7,13 +7,20 @@ import { createAdminSeed } from "@/config/admin-seed";
 import { adminIdentityKey, resolveAdminActor } from "@/lib/admin/runtime-actor";
 import { retireAdminQueries } from "@/lib/admin/query-keys";
 import { MockAdminDataService } from "@/services/admin/MockAdminDataService";
+import { TemplateFileStore } from "@/services/admin/TemplateFileStore";
+import { TemplateWorkService } from "@/services/admin/TemplateWorkService";
+import { createDisposalLease } from "@/lib/admin/runtime-lifetime";
+import type { TemplateWorkDataService } from "@/types/template-work";
 import type { AdminAccessView, AdminActor, AdminDataService } from "@/types/admin";
 
-interface AdminRuntime { actor: AdminActor; service: AdminDataService; revision: number; queryClient: QueryClient; access: AdminAccessView | null }
+interface AdminRuntime { actor: AdminActor; service: AdminDataService; works:TemplateWorkDataService; revision: number; queryClient: QueryClient; access: AdminAccessView | null }
 const Context = createContext<AdminRuntime | null>(null);
 function RuntimeInstance({ children, actor: initialActor }: { children: React.ReactNode; actor: AdminActor }): React.ReactElement {
   const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity, refetchOnWindowFocus: false }, mutations: { retry: false } } }));
-  const [service] = useState(() => new MockAdminDataService({ seed: createAdminSeed({ name: initialActor.name, email: initialActor.email, role: initialActor.role, departmentId: initialActor.departmentId }) }));
+  const [files] = useState(()=>new TemplateFileStore());
+  const [service] = useState(() => new MockAdminDataService({ files,seed: createAdminSeed({ name: initialActor.name, email: initialActor.email, role: initialActor.role, departmentId: initialActor.departmentId }) }));
+  const [works] = useState(()=>new TemplateWorkService({host:service,files,actor:initialActor}));
+  const [lease] = useState(()=>createDisposalLease(()=>{works.dispose();files.dispose();queryClient.clear();}));
   const revision = useSyncExternalStore(service.subscribe, service.getRevision, () => 1);
   const actor = service.getCurrentActor(initialActor);
   let access: AdminAccessView | null = null;
@@ -22,8 +29,9 @@ function RuntimeInstance({ children, actor: initialActor }: { children: React.Re
   useEffect(() => {
     void retireAdminQueries(queryClient, actor, revision);
   }, [actor, revision, queryClient]);
-  useEffect(() => () => { queryClient.clear(); }, [queryClient]);
-  return <QueryClientProvider client={queryClient}><Context.Provider value={{ actor, service, revision, queryClient, access }}>{children}</Context.Provider></QueryClientProvider>;
+  useEffect(()=>{works.setActor(actor);},[actor,works]);
+  useEffect(lease,[lease]);
+  return <QueryClientProvider client={queryClient}><Context.Provider value={{ actor, service, works, revision, queryClient, access }}>{children}</Context.Provider></QueryClientProvider>;
 }
 export default function AdminRuntimeProvider({ children }: { children: React.ReactNode }): React.ReactElement {
   const { authEnabled, session } = useAuthRuntime(), { state, profile } = useProfilePreview();

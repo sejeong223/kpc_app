@@ -1,8 +1,7 @@
 import { z } from "zod";
-const IdSchema = z.string().trim().min(1).max(120);
-const NameSchema = z.string().trim().min(1).max(80);
+import { IdSchema, NameSchema, IsoSchema, AdminRecordSchema } from "./record-schema";
+import { AssetStoreSchema } from "./assets/schemas";
 const EmailSchema = z.string().trim().toLowerCase().max(254).email();
-const IsoSchema = z.iso.datetime();
 const MoneySchema = z.string().regex(/^(0|[1-9][0-9]*)$/);
 const TokenSchema = z.number().int().min(0).max(1_000_000_000);
 const RateSchema = z.number().int().min(0).max(1_000_000_000);
@@ -25,7 +24,7 @@ export type AdminRole = z.infer<typeof AdminRoleSchema>;
 export const CrudActionSchema = z.union([z.literal("create"), z.literal("read"), z.literal("update"), z.literal("delete")]);
 export type CrudAction = z.infer<typeof CrudActionSchema>;
 
-export const AdminResourceSchema = z.union([z.literal("users"), z.literal("groups"), z.literal("modelSettings"), z.literal("pricing"), z.literal("tokenPolicies"), z.literal("tokenRequests"), z.literal("dashboard"), z.literal("audit"), z.literal("permissions")]);
+export const AdminResourceSchema = z.union([z.literal("users"), z.literal("groups"), z.literal("modelSettings"), z.literal("pricing"), z.literal("tokenPolicies"), z.literal("tokenRequests"), z.literal("dashboard"), z.literal("audit"), z.literal("permissions"), z.literal("skills"), z.literal("templates")]);
 export type AdminResource = z.infer<typeof AdminResourceSchema>;
 
 export const UserStatusSchema = z.union([z.literal("active"), z.literal("invited"), z.literal("locked")]);
@@ -43,18 +42,13 @@ export type UsageFeature = z.infer<typeof UsageFeatureSchema>;
 export const RfpStatusSchema = z.union([z.literal("review"), z.literal("writing"), z.literal("submitted"), z.literal("won"), z.literal("lost"), z.literal("dropped")]);
 export type RfpStatus = z.infer<typeof RfpStatusSchema>;
 
-export const AuditActionSchema = z.union([z.literal("create"), z.literal("read"), z.literal("update"), z.literal("delete"), z.literal("approve"), z.literal("reject"), z.literal("export"), z.literal("generate"), z.literal("restore")]);
+export const AuditActionSchema = z.union([z.literal("create"), z.literal("read"), z.literal("update"), z.literal("delete"), z.literal("approve"), z.literal("reject"), z.literal("export"), z.literal("generate"), z.literal("restore"), z.literal("apply")]);
 export type AuditAction = z.infer<typeof AuditActionSchema>;
 
 export const AuditResourceSchema = z.union([AdminResourceSchema, z.literal("rfp"), z.literal("document"), z.literal("usage")]);
 export type AuditResource = z.infer<typeof AuditResourceSchema>;
 
-export const AdminRecordSchema = z.strictObject({
-  id: IdSchema,
-  version: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
-  createdAt: IsoSchema,
-  updatedAt: IsoSchema,
-});
+export { AdminRecordSchema } from "./record-schema";
 export type AdminRecord = z.infer<typeof AdminRecordSchema>;
 
 export const AdminDepartmentSchema = z.strictObject({
@@ -228,6 +222,7 @@ export const AdminActorSchema = z.strictObject({
 export type AdminActor = z.infer<typeof AdminActorSchema>;
 
 export const AdminStoreStateSchema = z.strictObject({
+  assets: AssetStoreSchema,
   revision: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
   permissionRevision: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
   logicalNow: IsoSchema,

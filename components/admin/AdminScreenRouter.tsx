@@ -6,8 +6,10 @@ import UsersPage from "@/components/admin/users/UsersPage";
 import ModelTokenPage from "@/components/admin/policy/ModelTokenPage";
 import AuditPage from "@/components/admin/audit/AuditPage";
 import DashboardPage from "@/components/admin/dashboard/DashboardPage";
+import SkillsPage from "@/components/admin/skills/SkillsPage";
+import TemplatesPage from "@/components/admin/templates/TemplatesPage";
 
-interface AdminScreenRouterProps { screen: "users" | "policy" | "audit" | "dashboard"; requestedTab: "models" | "tokens" | null }
+interface AdminScreenRouterProps { screen: "users" | "policy" | "audit" | "dashboard" | "skills" | "templates"; requestedTab: "models" | "tokens" | null }
 function ScreenContent({ screen, requestedTab }: AdminScreenRouterProps): React.ReactElement {
   const access = useAdminAccess();
   if (access.isError) return <AdminAsyncState state="error" message={access.error.message} onRetry={() => void access.refetch()} />;
@@ -17,6 +19,8 @@ function ScreenContent({ screen, requestedTab }: AdminScreenRouterProps): React.
   if (screen === "users") return <UsersPage />;
   if (screen === "policy") return <ModelTokenPage requestedTab={requestedTab} />;
   if (screen === "audit") return <AuditPage />;
+  if (screen === "skills") return <SkillsPage />;
+  if (screen === "templates") return <TemplatesPage />;
   return <DashboardPage />;
 }
 export default function AdminScreenRouter(props: AdminScreenRouterProps): React.ReactElement {

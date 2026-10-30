@@ -2,7 +2,7 @@
 
 import { Button, Dialog, DialogContent, DialogSurface, DialogTitle, makeStyles, shorthands } from "@fluentui/react-components";
 import { Dismiss12Regular } from "@fluentui/react-icons";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useLayoutEffect, useRef } from "react";
 
 export interface ModalFrameProps {
   open: boolean;
@@ -56,6 +56,22 @@ export default function ModalFrame({
   const id = useId();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const restoreFrame = useRef<number | null>(null);
+  // 비동기 조회 뒤 열리는 모달도 호출 버튼으로 키보드 포커스를 돌려준다.
+  useLayoutEffect(() => {
+    if (restoreFrame.current !== null) cancelAnimationFrame(restoreFrame.current);
+    if (!open) return;
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && !active.closest("[data-modal-frame]")) returnFocus.current = active;
+    return () => {
+      restoreFrame.current = requestAnimationFrame(() => {
+        if (returnFocus.current?.isConnected && !document.querySelector("[data-modal-frame]")) {
+          returnFocus.current.focus({ preventScroll: true });
+        }
+      });
+    };
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     const frame = requestAnimationFrame(() => {

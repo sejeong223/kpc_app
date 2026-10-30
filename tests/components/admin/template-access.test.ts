@@ -1,0 +1,20 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { expect,it,vi } from "vitest";
+import { assetHarness,templateDraft } from "../../services/admin/asset-fixture";
+import { fixtureFile,setupXmlDom } from "../../lib/pptx/fixture";
+const mocks=vi.hoisted(()=>({runtime:vi.fn()}));
+vi.mock("@/components/admin/AdminRuntimeProvider",()=>({useAdminRuntime:mocks.runtime}));
+import AssetListPanel,{defaultAssetQuery} from "@/components/admin/assets/AssetListPanel";
+import TemplateExtractionPanel from "@/components/admin/templates/TemplateExtractionPanel";
+import type { AssetList } from "@/types/admin-assets";
+setupXmlDom();
+it("타 부서 Template의 수정·삭제를 숨기고 추출 정보와 편집 범위를 구분한다",async()=>{
+  const h=assetHarness(),source=await h.service.importTemplate(h.departmentActor,await fixtureFile());
+  const created=await h.service.executeAsset(h.departmentActor,{type:"create-template",ownerDepartmentId:h.departmentActor.departmentId,status:"active",visibility:{all:true,targets:[]},value:templateDraft(source)}),detail=await h.service.getAsset(h.otherActor,created.assetId);
+  mocks.runtime.mockReturnValue({access:await h.service.getAccess(h.otherActor)});
+  const list:AssetList={rows:{items:[detail.asset],page:1,pageSize:20,total:1,totalPages:1},activeCount:1,inactiveCount:0};
+  const html=renderToStaticMarkup(createElement(AssetListPanel,{kind:"template",query:defaultAssetQuery("template"),list,loading:false,error:null,canCreate:true,onQueryChange:vi.fn(),onOpen:vi.fn(),onCreate:vi.fn(),onDuplicate:vi.fn(),onToggle:vi.fn(),onDelete:vi.fn()}));
+  expect(html).toContain(">복제<");expect(html).not.toContain(">삭제<");expect(html).not.toContain(">비활성화<");
+  const extraction=renderToStaticMarkup(createElement(TemplateExtractionPanel,{value:source.extraction}));expect(extraction).toContain("실제 파일 추출 정보");expect(extraction).toContain("전역 브랜드 색상 변경과 새 로고 삽입은 후속 범위");expect(extraction).not.toContain("<input");
+});

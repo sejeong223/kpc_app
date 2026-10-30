@@ -1,3 +1,4 @@
+import { createAssetSeed } from "@/config/admin-assets-seed";
 import { DEFAULT_ROLE_GRANTS } from "@/config/admin-permissions";
 import { TOKEN_PROJECT_OPTIONS, TOKEN_USAGE_SNAPSHOT } from "@/config/token-preview";
 import { calculateCost } from "@/lib/admin/cost";
@@ -31,6 +32,7 @@ export function createAdminSeed(self?: SeedSelf): AdminStoreState {
   const userRows = users();
   if (self) userRows[0] = { ...userRows[0], ...self };
   const state: AdminStoreState = {
+    assets: { records: [], skillRevisions: [], templateRevisions: [] },
     revision: 1, permissionRevision: 1, logicalNow: ADMIN_DEMO_TIME, departments: structuredClone(departments), users: userRows,
     groups: [
       { ...record("g-ai"), name: "AI 제안팀", memberIds: userRows.slice(0, 3).filter((u) => u.departmentId !== null).map((u) => u.id), ownerId: "u-self", deletedAt: null },
@@ -98,5 +100,6 @@ export function createAdminSeed(self?: SeedSelf): AdminStoreState {
       detail: "예시 작업 이력", targetId: "mois", targetLabel: "AI 행정 에이전트", outcome: failure ? "failure" : "success", failureReason: failure ? "예시 처리 시간 초과" : null,
       requestId: "req-manual-" + i, usageId: null, tokens: 0, ip: "192.0.2.1", userAgent: "예시 브라우저" });
   }
+  state.assets = createAssetSeed(state);
   return AdminStoreStateSchema.parse(state);
 }

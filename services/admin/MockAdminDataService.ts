@@ -1,4 +1,13 @@
 import { z } from "zod";
+import { TemplateFileStore } from "./TemplateFileStore";
+import { IdSchema } from "@/lib/admin/record-schema";
+import { AssetCommandSchema, AssetKindSchema, AssetQuerySchema, AppliedAssetRefSchema } from "@/lib/admin/assets/schemas";
+import { assetAudience, assetResource, assertAssetRead, assertAssetWrite } from "@/lib/admin/assets/permissions";
+import { assetDetail, assetRevisions, currentAssetRevision, selectAssets } from "@/lib/admin/assets/selectors";
+import { applyAssetCommand } from "@/lib/admin/assets/commands";
+import { checkPptxAbort } from "@/lib/pptx/errors";
+import type { AppliedAssetRef, AssetCommand, AssetDetail, AssetKind, AssetList, AssetQuery, AssetReceipt, AssetRecord, ResolvedAsset, TemplateExtraction, TemplateDraft } from "@/types/admin-assets";
+import type { TemplateObject } from "@/types/pptx-template";
 import { ADMIN_DIRECTORY } from "@/config/admin-seed";
 import { ADMIN_RESOURCES, CRUD_ACTIONS } from "@/config/admin-permissions";
 import { AdminDataError, validationError } from "@/lib/admin/errors";
@@ -10,7 +19,7 @@ import { auditRows, buildDashboard, buildSelfUsage, inScope, matches, paginate, 
 import { AdminCommandSchema, AdminStoreStateSchema, AuditQuerySchema, DashboardQuerySchema, GroupQuerySchema, TokenQuerySchema, UserQuerySchema } from "@/lib/admin/schemas";
 import type { AdminAccessView, AdminActor, AdminCommand, AdminDataService, AdminResource, AdminStoreState, AdminUser, AuditAction, AuditQuery, AuditResource, CommandReceipt, CrudAction, DashboardQuery, GroupQuery, NewAdminUser, TokenQuery, UserQuery, VersionedRef } from "@/types/admin";
 
-interface MockAdminOptions { seed: AdminStoreState; createId?: () => string }
+interface MockAdminOptions { seed: AdminStoreState; createId?: () => string; files?: TemplateFileStore }
 interface UndoEntry { resource: "users" | "groups"; targets: VersionedRef[]; deletedAt: string }
 function parse<T extends z.ZodType>(schema: T, input: z.input<T>): z.output<T> {
   const result = schema.safeParse(input);
@@ -23,9 +32,11 @@ export class MockAdminDataService implements AdminDataService {
   private readonly listeners = new Set<() => void>();
   private readonly undos = new Map<string, UndoEntry>();
   private readonly submissions = new Map<string, { payload: string; receipt: CommandReceipt }>();
+  private readonly files: TemplateFileStore;
   constructor(options: MockAdminOptions) {
     this.state = structuredClone(AdminStoreStateSchema.parse(options.seed));
     this.createId = options.createId ?? (() => crypto.randomUUID());
+    this.files = options.files ?? new TemplateFileStore();
   }
   subscribe = (listener: () => void): (() => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   getRevision = (): number => this.state.revision;
@@ -53,6 +64,106 @@ export class MockAdminDataService implements AdminDataService {
     return structuredClone({ actor, grants, revision: this.state.revision, permissionRevision: this.state.permissionRevision, departments: visibleDepartments(this.state, actor), logicalNow: this.state.logicalNow });
   }
   async getAccess(input: AdminActor): Promise<AdminAccessView> { return this.getAccessSnapshot(input); }
+  async getAssets(input: AdminActor, query: AssetQuery): Promise<AssetList> {
+    const q = parse(AssetQuerySchema, query), actor = this.access(input, assetResource(q.kind));
+    return structuredClone(selectAssets(this.state, actor, q));
+  }
+  private assetFor(input: AdminActor, id: string, includeDeleted = false): { actor: AdminActor; asset: AssetRecord } {
+    const actor = this.actor(input), target = parse(IdSchema, id);
+    const asset = this.state.assets.records.find(row => row.id === target && (includeDeleted || !row.deletedAt));
+    if (!asset) throw new AdminDataError("NOT_FOUND", "자산을 찾을 수 없습니다.");
+    assertAssetRead(this.state, actor, asset);
+    return { actor, asset };
+  }
+  async getAsset(input: AdminActor, id: string): Promise<AssetDetail> {
+    const { actor, asset } = this.assetFor(input, id);
+    return structuredClone(assetDetail(this.state, actor, asset));
+  }
+  async getAssetAudience(input: AdminActor, kind: AssetKind) {
+    const actor = this.access(input, assetResource(parse(AssetKindSchema, kind)));
+    return structuredClone(assetAudience(this.state, actor));
+  }
+  resolveAsset(input: AdminActor, ref: AppliedAssetRef | { assetId: string }, mode: "new" | "existing"): ResolvedAsset {
+    const { asset } = this.assetFor(input, ref.assetId, mode === "existing");
+    if (mode === "new") {
+      if (asset.status !== "active" || asset.deletedAt) throw new AdminDataError("FORBIDDEN", "활성 자산만 새 작업에 적용할 수 있습니다.");
+      return structuredClone({ asset, revision: currentAssetRevision(this.state, asset) });
+    }
+    if (!("revisionId" in ref) || !("revision" in ref)) throw new AdminDataError("VALIDATION", "고정된 적용 버전이 필요합니다.");
+    const reference = parse(AppliedAssetRefSchema, ref);
+    const revision = assetRevisions(this.state, asset).find(row => row.id === reference.revisionId && row.revision === reference.revision);
+    if (!revision) throw new AdminDataError("NOT_FOUND", "적용 당시 자산 버전을 찾을 수 없습니다.");
+    return structuredClone({ asset, revision });
+  }
+  private importActor(input: AdminActor): AdminActor {
+    const actor = this.access(input, "templates");
+    if (!canPerform(actor, this.state.roleGrants, "templates", "create") && !canPerform(actor, this.state.roleGrants, "templates", "update")) throw new AdminDataError("FORBIDDEN", "템플릿 등록 또는 수정 권한이 필요합니다.");
+    return actor;
+  }
+  async importTemplate(input: AdminActor, file: File, signal?: AbortSignal, onProgress?: (message: string) => void) {
+    const actor = this.importActor(input), source = await this.files.importFile(actor.userId, file, signal, onProgress);
+    try { checkPptxAbort(signal); this.importActor(input); return source; }
+    catch (error) { this.files.discardStaged(actor.userId, source.id); throw error; }
+  }
+  discardTemplateImport(input: AdminActor, fileRefId: string): void {
+    // 권한이 회수된 뒤에도 본인 임시 업로드는 정리할 수 있다. 읽기나 저장 권한은 부여하지 않는다.
+    const userId=parse(IdSchema,input.userId);
+    if(!this.state.users.some(user=>user.id===userId))throw new AdminDataError("FORBIDDEN","업로드 소유자를 확인할 수 없습니다.");
+    this.files.discardStaged(userId, parse(IdSchema, fileRefId));
+  }
+  async getTemplatePreview(input:AdminActor,fileRefId:string,assetId?:string){
+    const actor=this.access(input,"templates"),id=parse(IdSchema,fileRefId);
+    if(this.files.isStagedFor(actor.userId,id))this.importActor(actor);
+    else {
+      if(!assetId)throw new AdminDataError("FORBIDDEN","조회할 자산이 필요합니다.");
+      const {asset}=this.assetFor(actor,assetId),revision=currentAssetRevision(this.state,asset);
+      if(revision.kind!=="template"||revision.definition.fileRefId!==id)throw new AdminDataError("FORBIDDEN","이 자산의 현재 파일만 조회할 수 있습니다.");
+    }
+    const doc=this.files.getSource(id).document;
+    return structuredClone({width:doc.width,height:doc.height,slides:doc.slides,warnings:doc.warnings});
+  }
+  private templateSource(actor: AdminActor, value: TemplateDraft, assetId?: string): TemplateExtraction {
+    const ownExisting = assetId && this.state.assets.templateRevisions.some(row => row.assetId === assetId && row.definition.fileRefId === value.fileRefId);
+    if (!this.files.isStagedFor(actor.userId, value.fileRefId) && !ownExisting) throw new AdminDataError("FORBIDDEN", "직접 업로드했거나 이 자산에서 사용 중인 파일만 저장할 수 있습니다.");
+    const source = this.files.getSource(value.fileRefId);
+    const slides = new Set(source.document.slides.map(slide => String(slide.index)));
+    const objectIds = (objects: readonly TemplateObject[]): string[] => objects.flatMap(object => [object.id, ...objectIds(object.groupMembers ?? [])]);
+    const ids = new Set(source.document.slides.flatMap(slide => objectIds([...slide.objects, ...slide.decorations])));
+    if (Object.keys(value.pageTypes).some(key => !slides.has(key)) || Object.keys(value.roles).some(id => !ids.has(id)) || value.excluded.some(id => !ids.has(id))) throw new AdminDataError("VALIDATION", "파일에 존재하지 않는 슬라이드 또는 요소입니다.");
+    return source.extraction;
+  }
+  async executeAsset(input: AdminActor, raw: AssetCommand): Promise<AssetReceipt> {
+    const actor = this.actor(input), command = parse(AssetCommandSchema, raw), templateSources = new Map<string, TemplateExtraction>();
+    if (command.type === "create-template" || command.type === "update-template") {
+      assertPermission(actor, this.state.roleGrants, "templates", command.type === "create-template" ? "create" : "update");
+      if (command.type === "update-template") assertAssetWrite(this.state, actor, this.assetFor(actor, command.target.id).asset, "update");
+      templateSources.set(command.value.fileRefId, this.templateSource(actor, command.value, command.type === "update-template" ? command.target.id : undefined));
+    }
+    const draft = this.draft(), result = applyAssetCommand(draft, actor, command, { createId: this.createId, templateSources });
+    const asset = draft.assets.records.find(row => row.id === result.assetId)!;
+    if (result.changed) {
+      this.addAudit(draft, actor, result.action, assetResource(asset.kind), asset.id, currentAssetRevision(draft, asset).name, asset.ownerDepartmentId, result.detail);
+      // state 검증을 먼저 완료하여 파일 참조만 남는 부분 저장을 방지한다.
+      parse(AdminStoreStateSchema, draft);
+      const retained: typeof result.retainedFiles = [];
+      try {
+        for (const file of result.retainedFiles) { this.files.retain(file.fileRefId, "revision:" + file.revisionId); retained.push(file); }
+        this.commit(draft);
+      } catch (error) {
+        for (const file of retained) this.files.release(file.fileRefId, "revision:" + file.revisionId);
+        throw error;
+      }
+    }
+    return { revision: this.state.revision, assetId: asset.id, assetVersion: asset.version, contentRevision: asset.currentRevision };
+  }
+  recordWorkActivity(input: AdminActor, refs: { template: AppliedAssetRef; skill: AppliedAssetRef }, action: "apply" | "export", workId: string): void {
+    const actor = this.actor(input), template = this.resolveAsset(actor, refs.template, "existing"), skill = this.resolveAsset(actor, refs.skill, "existing");
+    if (template.revision.kind !== "template" || skill.revision.kind !== "skill") throw new AdminDataError("VALIDATION", "적용 자산 종류가 일치하지 않습니다.");
+    parse(IdSchema, workId);
+    const draft = this.draft();
+    this.addAudit(draft, actor, action, "templates", workId, template.revision.name + " · " + skill.revision.name, actor.departmentId, JSON.stringify(refs));
+    this.commit(draft);
+  }
   async getUsers(input: AdminActor, query: UserQuery) { const actor = this.access(input, "users"), q = parse(UserQuerySchema, query); this.checkDepartment(actor, q.departmentId); return structuredClone(selectUsers(this.state, actor, q)); }
   async getGroups(input: AdminActor, query: GroupQuery) {
     this.access(input, "groups"); const q = parse(GroupQuerySchema, query);

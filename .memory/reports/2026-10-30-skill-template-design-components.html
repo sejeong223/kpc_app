@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPC Skill·Template 디자인 컴포넌트 가이드</title>
+
+  <!-- -->
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; } /* Enable smooth height:auto transitions (Chrome 129+) */
+
+    /* ===== THEMES (class-based ONLY — no @media prefers-color-scheme) ===== */
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.04);
+      --text: #EDEDED; --text-secondary: #888;
+      --accent: #3b82f6; --accent-secondary: #8b5cf6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.06);
+      --text: #0f172a; --text-secondary: #64748b;
+      --accent: #2563eb; --accent-secondary: #7c3aed;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em; font-feature-settings: 'cv11', 'ss01';
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4,h5,h6 {
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      text-wrap: balance;
+    }
+    h1 { font-weight: 700; }
+    h2 { font-weight: 600; }
+    body, p, li, td, th, span, label { font-weight: 400; }
+    p,li,td,th,span,label { color: var(--text); }
+    .text-secondary { color: var(--text-secondary); }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 24px;
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 0 0 1px var(--border), 0 8px 16px rgba(0,0,0,0.08);
+    }
+
+    /* ===== ANIMATIONS (CSS-first — always reliable) ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .animate.delay-4 { animation-delay: 0.4s; }
+    .animate.delay-5 { animation-delay: 0.5s; }
+    .animate.delay-6 { animation-delay: 0.6s; }
+
+    /* Scroll-triggered: JS adds .reveal, then .visible on scroll */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu, .reveal { display: revert; opacity: 1 !important; transform: none !important; }
+      .card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #666; } }
+
+    /* ===== MENU ===== */
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    /* ===== SKIP TO CONTENT (accessibility) ===== */
+    .skip-to-content {
+      position: absolute; top: -40px; left: 6px; background: var(--accent);
+      color: white; padding: 8px 12px; text-decoration: none;
+      border-radius: 4px; opacity: 0; pointer-events: none;
+      transition: all 0.2s; z-index: 10000;
+    }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+
+    /* ===== DETAILS ACCORDION (Chrome 120+ exclusive, 131+ animated) ===== */
+    details { overflow: hidden; }
+    details summary { cursor: pointer; list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    ::details-content {
+      transition: block-size 0.3s ease, opacity 0.3s ease;
+      block-size: 0; opacity: 0; overflow: hidden;
+    }
+    details[open]::details-content { block-size: auto; opacity: 1; }
+
+    /* ===== POPOVER (Chrome 114+, zero-JS tooltips/panels) ===== */
+    [popover] {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px; max-width: 320px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2); color: var(--text);
+    }
+    [popover]::backdrop { background: rgba(0,0,0,0.3); }
+
+
+html.theme-light{--bg:#f8f9fa;--surface:#fff;--surface-hover:#fff0f2;--border:#e6e7eb;--text:#161616;--text-secondary:#55585f;--accent:#d7192f;--accent-secondary:#c91c2b;--positive:#0d7a4a;--negative:#c91c2b;--warning:#9a5b0b}
+html.theme-dark{--bg:#141416;--surface:#1f2023;--surface-hover:#302126;--border:#3e3f44;--text:#f5f5f5;--text-secondary:#b3b5bd;--accent:#ff6578;--accent-secondary:#ffa7b3;--positive:#6ed6a8;--negative:#ff8191;--warning:#efbb7b}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;font-size:15px;overflow-wrap:anywhere}main{max-width:1180px;margin:auto;padding:0 32px}h1{font-size:clamp(34px,4.7vw,60px);line-height:1.17;max-width:1000px;margin:20px 0 26px;letter-spacing:-.05em}h1 span{font-weight:450}h2{font-size:29px;line-height:1.3}h3{font-size:19px;line-height:1.4;margin:9px 0 12px}p{margin:12px 0;line-height:1.8}.hero{padding:80px 0 36px;border-bottom:3px solid var(--accent)}.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--accent)}.lead{max-width:780px;font-size:18px;color:var(--text-secondary)}.muted,small{color:var(--text-secondary);font-size:13px}.chips,.filters{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}.chips span,.filters span{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px}.nav{position:sticky;top:0;z-index:20;display:flex;gap:10px;overflow-x:auto;background:var(--bg);padding:16px 0;border-bottom:1px solid var(--border)}a{color:var(--accent)}.nav a{white-space:nowrap;font-size:12px;text-decoration:none;color:var(--text-secondary);padding:6px 8px;border-radius:6px}.nav a:hover{background:var(--surface-hover);color:var(--accent)}section{margin:58px 0;scroll-margin-top:90px}.section-title{display:flex;align-items:center;gap:16px;margin-bottom:22px}.section-title>span{flex-shrink:0;white-space:nowrap;font-size:13px;color:var(--accent);border-top:2px solid var(--accent);padding-top:7px;font-weight:700}.flow{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}.flow article{padding:23px 18px;border-right:1px solid var(--border)}.flow article:last-child{border:0}.flow b{font-size:10px;color:var(--accent);letter-spacing:.03em}.flow h3{font-size:17px}.flow p{font-size:13px;color:var(--text-secondary)}.note{background:var(--surface-hover);padding:18px 20px;border-left:3px solid var(--accent);border-radius:0 8px 8px 0;margin:22px 0;font-size:13px;line-height:1.85}.grid{display:grid;gap:18px;margin:22px 0}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.card{border-radius:12px;padding:26px;min-width:0}.panel-heading{display:flex;justify-content:space-between;gap:20px;align-items:center}.pill{display:inline-flex;border-radius:6px;padding:4px 9px;background:var(--bg);font-size:11px;border:1px solid var(--border);white-space:nowrap}.brand{color:var(--accent)}.good{color:var(--positive)}.warn{color:var(--warning)}.table-scroll{max-width:100%;overflow:auto;border:1px solid var(--border);border-radius:9px;background:var(--surface)}table{border-collapse:collapse;width:100%;font-size:13px;min-width:650px}th,td{text-align:left;padding:15px 17px;border-bottom:1px solid var(--border);vertical-align:top}th{background:var(--bg);font-size:11px;color:var(--text-secondary);font-weight:650}tr:last-child td{border:0}td small{display:block;font-size:11px;margin-top:4px}.areas{padding-left:24px}.areas li{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}.areas b{display:block}.areas span{font-size:12px;color:var(--text-secondary)}.regions{display:grid;gap:10px}.regions>div,.visibility{border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px}.regions p{margin:6px 0}.readonly{background:var(--bg)}.visibility{margin-top:14px}.mini-slide{background:#fff;border:1px solid #e6e7eb;aspect-ratio:4/3;color:#161616;padding:25px;overflow:hidden}.mini-slide *{color:#161616}.mini-slide small{font-size:10px;color:#74747d}.mini-slide h4{font-size:25px;margin:20px 0}.mini-slide p{font-size:13px}.mini-slide.after h4{color:#d7192f;font-weight:800}.mini-table{display:grid;grid-template-columns:1fr 1fr;margin-top:22px;border:1px solid #e6e7eb}.mini-table span{font-size:12px;padding:8px;border-bottom:1px solid #e6e7eb}.after .mini-table span:nth-child(-n+2){background:#fff0f2;font-weight:700}.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.result-grid p{font-size:13px}.state-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}button,input{font:inherit}button{cursor:pointer}.state-tabs button{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:10px 15px;border-radius:8px;font-size:12px}.state-tabs button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);background:var(--surface-hover)}.state-card{display:grid;grid-template-columns:1.2fr 1fr;gap:30px;border:1px solid var(--accent);padding:30px;border-radius:12px;background:var(--surface)}.state-card dl{display:grid;grid-template-columns:1fr 1fr;align-content:start;gap:12px;font-size:13px}.state-card dt{color:var(--text-secondary)}.state-card dd{font-weight:700}.catalog-search{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:18px 0}.catalog-search label{font-size:13px;font-weight:650}input{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:12px;min-width:0;width:320px;max-width:100%}#componentCount{font-size:12px;color:var(--text-secondary)}.component[hidden]{display:none}.component p{font-size:13px}.path{display:block;font-size:11px;line-height:1.7;color:var(--text-secondary)}code{font-family:Consolas,monospace;font-size:.87em;overflow-wrap:anywhere}.component dl{border-top:1px solid var(--border);padding-top:12px;font-size:11px}.component dt{color:var(--accent);margin-bottom:5px}.component dd{color:var(--text-secondary);line-height:1.8}td i{display:inline-block;width:12px;height:12px;margin-right:7px;border:1px solid #ddd;border-radius:3px}footer{border-top:3px solid var(--accent);padding:30px 0 55px;margin-top:65px;font-size:12px}footer p{color:var(--text-secondary)}:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.mobile{display:none}
+@media(max-width:900px){.flow{grid-template-columns:1fr 1fr}.flow article{border-bottom:1px solid var(--border)}.three{grid-template-columns:1fr}.two{gap:12px}.card{padding:20px}}
+@media(max-width:600px){main{padding:0 18px}.hero{padding-top:70px}.lead{font-size:15px}.eyebrow{font-size:9px}.mobile{display:block}h2{font-size:23px}.two,.state-card,.result-grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.flow article{padding:16px 20px;border-right:0}.flow h3{margin:6px 0}.flow p{margin:3px 0}.state-card{padding:22px;gap:15px}.state-card dl{font-size:12px}.panel-heading{align-items:start;flex-direction:column;gap:6px}.mini-slide{padding:20px}.section-title{gap:12px}section{margin:40px 0}.nav{gap:3px}.viz-menu{top:12px;right:12px}}
+@media print{.nav,.viz-menu,.state-tabs,.catalog-search{display:none!important}.component[hidden]{display:block}html.theme-dark{--bg:#fff;--surface:#fff;--text:#161616;--text-secondary:#55585f;--border:#ddd;--accent:#c91c2b;--surface-hover:#fafafa}main{max-width:none;padding:0}.hero{padding-top:0}.card{break-inside:avoid}.table-scroll{overflow:visible}section{margin:25px 0}table{min-width:0}h1{font-size:32px}.grid{display:block}.card{margin:10px 0}}
+
+  </style>
+</head>
+<body>
+<a href="#main-content" class="skip-to-content">본문으로 이동</a>
+<div class="viz-menu"><button class="viz-menu-toggle" aria-label="문서 보기 설정" aria-expanded="false" onclick="toggleMenu()">☰</button><div class="viz-menu-dropdown" id="vizMenuDropdown"><button onclick="cycleTheme()"><span id="themeIcon">☀</span><span id="themeLabel">밝은 테마</span></button><button onclick="window.print()">인쇄 / PDF 저장</button></div></div>
+<main id="main-content">
+<header class="hero animate"><div class="eyebrow">KPC · COMPONENT FIELD GUIDE · 2026.10.30</div><h1>Skill &amp; Template<br><span>디자인을 바꿔도,<br class="mobile"> 규칙은 이어지도록.</span></h1><p class="lead">관리 화면, 실제 PPT 처리, 버전과 권한의 경계를 분리한 구현 가이드입니다. 디자인 업체의 최종 시안을 반영할 때 바꿀 곳과 유지할 계약을 함께 정리했습니다.</p><div class="chips"><span>관리자 전용</span><span>관리 정보 mock</span><span>실제 PPTX / POTX 변환</span><span>AI 호출 없음</span></div><p class="muted">구현 구조 설명서 · 최종 디자인 승인본이나 실행 앱이 아닙니다. 아래 예시는 문서 탐색과 상태 비교만 제공합니다.</p></header>
+<nav class="nav" aria-label="가이드 목차"><a href="#flow">01 흐름</a><a href="#screens">02 화면</a><a href="#states">03 상태</a><a href="#catalog">04 컴포넌트</a><a href="#tokens">05 토큰</a><a href="#access">06 권한</a><a href="#handoff">07 디자인 인계</a></nav>
+<section id="flow"><div class="section-title"><span>01</span><h2>하나의 적용 작업이 만들어지는 과정</h2></div><div class="flow"><article><b>01 / 자산 준비</b><h3>Skill + Template</h3><p>JSON 서식 규칙과 실제 PPT 원본을 각각 등록합니다.</p></article><article><b>02 / 버전 고정</b><h3>적용 작업 생성</h3><p>활성·접근 가능한 두 자산의 최신 내용 버전을 고정합니다.</p></article><article><b>03 / 선택 편집</b><h3>현재 작업 설정</h3><p>슬라이드·역할·제외·공유 디자인을 확인합니다.</p></article><article><b>04 / 실제 처리</b><h3>적용 및 비교</h3><p>ZIP/XML을 변환하고 변경·유지·제외 사유를 만듭니다.</p></article><article><b>05 / 결과 보관</b><h3>PPTX 다운로드</h3><p>최신 재적용이 성공할 때만 버전과 결과를 함께 교체합니다.</p></article></div><div class="note"><strong>서식과 문구를 분리합니다.</strong> 텍스트 문구·관계·지원하지 않는 구조를 보존하고 지원되는 서식만 변경합니다. 배치·여백과 이미지 규칙은 기본으로 꺼져 있습니다.</div></section>
+<section id="screens"><div class="section-title"><span>02</span><h2>같은 목록 문법, 서로 다른 편집 내용</h2></div><article class="card"><div class="panel-heading"><div><div class="eyebrow">공통 자산 목록</div><h3>AssetListPanel</h3></div><span class="pill brand">허용된 액션만 렌더링</span></div><div class="filters"><span>검색 · 이름 / 약칭 / 설명</span><span>공개 범위 ▾</span><span>상태 ▾</span><span>20개 ▾</span></div><div class="table-scroll"><table><thead><tr><th>이름 / 약칭</th><th>소유 부서</th><th>공개 범위</th><th>상태</th><th>내용 버전</th><th>가능한 작업</th></tr></thead><tbody><tr><td><strong>제안서 기본 서식</strong><small>기본</small></td><td>소속 부서</td><td>전사 공개</td><td><span class="pill good">활성</span></td><td>v2</td><td>상세 · 비활성화 · 복제 · 삭제</td></tr><tr><td><strong>다른 부서 공개 서식</strong><small>공유</small></td><td>다른 부서</td><td>선택 공개</td><td><span class="pill good">활성</span></td><td>v1</td><td>조회 · 권한 있는 복제</td></tr></tbody></table></div><p class="muted">권한 → 검색/공개 범위 → 정렬/페이지 순으로 계산합니다. 활성/비활성 개수는 상태 필터를 적용하기 전의 동일 검색 범위입니다.</p></article>
+<div class="grid two"><article class="card"><div class="eyebrow">SKILL EDITOR / 9 AREAS</div><h3>정형 설정 + 예시 미리보기</h3><ol class="areas"><li><b>기본 정보</b><span>이름·약칭·설명·소유 부서·상태</span></li><li><b>글꼴·크기·줄 간격</b><span>공통 텍스트 서식</span></li><li><b>요소·문단 간격</b><span>제목–본문·블록·문단</span></li><li><b>표 서식</b><span>머리글·셀·테두리·여백</span></li><li><b>도형·이미지</b><span>크기 규칙·테두리·맞춤</span></li><li><b>여백·가이드</b><span>안전 여백과 배치 안내</span></li><li><b>보호 규칙</b><span>원본 보존 정책</span></li><li><b>페이지 유형별 규칙</b><span>표지·목차·간지·본문·표·부록</span></li><li><b>공개 범위</b><span>전사 또는 부서·그룹·사용자</span></li></ol><p class="muted">데스크톱: 폼 + 예시 패널. 모바일: 세로 배치. 페이지별 “공통 규칙 따름”은 null로 저장합니다. 구조를 바꿀 때 SkillEditorDialog와 SkillRuleFields를 함께 확인합니다.</p></article><article class="card"><div class="eyebrow">TEMPLATE EDITOR / 3 REGIONS</div><h3>실제 파일 정보와 편집 필드의 구분</h3><div class="regions"><div><b>파일 / 관리 정보</b><p>선택·드롭·예시·분석 취소<br>이름·약칭·상태·소유 부서</p></div><div class="readonly"><b>추출 정보 · 조회 전용</b><p>크기·장수·글꼴·테마<br>레이아웃·로고 후보·안내</p></div><div><b>유형 / 역할 / 제외</b><p>페이지 유형<br>제목·리딩·본문·보존<br>적용 제외 체크</p></div></div><div class="visibility"><b>공개 범위</b><p>☑ 전사 공개</p><p class="muted">선택 공개: 부서 / 그룹 / 사용자 체크박스와 제거 가능한 대상 칩. 대상을 비우면 소유 부서 관리자와 슈퍼 관리자만 접근합니다.</p></div><p class="note">새 파일로 교체하면 매핑을 초기화합니다. 기존 작업은 이전 파일을 유지합니다. 색상·글꼴 추출은 전역 브랜드 편집 기능을 의미하지 않습니다.</p></article></div>
+<article class="card"><div class="eyebrow">WORKBENCH / 현재 작업에만 적용</div><h3>전후 구조 비교와 부분 적용 결과</h3><div class="grid two"><div class="mini-slide"><small>원본</small><h4>제안서 제목</h4><p>원문은 유지됩니다.</p><div class="mini-table"><span>항목</span><span>설명</span><span>내용</span><span>내용</span></div></div><div class="mini-slide after"><small>마지막 성공 결과</small><h4>제안서 제목</h4><p>원문은 유지됩니다.</p><div class="mini-table"><span>항목</span><span>설명</span><span>내용</span><span>내용</span></div></div></div><div class="result-grid"><div><span class="pill good">변경</span><p>지원되는 제목·본문·표 서식, 예약된 공유 요소</p></div><div><span class="pill">원본 유지</span><p>미선택 슬라이드, 미예약 공유 디자인, 원본 유지 역할</p></div><div><span class="pill warn">적용 제외</span><p>보호 대상·지원 제한·공간 부족 등 사유 표시</p></div></div><p class="muted">표·그룹은 하나의 요소로 집계하고 내부 변경 내역은 별도로 펼칩니다. 공유 변경은 연결된 전체 페이지에 영향을 주며 등록 Template을 수정하지 않습니다. 브라우저 미리보기는 PowerPoint의 정밀 렌더링이 아닙니다.</p></article></section>
+<section id="states"><div class="section-title"><span>03</span><h2>상태가 바뀌면 무엇을 할 수 있나요?</h2></div><p>아래 상태를 선택하면 적용 작업의 안내와 가능한 동작을 비교할 수 있습니다.</p><div class="state-tabs" role="group" aria-label="작업 상태 비교"><button data-state="ready" aria-pressed="true">성공 결과</button><button data-state="newer" aria-pressed="false">원본 새 버전</button><button data-state="stale" aria-pressed="false">옵션 미적용</button><button data-state="inactive" aria-pressed="false">비활성 / 삭제</button><button data-state="revoked" aria-pressed="false">권한 회수</button><button data-state="failed" aria-pressed="false">최신 재적용 실패</button></div><article class="state-card" aria-live="polite"><div><span class="pill brand" id="stateBadge">적용 v1</span><h3 id="stateTitle">현재 설정의 성공 결과</h3><p id="stateText">고정한 두 자산의 버전으로 처리한 결과를 다운로드할 수 있습니다.</p></div><dl id="stateActions"><dt>현재 버전 재적용</dt><dd>가능</dd><dt>최신 버전 재적용</dt><dd>새 버전이 있을 때 표시</dd><dt>다운로드</dt><dd>가능</dd></dl></article><div class="note"><strong>내용 버전 ≠ 동시 수정 버전.</strong> 이름·설정·파일 변경은 새 내용 revision을 만듭니다. 상태·공개 범위 변경은 record version만 올립니다. 실행 중 취소·권한 변경으로 폐기한 작업은 늦게 끝나도 성공 결과나 적용 로그를 게시하지 않습니다.</div></section>
+<section id="catalog"><div class="section-title"><span>04</span><h2>실제 컴포넌트 지도</h2></div><div class="catalog-search"><label for="componentSearch">이름·파일·책임 검색</label><input id="componentSearch" type="search" placeholder="예: 공개 범위, Template, ModalFrame"><span id="componentCount" aria-live="polite">20개 컴포넌트 / 연결 단위</span></div><div class="grid two" id="componentGrid"><article class="card component" data-group="공통" data-search="공통 components/admin/ui/adminprimitives.tsx adminpage / admincard title · description · datanotice · actions · children 화면 제목, 데이터 안내, 카드 경계를 통일합니다. 기본 datanotice는 기존 관리자 화면 안내를 유지합니다."><div class="eyebrow">공통</div><h3>AdminPage / AdminCard</h3><code class="path">components/admin/ui/AdminPrimitives.tsx</code><p>화면 제목, 데이터 안내, 카드 경계를 통일합니다. 기본 dataNotice는 기존 관리자 화면 안내를 유지합니다.</p><dl><dt>입력 / 계약</dt><dd>title · description · dataNotice · actions · children</dd></dl></article>
+<article class="card component" data-group="공통" data-search="공통 components/ui/modalframe.tsx modalframe open · title · width · contentkey · footer · onclose 본문만 스크롤하고 하단 버튼은 유지합니다. escape, 제목 초기 포커스, 닫힌 뒤 호출 버튼 포커스 복귀를 담당합니다."><div class="eyebrow">공통</div><h3>ModalFrame</h3><code class="path">components/ui/ModalFrame.tsx</code><p>본문만 스크롤하고 하단 버튼은 유지합니다. Escape, 제목 초기 포커스, 닫힌 뒤 호출 버튼 포커스 복귀를 담당합니다.</p><dl><dt>입력 / 계약</dt><dd>open · title · width · contentKey · footer · onClose</dd></dl></article>
+<article class="card component" data-group="공통" data-search="공통 components/admin/assets/assetlistpanel.tsx assetlistpanel kind · query · list · cancreate · onopen/oncreate/onduplicate/ontoggle/ondelete · onapply? 검색·상태·공개 범위·정렬·페이지와 허용된 행 액션을 한 곳에서 관리합니다."><div class="eyebrow">공통</div><h3>AssetListPanel</h3><code class="path">components/admin/assets/AssetListPanel.tsx</code><p>검색·상태·공개 범위·정렬·페이지와 허용된 행 액션을 한 곳에서 관리합니다.</p><dl><dt>입력 / 계약</dt><dd>kind · query · list · canCreate · onOpen/onCreate/onDuplicate/onToggle/onDelete · onApply?</dd></dl></article>
+<article class="card component" data-group="공통" data-search="공통 components/admin/assets/assetvisibilityfield.tsx assetvisibilityfield value · candidates · disabled · onchange 전사 공개 또는 부서·그룹·사용자 대상을 선택합니다. 공개 범위는 편집 권한을 부여하지 않습니다."><div class="eyebrow">공통</div><h3>AssetVisibilityField</h3><code class="path">components/admin/assets/AssetVisibilityField.tsx</code><p>전사 공개 또는 부서·그룹·사용자 대상을 선택합니다. 공개 범위는 편집 권한을 부여하지 않습니다.</p><dl><dt>입력 / 계약</dt><dd>value · candidates · disabled · onChange</dd></dl></article>
+<article class="card component" data-group="공통" data-search="공통 components/admin/assets/assetversionbadge.tsx assetversionbadge currentrevision · appliedrevision? · inactive? · deleted? 내용 버전, 적용 버전, 새 버전, 원본 상태를 표시합니다. 메타데이터 동시 수정용 version과 구분합니다."><div class="eyebrow">공통</div><h3>AssetVersionBadge</h3><code class="path">components/admin/assets/AssetVersionBadge.tsx</code><p>내용 버전, 적용 버전, 새 버전, 원본 상태를 표시합니다. 메타데이터 동시 수정용 version과 구분합니다.</p><dl><dt>입력 / 계약</dt><dd>currentRevision · appliedRevision? · inactive? · deleted?</dd></dl></article>
+<article class="card component" data-group="공통" data-search="공통 components/admin/assets/assetdeletedialog.tsx assetdeletedialog open · asset · pending · error · onclose · onconfirm 삭제 영향과 현재 대상 버전을 확인합니다. 삭제된 원본의 기존 작업은 유지합니다."><div class="eyebrow">공통</div><h3>AssetDeleteDialog</h3><code class="path">components/admin/assets/AssetDeleteDialog.tsx</code><p>삭제 영향과 현재 대상 버전을 확인합니다. 삭제된 원본의 기존 작업은 유지합니다.</p><dl><dt>입력 / 계약</dt><dd>open · asset · pending · error · onClose · onConfirm</dd></dl></article>
+<article class="card component" data-group="Skill" data-search="skill components/admin/skills/skillspage.tsx skillspage 라우트 진입 컴포넌트 · 외부 props 없음 목록·편집·복제·상태·삭제를 연결하며 서비스의 최신 접근 권한을 검사합니다."><div class="eyebrow">Skill</div><h3>SkillsPage</h3><code class="path">components/admin/skills/SkillsPage.tsx</code><p>목록·편집·복제·상태·삭제를 연결하며 서비스의 최신 접근 권한을 검사합니다.</p><dl><dt>입력 / 계약</dt><dd>라우트 진입 컴포넌트 · 외부 props 없음</dd></dl></article>
+<article class="card component" data-group="Skill" data-search="skill components/admin/skills/skilleditordialog.tsx skilleditordialog open · detail · readonly · onclose 9개 영역의 초안, zod 오류, 미저장 변경 확인, 충돌 후 최신 불러오기를 제공합니다."><div class="eyebrow">Skill</div><h3>SkillEditorDialog</h3><code class="path">components/admin/skills/SkillEditorDialog.tsx</code><p>9개 영역의 초안, Zod 오류, 미저장 변경 확인, 충돌 후 최신 불러오기를 제공합니다.</p><dl><dt>입력 / 계약</dt><dd>open · detail · readOnly · onClose</dd></dl></article>
+<article class="card component" data-group="Skill" data-search="skill components/admin/skills/skillrulefields.tsx skillrulefields value · disabled · fielderrors · onchange 설정 2~8영역의 입력을 담당합니다. 페이지별 null은 공통 규칙을 따름을 뜻합니다."><div class="eyebrow">Skill</div><h3>SkillRuleFields</h3><code class="path">components/admin/skills/SkillRuleFields.tsx</code><p>설정 2~8영역의 입력을 담당합니다. 페이지별 null은 공통 규칙을 따름을 뜻합니다.</p><dl><dt>입력 / 계약</dt><dd>value · disabled · fieldErrors · onChange</dd></dl></article>
+<article class="card component" data-group="Skill" data-search="skill components/admin/skills/skillstylepreview.tsx skillstylepreview rules 입력 설정을 설명하는 예시 미리보기입니다. ppt 렌더링 결과가 아닙니다."><div class="eyebrow">Skill</div><h3>SkillStylePreview</h3><code class="path">components/admin/skills/SkillStylePreview.tsx</code><p>입력 설정을 설명하는 예시 미리보기입니다. PPT 렌더링 결과가 아닙니다.</p><dl><dt>입력 / 계약</dt><dd>rules</dd></dl></article>
+<article class="card component" data-group="Template" data-search="template components/admin/templates/templateeditordialog.tsx templateeditordialog open · detail · readonly · onclose · onapply? 파일/관리 정보, 추출 정보, 유형/역할의 3영역과 하단 공개 범위를 구성합니다."><div class="eyebrow">Template</div><h3>TemplateEditorDialog</h3><code class="path">components/admin/templates/TemplateEditorDialog.tsx</code><p>파일/관리 정보, 추출 정보, 유형/역할의 3영역과 하단 공개 범위를 구성합니다.</p><dl><dt>입력 / 계약</dt><dd>open · detail · readOnly · onClose · onApply?</dd></dl></article>
+<article class="card component" data-group="Template" data-search="template components/admin/templates/templatefileinput.tsx templatefileinput disabled · filename · progress · error · onselect · oncancel · onuseexample 실제 파일 선택·드롭·예시 파일·분석 취소를 처리합니다. 파일 교체는 매핑을 초기화합니다."><div class="eyebrow">Template</div><h3>TemplateFileInput</h3><code class="path">components/admin/templates/TemplateFileInput.tsx</code><p>실제 파일 선택·드롭·예시 파일·분석 취소를 처리합니다. 파일 교체는 매핑을 초기화합니다.</p><dl><dt>입력 / 계약</dt><dd>disabled · filename · progress · error · onSelect · onCancel · onUseExample</dd></dl></article>
+<article class="card component" data-group="Template" data-search="template components/admin/templates/templateextractionpanel.tsx templateextractionpanel value 슬라이드 크기·글꼴·테마·레이아웃·로고 후보·분석 안내를 읽기 전용으로 보여줍니다."><div class="eyebrow">Template</div><h3>TemplateExtractionPanel</h3><code class="path">components/admin/templates/TemplateExtractionPanel.tsx</code><p>슬라이드 크기·글꼴·테마·레이아웃·로고 후보·분석 안내를 읽기 전용으로 보여줍니다.</p><dl><dt>입력 / 계약</dt><dd>value</dd></dl></article>
+<article class="card component" data-group="Template" data-search="template components/admin/templates/templatemappingfields.tsx templatemappingfields document · value { pagetypes, roles, excluded } · disabled · onchange 슬라이드 유형, 요소 역할, 적용 제외를 편집합니다. 일반 요소와 공유 디자인은 별도 경로입니다."><div class="eyebrow">Template</div><h3>TemplateMappingFields</h3><code class="path">components/admin/templates/TemplateMappingFields.tsx</code><p>슬라이드 유형, 요소 역할, 적용 제외를 편집합니다. 일반 요소와 공유 디자인은 별도 경로입니다.</p><dl><dt>입력 / 계약</dt><dd>document · value { pageTypes, roles, excluded } · disabled · onChange</dd></dl></article>
+<article class="card component" data-group="적용 작업" data-search="적용 작업 components/admin/templates/workbench/templateworkbench.tsx templateworkbench workid · onback 고정 버전 적용, 최신 재적용 확인, 취소, 다운로드를 연결합니다. 권한이 없으면 캐시도 렌더링하지 않습니다."><div class="eyebrow">적용 작업</div><h3>TemplateWorkbench</h3><code class="path">components/admin/templates/workbench/TemplateWorkbench.tsx</code><p>고정 버전 적용, 최신 재적용 확인, 취소, 다운로드를 연결합니다. 권한이 없으면 캐시도 렌더링하지 않습니다.</p><dl><dt>입력 / 계약</dt><dd>workId · onBack</dd></dl></article>
+<article class="card component" data-group="적용 작업" data-search="적용 작업 components/admin/templates/workbench/shareddesigneditor.tsx shareddesigneditor items · value · disabled · onchange 마스터/레이아웃과 지원되는 그룹 내부 요소의 변경을 현재 작업에 예약합니다. 연결된 전체 페이지에 반영됩니다."><div class="eyebrow">적용 작업</div><h3>SharedDesignEditor</h3><code class="path">components/admin/templates/workbench/SharedDesignEditor.tsx</code><p>마스터/레이아웃과 지원되는 그룹 내부 요소의 변경을 현재 작업에 예약합니다. 연결된 전체 페이지에 반영됩니다.</p><dl><dt>입력 / 계약</dt><dd>items · value · disabled · onChange</dd></dl></article>
+<article class="card component" data-group="적용 작업" data-search="적용 작업 components/admin/templates/workbench/templateresultspanel.tsx templateresultspanel before · after · changes · warnings 같은 슬라이드/요소를 전후 비교하고 범위·상태·사유로 검색합니다. 그룹 내부 결과를 별도로 펼칩니다."><div class="eyebrow">적용 작업</div><h3>TemplateResultsPanel</h3><code class="path">components/admin/templates/workbench/TemplateResultsPanel.tsx</code><p>같은 슬라이드/요소를 전후 비교하고 범위·상태·사유로 검색합니다. 그룹 내부 결과를 별도로 펼칩니다.</p><dl><dt>입력 / 계약</dt><dd>before · after · changes · warnings</dd></dl></article>
+<article class="card component" data-group="적용 작업" data-search="적용 작업 components/admin/templates/workbench/templateslidepreview.tsx templateslidepreview document · slideindex · selectedobjectid · onselect 텍스트·도형·표·이미지를 구조 기반으로 그립니다. 차트·그룹·병합 표는 간소화될 수 있습니다."><div class="eyebrow">적용 작업</div><h3>TemplateSlidePreview</h3><code class="path">components/admin/templates/workbench/TemplateSlidePreview.tsx</code><p>텍스트·도형·표·이미지를 구조 기반으로 그립니다. 차트·그룹·병합 표는 간소화될 수 있습니다.</p><dl><dt>입력 / 계약</dt><dd>document · slideIndex · selectedObjectId · onSelect</dd></dl></article>
+<article class="card component" data-group="연결" data-search="연결 hooks/admin/use-assets.ts / hooks/admin/use-template-work.ts tanstack query 훅 actor · revision · assetid/workid · typed command 화면에서 직접 fetch하지 않습니다. 무거운 zip/결과는 서비스에 두고 query에는 가벼운 조회 데이터만 보관합니다."><div class="eyebrow">연결</div><h3>TanStack Query 훅</h3><code class="path">hooks/admin/use-assets.ts / hooks/admin/use-template-work.ts</code><p>화면에서 직접 fetch하지 않습니다. 무거운 ZIP/결과는 서비스에 두고 Query에는 가벼운 조회 데이터만 보관합니다.</p><dl><dt>입력 / 계약</dt><dd>actor · revision · assetId/workId · typed command</dd></dl></article>
+<article class="card component" data-group="연결" data-search="연결 services/admin/templateworkservice.ts templateworkservice host · files · actor · apply? 현재 acl·실행 토큰·고정 revision·성공 결과를 관리합니다. 화면을 바꿔도 이 업무 규칙을 유지합니다."><div class="eyebrow">연결</div><h3>TemplateWorkService</h3><code class="path">services/admin/TemplateWorkService.ts</code><p>현재 ACL·실행 토큰·고정 revision·성공 결과를 관리합니다. 화면을 바꿔도 이 업무 규칙을 유지합니다.</p><dl><dt>입력 / 계약</dt><dd>host · files · actor · apply?</dd></dl></article></div><p id="noMatches" hidden>일치하는 컴포넌트가 없습니다.</p></section>
+<section id="tokens"><div class="section-title"><span>05</span><h2>디자인 변경의 첫 번째 진입점</h2></div><p><code>app/admin-theme.css</code>의 토큰과 <code>components/providers/FluentUiProvider.tsx</code>의 Fluent 테마를 함께 확인합니다. Tailwind는 배치·여백, Fluent는 입력 컨트롤을 맡습니다.</p><div class="table-scroll"><table><thead><tr><th>토큰</th><th>현재 값</th><th>사용 의도</th></tr></thead><tbody><tr><td>--kpc-bg / --kpc-card</td><td><i style="background:#f8f9fa"></i>#f8f9fa / #fff</td><td>페이지 / 카드 배경</td></tr><tr><td>--kpc-brand</td><td><i style="background:#d7192f"></i>#d7192f</td><td>주요 액션·선택·새 버전</td></tr><tr><td>--kpc-line / --kpc-line-soft</td><td>#e6e7eb / #eff0f3</td><td>경계 / 내부 구분선</td></tr><tr><td>--kpc-ink / --kpc-secondary / --kpc-muted</td><td>#161616 / #55585f / #74747d</td><td>본문 / 설명 / 보조</td></tr><tr><td>--kpc-success / --kpc-warning / --kpc-danger</td><td>#0d7a4a / #9a5b0b / #c91c2b</td><td>상태 의미 · 글자 레이블 병행</td></tr><tr><td>--kpc-radius-card / control / dialog</td><td>12px / 8px / 16px</td><td>카드 / 입력 / 모달</td></tr><tr><td>--kpc-space-unit</td><td>4px</td><td>간격 기준 · 화면은 Tailwind 간격 클래스도 사용</td></tr><tr><td>--kpc-font-body / small / title</td><td>12px / 11px / 18px</td><td>기본 / 보조 / 화면 제목</td></tr><tr><td>--kpc-font-ui</td><td>시스템 UI → Noto Sans KR → 맑은 고딕</td><td>설치된 글꼴 fallback</td></tr></tbody></table></div><p class="note">현재 ModalFrame의 일부 Fluent CSS와 화면의 <code>tw:text-[…]</code>, <code>tw:gap-…</code> 값은 고정값입니다. 토큰만 바꾸면 모든 요소가 자동 변경된다고 가정하지 말고 공통 컴포넌트와 화면별 클래스도 확인하세요. 이 문서의 테마 전환은 문서 보기 설정입니다.</p></section>
+<section id="access"><div class="section-title"><span>06</span><h2>역할·소유 부서·공개 범위를 함께 확인</h2></div><div class="table-scroll"><table><thead><tr><th>주체</th><th>관리 메뉴</th><th>조회 / 적용</th><th>등록 / 복제</th><th>수정 / 삭제</th></tr></thead><tbody><tr><td>슈퍼 관리자</td><td>가능</td><td>전사 관리 범위</td><td>가능</td><td>전사 관리 범위</td></tr><tr><td>관리자 · 자기 부서</td><td>가능</td><td>read 권한 + 이용 조건</td><td>create 권한 · 자기 부서</td><td>update / delete 권한</td></tr><tr><td>관리자 · 다른 부서 공개 자산</td><td>가능</td><td>read + 현재 공개 대상</td><td>read + create로 자기 부서 사본</td><td>불가</td></tr><tr><td>일반 사용자</td><td>불가</td><td>이번 관리자 메뉴에서 불가</td><td>불가</td><td>불가</td></tr></tbody></table></div><div class="grid two"><article class="card"><h3>복제는 독립된 새 자산</h3><p>새 ID · 내용 v1 · 자기 부서 소유 · 비활성 · 비공개로 생성합니다. 원본에 대한 편집 권한을 얻는 기능이 아닙니다.</p></article><article class="card"><h3>현재 권한은 매번 다시 검사</h3><p>그룹 탈퇴/삭제, 부서 이동, 계정 잠금, read 해제, 공개 범위 축소는 기존 작업의 미리보기·적용·다운로드에도 반영됩니다.</p></article></div><p class="muted">실제 인증은 기존 서버의 User/Admin 가드를 유지합니다. 슈퍼 관리자/부서 관리자/일반 사용자 및 CRUD 세부 규칙은 이번 mock의 업무 정책 검증입니다. 향후 서버 연동에서도 동일 검증이 필요합니다.</p></section>
+<section id="handoff"><div class="section-title"><span>07</span><h2>디자인 인계와 후속 연결 범위</h2></div><div class="grid three"><article class="card"><div class="eyebrow">A / 외형 변경</div><h3>색상·간격·타이포</h3><p>admin-theme.css, FluentUiProvider, AdminPrimitives, ModalFrame, 화면의 Tailwind 클래스를 수정합니다.</p><p class="muted">검사: 대비·포커스·모바일 넘침·모달 footer 도달.</p></article><article class="card"><div class="eyebrow">B / 정보 구조 변경</div><h3>배치·단계·입력 흐름</h3><p>SkillEditorDialog, TemplateEditorDialog, TemplateWorkbench와 전용 필드 컴포넌트를 수정합니다.</p><p class="muted">유지: Zod 계약·초안/저장 구분·권한 조건·고정 버전 정책.</p></article><article class="card"><div class="eyebrow">C / 데이터 연결</div><h3>서비스 경계 교체</h3><p>AdminDataService / AssetDataService 계약을 기준으로 서버 검증과 영속 저장을 연결합니다.</p><p class="muted">Cosmos DB·Blob·AI·리소스 생성은 이번 범위 밖입니다.</p></article></div><div class="table-scroll"><table><thead><tr><th>구분</th><th>이번 구현</th><th>남겨 둔 작업</th></tr></thead><tbody><tr><td>관리 정보</td><td>메모리 mock, 메뉴 이동 유지, 새로고침 초기화</td><td>Cosmos DB 영속 저장·서버 ACL</td></tr><tr><td>파일 / 결과</td><td>실제 ZIP/XML 분석·변환·PPTX 다운로드</td><td>Blob 보관·대용량 처리 최적화</td></tr><tr><td>공유 디자인</td><td>지원하는 마스터/레이아웃·그룹 내부 서식</td><td>전역 브랜드 색상 변경·새 로고 삽입</td></tr><tr><td>미리보기</td><td>구조 비교·선택·상태/사유 검색</td><td>PowerPoint 수준 정밀 렌더링</td></tr><tr><td>제작 연결</td><td>관리자 적용 테스트 안에서 검증</td><td>일반 제작 메뉴 연결·RAG/LLM/Agent</td></tr></tbody></table></div><p class="note"><strong>한도와 성능 보장은 다릅니다.</strong> 입력은 250 MiB / 200장까지 허용하도록 검사합니다. 실제 대용량 파일의 처리시간·메모리 사용량을 보장하는 수치가 아닙니다. 취소는 다음 처리 경계에서 결과를 폐기하며 이미 실행 중인 JSZip 연산의 즉시 중단을 보장하지 않습니다.</p></section>
+<footer><strong>KPC · Skill &amp; Template</strong><p>오프라인 단일 HTML · 외부 폰트/CDN/업로드 없음 · 구현 기준 2026.10.30</p><p>검증 기록: <a href="2026-10-30-skill-template-validation.md">2026-10-30-skill-template-validation.md</a></p></footer>
+</main><script>
+function toggleMenu(){var menu=document.getElementById('vizMenuDropdown');var open=menu.classList.toggle('open');document.querySelector('.viz-menu-toggle').setAttribute('aria-expanded',String(open));}
+document.addEventListener('click',function(e){if(!e.target.closest('.viz-menu')){document.getElementById('vizMenuDropdown').classList.remove('open');document.querySelector('.viz-menu-toggle').setAttribute('aria-expanded','false');}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.getElementById('vizMenuDropdown').classList.remove('open');document.querySelector('.viz-menu-toggle').setAttribute('aria-expanded','false');}});
+var currentTheme='light';function cycleTheme(){currentTheme=currentTheme==='light'?'dark':'light';document.documentElement.className='theme-'+currentTheme;document.getElementById('themeLabel').textContent=currentTheme==='light'?'밝은 테마':'어두운 테마';document.getElementById('themeIcon').textContent=currentTheme==='light'?'☀':'☾';}
+var states={ready:['적용 v1','현재 설정의 성공 결과','고정한 두 자산의 버전으로 처리한 결과를 다운로드할 수 있습니다.','가능','새 버전이 있을 때 표시','가능'],newer:['적용 v1 · 원본 v2','원본이 바뀌어도 기존 결과 유지','새 버전 알림만 표시합니다. 최신 재적용을 확인하고 성공해야 적용 버전과 결과가 함께 바뀝니다.','가능','현재 두 원본이 활성·접근 가능하면 가능','기존 성공 결과 가능'],stale:['입력 설정 변경','현재 옵션은 아직 적용하지 않음','이전 성공 결과를 비교용으로 보여주되 현재 설정의 결과로 다운로드하지 않습니다. 현재 버전으로 다시 적용하세요.','가능','원본 상태에 따라 가능','재적용 성공 전 차단'],inactive:['원본 비활성 / 삭제','기존 적용 작업 유지','새 선택과 최신 재적용은 막습니다. 당시 버전과 파일을 보관한 기존 작업은 현재 읽기 권한이 있는 동안 계속 사용할 수 있습니다.','가능','불가','기존 성공 결과 가능'],revoked:['현재 접근 불가','권한 회수는 기존 작업에도 반영','현재 양쪽 자산 read 권한과 공개 대상을 다시 검사합니다. 이전 캐시에 남은 미리보기와 결과도 표시하지 않습니다.','불가','불가','불가'],failed:['최신 재적용 실패','마지막 성공 버전과 결과 보존','최신 후보로 처리하다 실패·취소한 경우 기존 refs와 성공 결과를 유지합니다. 직접 옵션을 바꿨다면 별도의 미적용 상태를 따릅니다.','기존 버전 가능','조건 충족 시 다시 시도','이전 성공 결과 가능']};
+document.querySelectorAll('[data-state]').forEach(function(button){button.addEventListener('click',function(){var value=states[button.dataset.state];document.querySelectorAll('[data-state]').forEach(function(b){b.setAttribute('aria-pressed',String(b===button));});document.getElementById('stateBadge').textContent=value[0];document.getElementById('stateTitle').textContent=value[1];document.getElementById('stateText').textContent=value[2];document.querySelectorAll('#stateActions dd').forEach(function(dd,i){dd.textContent=value[i+3];});});});
+document.getElementById('componentSearch').addEventListener('input',function(e){var query=e.target.value.trim().toLowerCase();var count=0;document.querySelectorAll('.component').forEach(function(card){card.hidden=!card.dataset.search.includes(query);if(!card.hidden)count++;});document.getElementById('componentCount').textContent=count+'개 컴포넌트 / 연결 단위';document.getElementById('noMatches').hidden=count!==0;});
+</script></body></html>
