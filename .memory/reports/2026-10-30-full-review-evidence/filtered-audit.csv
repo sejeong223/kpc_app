@@ -1,0 +1,3 @@
+﻿"시간","사용자","이메일","액션","세부 작업","리소스","대상","대상 ID","결과","실패 사유","Token","IP","브라우저","요청 ID"
+"2026-10-20T00:00:00.009Z","정소담","sodam.jeong@example.invalid","update","update-group","groups","전체 검증 그룹","c66cc789-cb5a-4f91-b684-c40e17bfc565","success","","0","192.0.2.1","예시 브라우저","6a943f7c-70a0-4ff3-8b55-3a13986f2e96"
+"2026-10-20T00:00:00.008Z","정소담","sodam.jeong@example.invalid","create","create-group","groups","전체 검증 그룹","c66cc789-cb5a-4f91-b684-c40e17bfc565","success","","0","192.0.2.1","예시 브라우저","6a0f64bc-c912-4275-a7bd-61aa67c01bc6"

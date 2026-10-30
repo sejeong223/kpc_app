@@ -11,7 +11,8 @@
 
 ## Status
 - done: 7/7. 단위·통합 444개 / 브라우저 47개 / typecheck·lint·build 통과.
-- T01~T07 단일 통합 커밋. 실제 SHA는 커밋 후 이 문서에 사후 기록한다.
+- T01~T07 단일 통합 커밋: `afbab489439f86ec4675e70727b8d6b954aec423`. push 없음.
+- 이 SHA 행은 커밋 후 사후 기록이며 추가 커밋은 만들지 않았다.
 - [최종 검증 보고서](./reports/2026-10-30-admin-review-fixes-validation.md)
 
 ## Next Step (IMPORTANT)

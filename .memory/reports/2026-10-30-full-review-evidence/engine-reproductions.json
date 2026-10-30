@@ -1,0 +1,78 @@
+{
+  "sameFileLatest": {
+    "beforeSelection": [
+      1
+    ],
+    "afterSelection": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "status": "succeeded",
+    "scope": [
+      {
+        "part": "ppt/slides/slide1.xml",
+        "changedFirst": false,
+        "changedLatest": true
+      },
+      {
+        "part": "ppt/slides/slide2.xml",
+        "changedFirst": true,
+        "changedLatest": true
+      },
+      {
+        "part": "ppt/slides/slide3.xml",
+        "changedFirst": false,
+        "changedLatest": false
+      },
+      {
+        "part": "ppt/slides/slide4.xml",
+        "changedFirst": false,
+        "changedLatest": true
+      }
+    ]
+  },
+  "hiddenBoolean": [
+    {
+      "literal": "1",
+      "name": "제목 1",
+      "reasons": [
+        "숨김 요소의 의도를 보존하기 위해 수정하지 않습니다."
+      ],
+      "shapeChanged": false,
+      "changes": [
+        {
+          "slide": 1,
+          "id": "ppt/slides/slide1.xml#0",
+          "name": "제목 1",
+          "status": "skipped",
+          "details": [
+            "숨김 요소의 의도를 보존하기 위해 수정하지 않습니다."
+          ],
+          "before": "맑은 고딕 32pt · 21.91×3.68cm · (1.75, 1.01)",
+          "after": "맑은 고딕 32pt · 21.91×3.68cm · (1.75, 1.01)"
+        }
+      ]
+    },
+    {
+      "literal": "true",
+      "name": "제목 1",
+      "reasons": [],
+      "shapeChanged": true,
+      "changes": [
+        {
+          "slide": 1,
+          "id": "ppt/slides/slide1.xml#0",
+          "name": "제목 1",
+          "status": "changed",
+          "details": [
+            "Pretendard 40pt · 1.4배 · 문단 6pt · 가운데"
+          ],
+          "before": "맑은 고딕 32pt · 21.91×3.68cm · (1.75, 1.01)",
+          "after": "Pretendard 40pt Bold · 21.91×3.68cm · (1.75, 1.01)"
+        }
+      ]
+    }
+  ]
+}

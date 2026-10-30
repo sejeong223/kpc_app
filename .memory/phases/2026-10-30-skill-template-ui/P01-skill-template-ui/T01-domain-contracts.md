@@ -220,7 +220,7 @@ Task: T01-domain-contracts
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: deferred (전체 검증 후 통합 커밋)
+- commit: 790835657f82a27871ff5e1ec80632ca115c69c7 (T01~T10 단일 통합 커밋)
 
 
 ## 실행 검증 기록

@@ -1,0 +1,54 @@
+import { readFile,writeFile } from 'node:fs/promises';
+import { DOMParser,XMLSerializer } from '@xmldom/xmldom';
+import JSZip from 'jszip';
+import { assetHarness,createSkill,templateDraft } from '../tests/services/admin/asset-fixture';
+import { TemplateWorkService } from '../services/admin/TemplateWorkService';
+import { readTemplate } from '../lib/pptx/template-read';
+import { applyTemplate } from '../lib/pptx/template-apply';
+import { loadZipLibrary } from '../lib/pptx/zip';
+import { toEngineSkill } from '../lib/pptx/skill-adapter';
+import { NS } from '../lib/pptx/pptx-xml';
+import type { WorkView } from '../types/template-work';
+Object.assign(globalThis,{DOMParser,XMLSerializer});
+async function main(){
+ const evidence='.memory/reports/2026-10-30-full-review-evidence/';
+ const bytes=new Uint8Array(await readFile('tests/fixtures/pptx/native-template.pptx'));
+ const h=assetHarness();const skill=await createSkill(h.service,h.departmentActor);
+ const source=await h.service.importTemplate(h.departmentActor,new File([bytes.buffer],'review.pptx'));
+ const template=await h.service.executeAsset(h.departmentActor,{type:'create-template',ownerDepartmentId:h.departmentActor.departmentId,status:'active',visibility:{all:true,targets:[]},value:templateDraft(source)});
+ const works=new TemplateWorkService({host:h.service,files:h.files,actor:h.otherActor});
+ const target=(v:WorkView)=>({id:v.work.id,version:v.work.version});
+ let view=(await works.execute(h.otherActor,{type:'create-work',templateId:template.assetId,skillId:skill.assetId}))!;
+ view=(await works.execute(h.otherActor,{type:'update-work-options',target:target(view),options:{...view.work.options,selectedSlides:[1]}}))!;
+ const beforeSelection=view.work.options.selectedSlides;
+ view=(await works.execute(h.otherActor,{type:'apply-work',target:target(view),mode:'pinned'}))!;
+ const first=await works.download(h.otherActor,view.work.id,view.work.result!.id);
+ await h.service.executeAsset(h.departmentActor,{type:'update-template',target:{id:template.assetId,version:1},status:'active',visibility:{all:true,targets:[]},value:{...templateDraft(source),description:'설명만 변경'}});
+ view=(await works.execute(h.otherActor,{type:'apply-work',target:target(view),mode:'latest'}))!;
+ const latest=await works.download(h.otherActor,view.work.id,view.work.result!.id);
+ const originalZip=await JSZip.loadAsync(bytes),firstZip=await JSZip.loadAsync(first.bytes),latestZip=await JSZip.loadAsync(latest.bytes);
+ const slideParts=Object.keys(originalZip.files).filter(p=>/^ppt\/slides\/slide\d+\.xml$/.test(p));
+ const scope=[];
+ for(const p of slideParts){const original=await originalZip.file(p)!.async('string');scope.push({part:p,changedFirst:original!==await firstZip.file(p)!.async('string'),changedLatest:original!==await latestZip.file(p)!.async('string')});}
+ await writeFile(evidence+'selected-before.pptx',first.bytes);await writeFile(evidence+'selected-latest.pptx',latest.bytes);
+ const resolved=h.service.resolveAsset(h.otherActor,{assetId:skill.assetId},'new');if(resolved.revision.kind!=='skill')throw new Error('종류 오류');
+ const engineSkill=toEngineSkill(resolved.revision),library=await loadZipLibrary();
+ const booleans=[];
+ for(const literal of ['1','true']){
+  const zip=await JSZip.loadAsync(bytes),path='ppt/slides/slide1.xml';
+  const doc=new DOMParser().parseFromString(await zip.file(path)!.async('string'),'application/xml');
+  const shape=Array.from(doc.getElementsByTagNameNS(NS.p,'sp')).find(s=>s.getElementsByTagNameNS(NS.a,'t').length)!;
+  const props=shape.getElementsByTagNameNS(NS.p,'cNvPr')[0],name=props.getAttribute('name');props.setAttribute('hidden',literal);
+  zip.file(path,new XMLSerializer().serializeToString(doc));const modified=await zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
+  const input=await readTemplate(modified,'hidden-'+literal+'.pptx',library),object=input.slides[0].objects.find(o=>o.name===name)!;
+  const result=await applyTemplate(input,engineSkill,{layout:false,images:false,selectedSlides:[0],pageTypes:{},roles:{},excluded:[],sharedEdits:[]},library);
+  const output=await JSZip.loadAsync(result.bytes),afterDoc=new DOMParser().parseFromString(await output.file(path)!.async('string'),'application/xml');
+  const afterShape=Array.from(afterDoc.getElementsByTagNameNS(NS.p,'sp')).find(s=>s.getElementsByTagNameNS(NS.p,'cNvPr')[0]?.getAttribute('name')===name)!;
+  const originalShape=new XMLSerializer().serializeToString(shape),finalShape=new XMLSerializer().serializeToString(afterShape);
+  booleans.push({literal,name,reasons:object.reasons,shapeChanged:originalShape!==finalShape,changes:result.changes.filter(c=>c.id===object.id)});
+  await writeFile(evidence+'hidden-'+literal+'-input.pptx',modified);await writeFile(evidence+'hidden-'+literal+'-output.pptx',result.bytes);
+ }
+ const report={sameFileLatest:{beforeSelection,afterSelection:view.work.options.selectedSlides,status:view.work.status,scope},hiddenBoolean:booleans};
+ console.log(JSON.stringify(report,null,2));await writeFile(evidence+'engine-reproductions.json',JSON.stringify(report,null,2));works.dispose();h.files.dispose();
+}
+main().catch(error=>{console.error(error);process.exitCode=1;});
