@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses, ProgressBar, shorthands } from "@fluentui/react-components";
+import { Button, makeStyles, tokens, mergeClasses, ProgressBar, shorthands } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { AddRegular, ChevronRightRegular, ClockRegular, DataBarVerticalRegular, MoneyRegular, PeopleRegular, ShieldRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
 import Link from "next/link";
 
@@ -15,34 +16,34 @@ import { useProfilePreview } from "./ProfilePreviewProvider";
 
 const useStyles = makeStyles({
   root: { display: "flex", flexDirection: "column", gap: "12px" },
-  card: { backgroundColor: "#fff", border: "1px solid #e6e7eb", borderRadius: "12px", padding: "12px" },
-  heading: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", margin: "0 0 8px", fontSize: "12px", lineHeight: "18px", fontWeight: 800 },
+  card: { backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, padding: dadamUi.cardPadding },
+  heading: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px", margin: "0 0 8px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700, color: tokens.colorNeutralForeground1 },
   title: { display: "inline-flex", alignItems: "center", gap: "5px" },
   icon: { width: "14px", height: "14px", flexShrink: 0 },
-  percent: { color: "#15985a", fontSize: "15px", fontWeight: 900 },
-  warning: { color: "#c26a12" },
-  over: { color: "#d7192f" },
-  progress: { height: "7px", backgroundColor: "#eff0f3" },
-  progressBar: { height: "7px", backgroundColor: "#15985a" },
-  warningBar: { backgroundColor: "#c26a12" },
-  overBar: { backgroundColor: "#d7192f" },
+  percent: { color: tokens.colorStatusSuccessForeground1, fontSize: dadamUi.titleSize, lineHeight: dadamUi.titleLineHeight, fontWeight: 700 },
+  warning: { color: tokens.colorStatusWarningForeground1 },
+  over: { color: tokens.colorStatusDangerForeground1 },
+  progress: { height: "7px", backgroundColor: tokens.colorNeutralBackground5 },
+  progressBar: { height: "7px", backgroundColor: tokens.colorStatusSuccessBackground3 },
+  warningBar: { backgroundColor: tokens.colorStatusWarningBackground3 },
+  overBar: { backgroundColor: tokens.colorStatusDangerBackground3 },
   stats: { display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "6px", margin: "8px 0 10px" },
-  stat: { backgroundColor: "#f7f8fa", borderRadius: "8px", padding: "6px 8px" },
-  statLabel: { display: "block", fontSize: "10px", lineHeight: "15px", color: "#74747d", fontWeight: 700 },
-  statValue: { fontSize: "13px", lineHeight: "20px", fontWeight: 850, fontVariantNumeric: "tabular-nums" },
-  actions: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" },
-  pending: { display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", padding: "6px 9px", borderRadius: "8px", backgroundColor: "#fff7e8", color: "#9a5b00", fontSize: "11px", fontWeight: 700, overflowWrap: "anywhere" },
-  action: { minWidth: 0, height: "26px", padding: "0 9px", gap: "5px", borderRadius: "7px", fontFamily: "inherit", fontSize: "11px", fontWeight: 700, whiteSpace: "nowrap" },
-  primary: { backgroundColor: "#d7192f", color: "#fff", ...shorthands.borderColor("#d7192f"), ":hover": { backgroundColor: "#c31429", color: "#fff" }, ":hover:active": { backgroundColor: "#b01225", color: "#fff" } },
-  adminLink: { display: "flex", alignItems: "center", gap: "6px", marginTop: "8px", padding: "8px 2px 0", borderTop: "1px dashed #e6e7eb", color: "#34363c", fontSize: "11.5px", fontWeight: 750, textDecorationLine: "none", ":hover": { color: "#c91c2b" } },
+  stat: { backgroundColor: tokens.colorNeutralBackground3, borderRadius: dadamUi.controlRadius, padding: "6px 8px" },
+  statLabel: { display: "block", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, fontWeight: 500 },
+  statValue: { fontSize: dadamUi.bodySize, lineHeight: "20px", fontWeight: 700, fontVariantNumeric: "tabular-nums" },
+  actions: { display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: "6px" },
+  pending: { display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", padding: "6px 9px", borderRadius: dadamUi.cardRadius, lineHeight: dadamUi.metaLineHeight, backgroundColor: tokens.colorStatusWarningBackground1, color: tokens.colorStatusWarningForeground1, fontSize: dadamUi.metaSize, fontWeight: 700, overflowWrap: "anywhere" },
+  action: { minWidth: 0, minHeight: dadamUi.controlHeight, height: "auto", padding: "6px 10px", gap: "5px", borderRadius: dadamUi.controlRadius, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 500, whiteSpace: "normal" },
+  primary: { backgroundColor: tokens.colorBrandBackground, color: tokens.colorNeutralForegroundOnBrand, ...shorthands.borderColor(tokens.colorBrandStroke1), ":enabled:hover": { backgroundColor: tokens.colorBrandBackgroundHover, color: tokens.colorNeutralForegroundOnBrand }, ":enabled:active": { backgroundColor: tokens.colorBrandBackgroundPressed, color: tokens.colorNeutralForegroundOnBrand }, ":disabled": { backgroundColor: tokens.colorNeutralBackgroundDisabled, color: tokens.colorNeutralForegroundDisabled, ...shorthands.borderColor(tokens.colorNeutralStrokeDisabled) } },
+  adminLink: { display: "flex", alignItems: "center", gap: "6px", marginTop: "8px", padding: "8px 2px 0", borderTop: `1px dashed ${tokens.colorNeutralStroke2}`, color: tokens.colorNeutralForeground2, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 500, textDecorationLine: "none", ":hover": { color: tokens.colorBrandForeground1 } },
   arrow: { marginLeft: "auto", width: "14px", height: "14px" },
   quick: { display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "6px" },
-  quickButton: { display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "1px", minWidth: 0, padding: "8px 10px", border: "1px solid #e6e7eb", borderRadius: "9px", backgroundColor: "#fff", color: "#161616", textAlign: "left", textDecorationLine: "none", ":hover": { ...shorthands.borderColor("#d7192f"), backgroundColor: "#fff8f9" } },
-  quickValue: { fontSize: "16px", lineHeight: "24px", fontWeight: 900, fontVariantNumeric: "tabular-nums" },
-  red: { color: "#d7192f" },
-  quickLabel: { fontSize: "10.5px", lineHeight: "16px", color: "#74747d", fontWeight: 700, whiteSpace: "nowrap" },
-  meta: { color: "#74747d", fontSize: "10.5px", fontWeight: 400, lineHeight: "16px" },
-  help: { margin: "6px 0 0", fontSize: "11px", lineHeight: "17px", color: "#74747d" },
+  quickButton: { display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "1px", minWidth: 0, padding: "8px 8px", fontFamily: tokens.fontFamilyBase, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, textAlign: "left", textDecorationLine: "none", ":hover": { ...shorthands.borderColor(tokens.colorBrandStroke1), backgroundColor: tokens.colorBrandBackground2 } },
+  quickValue: { fontSize: "16px", lineHeight: "24px", fontWeight: 700, fontVariantNumeric: "tabular-nums" },
+  accent: { color: tokens.colorBrandForeground1 },
+  quickLabel: { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, fontWeight: 500, whiteSpace: "normal", minHeight: "32px" },
+  meta: { color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, fontWeight: 400, lineHeight: "16px" },
+  help: { margin: "6px 0 0", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3 },
 });
 
 export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDialog }: ProfileActionPanelProps): React.ReactElement {
@@ -84,8 +85,8 @@ export default function ProfileGeneralTab({ onNavigate, onNotice, onOpenTokenDia
         <h3 className={styles.heading}><span className={styles.title}><TextBulletListLtrRegular className={styles.icon} aria-hidden="true" />내 작업</span></h3>
         <div className={styles.quick}>
           <Link href="/workspace/pipeline" className={styles.quickButton} onClick={onNavigate}><b className={styles.quickValue}>{PROFILE_WORK_COUNTS.assignedProjects}</b><span className={styles.quickLabel}>담당 프로젝트</span></Link>
-          <Link href="/workspace/pipeline" className={styles.quickButton} onClick={onNavigate}><b className={mergeClasses(styles.quickValue, styles.red)}>{PROFILE_WORK_COUNTS.openComments}</b><span className={styles.quickLabel}>반영할 의견</span></Link>
-          <button type="button" className={styles.quickButton} onClick={() => { onNotice(""); dispatch({ type: "set-tab", tab: "notifications" }); }}><b className={mergeClasses(styles.quickValue, unread > 0 && styles.red)}>{unread}</b><span className={styles.quickLabel}>안 읽은 알림</span></button>
+          <Link href="/workspace/pipeline" className={styles.quickButton} onClick={onNavigate}><b className={mergeClasses(styles.quickValue, styles.accent)}>{PROFILE_WORK_COUNTS.openComments}</b><span className={styles.quickLabel}>반영할 의견</span></Link>
+          <button type="button" className={styles.quickButton} onClick={() => { onNotice(""); dispatch({ type: "set-tab", tab: "notifications" }); }}><b className={mergeClasses(styles.quickValue, unread > 0 && styles.accent)}>{unread}</b><span className={styles.quickLabel}>안 읽은 알림</span></button>
         </div>
       </section>
       <section className={styles.card} aria-label="권한 테스트 모드">

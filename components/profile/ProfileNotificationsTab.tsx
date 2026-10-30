@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses, shorthands } from "@fluentui/react-components";
+import { Button, makeStyles, tokens, mergeClasses, shorthands } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { HistoryRegular, MoneyRegular, SparkleRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
 import Link from "next/link";
 import { useId } from "react";
@@ -17,29 +18,29 @@ const icons = { ai: SparkleRegular, comment: TextBulletListLtrRegular, deadline:
 
 const useStyles = makeStyles({
   root: { display: "flex", flexDirection: "column", gap: "12px" },
-  toolbar: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "6px" },
-  readAll: { height: "22px", minWidth: 0, padding: "0 7px", borderRadius: "6px", color: "#55585f", fontFamily: "inherit", fontSize: "10.5px", fontWeight: 700 },
+  toolbar: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "6px" },
+  readAll: { minHeight: dadamUi.smallControlHeight, height: "auto", minWidth: 0, padding: "0 7px", borderRadius: dadamUi.controlRadius, color: tokens.colorNeutralForeground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500 },
   card: {
     position: "relative", display: "flex", alignItems: "flex-start", justifyContent: "flex-start", gap: "10px", width: "100%", minWidth: 0,
-    padding: "10px", textAlign: "left", whiteSpace: "normal", border: "1px solid #e6e7eb", borderRadius: "11px", backgroundColor: "#fff", color: "#161616", textDecorationLine: "none", fontFamily: "inherit",
-    ":hover": { ...shorthands.borderColor("#c9cbd1"), backgroundColor: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,.04)" },
+    padding: dadamUi.cardPadding, textAlign: "left", whiteSpace: "normal", border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, textDecorationLine: "none", fontFamily: tokens.fontFamilyBase,
+    ":hover": { ...shorthands.borderColor(tokens.colorNeutralStroke1), backgroundColor: tokens.colorNeutralBackground2Hover },
   },
   unread: {
-    ...shorthands.borderColor("#f3c7cd"), backgroundColor: "#fffafa",
-    "::after": { content: '""', position: "absolute", top: "10px", right: "10px", width: "7px", height: "7px", borderRadius: "50%", backgroundColor: "#d7192f" },
+    ...shorthands.borderColor(tokens.colorBrandStroke1), backgroundColor: tokens.colorBrandBackground2,
+    "::after": { content: '""', position: "absolute", top: "10px", right: "10px", width: "7px", height: "7px", borderRadius: "50%", backgroundColor: tokens.colorBrandBackground },
   },
-  icon: { display: "flex", alignItems: "center", justifyContent: "center", width: "28px", height: "28px", borderRadius: "8px", flexShrink: 0 },
-  ai: { backgroundColor: "#f4effe", color: "#6b3fc4" },
-  comment: { backgroundColor: "#eef3fe", color: "#2457b8" },
-  deadline: { backgroundColor: "#fff0f2", color: "#c91c2b" },
-  token: { backgroundColor: "#fff4e5", color: "#b0620a" },
+  icon: { display: "flex", alignItems: "center", justifyContent: "center", width: "28px", height: "28px", borderRadius: dadamUi.cardRadius, flexShrink: 0 },
+  ai: { backgroundColor: tokens.colorPalettePurpleBackground2, color: tokens.colorPalettePurpleForeground2 },
+  comment: { backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2 },
+  deadline: { backgroundColor: tokens.colorStatusDangerBackground1, color: tokens.colorStatusDangerForeground1 },
+  token: { backgroundColor: tokens.colorStatusWarningBackground1, color: tokens.colorStatusWarningForeground1 },
   glyph: { width: "14px", height: "14px" },
   body: { display: "flex", flex: 1, minWidth: 0, flexDirection: "column", gap: "3px" },
-  titleRow: { display: "flex", alignItems: "center", gap: "6px", paddingRight: "12px" },
-  title: { flex: 1, minWidth: 0, fontSize: "12px", lineHeight: "18px", fontWeight: 700 },
-  time: { flexShrink: 0, color: "#74747d", fontSize: "10px", lineHeight: "15px", fontWeight: 400 },
-  description: { color: "#55585f", fontSize: "11px", lineHeight: "1.45", fontWeight: 400 },
-  empty: { padding: "28px 12px", color: "#74747d", fontSize: "12px", textAlign: "center" },
+  titleRow: { display: "flex", alignItems: "flex-start", flexWrap: "wrap", gap: "6px", paddingRight: "12px" },
+  title: { flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
+  time: { flexShrink: 0, color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 400 },
+  description: { color: tokens.colorNeutralForeground2, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400 },
+  empty: { padding: "28px 12px", color: tokens.colorNeutralForeground3, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, textAlign: "center" },
 });
 
 export default function ProfileNotificationsTab({ onNavigate, onNotice, onOpenTokenDialog }: ProfileActionPanelProps): React.ReactElement {

@@ -1,6 +1,6 @@
 # Task: T02 프로필 전체 탭과 공통 컨트롤 정비
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -166,11 +166,11 @@ export default function ToggleSwitch(props: ToggleSwitchProps): React.ReactEleme
 
 ## Acceptance Criteria
 
-- [ ] 진입 버튼부터 세 탭까지 같은 서체·neutral/brand 스타일이며 의미색은 경고/위험/성공으로 구분된다.
-- [ ] 긴 버튼 문구는 1열·wrap 규칙을 사용하며 348px 팝오버와 모바일 최대 크기/스크롤을 유지한다.
-- [ ] 탭·역할·알림·환경설정·기존 token 진입 및 포커스 계약이 보존된다.
-- [ ] 공통 Radio/Switch의 disabled·keyboard·forced-colors 동작을 보존하고 CSS 슬롯까지 토큰을 적용한다.
-- [ ] 아래 검증 통과. 다음은 T03이며 코멘트는 아직 수정하지 않는다.
+- [x] 진입 버튼부터 세 탭까지 같은 서체·neutral/brand 스타일이며 의미색은 경고/위험/성공으로 구분된다.
+- [x] 긴 버튼 문구는 1열·wrap 규칙을 사용하며 348px 팝오버와 모바일 최대 크기/스크롤을 유지한다.
+- [x] 탭·역할·알림·환경설정·기존 token 진입 및 포커스 계약이 보존된다.
+- [x] 공통 Radio/Switch의 disabled·keyboard·forced-colors 동작을 보존하고 CSS 슬롯까지 토큰을 적용한다.
+- [x] 아래 검증 통과. 다음은 T03이며 코멘트는 아직 수정하지 않는다.
 
 ## Validation
 
@@ -198,6 +198,13 @@ Task: T02-profile-controls
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: `git log -1 --format=%h --grep='Task: T02-profile-controls'`
+
+## Execution Result
+
+- 프로필 전체 탭과 Radio/Switch의 neutral·brand·상태색, 서체, 줄바꿈과 최소 높이를 적용했다. 상태/권한/콜백은 보존했다.
+- 기존 회귀 5개 파일 100개 테스트, typecheck, 대상 6개 파일 ESLint, git diff --check 통과. 브라우저 검증 제외.
+- 학습: Fluent Tab의 content 슬롯은 겹치는 grid 구조와 함께 색/굵기를 지정해야 한다. Switch의 enabled 선택자와 forced-colors 규칙을 유지하여 비활성 상태에 활성 hover가 적용되지 않게 했다.
+- 범위 밖 인접 문제: 특이사항 없음. 다음 T03에서 포털 모달과 Toast를 같은 테마 범위에 연결한다.

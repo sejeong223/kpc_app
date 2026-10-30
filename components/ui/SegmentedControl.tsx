@@ -1,6 +1,7 @@
 "use client";
 
-import { makeStyles, mergeClasses, Radio, RadioGroup, radioClassNames, shorthands } from "@fluentui/react-components";
+import { makeStyles, tokens, mergeClasses, Radio, RadioGroup, radioClassNames, shorthands } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -25,15 +26,15 @@ const useStyles = makeStyles({
     minWidth: 0,
     padding: "3px",
     gap: "2px",
-    borderRadius: "9px",
-    backgroundColor: "#f0f1f3",
+    borderRadius: dadamUi.cardRadius,
+    backgroundColor: tokens.colorNeutralBackground3,
   },
   fullWidth: { display: "flex", width: "100%" },
   option: {
     display: "flex",
     minWidth: 0,
-    borderRadius: "7px",
-    ":focus-within": { outline: "2px solid #d7192f", outlineOffset: "1px" },
+    borderRadius: dadamUi.controlRadius,
+    ":focus-within": { outline: dadamUi.focusRing, outlineOffset: "1px" },
     "@media (forced-colors: active)": {
       ":focus-within": { outlineColor: "Highlight" },
     },
@@ -43,10 +44,10 @@ const useStyles = makeStyles({
     width: "100%",
     height: "100%",
     ":enabled:checked": {
-      [`& ~ .${radioClassNames.label}`]: { color: "#161616" },
+      [`& ~ .${radioClassNames.label}`]: { color: tokens.colorNeutralForeground1 },
     },
     ":enabled:not(:checked)": {
-      [`& ~ .${radioClassNames.label}`]: { color: "#74747d" },
+      [`& ~ .${radioClassNames.label}`]: { color: tokens.colorNeutralForeground3 },
     },
   },
   indicator: { display: "none" },
@@ -55,39 +56,42 @@ const useStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    height: "26px",
+    minHeight: dadamUi.smallControlHeight,
+    height: "auto",
     minWidth: 0,
     margin: 0,
-    padding: "0 10px",
-    borderRadius: "7px",
+    padding: "4px 8px",
+    borderRadius: dadamUi.controlRadius,
     backgroundColor: "transparent",
-    fontFamily: "inherit",
-    fontSize: "11.5px",
-    fontWeight: 700,
+    fontFamily: tokens.fontFamilyBase,
+    fontSize: dadamUi.metaSize,
+    fontWeight: 500,
     lineHeight: "16px",
-    whiteSpace: "nowrap",
+    whiteSpace: "normal",
+    textAlign: "center",
   },
   selected: {
-    backgroundColor: "#fff",
-    boxShadow: "0 1px 2px rgba(0,0,0,.08)",
+    backgroundColor: tokens.colorNeutralBackground1,
+    fontWeight: 700,
+    boxShadow: tokens.shadow2,
     "@media (forced-colors: active)": { outline: "1px solid Highlight" },
   },
   chips: { padding: 0, gap: "6px", flexWrap: "wrap", backgroundColor: "transparent", borderRadius: 0 },
-  chipOption: { borderRadius: "14px", height: "28px" },
+  chipOption: { borderRadius: "14px", minHeight: dadamUi.smallControlHeight, height: "auto" },
   chipInput: {
     ":enabled:checked": {
-      ["& ~ ." + radioClassNames.label]: { color: "#c91c2b" },
+      ["& ~ ." + radioClassNames.label]: { color: tokens.colorBrandForeground2 },
     },
     ":enabled:not(:checked)": {
-      ["& ~ ." + radioClassNames.label]: { color: "#55585f" },
+      ["& ~ ." + radioClassNames.label]: { color: tokens.colorNeutralForeground2 },
     },
   },
   chipLabel: {
-    height: "28px", padding: "0 10px", border: "1px solid #dddde2",
-    borderRadius: "14px", backgroundColor: "#fff", color: "#55585f", fontWeight: 650,
+    minHeight: dadamUi.smallControlHeight, height: "auto", padding: "0 10px", border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground2, fontWeight: 500,
     boxSizing: "border-box",
   },
-  chipSelected: { ...shorthands.borderColor("#d7192f"), backgroundColor: "#fff8f9", color: "#c91c2b", fontWeight: 800, boxShadow: "none" },
+  chipSelected: { ...shorthands.borderColor(tokens.colorBrandStroke1), backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontWeight: 700, boxShadow: "none" },
 });
 
 export default function SegmentedControl<T extends string>({

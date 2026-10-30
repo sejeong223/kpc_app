@@ -11,8 +11,8 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | 공통 테마 범위와 사이드바 상태 디자인 | [T01](./T01-theme-sidebar.md) |
-| T02 | `in_progress` | 프로필 전체 탭과 공통 컨트롤 | [T02](./T02-profile-controls.md) |
-| T03 | `pending` | 토큰 모달·폼·알림 및 사이드바 계열 완료 | [T03](./T03-token-dialogs.md) |
+| T02 | `done` | 프로필 전체 탭과 공통 컨트롤 | [T02](./T02-profile-controls.md) |
+| T03 | `in_progress` | 토큰 모달·폼·알림 및 사이드바 계열 완료 | [T03](./T03-token-dialogs.md) |
 | T04 | `pending` | 코멘트 디자인과 화면 폭별 좌표 회귀 | [T04](./T04-comment-design.md) |
 
 ## Execution Rules
@@ -24,6 +24,6 @@
 
 ## Progress
 
-- done: 1/4 (active: T02)
+- done: 2/4 (active: T03)
 - sidebar/profile/token milestone: pending — T03 검증·커밋 후 완료
 - comment milestone: pending — T04 검증·커밋 후 완료

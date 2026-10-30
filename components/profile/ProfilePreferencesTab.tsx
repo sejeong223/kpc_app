@@ -1,6 +1,7 @@
 "use client";
 
-import { Field, makeStyles, Select } from "@fluentui/react-components";
+import { Field, makeStyles, tokens, Select } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import ToggleSwitch from "@/components/ui/ToggleSwitch";
@@ -22,17 +23,17 @@ const notificationSettings = [
 
 const useStyles = makeStyles({
   root: { display: "flex", flexDirection: "column", gap: "12px" },
-  card: { padding: "12px", border: "1px solid #e6e7eb", borderRadius: "12px", backgroundColor: "#fff" },
-  heading: { display: "flex", alignItems: "center", margin: "0 0 8px", color: "#34363c", fontSize: "11.5px", lineHeight: "18px", fontWeight: 850 },
-  switchRow: { padding: "7px 0", borderTop: "1px solid #eff0f3", ":first-child": { paddingTop: 0, borderTopWidth: 0 } },
-  digest: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", padding: "7px 0", borderTop: "1px solid #eff0f3" },
-  label: { margin: 0, padding: 0, fontFamily: "inherit", fontSize: "12px", lineHeight: "18px", fontWeight: 700 },
-  select: { height: "28px", minWidth: 0, maxWidth: "150px" },
-  selectInput: { height: "26px", minWidth: 0, fontFamily: "inherit", fontSize: "11.5px" },
-  row: { display: "flex", alignItems: "center", gap: "10px", padding: "5px 0" },
-  rowLabel: { width: "62px", flexShrink: 0, fontSize: "12px", fontWeight: 700 },
+  card: { padding: "12px", border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1 },
+  heading: { display: "flex", alignItems: "center", margin: "0 0 8px", color: tokens.colorNeutralForeground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
+  switchRow: { padding: "7px 0", borderTop: `1px solid ${tokens.colorNeutralStroke2}`, ":first-child": { paddingTop: 0, borderTopWidth: 0 } },
+  digest: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "10px", padding: "7px 0", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
+  label: { margin: 0, padding: 0, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 500 },
+  select: { minHeight: dadamUi.controlHeight, height: "auto", minWidth: 0, maxWidth: "150px" },
+  selectInput: { minHeight: "30px", height: "auto", minWidth: 0, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
+  row: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px", padding: "5px 0" },
+  rowLabel: { width: "62px", flexShrink: 0, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500 },
   control: { flex: 1, minWidth: 0 },
-  note: { margin: 0, color: "#74747d", fontSize: "10.5px", lineHeight: "16px" },
+  note: { margin: 0, color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: "16px" },
 });
 
 export default function ProfilePreferencesTab({ onNotice }: ProfilePreferencesTabProps): React.ReactElement {

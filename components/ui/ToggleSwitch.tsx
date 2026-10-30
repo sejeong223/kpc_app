@@ -1,6 +1,7 @@
 "use client";
 
-import { makeStyles, mergeClasses, Switch, switchClassNames } from "@fluentui/react-components";
+import { makeStyles, tokens, mergeClasses, Switch, switchClassNames } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { useId } from "react";
 
 export interface ToggleSwitchProps {
@@ -28,12 +29,12 @@ const useStyles = makeStyles({
     minWidth: 0,
     margin: 0,
     padding: 0,
-    fontFamily: "inherit",
-    fontSize: "12px",
-    lineHeight: "18px",
-    fontWeight: 700,
+    fontFamily: tokens.fontFamilyBase,
+    fontSize: dadamUi.bodySize,
+    lineHeight: dadamUi.bodyLineHeight,
+    fontWeight: 500,
   },
-  description: { color: "#74747d", fontSize: "10.5px", lineHeight: "16px", fontWeight: 400 },
+  description: { color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: "16px", fontWeight: 400 },
   indicator: {
     display: "flex",
     alignItems: "center",
@@ -43,7 +44,7 @@ const useStyles = makeStyles({
     margin: 0,
     border: 0,
     borderRadius: "10px",
-    backgroundColor: "#d4d6db",
+    backgroundColor: tokens.colorNeutralBackground5,
     flexShrink: 0,
     transitionDuration: "150ms",
     transitionProperty: "background-color",
@@ -55,8 +56,8 @@ const useStyles = makeStyles({
     height: "16px",
     flexShrink: 0,
     borderRadius: "50%",
-    backgroundColor: "#fff",
-    boxShadow: "0 1px 2px rgba(0,0,0,.2)",
+    backgroundColor: tokens.colorNeutralForegroundOnBrand,
+    boxShadow: tokens.shadow2,
     transform: "translateX(0)",
     transitionDuration: "150ms",
     transitionProperty: "transform",
@@ -70,19 +71,23 @@ const useStyles = makeStyles({
     width: "34px",
     height: "20px",
     transform: "translateY(-50%)",
+    ":focus-visible": {
+      [`& ~ .${switchClassNames.indicator}`]: { outline: dadamUi.focusRing, outlineOffset: "2px" },
+    },
     ":checked": {
       [`& ~ .${switchClassNames.indicator} > *`]: { transform: "translateX(14px)" },
     },
     ':enabled:checked:not([aria-disabled="true"])': {
-      [`& ~ .${switchClassNames.indicator}`]: { backgroundColor: "#d7192f" },
+      [`& ~ .${switchClassNames.indicator}`]: { backgroundColor: tokens.colorBrandBackground },
       ":hover": {
-        [`& ~ .${switchClassNames.indicator}`]: { backgroundColor: "#c31429" },
+        [`& ~ .${switchClassNames.indicator}`]: { backgroundColor: tokens.colorBrandBackgroundHover },
       },
       ":hover:active": {
-        [`& ~ .${switchClassNames.indicator}`]: { backgroundColor: "#b01225" },
+        [`& ~ .${switchClassNames.indicator}`]: { backgroundColor: tokens.colorBrandBackgroundPressed },
       },
     },
     "@media (forced-colors: active)": {
+      ":focus-visible": { [`& ~ .${switchClassNames.indicator}`]: { outlineColor: "Highlight" } },
       ':enabled:checked:not([aria-disabled="true"])': {
         [`& ~ .${switchClassNames.indicator}`]: { backgroundColor: "Highlight" },
         ":hover": {
