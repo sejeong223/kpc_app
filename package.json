@@ -45,8 +45,13 @@
     "@xmldom/xmldom": "0.9.12",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+<<<<<<< HEAD
     "postcss": "8.5.32",
     "tailwindcss": "4.3.3",
+=======
+    "fake-indexeddb": "6.2.6",
+    "jsdom": "27.4.0",
+>>>>>>> 8a0f76711582bc54b00d8eec073c851fe1c1f3e8
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^4.1.11"

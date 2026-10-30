@@ -1,12 +1,13 @@
 "use client";
 
-import { makeStyles, mergeClasses } from "@fluentui/react-components";
+import { Button, makeStyles, mergeClasses } from "@fluentui/react-components";
+import { NavigationRegular } from "@fluentui/react-icons";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { appConfig } from "@/config/app";
+import { useComments } from "@/components/comments/CommentsProvider";
 
-import AppHeader from "./AppHeader";
 import NavSidebar from "./NavSidebar";
 
 const SIDEBAR_ID = "workspace-sidebar";
@@ -29,7 +30,18 @@ const useStyles = makeStyles({
     margin: "0 auto",
     padding: "40px 38px",
     ":focus": { outlineStyle: "none" },
-    "@media (max-width: 760px)": { padding: "30px 20px" },
+    "@media (max-width: 760px)": { padding: "64px 20px 30px" },
+  },
+  productionContent: {
+    maxWidth: "none", margin: 0, padding: 0, width: "100%", display: "flex",
+    flexDirection: "column", minHeight: "100svh",
+    "@media (max-width: 760px)": { padding: 0 },
+  },
+  menuButton: {
+    display: "none", position: "fixed", top: "16px", left: "16px", zIndex: 15,
+    width: "40px", minWidth: "40px", height: "40px", padding: 0,
+    backgroundColor: "#fff", color: "#475569", border: "1px solid #e6e7eb", borderRadius: "8px",
+    "@media (max-width: 760px)": { display: "inline-flex" },
   },
   adminContent: { padding: "22px 28px", backgroundColor: "var(--kpc-bg)", "@media (max-width: 760px)": { padding: "20px 16px" } },
   footer: {
@@ -75,6 +87,7 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps): React.ReactElement {
   const styles = useStyles();
+  const { controller } = useComments();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
@@ -159,12 +172,17 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
         onClose={closeMenu}
       />
       <div className={styles.mainColumn} inert={menuOpen}>
-        <AppHeader
-          sidebarId={SIDEBAR_ID}
-          isMenuOpen={menuOpen}
-          onMenuToggle={() => setMenuOpen((open) => !open)}
+        <Button
+          id={`${SIDEBAR_ID}-trigger`} className={styles.menuButton}
+          icon={<NavigationRegular />} aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
+          aria-expanded={menuOpen} aria-controls={SIDEBAR_ID}
+          onClick={() => { controller?.suspendUi(); setMenuOpen((open) => !open); }}
         />
+<<<<<<< HEAD
         <main id="main-content" ref={mainRef} className={mergeClasses(styles.content, ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent)} tabIndex={-1}>{children}</main>
+=======
+        <main id="main-content" ref={mainRef} className={mergeClasses(styles.content, pathname === "/workspace/write" && styles.productionContent)} tabIndex={-1}>{children}</main>
+>>>>>>> 8a0f76711582bc54b00d8eec073c851fe1c1f3e8
         <footer className={styles.footer}>{appConfig.name}<span>나만의 업무 공간</span></footer>
       </div>
     </div>
