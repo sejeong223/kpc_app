@@ -13,8 +13,8 @@ import NavSidebar from "./NavSidebar";
 const SIDEBAR_ID = "workspace-sidebar";
 
 const useStyles = makeStyles({
-  root: { "--nav-sidebar-width": "220px", minHeight: "100svh" },
-  collapsed: { "@media (min-width: 761px)": { "--nav-sidebar-width": "54px" } },
+  root: { "--nav-sidebar-width": "200px", minHeight: "100svh" },
+  collapsed: { "@media (min-width: 761px)": { "--nav-sidebar-width": "64px" } },
   mainColumn: {
     display: "flex",
     minHeight: "100svh",

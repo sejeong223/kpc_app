@@ -88,13 +88,16 @@ const useStyles = makeStyles({
     zIndex: 30,
     display: "flex",
     flexDirection: "column",
-    width: "var(--nav-sidebar-width, 220px)",
-    height: "100svh",
+    width: "var(--nav-sidebar-width, 200px)",
+    height: "100dvh",
+    boxSizing: "border-box",
+    paddingTop: "16px",
     backgroundColor: tokens.colorNeutralBackground2,
     borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     color: "#25272d",
     "@media (max-width: 760px)": {
-      width: "220px",
+      width: "280px",
+      maxWidth: "calc(100vw - 32px)",
       transform: "translateX(-100%)",
       visibility: "hidden",
       transitionProperty: "transform, visibility",
@@ -111,43 +114,50 @@ const useStyles = makeStyles({
   collapsed: {
     "@media (min-width: 761px)": {
       "& [data-sidebar-label]": { display: "none" },
-      "& [data-sidebar-icon]": { display: "block" },
-      "& [data-sidebar-header]": { paddingLeft: "10px", paddingRight: "10px" },
-      "& nav": { padding: "8px 0" },
-      "& [data-sidebar-group]": { alignItems: "center", rowGap: "4px", paddingRight: 0 },
+      "& [data-sidebar-header]": { padding: "8px 8px 16px", justifyContent: "center", gap: 0 },
+      "& nav": { padding: "0 8px 8px" },
+      "& [data-sidebar-group]": { alignItems: "stretch", rowGap: "4px", padding: 0 },
       "& [data-sidebar-link]": {
         justifyContent: "center",
-        width: "38px",
-        height: "38px",
-        padding: 0,
+        width: "100%",
+        minHeight: "40px",
+        height: "auto",
+        padding: "10px 0",
+        columnGap: 0,
         color: "#777d89",
       },
       '& [aria-current="page"]': { color: "#c8253b" },
-      "& [data-sidebar-divider]": { margin: "6px", paddingRight: 0 },
+      "& [data-sidebar-divider]": { margin: "10px 0", paddingRight: 0 },
+      "& [data-sidebar-footer]": { padding: "12px 8px" },
     },
   },
   header: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: "4px",
     flexShrink: 0,
-    height: "58px",
-    padding: "0 10px 0 17px",
-    borderBottom: "1px solid #e9eaef",
+    height: "auto",
+    minHeight: "52px",
+    padding: "8px 12px 16px 22px",
   },
   brand: {
     minWidth: 0,
     color: "#18191e",
-    fontSize: "13px",
-    fontWeight: 850,
-    letterSpacing: "-0.26px",
+    fontFamily: "var(--sidebar-font-family)",
+    fontSize: "16px",
+    lineHeight: "24px",
+    fontWeight: 500,
+    letterSpacing: "0.04em",
     whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     textDecorationLine: "none",
   },
   toggle: {
-    width: "34px",
-    minWidth: "34px",
-    height: "36px",
+    width: "28px",
+    minWidth: "28px",
+    height: "28px",
     padding: 0,
     flexShrink: 0,
     color: "#616773",
@@ -155,8 +165,12 @@ const useStyles = makeStyles({
   },
   mobileClose: {
     display: "none",
-    minWidth: "30px",
+    width: "28px",
+    minWidth: "28px",
+    height: "28px",
     padding: 0,
+    flexShrink: 0,
+    "& svg": { width: "18px", height: "18px" },
     "@media (max-width: 760px)": { display: "inline-flex" },
   },
   navigation: {
@@ -164,22 +178,30 @@ const useStyles = makeStyles({
     minHeight: 0,
     overflowY: "auto",
     overflowX: "hidden",
-    padding: "7px 11px 8px",
+    marginTop: "12px",
+    padding: "0 12px 8px",
     scrollbarWidth: "thin",
     scrollbarColor: "#d6d9df #fafafa",
   },
-  group: { display: "flex", flexDirection: "column", rowGap: "2px", paddingRight: "12px" },
+  group: { display: "flex", flexDirection: "column", alignItems: "stretch", rowGap: "4px", padding: "0 6px" },
   link: {
     display: "flex",
     alignItems: "center",
     flexShrink: 0,
-    height: "34.5px",
-    padding: "9px",
+    width: "100%",
+    minWidth: 0,
+    minHeight: "40px",
+    height: "auto",
+    padding: "10px 12px",
+    columnGap: "10px",
     borderRadius: "9px",
     color: "#626670",
-    fontSize: "11px",
-    lineHeight: "16.5px",
-    fontWeight: 650,
+    fontFamily: "var(--sidebar-font-family)",
+    fontSize: "14px",
+    lineHeight: "20px",
+    fontWeight: 400,
+    letterSpacing: 0,
+    textAlign: "left",
     textDecorationLine: "none",
     whiteSpace: "nowrap",
     ":hover": { backgroundColor: "#eff0f3", color: "#34363c" },
@@ -195,24 +217,36 @@ const useStyles = makeStyles({
       color: tokens.colorBrandForeground1,
     },
   },
-  icon: { display: "none", width: "18px", height: "18px", flexShrink: 0 },
+  icon: { display: "block", width: "20px", height: "20px", flexShrink: 0 },
+  label: {
+    flex: 1,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    fontFamily: "inherit",
+    fontSize: "inherit",
+    lineHeight: "inherit",
+    fontWeight: "inherit",
+  },
   divider: {
     flexGrow: 0,
     width: "auto",
     minHeight: "1px",
-    margin: "8px 6px",
-    paddingRight: "12px",
+    margin: "10px 6px",
+    paddingRight: 0,
     "::before": { borderTopColor: "#e6e8ec" },
     "::after": { borderTopColor: "#e6e8ec" },
   },
   footer: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
+    alignItems: "stretch",
     flexShrink: 0,
     width: "100%",
-    rowGap: "8px",
-    padding: "12.5px 0",
+    rowGap: 0,
+    padding: "12px",
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
   },
 });
 
@@ -254,7 +288,7 @@ export default function NavSidebar({
       className={mergeClasses(styles.root, isOpen && styles.open, isCollapsed && styles.collapsed)}
     >
       <div className={styles.header} data-sidebar-header>
-        <Link href="/" className={styles.brand} data-sidebar-label onClick={onNavigate}>
+        <Link href="/" className={styles.brand} title="KPC | 제안서 AI" data-sidebar-label onClick={onNavigate}>
           KPC | 제안서 AI
         </Link>
         <Button
@@ -293,7 +327,7 @@ export default function NavSidebar({
                     data-sidebar-link
                   >
                     <Icon className={styles.icon} aria-hidden="true" data-sidebar-icon />
-                    <span data-sidebar-label>{item.label}</span>
+                    <span className={styles.label} data-sidebar-label>{item.label}</span>
                   </Link>
                 );
                 return isCollapsed ? (
@@ -306,7 +340,7 @@ export default function NavSidebar({
           </Fragment>
         ))}
       </nav>
-      <div className={styles.footer}>
+      <div className={styles.footer} data-sidebar-footer>
         <ProfileMenu key={`${pathname}:${isOpen}:${isCollapsed}`} isCollapsed={isCollapsed} onNavigate={onNavigate} />
       </div>
     </aside>

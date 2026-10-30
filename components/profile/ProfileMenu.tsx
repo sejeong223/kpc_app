@@ -39,21 +39,22 @@ const tabs: readonly { value: ProfileTab; label: string }[] = [
 const useStyles = makeStyles({
   trigger: {
     display: "flex", alignItems: "center", columnGap: "8px",
-    width: "181.141px", minWidth: "181.141px", maxWidth: "181.141px", height: "49px",
+    width: "100%", minWidth: 0, maxWidth: "100%", minHeight: "49px", height: "auto",
     boxSizing: "border-box", flexShrink: 0, padding: "7px 9px",
     border: "1px solid #e3e5e9", borderRadius: "10px", backgroundColor: "#fff",
-    color: "#22252b", textAlign: "left", fontFamily: "inherit",
+    color: "#22252b", textAlign: "left", fontFamily: "var(--sidebar-font-family)",
     ":hover": { backgroundColor: "#fff", ...shorthands.borderColor("#cfd0d6") },
     ":hover:active": { backgroundColor: "#f7f8fa" },
   },
   collapsed: {
     "@media (min-width: 761px)": {
-      width: "48px", minWidth: "48px", maxWidth: "48px", columnGap: 0,
+      width: "100%", minWidth: 0, maxWidth: "100%", columnGap: 0,
+      justifyContent: "center", padding: "7px 0",
       "& [data-profile-trigger-label]": { display: "none" },
     },
   },
   avatarWrap: { position: "relative", display: "flex", flexShrink: 0 },
-  avatar: { backgroundColor: "#414141", color: "#fff", fontSize: "12px", fontWeight: 700 },
+  avatar: { backgroundColor: "#414141", color: "#fff", fontFamily: "var(--sidebar-font-family)", fontSize: "12px", fontWeight: 700 },
   adminAvatar: { backgroundColor: "#e60012" },
   avatarFace: { backgroundColor: "inherit", color: "inherit", border: 0, fontSize: "inherit", fontWeight: "inherit" },
   dot: {
@@ -61,17 +62,21 @@ const useStyles = makeStyles({
     borderRadius: "50%", backgroundColor: "#e60012", boxShadow: "0 0 0 2px #fff",
   },
   account: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", rowGap: "3px" },
-  accountLine: { display: "flex", alignItems: "center", columnGap: "6px", minWidth: 0 },
+  accountLine: { display: "flex", alignItems: "center", flexWrap: "wrap", columnGap: "6px", rowGap: "2px", minWidth: 0 },
   name: {
-    minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-    color: "#22252b", fontSize: "12px", lineHeight: "15px", fontWeight: 700,
+    minWidth: 0, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+    color: "#22252b", fontSize: "12px", lineHeight: "16px", fontWeight: 400,
   },
   badge: {
-    flexShrink: 0, height: "11px", minWidth: 0, padding: "1px 6px", borderRadius: "3px",
-    fontSize: "9px", lineHeight: "9px", fontWeight: 700, backgroundColor: "#faf0f1", color: "#9b3a46",
+    flexShrink: 0, height: "16px", minWidth: 0, padding: "0 4px", borderRadius: "3px",
+    fontFamily: "var(--sidebar-font-family)", fontSize: "10px", lineHeight: "12px", fontWeight: 500,
+    backgroundColor: "#faf0f1", color: "#9b3a46",
   },
   adminBadge: { ...shorthands.borderColor("#e60012") },
-  department: { color: "#22252b", fontSize: "10px", lineHeight: "10px" },
+  department: {
+    color: "#22252b", fontSize: "11px", lineHeight: "14px", fontWeight: 400,
+    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+  },
   chevron: { width: "14px", height: "14px", marginLeft: "auto", flexShrink: 0 },
   surface: {
     width: "min(348px, calc(100vw - 16px))", minWidth: 0,
