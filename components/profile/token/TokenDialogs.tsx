@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses, shorthands, Toast, Toaster, ToastTitle, useToastController } from "@fluentui/react-components";
+import { Button, makeStyles, tokens, mergeClasses, shorthands, Toast, Toaster, ToastTitle, useToastController } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { AddRegular, ChevronLeft12Regular } from "@fluentui/react-icons";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
@@ -18,22 +19,19 @@ import TokenRequestPanel, { type TokenRequestPanelProps } from "./TokenRequestPa
 import TokenUsagePanel from "./TokenUsagePanel";
 
 const useStyles = makeStyles({
-  button: { height: "30px", minWidth: 0, padding: "0 12px", borderRadius: "8px", fontFamily: "inherit", fontSize: "12px", fontWeight: 700 },
-  cancelButton: { height: "32px", border: "1px solid var(--line3, #dddde2)" },
+  button: { minHeight: dadamUi.controlHeight, height: "auto", minWidth: 0, padding: "6px 12px", borderRadius: dadamUi.controlRadius, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 500 },
+  cancelButton: { border: `1px solid ${tokens.colorNeutralStroke1}` },
   backIcon: { width: "12px", height: "12px", fontSize: "12px" },
   submitButton: {
-    height: "32px",
-    ":disabled": {
-      backgroundColor: "var(--red, #d7192f)", ...shorthands.borderColor("var(--red, #d7192f)"),
-      color: "#fff", opacity: 0.45, cursor: "not-allowed",
-    },
-    "&:disabled:hover, &:disabled:hover:active, &:disabled:active:focus-visible": {
-      backgroundColor: "#c31429", ...shorthands.borderColor("#c31429"), color: "#fff",
+    ":disabled, &:disabled:hover, &:disabled:hover:active, &:disabled:active:focus-visible": {
+      backgroundColor: tokens.colorNeutralBackgroundDisabled,
+      ...shorthands.borderColor(tokens.colorNeutralStrokeDisabled),
+      color: tokens.colorNeutralForegroundDisabled, opacity: 1, cursor: "not-allowed",
     },
   },
   spacer: { flex: 1 },
   toaster: { maxWidth: "calc(100vw - 32px)", zIndex: 4400 },
-  toast: { width: "100%", maxWidth: "calc(100vw - 32px)", boxSizing: "border-box", fontFamily: "inherit", overflowWrap: "anywhere" },
+  toast: { width: "100%", maxWidth: "calc(100vw - 32px)", boxSizing: "border-box", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, overflowWrap: "anywhere" },
 });
 
 // 신청 화면을 다시 열 때 검증 표시와 제출 키만 새로 만든다.

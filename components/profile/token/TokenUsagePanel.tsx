@@ -1,6 +1,7 @@
 "use client";
 
-import { makeStyles, mergeClasses, shorthands } from "@fluentui/react-components";
+import { makeStyles, tokens, mergeClasses, shorthands } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 
 import type { TokenUsageSnapshot } from "@/config/token-preview";
 import { formatTokenCount, getProfileTokenSummary } from "@/lib/profile-preview";
@@ -20,58 +21,58 @@ const useStyles = makeStyles({
   },
   kpi: {
     display: "flex", flexDirection: "column", alignItems: "flex-start",
-    padding: "10px 12px", border: "1px solid #e6e7eb", borderRadius: "10px", minWidth: 0,
+    padding: dadamUi.cardPadding, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, minWidth: 0,
   },
-  kpiLabel: { fontSize: "10.5px", fontWeight: 700, color: "#74747d" },
-  kpiValue: { fontSize: "18px", fontWeight: 900, lineHeight: "27px", fontVariantNumeric: "tabular-nums", color: "#161616" },
-  meta: { fontSize: "11px", color: "#74747d", fontWeight: 400 },
+  kpiLabel: { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500, color: tokens.colorNeutralForeground3 },
+  kpiValue: { fontSize: "20px", fontWeight: 700, lineHeight: "28px", fontVariantNumeric: "tabular-nums", color: tokens.colorNeutralForeground1 },
+  meta: { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, fontWeight: 400 },
   warning: {
-    ...shorthands.borderColor("#f3d19c"), backgroundColor: "#fffaf0",
+    ...shorthands.borderColor(tokens.colorStatusWarningBorder1), backgroundColor: tokens.colorStatusWarningBackground1,
   },
-  warningText: { color: "#b0620a", fontWeight: 700 },
-  chartUnit: { fontWeight: 850 },
-  card: { minWidth: 0, border: "1px solid #e6e7eb", borderRadius: "12px", padding: "12px 14px" },
-  heading: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", margin: "0 0 10px", fontSize: "12px", fontWeight: 850 },
+  warningText: { color: tokens.colorStatusWarningForeground1, fontWeight: 700 },
+  chartUnit: { fontWeight: 700 },
+  card: { minWidth: 0, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, padding: dadamUi.cardPadding },
+  heading: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", margin: "0 0 10px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
   chart: { display: "flex", alignItems: "flex-end", gap: "4px", height: "110px" },
   day: {
     display: "flex", flex: 1, minWidth: 0, height: "100%", flexDirection: "column", alignItems: "center", gap: "4px",
     ":hover span": { opacity: 1 },
   },
   barArea: { flex: 1, minHeight: 0, width: "100%", display: "flex", alignItems: "flex-end", justifyContent: "center" },
-  dayBar: { width: "100%", maxWidth: "18px", borderRadius: "3px 3px 0 0", backgroundColor: "#d7192f", opacity: 0.85 },
-  dayLabel: { height: "12px", fontSize: "9.5px", lineHeight: "12px", color: "#74747d" },
+  dayBar: { width: "100%", maxWidth: "18px", borderRadius: "3px 3px 0 0", backgroundColor: tokens.colorBrandBackground, opacity: 0.85 },
+  dayLabel: { height: "12px", fontSize: "10px", fontWeight: 400, lineHeight: "12px", color: tokens.colorNeutralForeground3 },
   two: {
     display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px",
     "@media (max-width: 600px)": { gridTemplateColumns: "minmax(0, 1fr)" },
   },
-  item: { marginBottom: "8px", fontSize: "11.5px", ":last-child": { marginBottom: 0 } },
+  item: { marginBottom: "8px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, ":last-child": { marginBottom: 0 } },
   itemRow: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px", minWidth: 0 },
   itemName: { flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   number: { flexShrink: 0, fontVariantNumeric: "tabular-nums" },
-  track: { height: "7px", borderRadius: "4px", overflow: "hidden", backgroundColor: "#eff0f3" },
-  projectBar: { display: "block", height: "100%", backgroundColor: "#15985a", borderRadius: "inherit" },
-  featureBar: { display: "block", height: "100%", backgroundColor: "#303238", borderRadius: "inherit" },
+  track: { height: "7px", borderRadius: "4px", overflow: "hidden", backgroundColor: tokens.colorNeutralBackground5 },
+  projectBar: { display: "block", height: "100%", backgroundColor: tokens.colorStatusSuccessBackground3, borderRadius: "inherit" },
+  featureBar: { display: "block", height: "100%", backgroundColor: tokens.colorNeutralForeground2, borderRadius: "inherit" },
   table: {
     width: "100%", tableLayout: "fixed", borderCollapse: "collapse",
     "& th": {
-      position: "sticky", top: 0, zIndex: 1, textAlign: "left", backgroundColor: "#fafafa",
-      padding: "9px 12px", borderBottom: "1px solid #e6e7eb", fontSize: "10px", fontWeight: 800, color: "#74747d",
+      position: "sticky", top: 0, zIndex: 1, textAlign: "left", backgroundColor: tokens.colorNeutralBackground2,
+      padding: "9px 12px", borderBottom: `1px solid ${tokens.colorNeutralStroke2}`, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500, color: tokens.colorNeutralForeground3,
     },
-    "& td": { padding: "11px 12px", borderBottom: "1px solid #eff0f3", fontSize: "12px", verticalAlign: "middle" },
+    "& td": { padding: "11px 12px", borderBottom: `1px solid ${tokens.colorNeutralStroke2}`, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, verticalAlign: "middle" },
     "& th, & td": { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 },
     "& th:first-child": { width: "110px" },
     "& th:last-child": { width: "80px" },
     "& th:last-child, & td:last-child": { textAlign: "right", fontVariantNumeric: "tabular-nums" },
-    "& td:first-child": { color: "#74747d", fontSize: "11px", fontVariantNumeric: "tabular-nums" },
+    "& td:first-child": { color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontVariantNumeric: "tabular-nums" },
     "@media (max-width: 600px)": {
-      "& th, & td": { padding: "8px 4px", fontSize: "10px" },
-      "& td:first-child": { fontSize: "10px" },
+      "& th, & td": { padding: "8px 4px", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight },
+      "& td:first-child": { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight },
       "& th:first-child": { width: "70px" },
       "& th:last-child": { width: "50px" },
     },
   },
   hidden: { position: "absolute", width: "1px", height: "1px", padding: 0, overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap" },
-  empty: { margin: 0, color: "#74747d", fontSize: "11px" },
+  empty: { margin: 0, color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight },
 });
 
 export default function TokenUsagePanel({ snapshot, used, limit }: TokenUsagePanelProps): React.ReactElement {

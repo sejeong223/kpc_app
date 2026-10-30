@@ -1,3 +1,4 @@
+import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import AppShell from "@/components/layout/AppShell";
 import FluentUiProvider from "@/components/providers/FluentUiProvider";
 import ProfilePreviewProvider from "@/components/profile/ProfilePreviewProvider";
@@ -19,7 +20,7 @@ export default async function AuthenticatedLayout({
         <AdminRuntimeProvider>
           <CommentsProvider>
             <AppShell>{children}</AppShell>
-            <TokenDialogs />
+            <DadamThemeScope><TokenDialogs /></DadamThemeScope>
           </CommentsProvider>
         </AdminRuntimeProvider>
       </ProfilePreviewProvider>

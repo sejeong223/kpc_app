@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Dialog, DialogContent, DialogSurface, DialogTitle, makeStyles, shorthands } from "@fluentui/react-components";
+import { Button, Dialog, DialogContent, DialogSurface, DialogTitle, makeStyles, tokens, shorthands } from "@fluentui/react-components";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 import { Dismiss12Regular } from "@fluentui/react-icons";
 import { useEffect, useId, useLayoutEffect, useRef } from "react";
 
@@ -20,9 +21,9 @@ const useStyles = makeStyles({
     display: "flex", flexDirection: "column", minWidth: 0,
     maxWidth: "calc(100vw - 32px)", maxHeight: "min(88vh, calc(100svh - 32px))",
     boxSizing: "border-box", padding: 0, overflow: "hidden",
-    border: "1px solid #e6e7eb", borderRadius: "16px", backgroundColor: "#fff", color: "#161616",
-    boxShadow: "0 18px 48px rgba(16,17,20,.16),0 2px 6px rgba(16,17,20,.06)",
-    fontFamily: "inherit", fontSize: "12px", lineHeight: "1.5", zIndex: 4300,
+    border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.surfaceRadius, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1,
+    boxShadow: dadamUi.dialogShadow,
+    fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400, zIndex: 4300,
     "@media screen and (max-width: 480px)": { maxWidth: "calc(100vw - 32px)" },
     "@media screen and (max-height: 359px)": {
       padding: 0, overflow: "hidden", ...shorthands.borderWidth("1px"),
@@ -31,21 +32,21 @@ const useStyles = makeStyles({
   backdrop: { backgroundColor: "rgba(17,18,22,.28)", zIndex: 4000 },
   header: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "16px 18px 12px", flexShrink: 0 },
   heading: { flex: 1, minWidth: 0 },
-  title: { display: "block", margin: 0, color: "#161616", fontFamily: "inherit", fontSize: "14px", fontWeight: 800, lineHeight: "21px", letterSpacing: "-.01em", ":focus": { outlineStyle: "none" } },
-  subtitle: { margin: "3px 0 0", fontSize: "11px", color: "#74747d", overflowWrap: "anywhere" },
-  close: { width: "32px", minWidth: "32px", height: "32px", padding: 0, borderRadius: "8px", color: "#55585f", flexShrink: 0 },
+  title: { display: "block", margin: 0, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.titleSize, fontWeight: 700, lineHeight: dadamUi.titleLineHeight, letterSpacing: 0, ":focus": { outlineStyle: "none" } },
+  subtitle: { margin: "3px 0 0", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, overflowWrap: "anywhere" },
+  close: { width: "32px", minWidth: "32px", height: "32px", padding: 0, borderRadius: dadamUi.controlRadius, color: tokens.colorNeutralForeground2, flexShrink: 0 },
   closeIcon: { width: "12px", height: "12px", fontSize: "12px" },
   body: {
     display: "flex", flexDirection: "column", gap: "12px",
     flex: 1, minHeight: 0, minWidth: 0, padding: "4px 18px 16px",
-    margin: 0, fontFamily: "inherit", fontSize: "inherit", lineHeight: "inherit", color: "inherit",
+    margin: 0, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400, color: "inherit",
     overflowY: "auto", overflowX: "hidden", scrollbarWidth: "none",
     "::-webkit-scrollbar": { display: "none" },
-    ":focus-visible": { outline: "2px solid #d7192f", outlineOffset: "-2px" },
+    ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "-2px" },
   },
   footer: {
     display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px",
-    padding: "12px 18px", flexShrink: 0, borderTop: "1px solid #eff0f3", backgroundColor: "#fcfcfd",
+    padding: "12px 18px", flexShrink: 0, borderTop: `1px solid ${tokens.colorNeutralStroke2}`, backgroundColor: tokens.colorNeutralBackground2,
   },
 });
 

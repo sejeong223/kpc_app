@@ -59,7 +59,7 @@
 
 ## Completion
 
-- done: 2/4
+- done: 3/4
 - T01~T04가 각자 검증·한국어 커밋·진행 문서 동기화를 마치면 Plan done.
 - `/memory-execute`는 current의 한 Task, `/mea`는 이 계획의 남은 Task를 순차 실행한다. 이번 계획 작성은 구현 실행 요청이 아니다.
 

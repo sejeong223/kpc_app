@@ -1,6 +1,6 @@
 # Task: T03 토큰 모달·폼·알림과 사이드바 계열 완료
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -169,11 +169,11 @@ export default function TokenRequestPanel(props: TokenRequestPanelProps): React.
 
 ## Acceptance Criteria
 
-- [ ] 사용량·신청·성공 Toast까지 Spoqa/dadam theme가 전달되고 일반 본문은 기존 테마를 유지한다.
-- [ ] 기본 버튼/폼은 공통14/20,modal/title/보조 문자는 정의대로 적용된다. disabled hover도 중립 상태다.
-- [ ] usage760/request560·작은 화면/낮은 높이·내부 스크롤·focus/aria가 유지된다.
-- [ ] 입력 검증·pending·fixture 계산·초기화/유지 규칙·원 trigger 복귀가 유지된다.
-- [ ] T01~T03 검증 성공 후 사이드바 계열 milestone을 완료하고 T04로 진행한다.
+- [x] 사용량·신청·성공 Toast까지 Spoqa/dadam theme가 전달되고 일반 본문은 기존 테마를 유지한다.
+- [x] 기본 버튼/폼은 공통14/20,modal/title/보조 문자는 정의대로 적용된다. disabled hover도 중립 상태다.
+- [x] usage760/request560·작은 화면/낮은 높이·내부 스크롤·focus/aria가 유지된다.
+- [x] 입력 검증·pending·fixture 계산·초기화/유지 규칙·원 trigger 복귀가 유지된다.
+- [x] T01~T03 검증 성공 후 사이드바 계열 milestone을 완료하고 T04로 진행한다.
 
 ## Validation
 
@@ -202,6 +202,13 @@ Task: T03-token-dialogs
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: `git log -1 --format=%h --grep='Task: T03-token-dialogs'`
+
+## Execution Result
+
+- authenticated layout의 TokenDialogs에 지속적인 DadamThemeScope를 연결하고 모달·폼·차트·Toast 스타일을 통일했다. disabled 제출 버튼은 hover에서도 중립색을 유지한다.
+- 회귀 7개 파일 117개 테스트, 전체 typecheck/lint/build, git diff --check 통과. 프로필 진입→사용량/신청 전환→유효성 검사→중복 제출 방지→pending/Toast→포커스 복귀를 실제 컴포넌트 DOM으로 확인했다. 브라우저 검증 제외.
+- 학습: 모달이 닫힌 뒤에도 Toast를 표시하려면 scope와 Toaster를 계속 mount해야 한다. 포털에는 부모 범위의 CSS 클래스가 전달되며 layout용 display:contents는 inline에 한정한다.
+- 상태·fixture·서버 API는 변경하지 않았다. 범위 밖 인접 문제: 특이사항 없음. T01~T03 사이드바 계열 완료.
