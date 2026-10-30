@@ -1,12 +1,14 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses } from "@fluentui/react-components";
+import { Button, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { NavigationRegular } from "@fluentui/react-icons";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { appConfig } from "@/config/app";
 import { useComments } from "@/components/comments/CommentsProvider";
+import DadamThemeScope from "@/components/providers/DadamThemeScope";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 
 import NavSidebar from "./NavSidebar";
 
@@ -40,7 +42,9 @@ const useStyles = makeStyles({
   menuButton: {
     display: "none", position: "fixed", top: "16px", left: "16px", zIndex: 15,
     width: "40px", minWidth: "40px", height: "40px", padding: 0,
-    backgroundColor: "#fff", color: "#475569", border: "1px solid #e6e7eb", borderRadius: "8px",
+    backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.controlRadius,
+    ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "2px" },
     "@media (max-width: 760px)": { display: "inline-flex" },
   },
   adminContent: { padding: "22px 28px", backgroundColor: "var(--kpc-bg)", "@media (max-width: 760px)": { padding: "64px 16px 20px" } },
@@ -75,8 +79,8 @@ const useStyles = makeStyles({
     zIndex: 100,
     padding: "12px 16px",
     borderRadius: "6px",
-    backgroundColor: "#d7192f",
-    color: "#fff",
+    backgroundColor: tokens.colorBrandBackground,
+    color: tokens.colorNeutralForegroundOnBrand,
     ":focus": { top: "16px" },
   },
 });
@@ -159,25 +163,29 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
 
   return (
     <div className={mergeClasses(styles.root, sidebarCollapsed && styles.collapsed)}>
-      <a className={styles.skipLink} href="#main-content">본문으로 이동</a>
-      {menuOpen && (
-        <button type="button" className={styles.backdrop} aria-label="메뉴 닫기" tabIndex={-1} onClick={closeMenu} />
-      )}
-      <NavSidebar
-        id={SIDEBAR_ID}
-        isOpen={menuOpen}
-        isCollapsed={sidebarCollapsed}
-        onNavigate={onNavigate}
-        onCollapseToggle={() => setSidebarCollapsed((collapsed) => !collapsed)}
-        onClose={closeMenu}
-      />
-      <div className={styles.mainColumn} inert={menuOpen}>
-        <Button
-          id={`${SIDEBAR_ID}-trigger`} className={styles.menuButton}
-          icon={<NavigationRegular />} aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
-          aria-expanded={menuOpen} aria-controls={SIDEBAR_ID}
-          onClick={() => { controller?.suspendUi(); setMenuOpen((open) => !open); }}
+      <DadamThemeScope>
+        <a className={styles.skipLink} href="#main-content">본문으로 이동</a>
+        {menuOpen && (
+          <button type="button" className={styles.backdrop} aria-label="메뉴 닫기" tabIndex={-1} onClick={closeMenu} />
+        )}
+        <NavSidebar
+          id={SIDEBAR_ID}
+          isOpen={menuOpen}
+          isCollapsed={sidebarCollapsed}
+          onNavigate={onNavigate}
+          onCollapseToggle={() => setSidebarCollapsed((collapsed) => !collapsed)}
+          onClose={closeMenu}
         />
+      </DadamThemeScope>
+      <div className={styles.mainColumn} inert={menuOpen}>
+        <DadamThemeScope>
+          <Button
+            id={`${SIDEBAR_ID}-trigger`} className={styles.menuButton}
+            icon={<NavigationRegular />} aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
+            aria-expanded={menuOpen} aria-controls={SIDEBAR_ID}
+            onClick={() => { controller?.suspendUi(); setMenuOpen((open) => !open); }}
+          />
+        </DadamThemeScope>
         <main id="main-content" ref={mainRef} className={mergeClasses(
           styles.content,
           ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent,

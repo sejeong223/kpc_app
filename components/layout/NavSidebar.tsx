@@ -34,6 +34,7 @@ import { useAuthRuntime } from "@/components/providers";
 import { useProfilePreview } from "@/components/profile/ProfilePreviewProvider";
 import ProfileMenu from "@/components/profile/ProfileMenu";
 import { getVisibleSidebarGroups, type SidebarIcon } from "@/config/sidebar";
+import { dadamUi } from "@/lib/ui/dadam-theme";
 
 const icons = {
   "document-add": DocumentAddRegular,
@@ -93,8 +94,8 @@ const useStyles = makeStyles({
     boxSizing: "border-box",
     paddingTop: "16px",
     backgroundColor: tokens.colorNeutralBackground2,
-    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
-    color: "#25272d",
+    borderRight: `1px solid ${tokens.colorNeutralStrokeSubtle}`,
+    color: tokens.colorNeutralForeground1,
     "@media (max-width: 760px)": {
       width: "280px",
       maxWidth: "calc(100vw - 32px)",
@@ -114,7 +115,14 @@ const useStyles = makeStyles({
   collapsed: {
     "@media (min-width: 761px)": {
       "& [data-sidebar-label]": { display: "none" },
-      "& [data-sidebar-header]": { padding: "8px 8px 16px", justifyContent: "center", gap: 0 },
+      // Dadam's collapsed header occupies only the 28px toggle row.
+      "& [data-sidebar-header]": {
+        height: "28px",
+        minHeight: "28px",
+        padding: "0 8px",
+        justifyContent: "center",
+        gap: 0,
+      },
       "& nav": { padding: "0 8px 8px" },
       "& [data-sidebar-group]": { alignItems: "stretch", rowGap: "4px", padding: 0 },
       "& [data-sidebar-link]": {
@@ -123,10 +131,18 @@ const useStyles = makeStyles({
         minHeight: "40px",
         height: "auto",
         padding: "10px 0",
+        borderLeftWidth: 0,
         columnGap: 0,
-        color: "#777d89",
       },
-      '& [aria-current="page"]': { color: "#c8253b" },
+      '& [data-sidebar-link][aria-current="page"]': {
+        padding: "10px",
+        borderLeftWidth: 0,
+        backgroundColor: tokens.colorNeutralBackground3,
+        color: tokens.colorBrandForeground1,
+        boxShadow: `inset 0 0 0 1px ${tokens.colorBrandStroke1}`,
+        transform: "scale(1.06)",
+        ":hover": { backgroundColor: tokens.colorNeutralBackground3, color: tokens.colorBrandForeground1 },
+      },
       "& [data-sidebar-divider]": { margin: "10px 0", paddingRight: 0 },
       "& [data-sidebar-footer]": { padding: "12px 8px" },
     },
@@ -143,8 +159,8 @@ const useStyles = makeStyles({
   },
   brand: {
     minWidth: 0,
-    color: "#18191e",
-    fontFamily: "var(--sidebar-font-family)",
+    color: tokens.colorNeutralForeground1,
+    fontFamily: tokens.fontFamilyBase,
     fontSize: "16px",
     lineHeight: "24px",
     fontWeight: 500,
@@ -160,7 +176,7 @@ const useStyles = makeStyles({
     height: "28px",
     padding: 0,
     flexShrink: 0,
-    color: "#616773",
+    color: tokens.colorNeutralForeground2,
     "@media (max-width: 760px)": { display: "none" },
   },
   mobileClose: {
@@ -171,6 +187,7 @@ const useStyles = makeStyles({
     padding: 0,
     flexShrink: 0,
     "& svg": { width: "18px", height: "18px" },
+    color: tokens.colorNeutralForeground2,
     "@media (max-width: 760px)": { display: "inline-flex" },
   },
   navigation: {
@@ -181,7 +198,7 @@ const useStyles = makeStyles({
     marginTop: "12px",
     padding: "0 12px 8px",
     scrollbarWidth: "thin",
-    scrollbarColor: "#d6d9df #fafafa",
+    scrollbarColor: `${tokens.colorNeutralStroke1} ${tokens.colorNeutralBackground2}`,
   },
   group: { display: "flex", flexDirection: "column", alignItems: "stretch", rowGap: "4px", padding: "0 6px" },
   link: {
@@ -194,26 +211,30 @@ const useStyles = makeStyles({
     height: "auto",
     padding: "10px 12px",
     columnGap: "10px",
-    borderRadius: "9px",
-    color: "#626670",
-    fontFamily: "var(--sidebar-font-family)",
-    fontSize: "14px",
-    lineHeight: "20px",
+    borderRadius: dadamUi.controlRadius,
+    borderLeft: "3px solid transparent",
+    boxSizing: "border-box",
+    color: tokens.colorNeutralForeground2,
+    fontFamily: tokens.fontFamilyBase,
+    fontSize: dadamUi.bodySize,
+    lineHeight: dadamUi.bodyLineHeight,
     fontWeight: 400,
     letterSpacing: 0,
     textAlign: "left",
     textDecorationLine: "none",
     whiteSpace: "nowrap",
-    ":hover": { backgroundColor: "#eff0f3", color: "#34363c" },
-    ":focus-visible": { outlineColor: tokens.colorBrandStroke1, outlineOffset: "-2px" },
+    ":hover": { backgroundColor: tokens.colorNeutralBackground2Hover, color: tokens.colorNeutralForeground1 },
+    ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "-2px" },
+    "@media (forced-colors: active)": { ":focus-visible": { outlineColor: "Highlight" } },
   },
   active: {
-    backgroundColor: tokens.colorBrandBackground2,
+    backgroundColor: tokens.colorNeutralBackground3,
     color: tokens.colorBrandForeground1,
-    fontWeight: 800,
-    boxShadow: "inset 3px 0 0 #dc2036",
+    fontWeight: 700,
+    borderLeftColor: tokens.colorBrandStroke1,
+    boxShadow: `inset 0 0 0 1px ${tokens.colorBrandStroke1}`,
     ":hover": {
-      backgroundColor: tokens.colorBrandBackground2,
+      backgroundColor: tokens.colorNeutralBackground3,
       color: tokens.colorBrandForeground1,
     },
   },
@@ -235,8 +256,8 @@ const useStyles = makeStyles({
     minHeight: "1px",
     margin: "10px 6px",
     paddingRight: 0,
-    "::before": { borderTopColor: "#e6e8ec" },
-    "::after": { borderTopColor: "#e6e8ec" },
+    "::before": { borderTopColor: tokens.colorNeutralStroke2 },
+    "::after": { borderTopColor: tokens.colorNeutralStroke2 },
   },
   footer: {
     display: "flex",
@@ -246,7 +267,7 @@ const useStyles = makeStyles({
     width: "100%",
     rowGap: 0,
     padding: "12px",
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderTop: `1px solid ${tokens.colorNeutralStrokeSubtle}`,
   },
 });
 

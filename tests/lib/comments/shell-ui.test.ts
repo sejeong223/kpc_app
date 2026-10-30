@@ -36,6 +36,8 @@ afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi
 describe("header removal preserves navigation and modal focus", () => {
   it("opens the mobile sidebar, suspends comment UI and restores focus on Escape", async () => {
     expect(host.querySelector("header")).toBeNull();
+    expect(byId("main-content").closest("[data-dadam-theme]")).toBeNull();
+    expect(byId("main-content").parentElement?.querySelector(":scope > #main-content")).toBe(byId("main-content"));
     const trigger = byId("workspace-sidebar-trigger");
     await act(async () => trigger.click());
     expect(mocks.suspendUi).toHaveBeenCalledOnce(); expect(trigger.getAttribute("aria-expanded")).toBe("true");
