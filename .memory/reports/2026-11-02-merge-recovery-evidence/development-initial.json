@@ -1,0 +1,13 @@
+{
+  "expected": 2,
+  "unexpected": 1,
+  "skipped": 0,
+  "failedScenario": "관리자 작업과 제작 코멘트 통합 흐름의 제작 화면 새로고침 이후",
+  "observations": [
+    "FluentProvider SSR/client useId 불일치",
+    "Next 개발 오류 오버레이가 프로필 버튼 클릭을 차단",
+    "인증 비활성 상태 /api/auth/session·_log 404"
+  ],
+  "action": "기존 개발 서버 없음 확인 후 .next/dev를 백업 이동. 앱 소스 추가 변경 없이 동일 3개 검사 통과.",
+  "limitation": "캐시 분리 전후의 관찰 결과이며 라이브러리 내부 근본 원인을 확정하지 않음."
+}

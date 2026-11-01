@@ -43,7 +43,7 @@ const useStyles = makeStyles({
     backgroundColor: "#fff", color: "#475569", border: "1px solid #e6e7eb", borderRadius: "8px",
     "@media (max-width: 760px)": { display: "inline-flex" },
   },
-  adminContent: { padding: "22px 28px", backgroundColor: "var(--kpc-bg)", "@media (max-width: 760px)": { padding: "20px 16px" } },
+  adminContent: { padding: "22px 28px", backgroundColor: "var(--kpc-bg)", "@media (max-width: 760px)": { padding: "64px 16px 20px" } },
   footer: {
     display: "flex",
     alignItems: "center",
@@ -178,11 +178,11 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
           aria-expanded={menuOpen} aria-controls={SIDEBAR_ID}
           onClick={() => { controller?.suspendUi(); setMenuOpen((open) => !open); }}
         />
-<<<<<<< HEAD
-        <main id="main-content" ref={mainRef} className={mergeClasses(styles.content, ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent)} tabIndex={-1}>{children}</main>
-=======
-        <main id="main-content" ref={mainRef} className={mergeClasses(styles.content, pathname === "/workspace/write" && styles.productionContent)} tabIndex={-1}>{children}</main>
->>>>>>> 8a0f76711582bc54b00d8eec073c851fe1c1f3e8
+        <main id="main-content" ref={mainRef} className={mergeClasses(
+          styles.content,
+          ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent,
+          pathname === "/workspace/write" && styles.productionContent,
+        )} tabIndex={-1}>{children}</main>
         <footer className={styles.footer}>{appConfig.name}<span>나만의 업무 공간</span></footer>
       </div>
     </div>

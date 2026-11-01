@@ -1,0 +1,414 @@
+{
+  "stats": {
+    "startTime": "2026-11-01T23:28:55.926Z",
+    "duration": 58416.617,
+    "expected": 50,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "browser": "Chromium",
+  "errorGuard": "All scenarios assert zero pageerror / HTTP >=400 responses.",
+  "results": [
+    {
+      "file": "admin-comments-merge.spec.ts",
+      "title": "병합 후 관리자 작업과 제작 코멘트가 함께 유지된다",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 4862,
+      "errors": []
+    },
+    {
+      "file": "admin-comments-merge.spec.ts",
+      "title": "병합 후 320px 관리자 제목과 제작 모바일 메뉴",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 1110,
+      "errors": []
+    },
+    {
+      "file": "admin-comments-merge.spec.ts",
+      "title": "병합 후 390px 관리자 제목과 제작 모바일 메뉴",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 1191,
+      "errors": []
+    },
+    {
+      "file": "admin-guide.spec.ts",
+      "title": "디자인 컴포넌트 HTML의 목차·모바일 폭·스크립트",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 574,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 skills 1440×900",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 636,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 templates 1440×900",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 533,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 users 1440×900",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 580,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 policy?tab=tokens 1440×900",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 625,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 dashboard 1440×900",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 659,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 audit 1440×900",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 591,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 skills 1024×768",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 505,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 templates 1024×768",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 508,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 users 1024×768",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 547,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 policy?tab=tokens 1024×768",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 580,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 dashboard 1024×768",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 659,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 audit 1024×768",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 732,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 skills 768×1024",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 561,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 templates 768×1024",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 505,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 users 768×1024",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 553,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 policy?tab=tokens 768×1024",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 603,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 dashboard 768×1024",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 644,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 audit 768×1024",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 558,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 skills 390×844",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 529,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 templates 390×844",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 520,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 users 390×844",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 580,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 policy?tab=tokens 390×844",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 577,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 dashboard 390×844",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 728,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 audit 390×844",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 550,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 skills 320×568",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 597,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 templates 320×568",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 571,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 users 320×568",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 579,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 policy?tab=tokens 320×568",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 552,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 dashboard 320×568",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 635,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 audit 320×568",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 549,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 skills 1024×500",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 521,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 templates 1024×500",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 506,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 users 1024×500",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 557,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 policy?tab=tokens 1024×500",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 576,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 dashboard 1024×500",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 648,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "반응형 audit 1024×500",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 543,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "탭 320px 마지막 탭과 키보드",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 805,
+      "errors": []
+    },
+    {
+      "file": "admin-responsive.spec.ts",
+      "title": "탭 390px 마지막 탭과 키보드",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 828,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "같은 파일 최신 재적용은 선택 슬라이드와 미선택 XML을 보존한다",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 4611,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "편집 위치·포커스·공유 초안·결과 필터는 유지되고 파일 교체만 초기화한다",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 5594,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "업로드 취소는 즉시 편집을 복구하고 늦은 A가 완료된 B를 덮지 않는다",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 1826,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "현재 역할을 일반 사용자로 바꾸면 작업 자료와 관리자 메뉴를 감춘다",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 3997,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "그룹 활동명 검색과 CSV는 표시·원본을 분리한다",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 2049,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "기존 사용자 삭제 복구와 감사 상세 요청 ID",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 1605,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "모델 단가 소수 6자리와 Skill 미저장 모달 흐름",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 2548,
+      "errors": []
+    },
+    {
+      "file": "admin-review.spec.ts",
+      "title": "토큰 승인 후 프로필 한도 동기화와 이전 주소 리다이렉트",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 2462,
+      "errors": []
+    }
+  ]
+}

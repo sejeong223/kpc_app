@@ -1,0 +1,32 @@
+{
+  "command": "npm run dev -- --port 3191 --hostname 127.0.0.1 (Playwright webServer)",
+  "cache": "Existing .next/dev moved to .next/dev-before-merge-recheck; new development cache generated.",
+  "stats": {
+    "startTime": "2026-11-01T23:31:47.844Z",
+    "duration": 19686.423000000003,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "results": [
+    {
+      "title": "병합 후 관리자 작업과 제작 코멘트가 함께 유지된다",
+      "status": "passed",
+      "errors": [],
+      "retry": 0
+    },
+    {
+      "title": "병합 후 320px 관리자 제목과 제작 모바일 메뉴",
+      "status": "passed",
+      "errors": [],
+      "retry": 0
+    },
+    {
+      "title": "병합 후 390px 관리자 제목과 제작 모바일 메뉴",
+      "status": "passed",
+      "errors": [],
+      "retry": 0
+    }
+  ]
+}

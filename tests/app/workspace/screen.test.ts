@@ -44,18 +44,16 @@ describe("workspace placeholder pages", () => {
 
   it.each(screens)("previews %s without authenticating or assigning a role", async (screen, label) => {
     const markup = renderToStaticMarkup(await page(screen));
-<<<<<<< HEAD
-    if (["users", "policy", "audit", "dashboard", "skills", "templates"].includes(screen)) expect(markup).toContain('data-admin-screen="' + screen + '"');
-    else {
-      expect(markup).toContain('<h1 id="workspace-screen-title">' + label + '</h1>');
-      expect(markup).toContain('<p>' + label + ' 화면입니다.</p>');
-=======
-    if (screen === "write") expect(markup).toContain("data-comment-surface");
-    else {
+    if (["users", "policy", "audit", "dashboard", "skills", "templates"].includes(screen)) {
+      expect(markup).toContain('data-admin-screen="' + screen + '"');
+      expect(markup).not.toContain("data-comment-surface");
+    } else if (screen === "write") {
+      expect(markup).toContain("data-comment-surface");
+      expect(markup).not.toContain("data-admin-screen");
+    } else {
       expect(markup).toContain(`<h1 id="workspace-screen-title">${label}</h1>`);
       expect(markup).toContain(`<p>${label} 화면입니다.</p>`);
       expect(markup).not.toContain("data-comment-surface");
->>>>>>> 8a0f76711582bc54b00d8eec073c851fe1c1f3e8
     }
     expect(mocks.requireRole).not.toHaveBeenCalled();
   });

@@ -1,0 +1,11 @@
+{
+  "command": "development smoke after server restart, existing regenerated cache retained",
+  "stats": {
+    "startTime": "2026-11-01T23:32:33.901Z",
+    "duration": 16571.121,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AppShell from "@/components/layout/AppShell";
 import ProfilePreviewProvider, { useProfilePreview, type ProfilePreviewContextValue } from "@/components/profile/ProfilePreviewProvider";
 import TokenDialogs from "@/components/profile/token/TokenDialogs";
+import AdminRuntimeProvider from "@/components/admin/AdminRuntimeProvider";
 
 const mocks = vi.hoisted(() => ({ suspendUi: vi.fn(), pathname: "/workspace/write" }));
 vi.mock("@/components/comments/CommentsProvider", () => ({ useComments: () => ({ controller: { suspendUi: mocks.suspendUi } }) }));
@@ -29,7 +30,7 @@ beforeEach(async () => {
   mocks.suspendUi.mockClear(); document.body.style.overflow = "";
   host = document.createElement("div"); document.body.append(host); root = createRoot(host);
   await act(async () => { root.render(createElement(FluentProvider, { theme: webLightTheme }, createElement(ProfilePreviewProvider, null,
-    createElement(Fragment, null, createElement(CaptureProfile), createElement(AppShell, null, createElement("p", null, "제작 본문")), createElement(TokenDialogs))))); });
+    createElement(AdminRuntimeProvider, null, createElement(Fragment, null, createElement(CaptureProfile), createElement(AppShell, null, createElement("p", null, "제작 본문")), createElement(TokenDialogs)))))); });
 });
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 describe("header removal preserves navigation and modal focus", () => {
