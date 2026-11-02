@@ -1,6 +1,6 @@
 # Task: T03 업로드 드롭존·파일 목록·검토자 선택 컴포넌트
 
-## Status: pending
+## Status: done
 
 ## Goal
 등록 화면의 세 부품 — 파일 드롭존(`RfpUploadZone`), 업로드 파일 목록(`RfpFileList`), 검토자 팝오버(`ReviewerPicker`)를 상태 없는(controlled) 컴포넌트로 만든다. T04가 reducer 상태를 연결만 하면 되도록 부품 단위로 검증하기 위함이다.
@@ -79,9 +79,9 @@ interface ReviewerPickerProps { selected: RfpPerson[]; disabled: boolean; onTogg
 - ReviewerPicker: 팝오버 닫힐 때 검색어 초기화, 20명 도달 시 미선택 항목 disabled.
 
 ## Acceptance Criteria
-- [ ] 세 컴포넌트가 상태를 내부에 저장하지 않고 props로만 동작한다(검색어·드래그 표시 같은 UI 일시 상태 제외).
-- [ ] 잠김·초대·삭제 사용자가 검토자 후보에 나오지 않는다.
-- [ ] I05 검토 포인트 확인, typecheck·lint 0 error.
+- [x] 세 컴포넌트가 상태를 내부에 저장하지 않고 props로만 동작한다(검색어·드래그 표시 같은 UI 일시 상태 제외).
+- [x] 잠김·초대·삭제 사용자가 검토자 후보에 나오지 않는다.
+- [x] I05 검토 포인트 확인, typecheck·lint 0 error.
 
 ## Validation
 - `npm.cmd run typecheck` / `npm.cmd run lint` — 0 error
@@ -101,6 +101,6 @@ Task: T03-upload-reviewer-components
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과 (typecheck·lint 통과, 검토자 후보는 저장소 밖 임시 스크립트로, 나머지 I05는 코드 검토로 확인)
 - commit: pending
