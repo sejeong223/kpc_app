@@ -1,5 +1,6 @@
 "use client";
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
+import WorkspaceActionRow from "@/components/layout/WorkspaceActionRow";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
 import { DadamButton as Button, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useEffect, useState } from "react";
@@ -43,11 +44,13 @@ export default function UsersPage(): React.ReactElement {
   if (grants.permissions.read) options.push({ value: "permissions", label: "역할별 권한" });
   const currentTab = options.find((o) => o.value === tab)?.value ?? options[0]?.value;
   if (!currentTab) return <AdminPage title="사용자 설정"><AdminAsyncState state="forbidden" /></AdminPage>;
-  return <AdminPage title="사용자 설정" actions={currentTab === "users" ? <>
-    <Button disabled={exporting.isPending} onClick={() => exporting.mutate(query, { onSuccess: (csv) => downloadCsv("사용자-2026-10-20.csv", csv) })}>목록 내보내기</Button>
-    {grants.users.create && <Button appearance="primary" onClick={() => setDirectory(true)}>사용자 추가</Button>}
-  </> : undefined}>
-    <AdminTabs label="사용자 설정 탭" value={currentTab} options={options} onChange={(value) => { setTab(value); setSelected([]); }} />
+  return <AdminPage title="사용자 설정">
+    <WorkspaceActionRow actions={currentTab === "users" ? <>
+      <Button disabled={exporting.isPending} onClick={() => exporting.mutate(query, { onSuccess: (csv) => downloadCsv("사용자-2026-10-20.csv", csv) })}>목록 내보내기</Button>
+      {grants.users.create && <Button appearance="primary" onClick={() => setDirectory(true)}>사용자 추가</Button>}
+    </> : undefined}>
+      <AdminTabs label="사용자 설정 탭" value={currentTab} options={options} onChange={(value) => { setTab(value); setSelected([]); }} />
+    </WorkspaceActionRow>
     {currentTab === "groups" && <GroupsPanel />}{currentTab === "permissions" && <RolePermissionsPanel />}
     {currentTab === "users" && <>
       {list.data && <div className="tw:grid tw:grid-cols-2 tw:gap-(--layout-section-gap) tw:lg:grid-cols-4">{(["all", ...ADMIN_ROLES] as const).map((role) => <AdminMetric key={role} label={role === "all" ? "전체 사용자" : ADMIN_ROLE_LABELS[role]} value={String(list.data!.roleCounts[role])} selected={query.role === role} onClick={() => changeQuery({ role: query.role === role ? "all" : role })} tone={role === "super_admin" ? "brand" : "neutral"} />)}</div>}
