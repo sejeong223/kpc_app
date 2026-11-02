@@ -1,7 +1,7 @@
 # Plan: 제작 화면 핀 코멘트
 
 - Date: 2026-10-29
-- Status: ready
+- Status: done
 - Plan ID: 2026-10-29-production-pin-comments
 - Workspace: C:/Users/김세정/Documents/GitHub/kpc_app
 - Decisions: [확정 설계](../decisions/2026-10-29-production-pin-comments.md)
@@ -14,7 +14,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | 도메인 규칙부터 실제 저장·상태 연결·코멘트 UI까지 순차 구현 | [P01](../phases/2026-10-29-production-pin-comments/P01-pin-comments/phase.md) |
+| P01 | done | 도메인 규칙부터 실제 저장·상태 연결·코멘트 UI까지 순차 구현 | [P01](../phases/2026-10-29-production-pin-comments/P01-pin-comments/phase.md) |
 
 ## Task Map
 
@@ -60,14 +60,18 @@
 
 - T01: 본문/멘션/소유권/상태 전이 순수 함수 테스트.
 - T02: 실제 저장소 구현을 fake-indexeddb로 실행하여 재개방·원자성·초기화·삭제·namespace 분리·충돌 검증.
-- T03: 주입한 지연 repository로 controller 경쟁 상태·실패·초안 수명 테스트, 헤더 제거 후 탐색 브라우저 확인.
-- T04: 좌표/리사이즈 수학 테스트와 실제 브라우저의 입력·저장·복원·드래그·스크롤·반응형·접근성 검증.
+- T03: 주입한 지연 repository로 controller 경쟁 상태·실패·초안 수명 테스트, jsdom 셸/모달 포커스 검증.
+- T04: 좌표/리사이즈 수학 테스트와 jsdom·fake-indexeddb UI/저장 통합 테스트. 실제 브라우저 검증 제외.
 - Windows PowerShell은 npm.ps1 실행이 차단되어 있으므로 npm.cmd / npx.cmd 명령을 사용한다. 실행 정책을 변경하지 않는다.
 - 최종 npm.cmd run typecheck / lint / test / build. 이미 통과한 검증은 이후 변경이 영향을 주는 경우에만 반복한다.
-- 현재는 문서 작성 단계이며 위 기능 테스트나 UI 검증을 통과했다고 기록하지 않는다.
+- 최초 계획 당시에는 검증을 실행하지 않았다. 이후 구현·자동 검증 완료 기록에 따라 2026-10-30 완료 처리했다. 브라우저 검증은 사용자 지시로 제외되었으며 미실시다.
 
 ## Completion and handoff
 
 각 Task에서 검증 통과 → 해당 Task done·커밋 → phase 진행률 및 current 포인터 전진. 커밋은 각 청사진에 지정한 한국어 메시지와 Plan/Phase/Task footer를 사용한다. 계획 단계에서는 커밋하지 않는다.
 
 현재 이전 current 기록은 새 포인터 설정 때 history에 보존한다. 시작점은 P01-T01이다.
+
+## Completion Update (2026-10-30)
+
+사용자의 [모든 Task 브라우저 검증 제외 지시](../decisions/2026-10-30-task-validation-policy.md)를 적용하여 P01 4/4 완료로 정리했다. T01 cae7075, T02 4eaa63e, T03 62b9e58, T04 8a0f767. 전체404개 자동 테스트·typecheck·lint·build 통과는 기존 실행 기록을 근거로 하며, 이번에는 재실행하거나 새 구현 커밋을 만들지 않았다. 실제 브라우저 미실시 기록은 이력으로 남긴다.

@@ -83,15 +83,15 @@ function NavSidebar(props: NavSidebarProps): React.ReactElement;
 - `menuOpen:boolean=false`, `sidebarCollapsed:boolean=false`는 기존 AppShell state 그대로다. `SIDEBAR_ID="workspace-sidebar"`, trigger ID `workspace-sidebar-trigger` 유지.
 - `--nav-sidebar-width`: root `"200px"`, `@media (min-width: 761px)` collapsed `"64px"`. `mainColumn.marginLeft="var(--nav-sidebar-width)"`, max-width760에서 0 유지.
 - NavSidebar root fallback도 `var(--nav-sidebar-width, 200px)`로 갱신한다. 모바일 width는 `280px`, maxWidth는 `calc(100vw - 32px)`로 한다.
-- 고정 aside의 `position:fixed`, top/bottom/left0, zIndex30, flex column, 기존 배경/오른쪽 border를 유지한다. height는 `100dvh`, boxSizing border-box, paddingTop16px로 명시한다. 좌우 root padding은 0으로 두고 각 영역이 다음 inset을 갖게 한다.
+- 고정 aside의 `position:fixed`, top/bottom/left0, zIndex30, flex column, 기존 배경을 유지한다. 오른쪽 border는 `1px solid tokens.colorNeutralStrokeSubtle`로 dadam과 맞춘다(2026-10-30 구분선 후속 요청). height는 `100dvh`, boxSizing border-box, paddingTop16px로 명시한다. 좌우 root padding은 0으로 두고 각 영역이 다음 inset을 갖게 한다.
 
 | 영역 | 펼침·모바일 | 접힘(761px 이상만) |
 | --- | --- | --- |
-| header | padding `8px 12px 16px 22px`, flex/center/space-between, gap4px, height auto, minHeight52px, flexShrink0, 기존 borderBottom 제거 | padding `8px 8px 16px`, justifyContent center, gap0 |
+| header | padding `8px 12px 16px 22px`, flex/center/space-between, gap4px, height auto, minHeight52px, flexShrink0, 기존 borderBottom 제거 | padding `0 8px`, height/minHeight28px, justifyContent center, gap0 — 2026-10-30 후속 요청 반영 |
 | navigation | marginTop12px, padding `0 12px 8px`, flex1, minHeight0, overflowY auto, overflowX hidden | padding `0 8px 8px`, marginTop12px 유지 |
 | group | flex column, rowGap4px, padding `0 6px`, alignItems stretch | padding0, alignItems stretch, rowGap4px |
-| divider | margin `10px 6px`, paddingRight0, width auto, minHeight1px, 기존 색 유지 | margin `10px 0`, paddingRight0 |
-| footer | flex column, alignItems stretch, width100%, flexShrink0, padding12px, rowGap0, borderTop `1px solid tokens.colorNeutralStroke2` | padding `12px 8px`, alignItems stretch |
+| divider | margin `10px 6px`, paddingRight0, width auto, minHeight1px, before/after borderTopColor `webLightTheme.colorNeutralStroke2`(#e0e0e0) — 2026-10-30 후속 요청 | margin `10px 0`, paddingRight0, 같은 색 |
+| footer | flex column, alignItems stretch, width100%, flexShrink0, padding12px, rowGap0, borderTop `1px solid tokens.colorNeutralStrokeSubtle` — 2026-10-30 후속 요청 | padding `12px 8px`, alignItems stretch |
 
 dadam은 root padding과 절대 footer/하단112px 예약을 사용한다. KPC는 같은 좌우 inset을 각 영역에 배분하고 기존 flex footer를 유지한다. 15개 메뉴와 높이가 달라질 수 있는 프로필을 지원하기 위해 절대 footer/112px spacer를 복사하지 않는다. root 전체에 overflow hidden을 추가하지 않는다.
 
@@ -130,9 +130,9 @@ function ExpandIcon(props: { size?: number }): React.ReactElement;
 | link | flex/alignItems center, width100%, minWidth0, minHeight40px, height auto, padding10px12px, columnGap10px, flexShrink0; family var, size14px, lineHeight20px, weight400, letterSpacing0, textAlign left, whiteSpace nowrap |
 | icon | display block, width/height20px, flexShrink0; 펼침·접힘·모바일 모두 표시 |
 | label(새 스타일) | flex1, minWidth0, overflow hidden, textOverflow ellipsis, whiteSpace nowrap, fontSize/lineHeight/fontWeight/fontFamily inherit |
-| collapsed link | justifyContent center, width100%, minHeight40px, height auto, padding10px0, columnGap0; 기존 접힘 색 유지 |
+| collapsed link | justifyContent center, width100%, minHeight40px, height auto, padding10px0, columnGap0; 기본 링크의 neutral 색 상속(별도 회색 override 없음) |
 
-- link의 기존 radius9px, 일반 색, hover, focus-visible outline을 유지한다. 원본 dadam의 활성용 투명3px border·활성 테두리·scale을 추가하지 않는다. 따라서 원본과 text 시작점에 3px 차이가 있을 수 있으며 KPC 목표는 펼침 기준 아이콘 x30px/텍스트 x60px다(외곽12+group6+link12, icon20+gap10).
+- link의 기존 radius9px, hover 배경과 focus-visible outline을 유지한다. 2026-10-30 후속 색상 요청에 따라 일반 전경은 tokens.colorNeutralForeground2(#424242), hover 전경은 tokens.colorNeutralForeground1(#242424)로 dadam과 맞춘다. 원본 dadam의 활성용 투명3px border·활성 테두리·scale을 추가하지 않는다. 따라서 원본과 text 시작점에 3px 차이가 있을 수 있으며 KPC 목표는 펼침 기준 아이콘 x30px/텍스트 x60px다(외곽12+group6+link12, icon20+gap10).
 - header는 원본의 짧은 DADAM/이미지 대신 긴 KPC 문구이므로 24px fallback을 16px로 조정한다. 기존 문구 전체를 `title`로 제공하며 링크의 접근성 이름을 잘린 문자열로 바꾸지 않는다.
 - menu label span에 새 label 스타일을 붙이되 기존 `data-sidebar-label`을 유지한다. 데이터에 없는 새 그룹 제목은 만들지 않는다.
 
@@ -265,3 +265,31 @@ Task: T01-sidebar-layout-typography
 - ProfileMenu는 inline popover이므로 aside 전체에 새 폰트를 상속시키지 않는다. 메뉴 라벨의 `fontWeight: "inherit"`도 활성 전용800 굵기를 유지하기 위한 경계다.
 - 기존 Vite의 향후 native config loader 경고와 baseline-browser-mapping 데이터 갱신 경고가 남아 있다. 자동 검증은 모두 성공했다. 설정/의존성 유지보수는 이 Task 범위 밖이므로 수정하지 않았고 별도 정리 대상으로 남긴다.
 - 시작 전부터 있던 이전 핀 코멘트 계획/검증 문서 변경은 이번 sidebar 구현 커밋에 포함하지 않는다. 새 sidebar 계획·정책·포인터/이력과 구현만 기록한다.
+
+## Follow-up: dadam 접힘 메뉴 시작점 보정 (2026-10-30)
+
+- 사용자 요청: 접힌 사이드바의 시작점과 아이콘 간격 확인. 추가 답변으로 펼침 상태와의 비교가 아닌 **dadam과 비교한 접힘 메뉴 위치**임을 확인했다.
+- 원인: dadam NavSidebar의 `brandCollapsed.padding`은 `var(--brand-top-pad) 6px 8px 12px 8px`다. 실제 Griffel 출력에도 같은5개 값이 남으며, 변수 대입 후 유효하지 않은 padding은 초기값0이 된다. 이는 [CSS 변수의 computed-value 오류 처리](https://www.w3.org/TR/css-variables-1/#invalid-variables)와 로컬 소스를 바탕으로 한 판독이며 실제 브라우저 측정이 아니다.
+- 이전 KPC 접힘 헤더는 paddingTop8px + paddingBottom16px 및 minHeight52px로24px을 더 차지했다. 접힘 미디어 조건 안에서만 padding `0 8px`, height/minHeight28px로 명시해 compact 토글 행을 재현했다. 잘못된 원본 CSS를 복사하거나 외부 dadam 저장소를 수정하지 않았다.
+- 소스 산술 기준: root 상단16 + 토글 행28 + nav margin12 = 첫 메뉴 상단56px(기존80px). 아이콘 상단은66px(기존90px)다. 펼침·모바일 헤더 규칙은 유지한다.
+- 간격 확인: dadam과 KPC 모두 일반 접힘 메뉴는 아이콘20 + 위아래 padding10씩 = 행40px, 그룹 내 gap4px, 아이콘 중심 간격44px다. 그룹 구분선 여백10px씩도 유지한다. 활성 상태 전용 scale/테두리 등은 이번 비교/변경에서 제외했다.
+- 검증: 기존 sidebar 카탈로그와 셸 DOM 테스트17개 통과, 전체 typecheck 통과, NavSidebar 대상 ESLint 통과, Next 프로덕션 build 통과, Griffel 생성 CSS의 접힘 header override와 두 저장소의 간격 수치 비교 통과, diff check 통과.
+- 브라우저 검증은 사용자 지시대로 미실시했다. 이 후속 보정은 작업 트리에 반영했으며 최초 구현 커밋f573ce5의 기록과 구분한다.
+
+## Follow-up: dadam 일반 메뉴 글자색 일치 (2026-10-30)
+
+- 사용자 요청: dadam의 폰트 색이 더 진하게 보이는 원인 확인 및 기존 룩앤필 정렬의 후속 보정.
+- 두 저장소의 설치된 Fluent light theme와 실제 sidebar의 item/link 선언을 비교했다. dadam은 `colorNeutralForeground2=#424242`, hover는 `colorNeutralForeground1=#242424`이며 KPC는 각각#626670/#34363c를 직접 지정하고 있었다. 일반 글자 굵기는 둘 다400이어서 색상이 주요 코드 차이다.
+- NavSidebar.link의 기본/hover 전경을 dadam과 같은 Fluent 토큰으로 바꾸고, 접힘 링크의#777d89 override를 제거했다. 접힘 아이콘도 기본색과 hover색을 상속한다. 활성 전용 color/background/800 weight/inset 강조선과 접힘 aria-current 색은 변경하지 않았다.
+- 브랜드·프로필·배경색·폰트 파일·크기/굵기·메뉴 간격·앞선 접힘 시작점 보정은 유지한다. 임의로 글자를 굵게 만들어 색상 차이를 보정하지 않는다.
+- 검증: 전체 typecheck 및 NavSidebar 대상 ESLint 통과, 설치된 테마 토큰 일치 확인, Griffel CSS 생성 및 활성 스타일 보존 정적 확인과 diff check 통과. 브라우저 검증은 미실시. 기능 로직 변경이 없어 신규 테스트나 전체 테스트·빌드 반복은 하지 않았다.
+- 변경은 작업 트리에 반영했으며 기존 미커밋 변경을 보존했다.
+
+## Follow-up: dadam 구분선 색상 일치 (2026-10-30)
+
+- 사용자 요청: divider 색상도 dadam과 비교 확인.
+- 기존 기준인 dadam `app/_components/layout/NavSidebar.tsx`는 메뉴 사이에 기본 Fluent Divider를 사용한다. 설치된 Divider 소스와 `webLightTheme`를 확인한 결과 기본 선은 `colorNeutralStroke2=#e0e0e0`, 오른쪽 경계와 하단 영역 상단 선은 `colorNeutralStrokeSubtle=#e0e0e0`다. dadam의 customThemeTokens에는 이 색상 재정의가 없다.
+- KPC 메뉴 구분선은 #e6e8ec, 오른쪽 경계와 footer 상단은 전역 재정의된 `colorNeutralStroke2=#e6e7eb`로 더 연했다. `NavSidebar.tsx`의 메뉴 구분선은 `webLightTheme.colorNeutralStroke2`, 오른쪽/하단 선은 `tokens.colorNeutralStrokeSubtle`로 변경해 세 위치 모두 #e0e0e0으로 맞췄다. 앱 전역 테마 재정의는 보존한다.
+- 두께·길이·여백·접힘 레이아웃과 활성 메뉴 전용 디자인은 유지한다. dadam V2의 glass 테마는 기존 범위대로 도입하지 않는다.
+- 검증: 전체 typecheck, NavSidebar 대상 ESLint, diff check 통과. 두 저장소의 설치된 Fluent Divider 스타일과 테마 값 및 KPC Provider 재정의를 정적으로 비교했다. 색상만 변경하여 신규 테스트나 전체 테스트·빌드를 반복하지 않았으며 사용자 지시에 따라 브라우저 검증도 미실시했다.
+- 변경은 작업 트리에 반영했으며 기존 미커밋 변경을 보존했다.

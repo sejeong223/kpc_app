@@ -1,6 +1,10 @@
 # Task: T03 코멘트 상태 연결과 공용 헤더 정리
 
-## Status: in_progress
+## Status: done
+
+## Validation Policy Update (2026-10-30)
+
+사용자가 앞으로 모든 Task에서 브라우저 검증을 제외하도록 지시했다. 기존 구현 및 자동 검증 통과 기록을 기준으로 완료한다. 실제 브라우저 검증은 수행하지 않았고 완료 조건에서 제외했다. 아래 2026-10-29 실행 이력의 대기 기록은 당시 상태이며 현재 할 일이 아니다. [지속 적용 정책](../../../decisions/2026-10-30-task-validation-policy.md)을 따른다.
 
 ## Goal
 
@@ -285,15 +289,15 @@ interface AppShellProps { children: React.ReactNode }
 - load 실패→재시도, mutation 중 load 무시, conflict/no permission/resolved 오류 전달, 완료 상태 답글 보존, 삭제 후 해당 대상 초안만 정리.
 - 수정 충돌 후 load해도 edit 본문/baseRevision이 자동 덮이지 않고, 명시적 rebaseEdit 후에만 최신 revision을 기준으로 저장하는지 검증한다.
 - 역할/표시 이름 갱신은 소유권을 바꾸지 않으며 새 계정 controller는 빈 메모리 상태로 시작.
-- 브라우저에서는 공용 헤더가 사라졌는지, 모바일 메뉴 열기·닫기·Tab/Esc·포커스와 토큰 사용량/신청 모달 닫기 복귀가 정상인지 확인한다. 코멘트 UI는 T04에서 연결하므로 아직 핀 UI 완료로 기록하지 않는다.
+- 기존 tests/lib/comments/shell-ui.test.ts의 jsdom 검증으로 헤더 미노출, 모바일 메뉴 열기/Escape, inert/스크롤 복원 및 토큰 모달의 트리거 포커스 복귀를 확인한다. 실제 브라우저와 native Tab 순환 검증은 제외한다.
 
 ## Acceptance Criteria
 
-- [ ] Provider가 앱 레이아웃에 한 번 연결되고 경로 이동으로 초안이 소멸하지 않는다.
-- [ ] 계정·비동기 요청 세대를 분리하여 이전 결과가 새 계정/새 입력을 덮지 않는다.
-- [ ] 모든 메뉴의 헤더가 제거되고 모바일 탐색은 유지된다.
-- [ ] workspace-sidebar-trigger ID와 기존 토큰 포커스 연결이 남아 있다.
-- [ ] 제작 main은 기존 최대 폭/패딩 제한을 받지 않고 다른 메뉴의 본문 스타일은 유지된다.
+- [x] Provider가 앱 레이아웃에 한 번 연결되고 경로 이동으로 초안이 소멸하지 않는다.
+- [x] 계정·비동기 요청 세대를 분리하여 이전 결과가 새 계정/새 입력을 덮지 않는다.
+- [x] 모든 메뉴의 헤더가 제거되고 모바일 탐색은 유지된다.
+- [x] workspace-sidebar-trigger ID와 기존 토큰 포커스 연결이 남아 있다.
+- [x] 제작 main은 기존 최대 폭/패딩 제한을 받지 않고 다른 메뉴의 본문 스타일은 유지된다.
 
 ## Validation
 
@@ -301,8 +305,8 @@ interface AppShellProps { children: React.ReactNode }
 - npm.cmd run typecheck — Provider/레이아웃 계약 통과.
 - npx.cmd eslint lib/comments/controller.ts components/comments/CommentsProvider.tsx components/layout/AppShell.tsx 'app/(authenticated)/layout.tsx' tests/lib/comments/controller.test.ts — 오류 없음.
 - rg -n AppHeader app components — 사용처 없음(0건이면 rg exit1 정상). 실제 제거된 파일과 불필요한 import 확인.
-- npm.cmd run dev -- --port 3100 — 별도 로컬 검증 서버가 필요할 때만 사용. .env·실계정 인증 설정을 바꾸지 말고 현재 앱 설정으로 확인.
-- 브라우저 1440×900, 390×844에서 헤더 제거·사이드바 접기/열기·토큰 모달 포커스 검사. 기존 서버가 같은 작업 내용을 제공하면 재사용한다.
+- npm.cmd test -- tests/lib/comments/shell-ui.test.ts — 기존 jsdom 셸/모달 포커스 테스트 통과.
+- 브라우저 검증과 검증용 dev server 실행은 2026-10-30 사용자 지시로 제외한다.
 - git diff --check — 공백 오류 없음.
 
 ## Commit Message
@@ -321,7 +325,7 @@ Task: T03-comment-state-and-shell
 ## Progress
 
 - [x] 구현 완료
-- [ ] 검증 통과
+- [x] 검증 통과 — 자동 검증 기준, 브라우저 검증은 사용자 지시로 제외
 - commit: 62b9e58
 
 ## Execution Result (2026-10-29)
@@ -341,3 +345,9 @@ Task: T03-comment-state-and-shell
 - 최종 전체 404개 테스트, typecheck, 전체 lint, 프로덕션 build 통과. 마지막 테스트 도우미 정리 후 해당 3개 테스트와 전체 lint도 다시 통과했다.
 - 구현 체크포인트를 이 Task의 한국어 메시지로 커밋한다. Status는 실제 브라우저 검증 대기이므로 in_progress를 유지한다.
 - 남은 확인: 실제 1440×900/390×844 렌더링과 모바일 Tab 순환. jsdom은 CSS 배치·Tabster의 실제 브라우저 포커스 동작을 보증하지 않는다. 기존 Tab 처리 로직은 유지했다.
+
+## Completion Update (2026-10-30)
+
+- 브라우저 검증 요구를 사용자 지시에 따라 제외했다. 이를 통과한 것으로 표시하지 않는다.
+- 기존 구현 커밋 62b9e58와 기록된 전체404개 자동 테스트·타입·lint·build 통과를 근거로 Status를 done으로 정리했다.
+- 이번 문서 정리에서 앱 코드를 바꾸거나 테스트를 재실행하거나 기존 구현을 중복 커밋하지 않았다.

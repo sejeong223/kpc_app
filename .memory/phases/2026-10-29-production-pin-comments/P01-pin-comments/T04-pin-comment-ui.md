@@ -1,6 +1,10 @@
 # Task: T04 제작 핀과 코멘트 팝업 UI 완성
 
-## Status: in_progress
+## Status: done
+
+## Validation Policy Update (2026-10-30)
+
+사용자가 앞으로 모든 Task에서 브라우저 검증을 제외하도록 지시했다. 기존 구현 및 자동 검증 통과 기록을 기준으로 완료한다. 실제 브라우저 검증은 수행하지 않았고 완료 조건에서 제외했다. 아래 2026-10-29 실행 이력의 대기 기록은 당시 상태이며 현재 할 일이 아니다. [지속 적용 정책](../../../decisions/2026-10-30-task-validation-policy.md)을 따른다.
 
 ## Goal
 
@@ -388,13 +392,13 @@ function CommentActionsMenu(props: CommentActionsMenuProps): React.ReactElement;
 11. 오류는 popup 및 작업 영역의 role=alert 안내로 표시한다. 실패한 전송/수정은 textarea를 비우지 않고 retry 가능. load 자체의 오류이면 새 핀/저장을 막고 다시 불러오기만 제공한다.
 12. 수정 revision 충돌은 초안을 보관한 채 최신 내용 불러오기(controller.load)를 제공한다. 새 message.revision과 edit.baseRevision이 다르면 현재 저장 본문을 편집창 위에 보여주고 최신 내용 기준으로 수정 버튼을 제공한다. 이 버튼을 명시적으로 누를 때만 rebaseEdit로 baseRevision을 맞춘다. 그 전에는 수정 전송을 막으며 자동으로 타인의 최신 변경을 덮지 않는다. 취소는 기존 cancelEdit 동작이다.
 
-### I06. 실제 브라우저와 회귀 검증
+### I06. 자동 회귀 검증
 
 - Related Files:
   - tests/lib/comments/geometry.test.ts :: geometry — new
   - tests/lib/comments/format.test.ts :: dates — new
-  - .memory/phases/2026-10-29-production-pin-comments/P01-pin-comments/T04-pin-comment-ui.md :: 실행 결과/스크린샷 경로/제한 기록 — modify
-  - .memory/validation/2026-10-29-production-pin-comments/ :: 필요한 실제 캡처 산출물 — 실행 시 생성 가능
+  - .memory/phases/2026-10-29-production-pin-comments/P01-pin-comments/T04-pin-comment-ui.md :: 자동 실행 결과/검증 범위 기록 — modify
+  - .memory/validation/2026-10-29-production-pin-comments/ :: 자동 검증 보고서 — 실행 시 갱신 가능, 스크린샷 제외
 
 #### Details
 
@@ -406,39 +410,21 @@ function CommentActionsMenu(props: CommentActionsMenuProps): React.ReactElement;
 - format: 고정 now 기준 방금/분/시간/날짜, 미래 값/invalid, Asia/Seoul 정확 시각.
 - 전체 기존 tests를 최종 실행한다. 헤더나 버튼 CSS를 그대로 복사하는 무의미한 테스트를 추가하지 않는다.
 
-**Browser matrix — 실제 구현 후 수행하고 증거를 기록한다**
+**자동 UI 통합 검증 범위**
 
-| 화면 | 확인 |
-| --- | --- |
-| 1440×900 | 좌측220/54 접기 전후 pin 비율, seed 미리보기/대화, 모든 CRUD와 실제 IndexedDB 복원 |
-| 1024×500 | 낮은 화면에서 popup 최대 높이와 header/footer/입력 접근, 본문 스크롤 |
-| 390×844 | 모바일 메뉴 열기/닫기/포커스, popup 가용 너비, 터치 drag/resize, 멘션 목록 |
-| 320×568 | 최소폭 보정·버튼 잘림 없음·긴 본문·키보드 사용 |
+기존 tests/lib/comments/workspace-ui.test.ts의 jsdom·fake-indexeddb 검증을 사용한다. 생성/저장소 재개방, IME 이벤트·Enter/Shift+Enter, 멘션·Escape, 초안, preview, 완료/재개, 본인 글 수정/삭제, 타인 권한, resize/420px 라벨, 드래그 최종 저장/취소, 저장 실패, 충돌/rebase 및 viewport 경계 계산을 확인한다. 셸·모달 포커스는 shell-ui.test.ts를 사용한다.
 
-**검증 시나리오**
-
-1. 처음 제작 진입은 예시2핀, 첫 의견·답글·멘션과 다른 작성자 메뉴 차이 확인. 새 핀 입력 후 Enter/버튼 각각 등록하여 중복이 없는지 확인.
-2. 공백-only는 gray/white send, 유효 입력은 red/white. 수정창은 초기 gray, 변화 후red. 한글 조합 Enter는 조합 확정만 하고 등록하지 않음. Shift+Enter 줄바꿈.
-3. @ 검색·마우스 선택·Arrow/Enter 선택·Esc 닫기·결과 없음·멘션 앞/내부 편집·emoji 앞 입력 후 저장과 복원.
-4. hover 작성자/시간/본문 순서, click popup, 다른 pin 전환, outside/X/Esc/경로 이동과 각 초안 복원, 새로고침하면 미등록 초안 소멸.
-5. 핀 drag 후 클릭이 오작동하지 않고 마지막 위치만 DB 저장. 창 resize/sidebar 접기/스크롤에서 상대 위치 유지. 외부 scroll로 pin이 안 보일 때 popup 닫기와 초안 보관. popup 본문 scroll은 popup을 닫지 않음.
-6. 다른 작성자의 pin 이동·완료·재개 가능, 타인 내용 메뉴 없음. 완료 pin gray·hover/click 가능, reply 막힘, 재개 후 red·reply 가능.
-7. 본인 root/reply 수정, own thread 삭제 시 답글 함께 삭제, 취소 시 유지. 오류나 busy 중 이중 제출 없음.
-8. popup 손잡이와 키보드 resize, desktop 너비50%/높이80%,420px 전후 체크 라벨 전환, 작은 화면 예외. 입력/scroll 상태 유지.
-9. 새로고침 및 같은 브라우저 창 재진입 후 실제 등록 값·좌표·완료·수정·삭제 복원. 최초 예시 수가 증가하지 않고 삭제한 본인 예시가 다시 나타나지 않음. 전체0개 후 seed 재생성 방지는 T02 저장소 테스트도 함께 증거로 남김.
-10. 안전한 격리 테스트 데이터/테스트 context에서 DB 오류를 재현해 입력 보존과 안내 확인. 실제 사용자 DB를 무단 clear하거나 인증 우회용 앱 경로를 만들지 않는다.
-11. 모든 메뉴에서 헤더가 없고 모바일 sidebar/프로필/사용량·토큰 신청 모달이 그대로 동작. 토큰 닫기 시 workspace-sidebar-trigger/main 등 유효 대상에 포커스. 새 DB가 프로필의 고정 개수/알림을 바꾸지 않음.
-12. 콘솔·hydration 오류와 의도하지 않은 외부 요청이 없는지 확인. 실제 로그인이나 외부 서비스까지 확인하지 못한 경우 검증 범위를 구분하여 기록한다.
+실제 브라우저 matrix·수동 클릭·native IME/터치·실제 창 재접속·스크린샷·콘솔 UI 검증은 2026-10-30 사용자 지시로 제외한다. jsdom/fake-indexeddb 결과를 브라우저 검증 결과로 기록하지 않는다.
 
 ## Acceptance Criteria
 
 - [x] 제작 화면 전체에 생성 버튼과 위치 기반 핀을 제공하고 다른 메뉴에는 노출하지 않는다.
-- [x] 원본 핀의 색·모양·번호·선택/임시/완료 상태를 구현한다(실제 육안 비교 대기).
+- [x] 원본 핀의 색·모양·번호·선택/임시/완료 상태를 코드로 구현한다. 실제 육안 비교는 검증 범위에서 제외한다.
 - [x] 팝업·미리보기·답글·멘션·수정/삭제·완료/재개가 controller/DB와 연결된다.
-- [ ] 상대 위치·drag/click 구분·키보드 입력·팝업 resize·420px 라벨·최대 크기·모바일 예외를 검증한다.
-- [ ] 등록 데이터는 실제 브라우저에서 복원되며 미등록 초안의 수명이 결정과 일치한다.
-- [ ] 모바일 탐색·기존 프로필/토큰 모달 포커스에 회귀가 없다.
-- [x] 최종 자동 검증 및 브라우저 증거와 한계를 이 Task Progress 아래에 기록한다.
+- [x] 상대 위치·drag/click 구분·키보드 이벤트·resize·420px 라벨·최대 크기·모바일 예외를 순수 함수와 jsdom 테스트로 검증한다.
+- [x] 등록 데이터의 저장소 재개방 및 미등록 초안 수명은 fake-indexeddb/controller/jsdom 테스트로 검증한다.
+- [x] 모바일 탐색·기존 프로필/토큰 모달 포커스의 자동 회귀 테스트를 통과한다.
+- [x] 최종 자동 검증 결과와 브라우저 미실시/범위 제외 사실을 기록한다.
 
 ## Validation
 
@@ -447,8 +433,7 @@ function CommentActionsMenu(props: CommentActionsMenuProps): React.ReactElement;
 - npm.cmd run lint — 전체 lint 통과.
 - npm.cmd test — 전체 기존 및 신규 테스트 통과.
 - npm.cmd run build — 실제 Next 프로덕션 빌드 통과.
-- npm.cmd run dev -- --port 3100 — 필요 시에만 검증 서버. 현재 인증 설정을 유지하고 .env를 임의 수정하지 않는다.
-- 실제 브라우저 위 matrix 수행. 기존 실행 서버가 현재 코드를 제공하면 재사용하고, 새 백그라운드 Windows 프로세스를 시작할 경우 숨김 창으로 실행한다.
+- 브라우저 검증과 검증용 dev server 실행은 2026-10-30 사용자 지시로 제외한다.
 - git diff --check — 공백 오류 없음.
 - 최종 테스트 후 CSS/로직을 수정하면 그 수정에 영향을 받는 체크만 다시 실행하고 결과를 갱신한다.
 
@@ -463,14 +448,14 @@ Task: T04-pin-comment-ui
 
 - 핀 미리보기와 대화 및 멘션 입력 연결
 - 이동과 크기 조절 및 완료와 수정 삭제 구현
-- 브라우저 저장 복원과 반응형 탐색 회귀 검증
+- 자동 저장 복원과 셸 및 UI 회귀 검증
 ~~~
 
 ## Progress
 
 - [x] 구현 완료
-- [ ] 검증 통과
-- commit: git log -1 --format=%h --grep='Task: T04-pin-comment-ui'
+- [x] 검증 통과 — 자동 검증 기준, 브라우저 검증은 사용자 지시로 제외
+- commit: 8a0f767
 
 ## Execution Result (2026-10-29)
 
@@ -483,3 +468,9 @@ Task: T04-pin-comment-ui
 - UI 테스트는 실제 브라우저의 CSS·native IME·터치·스크린샷 또는 사용자 DB 재접속 복원을 보증하지 않는다.
 - Computer Use가 새 검증용 Chrome 창에서도 현재 URL을 충분히 확인하지 못해 자동 안전 차단됐다. 이후 브라우저 조작이나 다른 경로 우회를 하지 않았다. 실제 브라우저 matrix는 미실행이며 완료 체크하지 않았다.
 - 상세 결과/학습 노트/남은 확인: [검증 기록](../../../validation/2026-10-29-production-pin-comments/report.md).
+
+## Completion Update (2026-10-30)
+
+- 브라우저 검증 요구를 사용자 지시에 따라 제외했다. 이를 통과한 것으로 표시하지 않는다.
+- 기존 구현 커밋 8a0f767와 기록된 전체404개 자동 테스트·타입·lint·build 통과를 근거로 Status를 done으로 정리했다.
+- 이번 문서 정리에서 앱 코드를 바꾸거나 테스트를 재실행하거나 기존 구현을 중복 커밋하지 않았다.

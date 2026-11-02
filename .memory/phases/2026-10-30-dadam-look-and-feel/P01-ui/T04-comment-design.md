@@ -255,3 +255,18 @@ Task: T04-comment-design
 - 학습: 좌표 저장은 비율이고 화면 위치만 현재 surface 폭으로 환산한다. 예: x = xRatio * surfaceWidth. 접힘 재측정은 저장 revision을 증가시키지 않아야 하므로 이를 DOM+저장소 회귀로 검증했다.
 - 주의: scope의 display:contents는 inline이며 fixed popup의 기준점을 바꾸는 transform/contain을 추가하지 않는다. 토큰은 미리보기, 코멘트는 기존 IndexedDB 저장이다.
 - 추가 처리: 사용자 승인된 예전220px 테스트 가정 보완. 그 밖의 인접 결함은 특이사항 없음. T01~T04 완료.
+
+## Follow-up: 핀 숫자 시각 정렬 (2026-10-30)
+
+- 사용자 제보: 숫자가 도형의 아래쪽에 쏠려 보임. 기존 flex의 alignItems/justifyContent는 모두 center로 줄 상자를 중앙 정렬하고 있었다.
+- 숫자를 내부 span으로 분리하고 translateY(-1px)로 시각 보정했다. 핀 크기·꼬리 기준점·선택 확대·hit 영역·저장 좌표는 변경하지 않았다.
+- 로컬 Spoqa Bold의 숫자 외곽과 폰트 수직 메트릭을 확인했으며, 1px은 사용자 관찰을 반영한 보정값이다. 실제 브라우저 픽셀 중앙을 측정한 결과로 취급하지 않는다.
+- 기존 workspace-ui 19개 테스트, typecheck, CommentPin ESLint, git diff --check 통과. 브라우저 검증은 지속 지시에 따라 제외했다.
+## Follow-up: 원 중심 기준 숫자 정렬 (2026-10-30, 이전 고정 보정 대체)
+
+- 사용자 지적에 따라 translateY(-1px)를 제거했다. 숫자마다 다른 여백에 같은 이동량을 적용하지 않는다.
+- CommentPin의 숫자를 원 내부의 SVG 영역에 배치한다. 24px 원에서 대칭 2px 테두리를 제외한 20px 영역의 중심을 기준으로 삼으며 꼬리 모양은 계산에 포함하지 않는다.
+- 적용된 글꼴의 Canvas TextMetrics.actualBoundingBoxLeft/Right/Ascent/Descent로 숫자 자체의 외곽 중심을 구하고 SVG 텍스트의 기준선을 배치한다. 숫자 변경과 document.fonts.ready/loadingdone 때 재측정하고 unmount 이후 작업은 취소한다. 측정이 없는 환경에서는 SVG의 중앙 정렬을 유지한다.
+- 구현 근거: [HTML TextMetrics 표준](https://html.spec.whatwg.org/multipage/canvas.html#textmetrics). SVG getBBox는 텍스트에서 글리프 셀까지 포함할 수 있으므로 실제 글자 영역 측정에는 사용하지 않았다.
+- 숫자1/8/12/100, 폰트 로딩, 반복 측정, 숫자 변경, 측정 불가·unmount 검증 6개와 기존 workspace-ui19개, 총25개 테스트 통과. typecheck, 대상 ESLint, git diff --check 통과. 가상 메트릭 테스트이며 브라우저 검증은 제외했다.
+- 핀 도형·크기·꼬리 기준점·선택 배율·클릭 영역·저장 좌표는 보존했다.
