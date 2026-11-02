@@ -2,9 +2,8 @@
 
 import {
   FluentProvider,
-  type Theme,
-  webLightTheme,
 } from "@fluentui/react-components";
+import { dadamTheme } from "@/lib/ui/dadam-theme";
 import {
   createDOMRenderer,
   RendererProvider,
@@ -12,20 +11,6 @@ import {
 } from "@griffel/react";
 import { useServerInsertedHTML } from "next/navigation";
 import { useRef, useState } from "react";
-
-const workspaceTheme: Theme = {
-  ...webLightTheme,
-  colorBrandBackground: "var(--kpc-brand)",
-  colorBrandBackgroundHover: "var(--kpc-brand-hover)",
-  colorBrandBackgroundPressed: "var(--kpc-brand-pressed)",
-  colorBrandForeground1: "var(--kpc-brand-foreground)",
-  colorBrandForeground2: "var(--kpc-brand-ink)",
-  colorBrandBackground2: "var(--kpc-brand-soft)",
-  colorBrandBackground2Hover: "var(--kpc-brand-soft-hover)",
-  colorBrandStroke1: "var(--kpc-brand)",
-  colorNeutralBackground2: "var(--kpc-neutral-subtle)",
-  colorNeutralStroke2: "var(--kpc-line)",
-};
 
 interface FluentUiProviderProps {
   children: React.ReactNode;
@@ -38,8 +23,7 @@ export default function FluentUiProvider({
   const didFlush = useRef(false);
 
   useServerInsertedHTML(() => {
-    // App Router can flush repeatedly. Re-emitting the full sheet leaves stale
-    // body styles that override Griffel's later client-side updates.
+    // 반복 flush 시 오래된 스타일이 클라이언트의 최신 스타일을 덮지 않도록 한다.
     if (didFlush.current) return null;
     didFlush.current = true;
     return <>{renderToStyleElements(renderer)}</>;
@@ -48,7 +32,7 @@ export default function FluentUiProvider({
   return (
     <RendererProvider renderer={renderer}>
       <FluentProvider
-        theme={workspaceTheme}
+        theme={dadamTheme}
         style={{
           minHeight: "100svh",
           backgroundColor: "transparent",

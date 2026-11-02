@@ -1,5 +1,6 @@
 "use client";
-import { Button, Field, Input } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { useAdminCommand } from "@/hooks/admin/use-admin-data";
 import { AdminCommandSchema } from "@/lib/admin/schemas";

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { AdminPage } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
@@ -36,7 +36,7 @@ export default function DashboardPage(): React.ReactElement {
       setQuery(current => ({ ...current, ...period, bucketStart: null, rfpPage: 1 }));
       updateUi({ departmentPage: 1, userPage: 1, breakdownPages: { actions: 1, resources: 1, details: 1 }, focusRfpList: false });
     }} />
-    {access.data.grants.audit.read && <Link href="/workspace/audit" className="tw:rounded-md tw:border tw:border-solid tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:px-(--layout-control-gap) tw:py-(--layout-inline-gap) tw:text-(--kpc-ink) tw:no-underline">활동 로그 →</Link>}
+    {access.data.grants.audit.read && <Link href="/workspace/audit" className="tw:inline-flex tw:min-h-(--dadam-control-height) tw:items-center tw:rounded-(--dadam-control-radius) tw:border tw:border-solid tw:border-(--dadam-control-border) tw:bg-(--kpc-card) tw:px-(--dadam-control-padding) tw:text-sm tw:text-(--dadam-control-ink) tw:no-underline tw:hover:bg-(--dadam-control-muted)">활동 로그 →</Link>}
   </>}>
     <RfpSummary view={view} status={query.rfpStatus} onSelect={(rfpStatus) => { setQuery(current => ({ ...current, rfpStatus, rfpPage: 1 })); setTab("rfp"); }} />
     <DashboardActivitySummary view={view} />

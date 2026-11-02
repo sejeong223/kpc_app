@@ -1,6 +1,7 @@
 "use client";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
-import { Badge, Button } from "@fluentui/react-components";
+import { Badge } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";

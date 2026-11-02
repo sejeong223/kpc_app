@@ -1,5 +1,5 @@
 "use client";
-import { Input } from "@fluentui/react-components";
+import { DadamInput as Input } from "@/components/ui/DadamControls";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminTable from "@/components/admin/ui/AdminTable";

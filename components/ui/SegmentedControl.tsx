@@ -1,7 +1,7 @@
 "use client";
 
 import { makeStyles, tokens, mergeClasses, Radio, RadioGroup, radioClassNames, shorthands } from "@fluentui/react-components";
-import { dadamUi } from "@/lib/ui/dadam-theme";
+import { dadamControl, dadamUi } from "@/lib/ui/dadam-theme";
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -26,8 +26,9 @@ const useStyles = makeStyles({
     minWidth: 0,
     padding: "3px",
     gap: "2px",
-    borderRadius: dadamUi.cardRadius,
-    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: dadamControl.radius,
+    backgroundColor: dadamControl.muted,
+    ...shorthands.border("1px", "solid", dadamControl.border),
   },
   fullWidth: { display: "flex", width: "100%" },
   option: {
@@ -44,7 +45,7 @@ const useStyles = makeStyles({
     width: "100%",
     height: "100%",
     ":enabled:checked": {
-      [`& ~ .${radioClassNames.label}`]: { color: tokens.colorNeutralForeground1 },
+      [`& ~ .${radioClassNames.label}`]: { color: tokens.colorBrandForeground1 },
     },
     ":enabled:not(:checked)": {
       [`& ~ .${radioClassNames.label}`]: { color: tokens.colorNeutralForeground3 },
@@ -56,7 +57,7 @@ const useStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    minHeight: dadamUi.smallControlHeight,
+    minHeight: dadamControl.compactHeight,
     height: "auto",
     minWidth: 0,
     margin: 0,
@@ -64,20 +65,20 @@ const useStyles = makeStyles({
     borderRadius: dadamUi.controlRadius,
     backgroundColor: "transparent",
     fontFamily: tokens.fontFamilyBase,
-    fontSize: dadamUi.metaSize,
+    fontSize: dadamControl.compactFontSize,
     fontWeight: 500,
     lineHeight: "16px",
     whiteSpace: "normal",
     textAlign: "center",
   },
   selected: {
-    backgroundColor: tokens.colorNeutralBackground1,
-    fontWeight: 700,
-    boxShadow: tokens.shadow2,
+    backgroundColor: tokens.colorBrandBackground2,
+    fontWeight: 500,
+    boxShadow: `inset 0 0 0 1px ${tokens.colorBrandStroke1}`,
     "@media (forced-colors: active)": { outline: "1px solid Highlight" },
   },
-  chips: { padding: 0, gap: "6px", flexWrap: "wrap", backgroundColor: "transparent", borderRadius: 0 },
-  chipOption: { borderRadius: "14px", minHeight: dadamUi.smallControlHeight, height: "auto" },
+  chips: { padding: 0, gap: "6px", flexWrap: "wrap", backgroundColor: "transparent", borderRadius: 0, ...shorthands.borderWidth(0) },
+  chipOption: { borderRadius: dadamControl.radius, minHeight: dadamControl.compactHeight, height: "auto" },
   chipInput: {
     ":enabled:checked": {
       ["& ~ ." + radioClassNames.label]: { color: tokens.colorBrandForeground2 },
@@ -87,8 +88,8 @@ const useStyles = makeStyles({
     },
   },
   chipLabel: {
-    minHeight: dadamUi.smallControlHeight, height: "auto", padding: "0 10px", border: `1px solid ${tokens.colorNeutralStroke1}`,
-    borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground2, fontWeight: 500,
+    minHeight: dadamControl.compactHeight, height: "auto", padding: "0 10px", border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: dadamControl.radius, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground2, fontWeight: 500,
     boxSizing: "border-box",
   },
   chipSelected: { ...shorthands.borderColor(tokens.colorBrandStroke1), backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontWeight: 700, boxShadow: "none" },

@@ -1,6 +1,7 @@
 "use client";
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
-import { Button,Field,Input,Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
 import { resultRows,countResults,filterResults,RESULT_LABEL,SOURCE_LABEL,type ResultQuery } from "@/lib/pptx/template-results";

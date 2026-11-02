@@ -1,5 +1,6 @@
 "use client";
-import { Button, Field, Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";

@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { useEffect, useRef } from "react";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";

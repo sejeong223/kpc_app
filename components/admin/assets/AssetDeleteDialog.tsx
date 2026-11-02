@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import ModalFrame from "@/components/ui/ModalFrame";
 import type { AssetRow } from "@/types/admin-assets";
 import type { VersionedRef } from "@/types/admin";

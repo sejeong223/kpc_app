@@ -1,6 +1,7 @@
 @import "./admin-utilities.css";
 @import "./admin-theme.css";
 @import "./layout-tokens.css";
+@import "./dadam-tokens.css";
 
 @font-face {
   font-family: "Spoqa Han Sans Neo";

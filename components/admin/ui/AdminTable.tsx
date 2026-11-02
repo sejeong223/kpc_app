@@ -1,5 +1,5 @@
 "use client";
-import { Button, Checkbox } from "@fluentui/react-components";
+import { DadamButton as Button, DadamCheckbox as Checkbox } from "@/components/ui/DadamControls";
 import { Fragment, useId } from "react";
 
 export interface AdminColumn<Row extends { id: string }> { id: string; label: string; render(row: Row): React.ReactNode; width?: string; align?: "start" | "end"; sortable?: boolean }

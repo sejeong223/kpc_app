@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import { AdminSeriesChart } from "@/components/admin/ui/AdminCharts";
 import type { DashboardQuery, DashboardView } from "@/types/admin";

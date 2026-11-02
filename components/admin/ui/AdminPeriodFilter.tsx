@@ -1,6 +1,5 @@
 "use client";
-import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
-import { Button, Field, Input, Select } from "@fluentui/react-components";
+import DateRangeFilter from "@/components/ui/DateRangeFilter";
 import { useState } from "react";
 import { PeriodSchema } from "@/lib/admin/schemas";
 import type { Period } from "@/types/admin";
@@ -13,21 +12,7 @@ export default function AdminPeriodFilter({ value, onChange, maxDate, compact = 
     ...[30, 90].map(days => ({ id: String(days), label: `최근 ${days}일`, from: new Date(Date.parse(maxDate) - (days - 1) * 86400000).toISOString().slice(0, 10) })),
     { id: "year", label: "올해", from: maxDate.slice(0, 4) + "-01-01" }, { id: "all", label: "전체 기간", from: "2025-01-01" },
   ];
-  if (compact) return <WorkspaceToolbar align="center">
-    <Field validationMessage={error} validationState={error ? "error" : "none"}>
-      <Input aria-label="시작일" type="date" size="small" max={maxDate} value={displayed.from} onChange={(_, data) => change({ ...displayed, from: data.value })} />
-    </Field><span aria-hidden="true">~</span>
-    <Input aria-label="종료일" type="date" size="small" max={maxDate} value={displayed.to} onChange={(_, data) => change({ ...displayed, to: data.value })} />
-    <Select aria-label="조회 기간" size="small" value={displayed.to === maxDate ? presets.find(preset => preset.from === displayed.from)?.id ?? "custom" : "custom"}
-      onChange={(_, data) => { const preset = presets.find(preset => preset.id === data.value); if (preset) change({ from: preset.from, to: maxDate }); }}>
-      {presets.map(preset => <option key={preset.id} value={preset.id}>{preset.label}</option>)}<option value="custom" disabled>직접 선택</option>
-    </Select>
-  </WorkspaceToolbar>;
-  return <WorkspaceToolbar>
-    <Field label="시작일" validationMessage={error} validationState={error ? "error" : "none"}><Input type="date" size="small" max={maxDate} value={displayed.from} onChange={(_, data) => change({ ...displayed, from: data.value })} /></Field>
-    <Field label="종료일"><Input type="date" size="small" max={maxDate} value={displayed.to} onChange={(_, data) => change({ ...displayed, to: data.value })} /></Field>
-    {[30, 90].map((days) => <Button key={days} size="small" onClick={() => change({ from: new Date(Date.parse(maxDate) - (days - 1) * 86400000).toISOString().slice(0, 10), to: maxDate })}>최근 {days}일</Button>)}
-    <Button size="small" onClick={() => change({ from: maxDate.slice(0, 4) + "-01-01", to: maxDate })}>올해</Button>
-    <Button size="small" onClick={() => change({ from: "2025-01-01", to: maxDate })}>전체</Button>
-  </WorkspaceToolbar>;
+  return <div className={compact ? "tw:min-w-0" : "tw:min-w-0 tw:rounded-(--kpc-radius-card) tw:border tw:border-solid tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:p-(--layout-card-inset)"}>
+    <DateRangeFilter value={displayed} onChange={change} maxDate={maxDate} error={error} presets={presets.map(preset => ({ ...preset, to: maxDate }))} />
+  </div>;
 }

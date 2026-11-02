@@ -1,6 +1,6 @@
 "use client";
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
-import { Button, Input, Select } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useEffect, useState } from "react";
 import AdminPeriodFilter from "@/components/admin/ui/AdminPeriodFilter";
 import { AUDIT_ACTION_LABELS, AUDIT_RESOURCE_LABELS } from "@/config/admin-labels";

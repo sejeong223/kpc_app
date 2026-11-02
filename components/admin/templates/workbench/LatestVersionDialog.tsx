@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import ModalFrame from "@/components/ui/ModalFrame";
 import type { WorkView } from "@/types/template-work";
 interface LatestVersionDialogProps {open:boolean;view:WorkView;pending:boolean;onConfirm():void;onClose():void}

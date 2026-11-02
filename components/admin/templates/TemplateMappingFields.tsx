@@ -1,5 +1,6 @@
 "use client";
-import { Checkbox,Field,Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamCheckbox as Checkbox, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { PAGE_TYPES,PAGE_LABEL } from "@/config/skill-options";
 import { PageTypeSchema,ObjectRoleSchema } from "@/lib/skills/schema";

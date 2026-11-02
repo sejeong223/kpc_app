@@ -1,5 +1,6 @@
 "use client";
-import { Button, Field, Input, Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";

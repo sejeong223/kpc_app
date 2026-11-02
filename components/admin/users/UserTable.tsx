@@ -1,5 +1,6 @@
 "use client";
-import { Badge, Button, Select } from "@fluentui/react-components";
+import { Badge } from "@fluentui/react-components";
+import { DadamButton as Button, DadamSelect as Select } from "@/components/ui/DadamControls";
 import AdminTable, { type AdminColumn } from "@/components/admin/ui/AdminTable";
 import { ADMIN_ROLES, ADMIN_ROLE_LABELS } from "@/config/admin-permissions";
 import { AdminRoleSchema } from "@/lib/admin/schemas";

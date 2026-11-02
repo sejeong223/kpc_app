@@ -1,5 +1,5 @@
 "use client";
-import { Button, Checkbox } from "@fluentui/react-components";
+import { DadamButton as Button, DadamCheckbox as Checkbox } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";

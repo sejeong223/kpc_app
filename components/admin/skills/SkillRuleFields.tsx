@@ -1,5 +1,6 @@
 "use client";
-import { Checkbox,Field,Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamCheckbox as Checkbox, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { OPT,PAGE_TYPES,PAGE_LABEL,RULES } from "@/config/skill-options";
 import type { SkillRules } from "@/lib/skills/schema";
 interface SkillRuleFieldsProps {value:SkillRules;disabled:boolean;fieldErrors:Record<string,string>;onChange(value:SkillRules):void}

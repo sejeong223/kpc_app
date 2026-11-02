@@ -1,5 +1,6 @@
 "use client";
-import { Badge, Button, Checkbox, Field, Input, Select } from "@fluentui/react-components";
+import { Badge, Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamCheckbox as Checkbox, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import ModalFrame from "@/components/ui/ModalFrame";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";

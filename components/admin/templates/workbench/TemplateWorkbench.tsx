@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { Fragment,useEffect,useMemo,useState } from "react";
 import { useAdminRuntime } from "@/components/admin/AdminRuntimeProvider";
 import { useTemplateWork,useTemplateWorkCommand,useTemplateDownload } from "@/hooks/admin/use-template-work";

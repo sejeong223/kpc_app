@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { NavigationRegular } from "@fluentui/react-icons";
 import { useId, useState } from "react";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
