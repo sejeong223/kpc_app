@@ -1,0 +1,187 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .root {
+    --_button-bg: var(--common-button-colorNeutralBackground1);
+    --_button-fg: var(--common-button-colorNeutralForeground2);
+    --_button-border: var(--common-button-colorNeutralStroke2);
+    --_button-hover-bg: var(--common-button-colorNeutralBackground1Hover);
+    --_button-hover-fg: var(--common-button-colorNeutralForeground2Hover);
+    --_button-hover-border: var(--common-button-colorNeutralStroke1Hover);
+    --_button-pressed-bg: var(--common-button-colorNeutralBackground1Pressed);
+    --_button-pressed-fg: var(--common-button-colorNeutralForeground2Pressed);
+    --_button-pressed-border: var(--common-button-colorNeutralStroke1Pressed);
+    --_button-selected-bg: var(--common-button-colorBrandBackground2);
+    --_button-selected-fg: var(--common-button-colorBrandForeground2);
+    --_button-selected-border: var(--common-button-colorBrandStroke1);
+
+    appearance: none;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    flex-shrink: 0;
+    width: auto;
+    height: var(--common-button-control-height);
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0 var(--layout-card-inset);
+    gap: var(--layout-inline-gap);
+    border-width: var(--common-button-strokeWidthThin);
+    border-style: solid;
+    border-color: var(--_button-border);
+    border-radius: var(--common-button-borderRadiusMedium);
+    background-color: var(--_button-bg);
+    color: var(--_button-fg);
+    font-family: var(--common-button-fontFamilyBase);
+    font-size: var(--common-button-fontSizeBase300);
+    line-height: var(--common-button-lineHeightBase300);
+    font-weight: var(--common-button-fontWeightSemibold);
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    box-shadow: none;
+    transition-property: background-color, border-color, color;
+    transition-duration: var(--common-button-durationFaster);
+    transition-timing-function: var(--common-button-curveEasyEase);
+  }
+
+  .root:global(.primary) {
+    --_button-bg: var(--common-button-colorBrandBackground);
+    --_button-fg: var(--common-button-colorNeutralForegroundOnBrand);
+    --_button-border: var(--_button-bg);
+    --_button-hover-bg: var(--common-button-colorBrandBackgroundHover);
+    --_button-hover-fg: var(--_button-fg);
+    --_button-hover-border: var(--_button-hover-bg);
+    --_button-pressed-bg: var(--common-button-colorBrandBackgroundPressed);
+    --_button-pressed-fg: var(--_button-fg);
+    --_button-pressed-border: var(--_button-pressed-bg);
+    --_button-selected-bg: var(--common-button-colorBrandBackgroundSelected);
+    --_button-selected-fg: var(--_button-fg);
+    --_button-selected-border: var(--_button-selected-bg);
+  }
+
+  .root:global(.ghost) {
+    --_button-bg: transparent;
+    --_button-border: transparent;
+    --_button-hover-bg: var(--common-button-colorNeutralBackground2Hover);
+    --_button-hover-border: transparent;
+    --_button-pressed-bg: var(--common-button-colorNeutralBackground2Pressed);
+    --_button-pressed-border: transparent;
+  }
+
+  .root:global(.soft) {
+    --_button-bg: var(--common-button-colorBrandBackground2);
+    --_button-fg: var(--common-button-colorBrandForeground2);
+    --_button-border: var(--common-button-colorBrandStroke2);
+    --_button-hover-bg: var(--common-button-colorBrandBackground2Hover);
+    --_button-hover-fg: var(--common-button-colorBrandForeground2Hover);
+    --_button-hover-border: var(--common-button-colorBrandStroke2Hover);
+    --_button-pressed-bg: var(--common-button-colorBrandBackground2Pressed);
+    --_button-pressed-fg: var(--common-button-colorBrandForeground2Pressed);
+    --_button-pressed-border: var(--common-button-colorBrandStroke2Pressed);
+    --_button-selected-bg: var(--common-button-colorBrandBackground2Hover);
+  }
+
+  .root:global(.dark) {
+    --_button-bg: var(--common-button-colorNeutralBackgroundInverted);
+    --_button-fg: var(--common-button-colorNeutralForegroundInverted);
+    --_button-border: var(--_button-bg);
+    --_button-hover-bg: var(--common-button-colorNeutralBackgroundInvertedHover);
+    --_button-hover-fg: var(--_button-fg);
+    --_button-hover-border: var(--_button-hover-bg);
+    --_button-pressed-bg: var(--common-button-colorNeutralBackgroundInvertedPressed);
+    --_button-pressed-fg: var(--_button-fg);
+    --_button-pressed-border: var(--_button-pressed-bg);
+    --_button-selected-bg: var(--common-button-colorNeutralBackgroundInvertedSelected);
+    --_button-selected-fg: var(--_button-fg);
+    --_button-selected-border: var(--_button-selected-bg);
+  }
+
+  .root:global(.danger) {
+    --_button-bg: var(--common-button-colorStatusDangerBackground3);
+    --_button-fg: var(--common-button-colorNeutralForegroundOnBrand);
+    --_button-border: var(--_button-bg);
+    --_button-hover-bg: var(--common-button-colorStatusDangerBackground3Hover);
+    --_button-hover-fg: var(--_button-fg);
+    --_button-hover-border: var(--_button-hover-bg);
+    --_button-pressed-bg: var(--common-button-colorStatusDangerBackground3Pressed);
+    --_button-pressed-fg: var(--_button-fg);
+    --_button-pressed-border: var(--_button-pressed-bg);
+    --_button-selected-bg: var(--_button-pressed-bg);
+    --_button-selected-fg: var(--_button-fg);
+    --_button-selected-border: var(--_button-selected-bg);
+  }
+
+  .root:enabled:hover {
+    background-color: var(--_button-hover-bg);
+    color: var(--_button-hover-fg);
+    border-color: var(--_button-hover-border);
+  }
+
+  .root:global(.active):enabled {
+    background-color: var(--_button-selected-bg);
+    color: var(--_button-selected-fg);
+    border-color: var(--_button-selected-border);
+    box-shadow: inset 0 0 0 var(--common-button-strokeWidthThin) currentColor;
+  }
+
+  .root:enabled:active {
+    background-color: var(--_button-pressed-bg);
+    color: var(--_button-pressed-fg);
+    border-color: var(--_button-pressed-border);
+  }
+
+  .root:focus-visible {
+    outline: var(--common-button-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .root:disabled {
+    background-color: var(--common-button-colorNeutralBackgroundDisabled);
+    color: var(--common-button-colorNeutralForegroundDisabled);
+    border-color: var(--common-button-colorNeutralStrokeDisabled);
+    opacity: 1;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .root { transition: none; }
+  }
+
+  @media (forced-colors: active) {
+    .root,
+    .root:enabled:hover,
+    .root:global(.active):enabled,
+    .root:enabled:active {
+      forced-color-adjust: auto;
+      background-color: ButtonFace;
+      color: ButtonText;
+      border-color: ButtonText;
+      box-shadow: none;
+    }
+
+    .root:global(.active):enabled {
+      border-color: Highlight;
+      outline: 1px solid Highlight;
+      outline-offset: -3px;
+    }
+
+    .root:disabled {
+      color: GrayText;
+      background-color: ButtonFace;
+      border-color: GrayText;
+    }
+
+    .root:focus-visible,
+    .root:global(.active):enabled:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
+  }
+}
