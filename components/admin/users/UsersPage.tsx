@@ -1,4 +1,6 @@
 "use client";
+import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
+import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
 import { Button, Input, Select } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { AdminCard, AdminMetric, AdminPage } from "@/components/admin/ui/AdminPrimitives";
@@ -32,14 +34,14 @@ export default function UsersPage(): React.ReactElement {
     if (value.type === "delete-users") { setDeleting(selected.filter((u) => value.targets.some((t) => t.id === u.id))); return; }
     try { await command.mutateAsync(value); setSelected([]); setNotice(value.type === "resend-invite" ? "초대 대기 상태를 예시로 갱신했습니다." : "변경사항을 저장했습니다."); } catch { /* 선택을 유지한다. */ }
   }
-  if (!access.data) return <AdminAsyncState state={access.isError ? "error" : "loading"} onRetry={() => void access.refetch()} />;
+  if (!access.data) return <AdminPage title="사용자 설정"><AdminAsyncState state={access.isError ? "error" : "loading"} onRetry={() => void access.refetch()} /></AdminPage>;
   const { actor, grants, departments } = access.data;
   const options: { value: UsersTab; label: string }[] = [];
   if (grants.users.read) options.push({ value: "users", label: "사용자" });
   if (grants.groups.read) options.push({ value: "groups", label: "그룹" });
   if (grants.permissions.read) options.push({ value: "permissions", label: "역할별 권한" });
   const currentTab = options.find((o) => o.value === tab)?.value ?? options[0]?.value;
-  if (!currentTab) return <AdminAsyncState state="forbidden" />;
+  if (!currentTab) return <AdminPage title="사용자 설정"><AdminAsyncState state="forbidden" /></AdminPage>;
   return <AdminPage title="사용자 설정" description={actor.role === "department_admin" ? "소속 부서의 사용자 현황을 확인합니다." : "사용자와 그룹, 역할별 권한을 관리합니다."} actions={currentTab === "users" ? <>
     <Button disabled={exporting.isPending} onClick={() => exporting.mutate(query, { onSuccess: (csv) => downloadCsv("사용자-2026-10-20.csv", csv) })}>목록 내보내기</Button>
     {grants.users.create && <Button appearance="primary" onClick={() => setDirectory(true)}>사용자 추가</Button>}
@@ -47,18 +49,20 @@ export default function UsersPage(): React.ReactElement {
     <AdminTabs label="사용자 설정 탭" value={currentTab} options={options} onChange={(value) => { setTab(value); setSelected([]); }} />
     {currentTab === "groups" && <GroupsPanel />}{currentTab === "permissions" && <RolePermissionsPanel />}
     {currentTab === "users" && <>
-      {list.data && <div className="tw:grid tw:grid-cols-2 tw:gap-3 tw:lg:grid-cols-4">{(["all", ...ADMIN_ROLES] as const).map((role) => <AdminMetric key={role} label={role === "all" ? "전체 사용자" : ADMIN_ROLE_LABELS[role]} value={String(list.data!.roleCounts[role])} selected={query.role === role} onClick={() => changeQuery({ role: query.role === role ? "all" : role })} tone={role === "super_admin" ? "brand" : "neutral"} />)}</div>}
-      <AdminCard title="사용자 목록" actions={list.data && <span className="tw:text-[11px] tw:text-(--kpc-muted)">활성 {list.data.statusCounts.active} · 초대 대기 {list.data.statusCounts.invited} · 잠김 {list.data.statusCounts.locked}</span>}>
-        <div className="tw:mb-3 tw:flex tw:flex-wrap tw:gap-2"><Input aria-label="사용자 검색" placeholder="이름 또는 이메일 검색" value={search} onChange={(_, d) => { setSearch(d.value); setSelected([]); }} />
+      {list.data && <div className="tw:grid tw:grid-cols-2 tw:gap-(--layout-section-gap) tw:lg:grid-cols-4">{(["all", ...ADMIN_ROLES] as const).map((role) => <AdminMetric key={role} label={role === "all" ? "전체 사용자" : ADMIN_ROLE_LABELS[role]} value={String(list.data!.roleCounts[role])} selected={query.role === role} onClick={() => changeQuery({ role: query.role === role ? "all" : role })} tone={role === "super_admin" ? "brand" : "neutral"} />)}</div>}
+      <AdminCard bodyPadding="flush" title="사용자 목록" actions={list.data && <span className="tw:text-[11px] tw:text-(--kpc-muted)">활성 {list.data.statusCounts.active} · 초대 대기 {list.data.statusCounts.invited} · 잠김 {list.data.statusCounts.locked}</span>}>
+        <WorkspaceCardSection afterHeader>
+        <WorkspaceToolbar><Input aria-label="사용자 검색" placeholder="이름 또는 이메일 검색" value={search} onChange={(_, d) => { setSearch(d.value); setSelected([]); }} />
           <Select aria-label="부서 필터" value={actor.role === "department_admin" ? actor.departmentId ?? "" : query.departmentId ?? ""} disabled={actor.role === "department_admin"} onChange={(_, d) => changeQuery({ departmentId: d.value || null })}>{actor.role === "super_admin" && <option value="">전체 부서</option>}{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</Select>
           <Select aria-label="사용자 상태" value={query.status} onChange={(_, d) => { const result = UserStatusSchema.safeParse(d.value); changeQuery({ status: result.success ? result.data : "all" }); }}><option value="all">전체 상태</option><option value="active">활성</option><option value="invited">초대 대기</option><option value="locked">잠김</option></Select>
-        </div>
+        </WorkspaceToolbar>
         {notice && <p role="status">{notice}{undo && <Button size="small" disabled={command.isPending} onClick={() => command.mutate({ type: "undo-delete", undoToken: undo }, { onSuccess: () => { setUndo(null); setNotice("삭제를 되돌렸습니다."); } })}>되돌리기</Button>}</p>}
         {(command.error || exporting.error) && <p role="alert">{command.error?.message ?? exporting.error?.message}</p>}
         <UserBulkActions users={selected} busy={command.isPending} onClear={() => setSelected([])} onCommand={execute} />
+        </WorkspaceCardSection>
         {list.isError ? <AdminAsyncState state="error" onRetry={() => void list.refetch()} /> : !list.data ? <AdminAsyncState state="loading" /> : <>
           <UserTable rows={list.data.rows.items} departments={departments} actor={actor} grants={grants} busy={command.isPending} selectedIds={selected.map((u) => u.id)} onSelectionChange={(ids) => setSelected(list.data!.rows.items.filter((u) => ids.includes(u.id)))} onEdit={(user) => setEditor({ user })} onRoleChange={(user, role) => void execute({ type: "change-user-role", targets: [{ id: user.id, version: user.version }], role })} onDelete={(users) => setDeleting([...users])} onResend={(user) => void execute({ type: "resend-invite", target: { id: user.id, version: user.version } })} />
-          <AdminPager {...list.data.rows} onChange={(page) => { setQuery({ ...query, page }); setSelected([]); }} />
+          <WorkspaceCardSection><AdminPager {...list.data.rows} onChange={(page) => { setQuery({ ...query, page }); setSelected([]); }} /></WorkspaceCardSection>
         </>}
       </AdminCard>
     </>}

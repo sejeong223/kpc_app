@@ -22,15 +22,15 @@ const notificationSettings = [
 ] as const;
 
 const useStyles = makeStyles({
-  root: { display: "flex", flexDirection: "column", gap: "12px" },
-  card: { padding: "12px", border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1 },
+  root: { display: "flex", flexDirection: "column", gap: dadamUi.sectionGap },
+  card: { padding: dadamUi.cardPadding, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1 },
   heading: { display: "flex", alignItems: "center", margin: "0 0 8px", color: tokens.colorNeutralForeground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
   switchRow: { padding: "7px 0", borderTop: `1px solid ${tokens.colorNeutralStroke2}`, ":first-child": { paddingTop: 0, borderTopWidth: 0 } },
-  digest: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "10px", padding: "7px 0", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
+  digest: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "var(--layout-control-gap)", padding: "7px 0", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
   label: { margin: 0, padding: 0, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 500 },
   select: { minHeight: dadamUi.controlHeight, height: "auto", minWidth: 0, maxWidth: "150px" },
   selectInput: { minHeight: "30px", height: "auto", minWidth: 0, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
-  row: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px", padding: "5px 0" },
+  row: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--layout-control-gap)", padding: "5px 0" },
   rowLabel: { width: "62px", flexShrink: 0, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500 },
   control: { flex: 1, minWidth: 0 },
   note: { margin: 0, color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: "16px" },

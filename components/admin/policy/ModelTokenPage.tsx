@@ -15,7 +15,7 @@ export default function ModelTokenPage({ requestedTab }: ModelTokenPageProps): R
   const isSuper = access.data?.actor.role === "super_admin";
   const tab = isSuper ? requestedTab ?? "models" : "tokens";
   useEffect(() => { if (access.data && requestedTab !== tab) router.replace("/workspace/policy?tab=" + tab, { scroll: false }); }, [access.data, requestedTab, tab, router]);
-  if (!access.data) return <AdminAsyncState state="loading" />;
+  if (!access.data) return <AdminPage title="모델·토큰 관리"><AdminAsyncState state="loading" /></AdminPage>;
   const grants = access.data.grants;
   return <AdminPage title="모델·토큰 관리" description={isSuper ? "업무별 모델과 사용량, 토큰 정책을 한곳에서 관리합니다." : "우리 부서 사용량과 토큰 추가 신청을 확인합니다."}>
     <AdminTabs label="모델·토큰 관리 탭" value={tab} options={isSuper ? [{ value: "models", label: "모델 설정" }, { value: "tokens", label: "토큰·비용 관리" }] : [{ value: "tokens", label: "토큰·비용 관리" }]} onChange={(value) => router.push("/workspace/policy?tab=" + value, { scroll: false })} />

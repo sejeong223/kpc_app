@@ -1,0 +1,22 @@
+/* 페이지 간격의 단일 원본. 포털에서도 사용할 수 있도록 root에 둔다. */
+:root {
+  --layout-page-inset: 12px;
+  --layout-section-gap: 12px;
+  --layout-card-inset: 12px;
+  --layout-control-gap: 8px;
+  --layout-inline-gap: 4px;
+  --layout-table-cell-inset: var(--layout-card-inset);
+  --layout-empty-min-height: 160px;
+  --layout-canvas-tools-inset: var(--layout-page-inset);
+  --layout-overlay-safe-inset: 16px;
+  --layout-dialog-inline-inset: 18px;
+  --layout-dialog-block-inset: 16px;
+  --layout-dialog-header-gap: 10px;
+  --layout-popover-inset: 16px;
+  --layout-popover-compact-inset: var(--layout-card-inset);
+  --layout-comment-footer-end-inset: 20px;
+  --layout-profile-header-padding: 16px 14px 12px 16px;
+  --layout-profile-header-gap: 11px;
+  --layout-profile-body-padding: 12px 14px;
+  --layout-profile-footer-padding: 8px 10px 8px 16px;
+}

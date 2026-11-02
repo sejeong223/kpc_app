@@ -11,7 +11,7 @@ interface AdminTableProps<Row extends { id: string }> {
 }
 export default function AdminTable<Row extends { id: string }>({ label, rows, columns, selectedIds = [], onSelectionChange, expandedId, onExpand, renderExpanded, emptyMessage, sort, onSort, isSelectable }: AdminTableProps<Row>): React.ReactElement {
   const id = useId(), selectable = rows.filter((r) => !isSelectable || isSelectable(r)), selected = selectable.filter((r) => selectedIds.includes(r.id));
-  const cell = "tw:border-0 tw:border-b tw:border-solid tw:border-(--kpc-line-soft) tw:px-3 tw:py-3 tw:text-left tw:align-middle";
+  const cell = "tw:border-0 tw:border-b tw:border-solid tw:border-(--kpc-line-soft) tw:px-(--layout-table-cell-inset) tw:py-(--layout-table-cell-inset) tw:text-left tw:align-middle";
   return <div className="tw:max-w-full tw:overflow-x-auto" role="region" aria-label={label} tabIndex={0}>
     <table className="tw:w-full tw:border-collapse tw:text-[12px]" aria-label={label}>
       <thead className="tw:bg-(--kpc-bg) tw:text-[11px] tw:text-(--kpc-secondary)"><tr>
@@ -21,7 +21,7 @@ export default function AdminTable<Row extends { id: string }>({ label, rows, co
           {column.sortable && onSort ? <Button appearance="transparent" size="small" onClick={() => onSort(column.id)}>{column.label}{sort?.columnId === column.id ? sort.direction === "asc" ? " ↑" : " ↓" : " ↕"}</Button> : column.label}
         </th>)}
       </tr></thead>
-      <tbody>{rows.length === 0 ? <tr><td className={cell} colSpan={columns.length + Number(Boolean(onSelectionChange)) + Number(Boolean(onExpand))}><p className="tw:my-6 tw:text-center tw:text-(--kpc-muted)">{emptyMessage}</p></td></tr> : rows.map((row, index) => <Fragment key={row.id}><tr className="tw:hover:bg-(--kpc-bg)">
+      <tbody>{rows.length === 0 ? <tr><td className={cell} colSpan={columns.length + Number(Boolean(onSelectionChange)) + Number(Boolean(onExpand))}><p className="tw:my-(--layout-section-gap) tw:text-center tw:text-(--kpc-muted)">{emptyMessage}</p></td></tr> : rows.map((row, index) => <Fragment key={row.id}><tr className="tw:hover:bg-(--kpc-bg)">
         {onSelectionChange && <td className={cell}><Checkbox aria-label={label + " " + (index + 1) + "행 선택"} disabled={isSelectable && !isSelectable(row)} checked={selectedIds.includes(row.id)} onChange={(_, data) => onSelectionChange(data.checked === true ? [...new Set([...selected.map((r) => r.id), row.id])] : selected.filter((r) => r.id !== row.id).map((r) => r.id))} /></td>}
         {onExpand && <td className={cell}><Button size="small" appearance="subtle" aria-expanded={expandedId === row.id} aria-controls={id + "-" + index} aria-label={(index + 1) + "행 상세 " + (expandedId === row.id ? "닫기" : "보기")} onClick={() => onExpand(expandedId === row.id ? null : row.id)}>{expandedId === row.id ? "−" : "+"}</Button></td>}
         {columns.map((column) => <td key={column.id} className={cell} style={{ textAlign: column.align === "end" ? "right" : "left" }}>{column.render(row)}</td>)}

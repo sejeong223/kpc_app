@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminScreenRouter from "@/components/admin/AdminScreenRouter";
 
 import CommentsWorkspace from "@/components/comments/CommentsWorkspace";
@@ -32,10 +33,7 @@ export default async function WorkspaceScreenPage({
 
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
-      {screen === "write" ? <CommentsWorkspace /> : <section aria-labelledby="workspace-screen-title">
-        <h1 id="workspace-screen-title">{item.label}</h1>
-        <p>{`${item.label} 화면입니다.`}</p>
-      </section>}
+      {screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title" description={`${item.label} 화면입니다.`}>{null}</WorkspacePage>}
     </PreviewRoleBoundary>
   );
 }

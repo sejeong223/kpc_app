@@ -88,7 +88,7 @@ const useStyles = makeStyles({
     boxShadow: dadamUi.popoverShadow,
     fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400, textAlign: "left", zIndex: 50,
   },
-  header: { display: "flex", alignItems: "flex-start", gap: "11px", padding: "16px 14px 12px 16px", flexShrink: 0 },
+  header: { display: "flex", alignItems: "flex-start", gap: "var(--layout-profile-header-gap)", padding: "var(--layout-profile-header-padding)", flexShrink: 0 },
   headerAvatar: { backgroundColor: tokens.colorNeutralForeground2, color: tokens.colorNeutralForegroundOnBrand, fontFamily: tokens.fontFamilyBase, fontSize: "15px", fontWeight: 700 },
   identity: { flex: 1, minWidth: 0 },
   identityLine: { display: "flex", alignItems: "center", flexWrap: "wrap", columnGap: "6px", rowGap: "4px", minWidth: 0 },
@@ -102,7 +102,7 @@ const useStyles = makeStyles({
   meta: { margin: 0, fontSize: dadamUi.metaSize, lineHeight: "16px", color: tokens.colorNeutralForeground3 },
   mail: { marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   close: { width: "32px", minWidth: "32px", height: "32px", padding: 0, color: tokens.colorNeutralForeground2, borderRadius: dadamUi.controlRadius },
-  tabs: { display: "flex", padding: "0 8px", flexShrink: 0, borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
+  tabs: { display: "flex", padding: "0 var(--layout-control-gap)", flexShrink: 0, borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
   tab: {
     // Fluent overlays visible and reserved label slots in the same grid cell.
     display: "grid", flex: 1, gridTemplateColumns: "minmax(0, 1fr)",
@@ -124,12 +124,12 @@ const useStyles = makeStyles({
   tabContent: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: "100%", gap: "5px", color: "inherit", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: "inherit", whiteSpace: "nowrap" },
   count: { minWidth: "17px", height: "17px", padding: "0 5px", borderRadius: "9px", backgroundColor: tokens.colorBrandBackground, color: tokens.colorNeutralForegroundOnBrand, fontSize: "10px", lineHeight: "12px", fontWeight: 700 },
   body: {
-    flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "12px 14px", backgroundColor: tokens.colorNeutralBackground2,
+    flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", padding: "var(--layout-profile-body-padding)", backgroundColor: tokens.colorNeutralBackground2,
     scrollbarWidth: "none",
     "::-webkit-scrollbar": { display: "none" },
   },
   notice: { marginTop: "12px", padding: "8px 10px", border: `1px solid ${tokens.colorBrandStroke1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorBrandForeground2, backgroundColor: tokens.colorBrandBackground2, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight },
-  footer: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexShrink: 0, padding: "8px 10px 8px 16px", borderTop: `1px solid ${tokens.colorNeutralStroke2}`, backgroundColor: tokens.colorNeutralBackground1 },
+  footer: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--layout-control-gap)", flexShrink: 0, padding: "var(--layout-profile-footer-padding)", borderTop: `1px solid ${tokens.colorNeutralStroke2}`, backgroundColor: tokens.colorNeutralBackground1 },
   version: { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3 },
   logout: { display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 0, minHeight: dadamUi.smallControlHeight, height: "auto", padding: "0 7px", border: 0, borderRadius: dadamUi.controlRadius, backgroundColor: "transparent", color: tokens.colorNeutralForeground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500, textDecorationLine: "none", ":hover": { backgroundColor: tokens.colorNeutralBackground2Hover } },
 });

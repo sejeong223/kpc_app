@@ -19,34 +19,35 @@ export interface ModalFrameProps {
 const useStyles = makeStyles({
   surface: {
     display: "flex", flexDirection: "column", minWidth: 0,
-    maxWidth: "calc(100vw - 32px)", maxHeight: "min(88vh, calc(100svh - 32px))",
+    maxWidth: "calc(100vw - var(--layout-overlay-safe-inset) - var(--layout-overlay-safe-inset))", maxHeight: "min(88vh, calc(100svh - var(--layout-overlay-safe-inset) - var(--layout-overlay-safe-inset)))",
     boxSizing: "border-box", padding: 0, overflow: "hidden",
     border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.surfaceRadius, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1,
     boxShadow: dadamUi.dialogShadow,
     fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400, zIndex: 4300,
-    "@media screen and (max-width: 480px)": { maxWidth: "calc(100vw - 32px)" },
+    "@media screen and (max-width: 480px)": { maxWidth: "calc(100vw - var(--layout-overlay-safe-inset) - var(--layout-overlay-safe-inset))" },
     "@media screen and (max-height: 359px)": {
       padding: 0, overflow: "hidden", ...shorthands.borderWidth("1px"),
     },
   },
   backdrop: { backgroundColor: "rgba(17,18,22,.28)", zIndex: 4000 },
-  header: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "16px 18px 12px", flexShrink: 0 },
+  header: { display: "flex", alignItems: "flex-start", gap: "var(--layout-dialog-header-gap)", padding: "var(--layout-dialog-block-inset) var(--layout-dialog-inline-inset) var(--layout-section-gap)", flexShrink: 0 },
   heading: { flex: 1, minWidth: 0 },
   title: { display: "block", margin: 0, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.titleSize, fontWeight: 700, lineHeight: dadamUi.titleLineHeight, letterSpacing: 0, ":focus": { outlineStyle: "none" } },
   subtitle: { margin: "3px 0 0", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, overflowWrap: "anywhere" },
   close: { width: "32px", minWidth: "32px", height: "32px", padding: 0, borderRadius: dadamUi.controlRadius, color: tokens.colorNeutralForeground2, flexShrink: 0 },
   closeIcon: { width: "12px", height: "12px", fontSize: "12px" },
   body: {
-    display: "flex", flexDirection: "column", gap: "12px",
-    flex: 1, minHeight: 0, minWidth: 0, padding: "4px 18px 16px",
+    display: "flex", flexDirection: "column", gap: "var(--layout-section-gap)",
+    flex: 1, minHeight: 0, minWidth: 0, padding: "var(--layout-inline-gap) var(--layout-dialog-inline-inset) var(--layout-dialog-block-inset)",
     margin: 0, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400, color: "inherit",
+    "& > p": { margin: 0 },
     overflowY: "auto", overflowX: "hidden", scrollbarWidth: "none",
     "::-webkit-scrollbar": { display: "none" },
     ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "-2px" },
   },
   footer: {
-    display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px",
-    padding: "12px 18px", flexShrink: 0, borderTop: `1px solid ${tokens.colorNeutralStroke2}`, backgroundColor: tokens.colorNeutralBackground2,
+    display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--layout-control-gap)",
+    padding: "var(--layout-section-gap) var(--layout-dialog-inline-inset)", flexShrink: 0, borderTop: `1px solid ${tokens.colorNeutralStroke2}`, backgroundColor: tokens.colorNeutralBackground2,
   },
 });
 

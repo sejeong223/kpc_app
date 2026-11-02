@@ -1,14 +1,12 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import { NavigationRegular } from "@fluentui/react-icons";
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { appConfig } from "@/config/app";
 import { useComments } from "@/components/comments/CommentsProvider";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
-import { dadamUi } from "@/lib/ui/dadam-theme";
+import { WorkspaceNavigationProvider } from "./WorkspaceNavigation";
 
 import NavSidebar from "./NavSidebar";
 
@@ -27,37 +25,18 @@ const useStyles = makeStyles({
   content: {
     width: "100%",
     minWidth: 0,
-    maxWidth: "1320px",
+    maxWidth: "none",
     flex: 1,
-    margin: "0 auto",
-    padding: "40px 38px",
+    margin: 0,
+    padding: "var(--layout-page-inset)",
     ":focus": { outlineStyle: "none" },
-    "@media (max-width: 760px)": { padding: "64px 20px 30px" },
   },
   productionContent: {
     maxWidth: "none", margin: 0, padding: 0, width: "100%", display: "flex",
     flexDirection: "column", minHeight: "100svh",
     "@media (max-width: 760px)": { padding: 0 },
   },
-  menuButton: {
-    display: "none", position: "fixed", top: "16px", left: "16px", zIndex: 15,
-    width: "40px", minWidth: "40px", height: "40px", padding: 0,
-    backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground2,
-    border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.controlRadius,
-    ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "2px" },
-    "@media (max-width: 760px)": { display: "inline-flex" },
-  },
-  adminContent: { padding: "22px 28px", backgroundColor: "var(--kpc-bg)", "@media (max-width: 760px)": { padding: "64px 16px 20px" } },
-  footer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "16px",
-    padding: "18px 38px",
-    color: "#94a3b8",
-    fontSize: "10px",
-    "@media (max-width: 760px)": { padding: "18px 20px" },
-  },
+  adminContent: { backgroundColor: "var(--kpc-bg)" },
   backdrop: {
     display: "none",
     "@media (max-width: 760px)": {
@@ -162,6 +141,7 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
   };
 
   return (
+    <WorkspaceNavigationProvider value={{ sidebarId: SIDEBAR_ID, triggerId: `${SIDEBAR_ID}-trigger`, menuOpen, toggleMenu: () => { controller?.suspendUi(); setMenuOpen(open => !open); } }}>
     <div className={mergeClasses(styles.root, sidebarCollapsed && styles.collapsed)}>
       <DadamThemeScope>
         <a className={styles.skipLink} href="#main-content">본문으로 이동</a>
@@ -178,21 +158,13 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
         />
       </DadamThemeScope>
       <div className={styles.mainColumn} inert={menuOpen}>
-        <DadamThemeScope>
-          <Button
-            id={`${SIDEBAR_ID}-trigger`} className={styles.menuButton}
-            icon={<NavigationRegular />} aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
-            aria-expanded={menuOpen} aria-controls={SIDEBAR_ID}
-            onClick={() => { controller?.suspendUi(); setMenuOpen((open) => !open); }}
-          />
-        </DadamThemeScope>
         <main id="main-content" ref={mainRef} className={mergeClasses(
           styles.content,
           ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent,
           pathname === "/workspace/write" && styles.productionContent,
         )} tabIndex={-1}>{children}</main>
-        <footer className={styles.footer}>{appConfig.name}<span>나만의 업무 공간</span></footer>
       </div>
     </div>
+    </WorkspaceNavigationProvider>
   );
 }

@@ -18,7 +18,7 @@ export default function UserTable({ rows, departments, selectedIds, onSelectionC
     { id: "status", label: "상태", render: (u) => <Badge appearance="tint" color={u.status === "active" ? "success" : u.status === "locked" ? "danger" : "warning"}>{u.status === "active" ? "활성" : u.status === "locked" ? "잠김" : "초대 대기"}</Badge> },
     { id: "lastSeen", label: "최근 접속", render: (u) => <span className="tw:whitespace-nowrap">{u.lastSeenAt ? new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(u.lastSeenAt)) : "—"}</span> },
   ];
-  if (grants.users.update || grants.users.delete) columns.push({ id: "manage", label: "관리", render: (u) => <div className="tw:flex tw:gap-1">
+  if (grants.users.update || grants.users.delete) columns.push({ id: "manage", label: "관리", render: (u) => <div className="tw:flex tw:gap-(--layout-inline-gap)">
     {grants.users.update && <Button size="small" disabled={busy} onClick={() => onEdit(u)}>편집</Button>}
     {grants.users.update && u.status === "invited" && <Button size="small" disabled={busy} onClick={() => onResend(u)}>재초대</Button>}
     {grants.users.delete && <Button size="small" disabled={busy || u.id === actor.userId} title={u.id === actor.userId ? "본인은 삭제할 수 없습니다." : undefined} onClick={() => onDelete([u])}>삭제</Button>}

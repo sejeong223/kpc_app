@@ -9,9 +9,6 @@ import { useComments } from "./CommentsProvider";
 
 const useStyles = makeStyles({
   button: {
-    position: "fixed",
-    top: "16px",
-    right: "20px",
     zIndex: 5,
     minHeight: "40px",
     padding: "8px 14px",

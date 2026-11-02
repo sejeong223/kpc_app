@@ -6,6 +6,7 @@ import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import { useEffect, useRef, useState } from "react";
 import type { CommentPoint } from "@/config/comments";
 import { clientPointToRatio, getPopupLimits, keepPinInsideSurface, placeCommentPopup, ratioToClientPoint, type CommentBounds, type PixelPoint } from "@/lib/comments/geometry";
+import WorkspaceHeader from "@/components/layout/WorkspaceHeader";
 import CommentCreateButton from "./CommentCreateButton";
 import CommentPin from "./CommentPin";
 import CommentPopover from "./CommentPopover";
@@ -16,10 +17,9 @@ const DRAFT_ID = "pending-comment";
 const useStyles = makeStyles({
   surface: { position: "relative", flex: 1, width: "100%", minHeight: "100svh", overflow: "visible", backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1, ":focus": { outline: "none" } },
   creating: { cursor: "crosshair" },
-  intro: { padding: "88px 32px 24px", pointerEvents: "none", color: tokens.colorNeutralForeground3, userSelect: "none", "@media (max-width: 760px)": { padding: "88px 20px 24px" } },
-  title: { fontSize: "20px", lineHeight: "28px", fontWeight: 700, color: tokens.colorNeutralForeground1, margin: "0 0 10px" },
+  intro: { padding: "var(--layout-canvas-tools-inset)", display: "flex", flexDirection: "column", gap: "var(--layout-control-gap)" },
   text: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, margin: 0 },
-  alert: { position: "relative", zIndex: 3, margin: "16px 24px", padding: "12px", border: `1px solid ${tokens.colorStatusDangerBorder1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
+  alert: { position: "relative", zIndex: 3, margin: "var(--layout-canvas-tools-inset)", padding: "var(--layout-card-inset)", border: `1px solid ${tokens.colorStatusDangerBorder1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
   hidden: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 },
 });
 interface Measurement { surface: CommentBounds; viewport: CommentBounds }
@@ -139,9 +139,8 @@ export default function CommentsWorkspace(): React.ReactElement {
       const point = clientPointToRatio({ x: e.clientX, y: e.clientY }, boundsOf(e.currentTarget)); if (point) controller?.placePin(point);
     }}
     onKeyDown={e => { if (e.target === e.currentTarget && state.pinMode && ["Enter", " "].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); controller?.placePin({ xRatio: .5, yRatio: .5 }); } }}>
-    <CommentCreateButton />
-    <div className={styles.intro}><h1 id="workspace-screen-title" className={styles.title}>제작</h1>
-      <p className={styles.text}>{state.pinMode ? "의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요." : "핀 생성 버튼을 누르고 원하는 위치에 의견을 남겨보세요."}</p>
+    <div className={styles.intro} data-comment-control><WorkspaceHeader title="제작" headingId="workspace-screen-title" actions={<CommentCreateButton />} description="핀 생성 버튼을 누르고 원하는 위치에 의견을 남겨보세요." />
+      {state.pinMode && <p className={styles.text} role="status">의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
       {(state.status === "idle" || state.status === "loading") && <p className={styles.text} role="status">코멘트를 불러오는 중입니다.</p>}
     </div>
     <p className={styles.hidden} id="comment-pin-help">핀은 드래그하거나 Alt와 방향키로 이동할 수 있습니다. Shift를 함께 누르면 더 크게 이동합니다.</p>

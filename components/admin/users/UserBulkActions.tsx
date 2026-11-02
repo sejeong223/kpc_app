@@ -10,7 +10,7 @@ export default function UserBulkActions({ users, busy, onClear, onCommand }: Use
   const access = useAdminAccess(), [role, setRole] = useState<AdminRole>("user");
   if (!users.length || !access.data) return null;
   const targets = users.map(({ id, version }) => ({ id, version }));
-  return <div className="tw:mb-3 tw:flex tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-lg tw:bg-(--kpc-brand-soft) tw:p-3">
+  return <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap) tw:rounded-lg tw:bg-(--kpc-brand-soft) tw:p-(--layout-card-inset)">
     <strong>{users.length}명 선택</strong>{access.data.grants.users.update && <>
       <Select aria-label="일괄 변경할 역할" size="small" value={role} disabled={busy} onChange={(_, d) => { const result = AdminRoleSchema.safeParse(d.value); if (result.success) setRole(result.data); }}>{ADMIN_ROLES.map((r) => <option key={r} value={r}>{ADMIN_ROLE_LABELS[r]}</option>)}</Select>
       <Button size="small" disabled={busy} onClick={() => void onCommand({ type: "change-user-role", targets, role })}>역할 적용</Button>

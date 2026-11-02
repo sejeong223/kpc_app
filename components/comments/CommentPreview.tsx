@@ -7,8 +7,8 @@ import type { PixelPoint } from "@/lib/comments/geometry";
 import { formatCommentTime } from "@/lib/comments/format";
 import { CommentBody } from "./CommentMessage";
 const useStyles = makeStyles({
-  root: { position: "fixed", zIndex: 9, pointerEvents: "none", padding: "12px", backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.surfaceRadius, boxShadow: dadamUi.popoverShadow, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, boxSizing: "border-box" },
-  meta: { display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "6px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
+  root: { position: "fixed", zIndex: 9, pointerEvents: "none", padding: "var(--layout-popover-compact-inset)", backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.surfaceRadius, boxShadow: dadamUi.popoverShadow, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, boxSizing: "border-box" },
+  meta: { display: "flex", justifyContent: "space-between", gap: "var(--layout-control-gap)", marginBottom: "6px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
   time: { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, fontWeight: 400, flexShrink: 0 },
   body: { display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" },
 });

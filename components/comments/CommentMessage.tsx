@@ -8,8 +8,8 @@ import { formatCommentTime } from "@/lib/comments/format";
 import CommentActionsMenu from "./CommentActionsMenu";
 
 const useStyles = makeStyles({
-  message: { padding: "12px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
-  meta: { display: "flex", alignItems: "center", columnGap: "8px", rowGap: "4px", flexWrap: "wrap", marginBottom: "6px", minWidth: 0 },
+  message: { padding: "var(--layout-section-gap) 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
+  meta: { display: "flex", alignItems: "center", columnGap: "var(--layout-control-gap)", rowGap: "var(--layout-inline-gap)", flexWrap: "wrap", marginBottom: "6px", minWidth: 0 },
   author: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700, overflowWrap: "anywhere" },
   time: { marginLeft: "auto", color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, flexShrink: 0 },
   body: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: tokens.colorNeutralForeground1 },

@@ -17,11 +17,11 @@ import { useProfilePreview } from "./ProfilePreviewProvider";
 const icons = { ai: SparkleRegular, comment: TextBulletListLtrRegular, deadline: HistoryRegular, token: MoneyRegular };
 
 const useStyles = makeStyles({
-  root: { display: "flex", flexDirection: "column", gap: "12px" },
-  toolbar: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "6px" },
+  root: { display: "flex", flexDirection: "column", gap: dadamUi.sectionGap },
+  toolbar: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "var(--layout-control-gap)" },
   readAll: { minHeight: dadamUi.smallControlHeight, height: "auto", minWidth: 0, padding: "0 7px", borderRadius: dadamUi.controlRadius, color: tokens.colorNeutralForeground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500 },
   card: {
-    position: "relative", display: "flex", alignItems: "flex-start", justifyContent: "flex-start", gap: "10px", width: "100%", minWidth: 0,
+    position: "relative", display: "flex", alignItems: "flex-start", justifyContent: "flex-start", gap: "var(--layout-control-gap)", width: "100%", minWidth: 0,
     padding: dadamUi.cardPadding, textAlign: "left", whiteSpace: "normal", border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, textDecorationLine: "none", fontFamily: tokens.fontFamilyBase,
     ":hover": { ...shorthands.borderColor(tokens.colorNeutralStroke1), backgroundColor: tokens.colorNeutralBackground2Hover },
   },
@@ -35,8 +35,8 @@ const useStyles = makeStyles({
   deadline: { backgroundColor: tokens.colorStatusDangerBackground1, color: tokens.colorStatusDangerForeground1 },
   token: { backgroundColor: tokens.colorStatusWarningBackground1, color: tokens.colorStatusWarningForeground1 },
   glyph: { width: "14px", height: "14px" },
-  body: { display: "flex", flex: 1, minWidth: 0, flexDirection: "column", gap: "3px" },
-  titleRow: { display: "flex", alignItems: "flex-start", flexWrap: "wrap", gap: "6px", paddingRight: "12px" },
+  body: { display: "flex", flex: 1, minWidth: 0, flexDirection: "column", gap: "var(--layout-inline-gap)" },
+  titleRow: { display: "flex", alignItems: "flex-start", flexWrap: "wrap", gap: "var(--layout-control-gap)", paddingRight: "12px" },
   title: { flex: 1, minWidth: 0, overflowWrap: "anywhere", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
   time: { flexShrink: 0, color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 400 },
   description: { color: tokens.colorNeutralForeground2, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 400 },

@@ -14,9 +14,9 @@ export interface TokenUsagePanelProps {
 }
 
 const useStyles = makeStyles({
-  root: { display: "flex", flexDirection: "column", gap: "12px", minWidth: 0, flexShrink: 0 },
+  root: { display: "flex", flexDirection: "column", gap: "var(--layout-section-gap)", minWidth: 0, flexShrink: 0 },
   kpis: {
-    display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "8px",
+    display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "var(--layout-control-gap)",
     "@media (max-width: 600px)": { gridTemplateColumns: "repeat(2, minmax(0, 1fr))" },
   },
   kpi: {
@@ -32,21 +32,21 @@ const useStyles = makeStyles({
   warningText: { color: tokens.colorStatusWarningForeground1, fontWeight: 700 },
   chartUnit: { fontWeight: 700 },
   card: { minWidth: 0, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, padding: dadamUi.cardPadding },
-  heading: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", margin: "0 0 10px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
-  chart: { display: "flex", alignItems: "flex-end", gap: "4px", height: "110px" },
+  heading: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--layout-control-gap)", margin: "0 0 10px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 700 },
+  chart: { display: "flex", alignItems: "flex-end", gap: "var(--layout-inline-gap)", height: "110px" },
   day: {
-    display: "flex", flex: 1, minWidth: 0, height: "100%", flexDirection: "column", alignItems: "center", gap: "4px",
+    display: "flex", flex: 1, minWidth: 0, height: "100%", flexDirection: "column", alignItems: "center", gap: "var(--layout-inline-gap)",
     ":hover span": { opacity: 1 },
   },
   barArea: { flex: 1, minHeight: 0, width: "100%", display: "flex", alignItems: "flex-end", justifyContent: "center" },
   dayBar: { width: "100%", maxWidth: "18px", borderRadius: "3px 3px 0 0", backgroundColor: tokens.colorBrandBackground, opacity: 0.85 },
   dayLabel: { height: "12px", fontSize: "10px", fontWeight: 400, lineHeight: "12px", color: tokens.colorNeutralForeground3 },
   two: {
-    display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px",
+    display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "var(--layout-section-gap)",
     "@media (max-width: 600px)": { gridTemplateColumns: "minmax(0, 1fr)" },
   },
   item: { marginBottom: "8px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, ":last-child": { marginBottom: 0 } },
-  itemRow: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px", minWidth: 0 },
+  itemRow: { display: "flex", alignItems: "center", gap: "var(--layout-control-gap)", marginBottom: "3px", minWidth: 0 },
   itemName: { flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   number: { flexShrink: 0, fontVariantNumeric: "tabular-nums" },
   track: { height: "7px", borderRadius: "4px", overflow: "hidden", backgroundColor: tokens.colorNeutralBackground5 },

@@ -19,10 +19,10 @@ export default function SkillStylePreview({rules}: {rules:SkillRules}){
   const rowHeight=Math.max(rules.table.rowH*CM,bodySize+rules.table.padV*CM*2),tableWidths=[width*.38,width*.42,width*.2];
   const headAlign=rules.table.head.startsWith("가운데")?"가운데":"왼쪽";
   const cardWidth=Math.max((width-16)/3,width*rules.shape.min/rules.cols),cardY=tableY+rowHeight*3+rules.gap.bt*CM;
-  return <aside className="tw:min-w-0 tw:rounded-lg tw:border tw:border-solid tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:p-4 tw:xl:sticky tw:xl:top-24" aria-label="실시간 서식 미리보기">
-    <h2 className="tw:mt-0 tw:text-[13px]">미리보기 — 이 규칙으로 배치하면</h2>
+  return <aside className="tw:min-w-0 tw:rounded-lg tw:border tw:border-solid tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:p-(--layout-card-inset) tw:xl:sticky tw:xl:top-[calc(var(--layout-sticky-header-height,0px)+var(--layout-section-gap))]" aria-label="실시간 서식 미리보기">
+    <h2 className="tw:mt-0 tw:mb-(--layout-section-gap) tw:text-[13px]">미리보기 — 이 규칙으로 배치하면</h2>
     <Field label="미리보기 페이지 유형"><Select value={pageType??""} onChange={(_,data)=>setPageType(PAGE_TYPES.find(type=>type===data.value)??null)}><option value="">공통 규칙</option>{PAGE_TYPES.map(type=><option key={type} value={type}>{PAGE_LABEL[type]}</option>)}</Select></Field>
-    <svg className="tw:mt-3 tw:block tw:h-auto tw:w-full tw:rounded tw:border tw:border-solid tw:border-(--kpc-line) tw:bg-white" viewBox={`0 0 640 ${SLIDE_HEIGHT*CM}`} role="img" aria-labelledby={`${id}-title ${id}-description`}>
+    <svg className="tw:mt-(--layout-section-gap) tw:block tw:h-auto tw:w-full tw:rounded tw:border tw:border-solid tw:border-(--kpc-line) tw:bg-white" viewBox={`0 0 640 ${SLIDE_HEIGHT*CM}`} role="img" aria-labelledby={`${id}-title ${id}-description`}>
       <title id={`${id}-title`}>Skill 서식 예시</title>
       <desc id={`${id}-description`}>{`${rules.cols}열 · ${rules.rows}단 안내선, 눈금 ${rules.grid}cm, 여백 상 ${rules.mg[0]} · 좌 ${rules.mg[1]} · 하 ${rules.mg[2]} · 우 ${rules.mg[3]}cm`}</desc>
       <defs>

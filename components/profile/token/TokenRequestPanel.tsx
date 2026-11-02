@@ -30,31 +30,31 @@ export interface TokenRequestPanelProps {
 }
 
 const useStyles = makeStyles({
-  form: { display: "flex", flexDirection: "column", gap: "12px", minWidth: 0, flexShrink: 0 },
-  now: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "10px", padding: "10px 12px", borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground3, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, minWidth: 0 },
+  form: { display: "flex", flexDirection: "column", gap: "var(--layout-section-gap)", minWidth: 0, flexShrink: 0 },
+  now: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--layout-control-gap)", padding: "10px 12px", borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground3, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, minWidth: 0 },
   count: { fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" },
   progress: { flex: 1, minWidth: "60px", height: "7px", backgroundColor: tokens.colorNeutralBackground5 },
   progressBar: { height: "7px", backgroundColor: tokens.colorStatusSuccessBackground3 },
   warningBar: { backgroundColor: tokens.colorStatusWarningBackground3 },
   overBar: { backgroundColor: tokens.colorStatusDangerBackground3 },
   meta: { color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, overflowWrap: "anywhere" },
-  pending: { display: "flex", alignItems: "flex-start", gap: "6px", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500, padding: "6px 9px", borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorStatusWarningBackground1, color: tokens.colorStatusWarningForeground1, overflowWrap: "anywhere" },
+  pending: { display: "flex", alignItems: "flex-start", gap: "var(--layout-control-gap)", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500, padding: "6px 9px", borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorStatusWarningBackground1, color: tokens.colorStatusWarningForeground1, overflowWrap: "anywhere" },
   icon: { width: "14px", height: "14px", flexShrink: 0, marginTop: "2px" },
   field: { display: "flex", flexDirection: "column", gap: "5px", minWidth: 0, "& > label": { padding: 0, margin: 0, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500, color: tokens.colorNeutralForeground2 } },
-  choices: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px", minWidth: 0 },
+  choices: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--layout-control-gap)", minWidth: 0 },
   custom: { width: "110px", minWidth: 0, minHeight: dadamUi.controlHeight, height: "auto", borderRadius: dadamUi.controlRadius, ...shorthands.borderColor(tokens.colorNeutralStroke1), backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
   inputFace: { fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
   select: { width: "100%", minWidth: 0, minHeight: dadamUi.controlHeight, height: "auto", borderRadius: dadamUi.controlRadius, ...shorthands.borderColor(tokens.colorNeutralStroke1), backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
   selectFace: { minWidth: 0, maxWidth: "100%", paddingLeft: "10px", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, textOverflow: "ellipsis" },
   textarea: { width: "100%", minWidth: 0, maxWidth: "100%", borderRadius: dadamUi.controlRadius, ...shorthands.borderColor(tokens.colorNeutralStroke1), backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1 },
   textareaFace: { minWidth: 0, maxWidth: "100%", padding: "8px 10px", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
-  reasons: { display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" },
+  reasons: { display: "flex", flexWrap: "wrap", gap: "var(--layout-control-gap)", marginTop: "var(--layout-control-gap)" },
   reason: {
     minHeight: dadamUi.smallControlHeight, height: "auto", minWidth: 0, padding: "4px 9px", whiteSpace: "normal", border: `1px solid ${tokens.colorNeutralStroke1}`, borderRadius: "14px",
     backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: 500,
     ":enabled:hover": { backgroundColor: tokens.colorNeutralBackground2Hover, ...shorthands.borderColor(tokens.colorNeutralStroke1) },
   },
-  approver: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px", paddingTop: "4px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground2, "& b": { color: tokens.colorNeutralForeground1, fontWeight: 700 } },
+  approver: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--layout-control-gap)", paddingTop: "4px", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground2, "& b": { color: tokens.colorNeutralForeground1, fontWeight: 700 } },
   error: { margin: 0, color: tokens.colorStatusDangerForeground1, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, overflowWrap: "anywhere" },
 });
 

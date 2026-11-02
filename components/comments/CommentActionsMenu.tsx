@@ -8,7 +8,7 @@ import { useEffect, useId, useRef, useState } from "react";
 const useStyles = makeStyles({
   root: { position: "relative", display: "inline-flex", flexShrink: 0 },
   trigger: { minWidth: "30px", width: "30px", height: "30px", padding: 0 },
-  menu: { position: "absolute", right: 0, top: "32px", zIndex: 3, minWidth: "144px", padding: "4px", backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, boxShadow: dadamUi.popoverShadow, display: "flex", flexDirection: "column" },
+  menu: { position: "absolute", right: 0, top: "32px", zIndex: 3, minWidth: "144px", padding: "var(--layout-inline-gap)", backgroundColor: tokens.colorNeutralBackground1, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, boxShadow: dadamUi.popoverShadow, display: "flex", flexDirection: "column" },
   item: { justifyContent: "flex-start", minHeight: dadamUi.controlHeight, fontFamily: tokens.fontFamilyBase, color: tokens.colorNeutralForeground2, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
   danger: { color: tokens.colorStatusDangerForeground1, ":enabled:hover": { backgroundColor: tokens.colorStatusDangerBackground1, color: tokens.colorStatusDangerForeground1 } },
 });
