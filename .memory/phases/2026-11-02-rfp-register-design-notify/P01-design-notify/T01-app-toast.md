@@ -1,6 +1,6 @@
 # Task: T01 앱 공통 알림(AppToaster·useAppToast)
 
-## Status: pending
+## Status: done
 
 ## Goal
 어느 화면에서든 `useAppToast().notify(message, intent)` 한 줄로 레퍼런스 모양(아래 가운데, 어두운 배경, 약 2.2초)의 알림을 띄울 수 있게 공통 Toaster를 만들고 인증 레이아웃에 한 번만 둔다. RFP 등록 화면(T03)과 이후 화면이 같은 알림을 재사용하기 위함이다.
@@ -80,10 +80,10 @@ export function useAppToast(): { notify(message: string, intent?: AppToastIntent
 - 이번 Task에서 `useAppToast`를 호출하는 곳은 없다(T03에서 연결). 미사용 export는 lint 오류가 아니다.
 
 ## Acceptance Criteria
-- [ ] `components/ui/AppToast.tsx`가 생기고 레이아웃에 `AppToaster`가 한 번 렌더된다.
-- [ ] TokenDialogs·다른 화면 파일이 변경되지 않았다(`git diff --stat`에 layout·AppToast·admin-utilities.css만).
-- [ ] 빌드 CSS에 `components/rfp`의 `tw:` 클래스가 생성된다(I02-b 스크립트 결과 모두 true).
-- [ ] typecheck·lint·build 통과.
+- [x] `components/ui/AppToast.tsx`가 생기고 레이아웃에 `AppToaster`가 한 번 렌더된다.
+- [x] TokenDialogs·다른 화면 파일이 변경되지 않았다(`git diff --stat`에 layout·AppToast·admin-utilities.css만).
+- [x] 빌드 CSS에 `components/rfp`의 `tw:` 클래스가 생성된다(I02-b 스크립트 결과 모두 true).
+- [x] typecheck·lint·build 통과.
 
 ## Validation
 - `npm.cmd run typecheck` — 0 error
@@ -106,6 +106,6 @@ Task: T01-app-toast
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

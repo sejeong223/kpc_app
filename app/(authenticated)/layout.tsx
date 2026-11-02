@@ -3,6 +3,7 @@ import AppShell from "@/components/layout/AppShell";
 import FluentUiProvider from "@/components/providers/FluentUiProvider";
 import ProfilePreviewProvider from "@/components/profile/ProfilePreviewProvider";
 import TokenDialogs from "@/components/profile/token/TokenDialogs";
+import { AppToaster } from "@/components/ui/AppToast";
 import AdminRuntimeProvider from "@/components/admin/AdminRuntimeProvider";
 import CommentsProvider from "@/components/comments/CommentsProvider";
 import { requireAppAccess } from "@/lib/auth/guards";
@@ -21,6 +22,7 @@ export default async function AuthenticatedLayout({
           <CommentsProvider>
             <AppShell>{children}</AppShell>
             <DadamThemeScope><TokenDialogs /></DadamThemeScope>
+            <DadamThemeScope><AppToaster /></DadamThemeScope>
           </CommentsProvider>
         </AdminRuntimeProvider>
       </ProfilePreviewProvider>
