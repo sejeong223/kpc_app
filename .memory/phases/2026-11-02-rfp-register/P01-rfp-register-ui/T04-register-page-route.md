@@ -1,6 +1,6 @@
 # Task: T04 등록 화면 조립과 라우트 연결
 
-## Status: pending
+## Status: done
 
 ## Goal
 T01~T03을 조립한 `RfpRegisterPage`를 만들고 `/workspace/register`의 빈 자리표시자를 교체한다. 사용자가 실제로 파일→AI 추출 흉내→확인·수정→검토자 지정→등록까지 한 화면에서 끝낼 수 있게 하기 위함이다.
@@ -65,10 +65,10 @@ export default function RfpRegisterPage(props: RfpRegisterPageProps): React.Reac
 - "다시 하기"·언마운트 시 분석 타이머 `clearTimeout`.
 
 ## Acceptance Criteria
-- [ ] `/workspace/register`가 빈 화면 대신 등록 화면을 렌더링한다(코드상 분기 확인 + build 성공).
-- [ ] I03 검토 포인트 확인.
-- [ ] 레퍼런스 빨간색(`#d7192f`)·레퍼런스 CSS 클래스명이 새 코드에 없다 (`git grep -n "d7192f" components/rfp` 결과 없음).
-- [ ] typecheck·lint·build 통과.
+- [x] `/workspace/register`가 빈 화면 대신 등록 화면을 렌더링한다(코드상 분기 확인 + build 성공).
+- [x] I03 검토 포인트 확인.
+- [x] 레퍼런스 빨간색(`#d7192f`)·레퍼런스 CSS 클래스명이 새 코드에 없다 (`git grep -n "d7192f" components/rfp` 결과 없음).
+- [x] typecheck·lint·build 통과.
 
 ## Validation
 - `npm.cmd run typecheck` — 0 error
@@ -90,6 +90,6 @@ Task: T04-register-page-route
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과 (typecheck·lint·build 통과, I03은 코드 검토로 확인, 브라우저 검증 제외)
 - commit: pending

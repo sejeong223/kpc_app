@@ -125,6 +125,12 @@ export function rfpRequiredProgress(state: RfpFormState): { done: number; total:
   return { done: RFP_REQUIRED_KEYS.length - missing.length, total: 5, missing };
 }
 
+// 로컬 날짜 기준 YYYY-MM-DD (toISOString은 UTC라 한국 시간 오전에 하루가 어긋난다)
+export function todayYmd(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export function isPastDue(due: string, today: string): boolean {
   return Boolean(due && today) && due < today;
 }
