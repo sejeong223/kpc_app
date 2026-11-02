@@ -2,6 +2,7 @@
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
 import { Button,Field,Input,Select } from "@fluentui/react-components";
 import { useState } from "react";
+import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
 import { resultRows,countResults,filterResults,RESULT_LABEL,SOURCE_LABEL,type ResultQuery } from "@/lib/pptx/template-results";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminPager from "@/components/admin/ui/AdminPager";
@@ -12,7 +13,7 @@ interface TemplateResultsPanelProps {before:TemplatePreviewData;after:TemplatePr
 export default function TemplateResultsPanel({before,after,changes,warnings}:TemplateResultsPanelProps){
   const [selection,setSelection]=useState<ResultQuery>({scope:"slide",slideIndex:0,filter:"all",query:""}),[selected,setSelected]=useState<string|null>(null),[page,setPage]=useState(1);
   const slideIndex=before.slides.find(s=>s.index===selection.slideIndex)?.index??before.slides[0]?.index??0;
-  const rows=resultRows(before,after?{after,changes}:null),counts=countResults(rows),filtered=filterResults(rows,{...selection,slideIndex}),current=Math.min(page,Math.max(1,Math.ceil(filtered.length/20))),visible=filtered.slice((current-1)*20,current*20);
+  const rows=resultRows(before,after?{after,changes}:null),counts=countResults(rows),filtered=filterResults(rows,{...selection,slideIndex}),current=Math.min(page,Math.max(1,Math.ceil(filtered.length/DEFAULT_PAGE_SIZE))),visible=filtered.slice((current-1)*DEFAULT_PAGE_SIZE,current*DEFAULT_PAGE_SIZE);
   const change=(patch:Partial<ResultQuery>)=>{setSelection({...selection,...patch});setPage(1);};
   return <div className="tw:flex tw:flex-col tw:gap-(--layout-section-gap)"><AdminCard title="전후 구조 비교">
     <p className="tw:text-[11px] tw:text-(--kpc-muted)">PowerPoint와 동일한 화면이 아닙니다. 그룹·차트·병합 표는 간소화될 수 있으며 최종 모습은 출력 파일에서 확인하세요.</p>
@@ -25,7 +26,7 @@ export default function TemplateResultsPanel({before,after,changes,warnings}:Tem
       {row.change&&<><p className="tw:text-[11px]">전: {row.change.before}<br/>후: {row.change.after}</p><ul className="tw:pl-4">{row.change.details.map((reason,index)=><li key={index}>{reason}</li>)}</ul></>}
       {row.change?.children?.length?<details><summary>그룹 내부 결과 {row.change.children.length}개</summary>{row.change.children.map(child=><div key={child.id} className="tw:mt-(--layout-control-gap) tw:ml-(--layout-section-gap)"><strong>{child.name} · {RESULT_LABEL[child.status]}</strong><p>{child.details.join(" ")}</p></div>)}</details>:null}
       <Button size="small" onClick={()=>{change({slideIndex:row.slide.index});setSelected(row.object.id);}}>비교 화면에서 선택</Button>
-    </article>)}</div>{!visible.length&&<p>조건에 맞는 요소가 없습니다.</p>}<AdminPager page={current} total={filtered.length} pageSize={20} onChange={setPage}/>
+    </article>)}</div>{!visible.length&&<p>조건에 맞는 요소가 없습니다.</p>}<AdminPager page={current} total={filtered.length} pageSize={DEFAULT_PAGE_SIZE} onChange={setPage}/>
     {warnings.length>0&&<details><summary>적용 안내 {warnings.length}개</summary><ul className="tw:max-h-64 tw:overflow-auto tw:pl-4">{warnings.map((warning,index)=><li key={index}>{warning}</li>)}</ul></details>}
   </AdminCard></div>;
 }

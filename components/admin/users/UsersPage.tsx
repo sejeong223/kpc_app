@@ -9,6 +9,7 @@ import AdminPager from "@/components/admin/ui/AdminPager";
 import AdminTabs from "@/components/admin/ui/AdminTabs";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { ADMIN_ROLES, ADMIN_ROLE_LABELS } from "@/config/admin-permissions";
+import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
 import { useAdminAccess, useAdminCommand, useAdminUsers, useExportUsers } from "@/hooks/admin/use-admin-data";
 import { downloadCsv } from "@/lib/admin/csv";
 import { UserStatusSchema } from "@/lib/admin/schemas";
@@ -24,7 +25,7 @@ type UsersTab = "users" | "groups" | "permissions";
 export default function UsersPage(): React.ReactElement {
   const access = useAdminAccess(), command = useAdminCommand(), exporting = useExportUsers();
   const [tab, setTab] = useState<UsersTab>("users"), [search, setSearch] = useState("");
-  const [query, setQuery] = useState<UserQuery>({ search: "", departmentId: null, role: "all", status: "all", page: 1, pageSize: 20 });
+  const [query, setQuery] = useState<UserQuery>({ search: "", departmentId: null, role: "all", status: "all", page: 1, pageSize: DEFAULT_PAGE_SIZE });
   const list = useAdminUsers(query);
   const [selected, setSelected] = useState<AdminUser[]>([]), [editor, setEditor] = useState<{ user: AdminUser | null } | null>(null), [directory, setDirectory] = useState(false);
   const [deleting, setDeleting] = useState<AdminUser[]>([]), [undo, setUndo] = useState<string | null>(null), [notice, setNotice] = useState("");

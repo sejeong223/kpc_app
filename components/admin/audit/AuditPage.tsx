@@ -7,6 +7,8 @@ import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
 import AdminPager from "@/components/admin/ui/AdminPager";
 import { useAdminAccess, useAdminAudit, useExportAudit } from "@/hooks/admin/use-admin-data";
 import { downloadCsv } from "@/lib/admin/csv";
+import { PageInputSchema } from "@/lib/admin/schemas";
+import { PAGE_SIZE_OPTIONS } from "@/config/pagination";
 import type { AuditQuery, AuditSortKey } from "@/types/admin";
 import AuditFilters, { DEFAULT_AUDIT_QUERY } from "./AuditFilters";
 import AuditTable from "./AuditTable";
@@ -23,7 +25,7 @@ export default function AuditPage(): React.ReactElement {
       <AdminMetric label="실패" value={String(data.data?.failureCount ?? "—")} tone="danger" selected={query.outcome === "failure"} onClick={() => change({ ...query, outcome: "failure", page: 1 })} />
     </div>
     <AdminCard title="로그 조회"><AuditFilters value={query} actions={data.data?.actions ?? []} resources={data.data?.resources ?? []} onChange={change} exporting={exporting.isPending} onExport={() => exporting.mutate({ ...query }, { onSuccess: (csv) => { downloadCsv("활동로그_2026-10-20.csv", csv); setNotice("현재 조건의 전체 로그를 내보냈습니다."); } })} /></AdminCard>
-    <AdminCard bodyPadding="flush" title="활동 내역" actions={<Select aria-label="로그 페이지당 행 수" size="small" value={String(query.pageSize)} onChange={(_, d) => change({ ...query, page: 1, pageSize: d.value === "50" ? 50 : 20 })}><option value="20">20행</option><option value="50">50행</option></Select>}>
+    <AdminCard bodyPadding="flush" title="활동 내역" actions={<Select aria-label="로그 페이지당 행 수" size="small" value={String(query.pageSize)} onChange={(_, d) => { const result = PageInputSchema.shape.pageSize.safeParse(Number(d.value)); if (result.success) change({ ...query, page: 1, pageSize: result.data }); }}>{PAGE_SIZE_OPTIONS.map((size) => <option key={size} value={size}>{size}행</option>)}</Select>}>
       {(notice || exporting.error) && <WorkspaceCardSection afterHeader>
         {notice && <p role="status">{notice}</p>}{exporting.error && <p role="alert">{exporting.error.message}</p>}
     </WorkspaceCardSection>}

@@ -4,8 +4,9 @@ import { Button, Input, Select } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import AdminPeriodFilter from "@/components/admin/ui/AdminPeriodFilter";
 import { AUDIT_ACTION_LABELS, AUDIT_RESOURCE_LABELS } from "@/config/admin-labels";
+import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
 import type { AuditAction, AuditQuery, AuditResource } from "@/types/admin";
-export const DEFAULT_AUDIT_QUERY: AuditQuery = { from: "2026-07-23", to: "2026-10-20", userSearch: "", targetSearch: "", action: "all", resource: "all", outcome: "all", sortKey: "occurredAt", direction: "desc", page: 1, pageSize: 20 };
+export const DEFAULT_AUDIT_QUERY: AuditQuery = { from: "2026-07-23", to: "2026-10-20", userSearch: "", targetSearch: "", action: "all", resource: "all", outcome: "all", sortKey: "occurredAt", direction: "desc", page: 1, pageSize: DEFAULT_PAGE_SIZE };
 interface AuditFiltersProps { value: AuditQuery; actions: readonly AuditAction[]; resources: readonly AuditResource[]; onChange(value: AuditQuery): void; exporting: boolean; onExport(): void }
 export default function AuditFilters({ value, actions, resources, onChange, exporting, onExport }: AuditFiltersProps): React.ReactElement {
   const [userSearch, setUserSearch] = useState(value.userSearch), [targetSearch, setTargetSearch] = useState(value.targetSearch);
