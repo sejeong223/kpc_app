@@ -1,7 +1,7 @@
 # Phase: P01 common 버튼과 사용 계약
 
 - Date: 2026-11-02
-- Status: in_progress
+- Status: done
 - Plan: [dadam 범용 공통 버튼](../../../plans/2026-11-02-common-button.md)
 - Decision: [공통 버튼 결정](../../../decisions/2026-11-02-common-button.md)
 
@@ -14,7 +14,7 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | common 진입점·dadam 버튼·상태 스타일·DOM 검증 | [T01](./T01-common-button-core.md) |
-| T02 | `in_progress` | 사용 예시·개발 가이드·CSS 생성과 호환성 검증 | [T02](./T02-examples-and-validation.md) |
+| T02 | `done` | 사용 예시·개발 가이드·CSS 생성과 호환성 검증 | [T02](./T02-examples-and-validation.md) |
 
 ## Dependencies and Validation
 
@@ -26,5 +26,5 @@
 
 ## Progress
 
-- done: 1/2 (active: T02)
-- T01 구현·검증 완료. T02 사용 예시와 CSS 생성 검증 진행.
+- done: 2/2 (active: 없음)
+- T01/T02 구현·검증 완료. 로컬 DOM/스타일31개, typecheck/lint/build 통과. [실행 보고서](../../../reports/2026-11-02-common-button.md).

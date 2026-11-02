@@ -222,7 +222,7 @@ Task: T01-common-button-core
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: bb8b06b
 
 ## Execution Result
 

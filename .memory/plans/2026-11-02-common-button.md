@@ -1,10 +1,10 @@
 # Plan: dadam 범용 공통 버튼과 common 디렉토리
 
 - Date: 2026-11-02
-- Status: in_progress
+- Status: done
 - Feature: common-button
 - 기준 코드: `b3d0341`. 계획 시작 시 미추적 `2026-11-02-common-button.md` 결정 문서만 있었고 추적 앱 소스 변경은 없었다.
-- T01 구현·자동 검증 완료. T02 사용 예시와 CSS 생성 검증이 남아 있다.
+- T01/T02 구현·자동 검증 완료. [실행 보고서](../reports/2026-11-02-common-button.md)에 결과와 검증 경계를 기록했다.
 
 ## Goal
 
@@ -26,7 +26,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | common 버튼 구현과 사용 계약 검증 | [P01](../phases/2026-11-02-common-button/P01-common-button/phase.md) |
+| P01 | `done` | common 버튼 구현과 사용 계약 검증 | [P01](../phases/2026-11-02-common-button/P01-common-button/phase.md) |
 
 ## Task Roadmap
 
@@ -91,5 +91,5 @@ tests/common/          # 실행 단계에서 만드는 로컬 전용 검증, Git
 ## Plan Completion
 
 - [x] T01 done, 공개 컴포넌트와 스타일 계약 검증
-- [ ] T02 done, 사용 예시·가이드·검증 보고서 완료
-- [ ] phase/plan/current 진행 기록 정리
+- [x] T02 done, 사용 예시·가이드·검증 보고서 완료
+- [x] phase/plan/current 진행 기록 정리

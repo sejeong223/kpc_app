@@ -1,6 +1,6 @@
 # Task: T02 사용 예시와 클래스 호환성 검증
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -137,14 +137,14 @@ async function compileProjectUtilities(): Promise<Root>;
 
 ## Acceptance Criteria
 
-- [ ] 네 개의 예시 함수가 public Button을 사용하고 typecheck를 통과한다. 앱 route/메뉴에는 연결되지 않는다.
-- [ ] 프리셋/아이콘 조합/크기/세로/양끝/줄바꿈/선택+disabled/색상 override/form/ref의 실제 예시가 있다.
-- [ ] README가 예시와 같은 API를 설명하며 active와 disabled, 상태 색 덮어쓰기, 소스 스캔과 기본 type을 정확히 구분한다.
-- [ ] 기존 dadam 원본을 참조하고 새 폰트/팔레트/전역 theme 변경이 없다.
-- [ ] 실제 Tailwind 입력에서 common 예시의 클래스를 생성하고, CSS 범위/레이어/토큰 참조 검사와 DOM 회귀가 통과한다.
-- [ ] 전체 typecheck/lint/build가 통과하고 변경된 코드는 common·허용된 CSS 접점 범위에 한정된다.
-- [ ] 로컬 테스트/current는 커밋에서 제외하고 보고서에 실제 자동 검증과 브라우저 미실시를 구분했다.
-- [ ] phase/plan 완료, current 다음 실행 없음으로 정리했다.
+- [x] 네 개의 예시 함수가 public Button을 사용하고 typecheck를 통과한다. 앱 route/메뉴에는 연결되지 않는다.
+- [x] 프리셋/아이콘 조합/크기/세로/양끝/줄바꿈/선택+disabled/색상 override/form/ref의 실제 예시가 있다.
+- [x] README가 예시와 같은 API를 설명하며 active와 disabled, 상태 색 덮어쓰기, 소스 스캔과 기본 type을 정확히 구분한다.
+- [x] 기존 dadam 원본을 참조하고 새 폰트/팔레트/전역 theme 변경이 없다.
+- [x] 실제 Tailwind 입력에서 common 예시의 클래스를 생성하고, CSS 범위/레이어/토큰 참조 검사와 DOM 회귀가 통과한다.
+- [x] 전체 typecheck/lint/build가 통과하고 변경된 코드는 common·허용된 CSS 접점 범위에 한정된다.
+- [x] 로컬 테스트/current는 커밋에서 제외하고 보고서에 실제 자동 검증과 브라우저 미실시를 구분했다.
+- [x] phase/plan 완료, current 다음 실행 없음으로 정리했다.
 
 ## Validation
 
@@ -178,6 +178,17 @@ Task: T02-examples-and-validation
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 파일을 포함하는 T02 커밋. 실제 hash는 로컬 current 및 Task footer로 조회한다.
+
+## Execution Result
+
+- Date: 2026-11-02
+- Button.examples.tsx의 네 함수와 common README를 작성했다. 표준 Button의 상태/아이콘/크기/색/폼/ref 계약을 실제 JSX와 설명에 함께 반영했다.
+- 기존 route·메뉴·업무 화면의 Button import는 변경하지 않았다. T01 공통 버튼 구현은 추가 수정 없이 예시/스타일 검사를 통과했다.
+- 로컬 DOM/예시14개와 CSS 검사17개, 총2파일31개 통과. 실제 Tailwind 입력의 메모리 컴파일에서 크기·배치·hover/선택/disabled 색상 클래스 생성을 확인했다.
+- npm.cmd run typecheck, npm.cmd run lint, npm.cmd run build, diff/stage 검사 통과. 기존 앱 route 구성 유지.
+- 브라우저/E2E/스크린샷/dev server는 사용자 정책에 따라 미실시. CSS 구조 검증과 실제 화면 검증을 구분한다.
+- tests/current는 로컬 전용으로 유지했다. 추가 업무/보안 결함은 발견하지 않았고 기존 Vite/브라우저 기준 데이터 경고의 의존성 갱신은 범위 밖으로 남겼다.
+- [최종 보고서](../../../reports/2026-11-02-common-button.md)에 구현·검증·제약과 커밋 조회 방법을 기록했다.
