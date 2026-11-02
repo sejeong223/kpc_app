@@ -10,7 +10,7 @@ import { checkPptxAbort } from "@/lib/pptx/errors";
 import type { AppliedAssetRef, AssetCommand, AssetDetail, AssetKind, AssetList, AssetQuery, AssetReceipt, AssetRecord, ResolvedAsset, TemplateExtraction, TemplateDraft } from "@/types/admin-assets";
 import type { TemplateObject } from "@/types/pptx-template";
 import { ADMIN_DIRECTORY } from "@/config/admin-seed";
-import { ADMIN_RESOURCES, CRUD_ACTIONS } from "@/config/admin-permissions";
+import { ADMIN_RESOURCES, CRUD_ACTIONS, SUPER_ADMIN_ROLE_GRANTS } from "@/config/admin-permissions";
 import { AdminDataError, validationError } from "@/lib/admin/errors";
 import { assertPermission, canPerform } from "@/lib/admin/permissions";
 import { requireVersion, uniqueTargets, validDepartment, validateGrants } from "@/lib/admin/command-validation";
@@ -36,6 +36,8 @@ export class MockAdminDataService implements AdminDataService {
   private readonly files: TemplateFileStore;
   constructor(options: MockAdminOptions) {
     this.state = structuredClone(AdminStoreStateSchema.parse(options.seed));
+    // 이전 체크값으로 권한이 낮아진 상태도 고정 권한으로 복구한다.
+    this.state.roleGrants = [structuredClone(SUPER_ADMIN_ROLE_GRANTS), ...this.state.roleGrants.filter((row) => row.role !== "super_admin")];
     this.createId = options.createId ?? (() => crypto.randomUUID());
     this.files = options.files ?? new TemplateFileStore();
   }

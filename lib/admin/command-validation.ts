@@ -18,8 +18,7 @@ export function validateGrants(rows: readonly RoleGrants[]): void {
   if (rows.length !== 3 || new Set(rows.map((r) => r.role)).size !== 3 || !ADMIN_ROLES.every((role) => rows.some((r) => r.role === role))) throw new AdminDataError("VALIDATION", "세 역할의 권한을 모두 지정해 주세요.");
   for (const row of rows) for (const resource of ADMIN_RESOURCES) {
     const value = row.grants[resource], ceiling = CRUD_CEILING.find((r) => r.role === row.role)!.grants[resource];
+    if (row.role === "super_admin" && CRUD_ACTIONS.some((action) => value[action] !== ceiling[action])) throw new AdminDataError("VALIDATION", "슈퍼 관리자의 권한은 전체 허용으로 고정되어 변경할 수 없습니다.");
     if (CRUD_ACTIONS.some((action) => value[action] && (!ceiling[action] || !value.read))) throw new AdminDataError("VALIDATION", "역할의 허용 범위를 초과한 권한입니다.");
   }
-  const locked = rows.find((r) => r.role === "super_admin")!.grants.permissions;
-  if (!locked.read || !locked.update) throw new AdminDataError("VALIDATION", "슈퍼 관리자의 권한 관리 기능은 해제할 수 없습니다.");
 }

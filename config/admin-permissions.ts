@@ -21,5 +21,6 @@ function ceiling(role: AdminRole): RoleGrants {
   })) as RoleGrants["grants"];
   return { role, grants };
 }
-export const CRUD_CEILING: readonly RoleGrants[] = ADMIN_ROLES.map(ceiling);
+export const SUPER_ADMIN_ROLE_GRANTS: RoleGrants = ceiling("super_admin");
+export const CRUD_CEILING: readonly RoleGrants[] = ADMIN_ROLES.map((role) => role === "super_admin" ? SUPER_ADMIN_ROLE_GRANTS : ceiling(role));
 export const DEFAULT_ROLE_GRANTS: readonly RoleGrants[] = structuredClone(CRUD_CEILING);
