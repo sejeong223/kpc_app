@@ -21,7 +21,7 @@ export default function AssetListPanel(props:AssetListPanelProps){
   const change=(patch:Partial<AssetQuery>)=>{const parsed=AssetQuerySchema.safeParse({...props.query,...patch,page:1});if(parsed.success)props.onQueryChange(parsed.data);};
   if(!grant?.read)return <AdminAsyncState state="forbidden"/>;
   const columns:AdminColumn<AssetRow>[]=[
-    {id:"name",label:"이름 / 약칭",sortable:true,render:row=><div><Button appearance="transparent" size="small" onClick={()=>props.onOpen(row.id)}>{row.name}</Button><div className="tw:px-2 tw:text-[11px] tw:text-(--kpc-muted)">{row.short}</div></div>},
+    {id:"name",label:"이름 / 약칭",sortable:true,render:row=><div><Button data-asset-open={row.id} appearance="transparent" size="small" onClick={()=>props.onOpen(row.id)}>{row.name}</Button><div className="tw:px-2 tw:text-[11px] tw:text-(--kpc-muted)">{row.short}</div></div>},
     {id:"owner",label:"소유 부서",render:row=>row.ownerDepartmentName},
     {id:"visibility",label:"공개 범위",render:row=>row.visibility.all?"전사 공개":row.visibility.targets.length?`선택 공개 ${row.visibility.targets.length}곳`:"비공개"},
     {id:"status",label:"상태",render:row=><span className={row.status==="active"?"tw:text-(--kpc-success)":"tw:text-(--kpc-muted)"}>{row.status==="active"?"활성":"비활성"}</span>},
@@ -34,7 +34,7 @@ export default function AssetListPanel(props:AssetListPanelProps){
       {row.capabilities.delete&&grant.delete&&<Button size="small" onClick={()=>props.onDelete(row)}>삭제</Button>}
     </div>},
   ];
-  return <AdminCard title={`${props.kind==="skill"?"Skill":"Template"} 목록`} actions={props.canCreate&&grant.create?<Button appearance="primary" onClick={props.onCreate}>+ {props.kind==="skill"?"Skill":"Template"} 등록</Button>:undefined}>
+  return <AdminCard title={`${props.kind==="skill"?"Skill":"Template"} 목록`} actions={props.canCreate&&grant.create?<Button data-asset-create appearance="primary" onClick={props.onCreate}>+ {props.kind==="skill"?"Skill":"Template"} 등록</Button>:undefined}>
     <div className="tw:mb-4 tw:flex tw:flex-wrap tw:items-end tw:gap-3">
       <Field label="검색"><Input value={props.query.search} placeholder="이름·약칭·설명 검색" onChange={(_,data)=>change({search:data.value})}/></Field>
       <Field label="공개 범위"><Select value={props.query.visibility} onChange={(_,data)=>change({visibility:AssetQuerySchema.shape.visibility.parse(data.value)})}><option value="all">전체</option><option value="organization">전사 공개</option><option value="department">부서 공개</option><option value="group">그룹 공개</option><option value="user">사용자 공개</option></Select></Field>

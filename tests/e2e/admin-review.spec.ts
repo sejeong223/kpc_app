@@ -95,11 +95,14 @@ test("기존 사용자 삭제 복구와 감사 상세 요청 ID",async({page})=>
   const targetId=await description.locator("div").filter({has:page.getByText("대상 ID",{exact:true})}).locator("dd").innerText();expect(requestId).not.toBe(targetId);
 });
 
-test("모델 단가 소수 6자리와 Skill 미저장 모달 흐름",async({page})=>{
+test("모델 단가 소수 6자리와 Skill 입력 화면의 미저장 확인",async({page})=>{
   await page.goto("/workspace/policy?tab=models");const input=page.getByLabel(/입력 단가$/).first(),label=await input.getAttribute("aria-label");
   await input.fill("0.123456");await input.locator("xpath=ancestor::tr").getByRole("button",{name:"저장",exact:true}).click();await expect(input).toBeEnabled();
   await page.getByRole("tab",{name:"토큰·비용 관리",exact:true}).click();await page.getByRole("tab",{name:"모델 설정",exact:true}).click();await expect(page.getByLabel(label!,{exact:true})).toHaveValue("0.123456");
-  await navigate(page,"/workspace/skills");const register=page.getByRole("button",{name:"+ Skill 등록",exact:true});await register.click();const editor=page.getByRole("dialog",{name:"Skill 등록",exact:true});await editor.getByRole("textbox",{name:"Skill 이름",exact:true}).fill("저장하지 않은 Skill");await editor.press("Escape");await editor.getByRole("button",{name:"계속 편집",exact:true}).click();await expect(editor.getByRole("textbox",{name:"Skill 이름",exact:true})).toHaveValue("저장하지 않은 Skill");await editor.press("Escape");await editor.getByRole("button",{name:"변경사항 버리기",exact:true}).click();await expect(editor).toHaveCount(0);await expect(register).toBeFocused();
+  await navigate(page,"/workspace/skills");const register=page.getByRole("button",{name:"+ Skill 등록",exact:true});await register.click();
+  const editor=page.getByRole("form",{name:"Skill 입력",exact:true});await expect(page.getByRole("dialog")).toHaveCount(0);await editor.getByRole("textbox",{name:"Skill 이름",exact:true}).fill("저장하지 않은 Skill");
+  await page.getByRole("button",{name:"취소",exact:true}).click();const confirm=page.getByRole("dialog",{name:"변경사항 버리기",exact:true});await confirm.getByRole("button",{name:"계속 편집",exact:true}).click();
+  await expect(editor.getByRole("textbox",{name:"Skill 이름",exact:true})).toHaveValue("저장하지 않은 Skill");await page.getByRole("button",{name:"취소",exact:true}).click();await confirm.getByRole("button",{name:"변경사항 버리기",exact:true}).click();await expect(editor).toHaveCount(0);await expect(register).toBeFocused();
 });
 
 test("토큰 승인 후 프로필 한도 동기화와 이전 주소 리다이렉트",async({page})=>{

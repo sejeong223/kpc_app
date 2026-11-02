@@ -20,6 +20,6 @@ it("다른 부서 공개 자산은 조회·복제만 렌더링하고 소유 부�
 });
 it("2~8 영역을 허용값으로 제공하고 미지원 규칙 안내를 표시한다",()=>{
   const html=renderToStaticMarkup(createElement(SkillRuleFields,{value:DEFAULT_SKILL_RULES,disabled:false,fieldErrors:{},onChange:vi.fn()}));
-  for(const title of ["2. 글꼴","3. 요소","4. 표","5. 도형","6. 여백","7. 보호","8. 페이지"])expect(html).toContain(title);
-  expect(html).toContain("공통 규칙");expect(html).toContain("자동 분할은 수행하지 않습니다");
+  for(const title of ["2. 글꼴","3. 제목","4. 표","5. 도형","6. 슬라이드","7. 넘침","8. 페이지"])expect(html).toContain(title);
+  expect(html).toContain("공통 28pt");expect(html).toContain("자동 분할은 수행하지 않습니다");
 });

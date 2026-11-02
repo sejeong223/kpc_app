@@ -12,7 +12,7 @@ export const OPT = {
   mg: [.5,.8,1,1.2,1.5,1.8,2,2.5], cols: [6,8,12,16], rows: [2,3,4,6], grid: [.1,.2,.25,.5,1], tableRows: [8,10,12,15,20],
 } as const;
 export const PAGE_TYPES = ['cover','toc','div','body','table','appx'] as const;
-export const PAGE_LABEL = { cover:'표지', toc:'목차', div:'간지', body:'본문', table:'표 중심', appx:'부록' } as const;
+export const PAGE_LABEL = { cover:'표지', toc:'목차', div:'간지', body:'본문', table:'표 · 대응표', appx:'부록' } as const;
 export const RULES = {
   cover: ['사업명 2줄까지 자동 줄바꿈','로고 우상단 고정','본문 규칙 미적용'],
   toc: ['장 번호 Ⅰ·Ⅱ·Ⅲ','장 번호 01·02·03','페이지 번호 오른쪽 정렬'],
