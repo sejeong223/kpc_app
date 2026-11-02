@@ -5,6 +5,8 @@ import WorkspaceHeader from "./WorkspaceHeader";
 
 export interface WorkspacePageProps {
   title: string;
+  /** 메뉴명은 접근성용으로만 남기고 등록·수정·상세 제목만 명시적으로 표시한다. */
+  showTitle?: boolean;
   leading?: React.ReactNode;
   actions?: React.ReactNode;
   headingId?: string;

@@ -45,7 +45,7 @@ export default function PromptEditorPage({ detail, onClose, onSaved }: Props): R
     try { const result = await command.mutateAsync(parsed.data); onSaved(result.id); } catch { /* 실패 시 입력을 유지한다. */ }
   }
   async function reload() { const result = await latest.refetch(); if (result.data) { const next = initial(result.data, actor.departmentId); setDraft(next); setBaseline(JSON.stringify(next)); setErrors({}); command.reset(); } }
-  return <AdminPage title={detail ? "프롬프트 세트 수정" : "프롬프트 세트 등록"} headingRef={heading} stickyHeader
+  return <AdminPage showTitle title={detail ? "프롬프트 세트 수정" : "프롬프트 세트 등록"} headingRef={heading} stickyHeader
     leading={<Button appearance="subtle" disabled={command.isPending} onClick={guard.close}>← {detail ? "상세로" : "목록으로"}</Button>}
     actions={<><Button disabled={command.isPending} onClick={guard.close}>취소</Button>{editable && <Button appearance="primary" type="submit" form={formId} disabled={!dirty || command.isPending}>{command.isPending ? "저장 중…" : detail ? "저장" : "등록"}</Button>}</>}>
     {command.error && <div role="alert">{command.error.message}{command.error.code === "CONFLICT" && <Button onClick={() => void reload()}>최신 내용 불러오기</Button>}</div>}

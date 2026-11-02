@@ -59,7 +59,7 @@ export default function SkillEditorPage({detail,readOnly,onClose}:SkillEditorPag
     setErrors({});try{const result=await command.mutateAsync(parsed.data);onClose(result.assetId);}catch{/* 실패 시 입력을 유지한다. */}
   }
   async function reload(){const result=await latest.refetch();if(result.data){const next=initial(result.data,actor.departmentId);setDraft(next);setBaseline(JSON.stringify(next));setErrors({});command.reset();}}
-  return <WorkspacePage stickyHeader title={detail?(editable?"Skill 편집":"Skill 상세"):"Skill 등록"} headingRef={heading}
+  return <WorkspacePage showTitle stickyHeader title={detail?(editable?"Skill 편집":"Skill 상세"):"Skill 등록"} headingRef={heading}
     className="tw:text-[12px] tw:text-(--kpc-ink)"
     leading={<Button appearance="subtle" disabled={command.isPending} onClick={close}>← Skill 목록</Button>}
     actions={<><Button disabled={command.isPending} onClick={close}>{editable?"취소":"닫기"}</Button>{editable&&<Button type="submit" form={formId} appearance="primary" disabled={!dirty||command.isPending}>{command.isPending?"저장 중…":detail?"저장":"등록"}</Button>}</>}>

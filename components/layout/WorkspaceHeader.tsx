@@ -10,7 +10,7 @@ import { useWorkspaceNavigation } from "./WorkspaceNavigation";
 import type { WorkspacePageProps } from "./WorkspacePage";
 
 export interface WorkspaceHeaderProps extends Pick<WorkspacePageProps,
-  "title" | "leading" | "actions" | "headingId" | "headingRef"> {
+  "title" | "showTitle" | "leading" | "actions" | "headingId" | "headingRef"> {
   headerRef?: React.Ref<HTMLElement>;
   sticky?: boolean;
 }
@@ -26,27 +26,33 @@ const useStyles = makeStyles({
 });
 
 export default function WorkspaceHeader({
-  title, leading, actions,
+  title, showTitle = false, leading, actions,
   headingId, headingRef, headerRef, sticky = false,
 }: WorkspaceHeaderProps): React.ReactElement {
   const styles = useStyles();
   const navigation = useWorkspaceNavigation();
   const id = useId();
+  const hasToolbar = Boolean(showTitle || leading || actions);
+  const heading = <h1 id={headingId ?? id + "-title"} ref={headingRef} tabIndex={headingRef ? -1 : undefined}
+    className={showTitle ? "tw:m-0 tw:min-w-0 tw:break-words tw:text-[16px] tw:leading-6 tw:font-bold" : "tw:sr-only"}>{title}</h1>;
 
-  return <header ref={headerRef} data-workspace-header className={
-    "tw:flex tw:min-w-0 tw:flex-col tw:gap-(--layout-control-gap)" +
-    (sticky ? " tw:sticky tw:top-0 tw:z-10 tw:bg-(--kpc-bg)" : "")
-  }>
-    <div className="tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)">
-      {navigation && <DadamThemeScope><Button type="button" className={styles.menu}
-        id={navigation.triggerId} icon={<NavigationRegular />}
-        aria-label={navigation.menuOpen ? "메뉴 닫기" : "메뉴 열기"}
-        aria-controls={navigation.sidebarId} aria-expanded={navigation.menuOpen}
-        onClick={navigation.toggleMenu} /></DadamThemeScope>}
-      {leading}
-      <h1 id={headingId ?? id + "-title"} ref={headingRef} tabIndex={headingRef ? -1 : undefined}
-        className="tw:m-0 tw:min-w-0 tw:break-words tw:text-[16px] tw:leading-6 tw:font-bold">{title}</h1>
-      {actions && <div className="tw:ml-auto tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)">{actions}</div>}
-    </div>
-  </header>;
+  return <>
+    {!showTitle && heading}
+    {(hasToolbar || navigation) && <header ref={headerRef} data-workspace-header className={
+      "tw:min-w-0 tw:flex-col tw:gap-(--layout-control-gap) " +
+      (hasToolbar ? "tw:flex" : "tw:hidden tw:[@media(max-width:760px)]:flex") +
+      (sticky ? " tw:sticky tw:top-0 tw:z-10 tw:bg-(--kpc-bg)" : "")
+    }>
+      <div className="tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)">
+        {navigation && <DadamThemeScope><Button type="button" className={styles.menu}
+          id={navigation.triggerId} icon={<NavigationRegular />}
+          aria-label={navigation.menuOpen ? "메뉴 닫기" : "메뉴 열기"}
+          aria-controls={navigation.sidebarId} aria-expanded={navigation.menuOpen}
+          onClick={navigation.toggleMenu} /></DadamThemeScope>}
+        {leading}
+        {showTitle && heading}
+        {actions && <div className="tw:ml-auto tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)">{actions}</div>}
+      </div>
+    </header>}
+  </>;
 }
