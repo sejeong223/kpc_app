@@ -4,8 +4,8 @@ import { AdminStackedBar } from "@/components/admin/ui/AdminCharts";
 import type { DashboardQuery, DashboardView } from "@/types/admin";
 import { formatWinRate, rfpSegments } from "./rfp-presentation";
 
-interface RfpResultsPanelProps { view: DashboardView; query: DashboardQuery; onChange(query: DashboardQuery): void }
-export default function RfpResultsPanel({ view, query, onChange }: RfpResultsPanelProps): React.ReactElement {
+interface RfpResultsPanelProps { view: DashboardView; query: DashboardQuery; onChange(query: DashboardQuery): void; onSelectStatus(status: DashboardQuery["rfpStatus"]): void }
+export default function RfpResultsPanel({ view, query, onChange, onSelectStatus }: RfpResultsPanelProps): React.ReactElement {
   const bucket = view.registrations.find(row => row.id === query.bucketStart);
   const segments = rfpSegments(view.distribution), total = view.selectedRfpCount;
   const stats = [
@@ -21,7 +21,7 @@ export default function RfpResultsPanel({ view, query, onChange }: RfpResultsPan
       <div aria-label="RFP 결과 분포" className="tw:grid tw:grid-cols-1 tw:gap-(--layout-inline-gap) tw:sm:grid-cols-2">
         {segments.filter(segment => segment.count > 0).map(segment => {
           const selected = query.rfpStatus === segment.id || query.rfpStatus === "progress" && (segment.id === "review" || segment.id === "writing");
-          return <button key={segment.id} type="button" aria-pressed={selected} onClick={() => onChange({ ...query, rfpStatus: query.rfpStatus === segment.id ? "all" : segment.id, rfpPage: 1 })}
+          return <button key={segment.id} type="button" aria-pressed={selected} onClick={() => onSelectStatus(segment.id)}
             className={"tw:flex tw:min-w-0 tw:cursor-pointer tw:items-center tw:gap-(--layout-control-gap) tw:rounded-md tw:border-0 tw:p-(--layout-control-gap) tw:text-left tw:text-[12px] tw:hover:bg-(--kpc-bg) tw:focus-visible:outline-2 tw:focus-visible:outline-(--kpc-brand) " + (selected ? "tw:bg-(--kpc-bg) tw:font-bold" : "tw:bg-transparent")}>
             <span aria-hidden="true" className="tw:size-2.5 tw:shrink-0 tw:rounded-sm" style={{ backgroundColor: segment.color }} /><span className="tw:flex-1">{segment.label}</span><strong className="tw:tabular-nums">{segment.count}</strong><span className="tw:w-12 tw:text-right tw:text-[11px] tw:text-(--kpc-muted) tw:tabular-nums">{(segment.count / total * 100).toFixed(1)}%</span>
           </button>;

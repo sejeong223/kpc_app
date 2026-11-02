@@ -20,7 +20,7 @@ export default function RfpSummary({ view, status, actions, onSelect }: RfpSumma
       <h2 className="tw:m-0 tw:text-[13px] tw:font-bold">RFP 현황 <span className="tw:ml-(--layout-control-gap) tw:text-[11px] tw:font-normal tw:text-(--kpc-muted)">조회 기간 전체</span></h2>
     </WorkspaceActionRow>
     <div className="tw:grid tw:grid-cols-2 tw:gap-(--layout-control-gap) tw:md:grid-cols-3 tw:xl:grid-cols-6">
-      {cards.map(card => <AdminMetric key={card.id} label={card.label} value={card.count?.toLocaleString("ko-KR") ?? "—"} unit="건" icon={card.icon} caption={card.caption} tone={card.tone} selected={status === card.id} onClick={() => onSelect(status === card.id ? "all" : card.id)} />)}
+      {cards.map(card => <AdminMetric key={card.id} label={card.label} value={card.count?.toLocaleString("ko-KR") ?? "—"} unit="건" icon={card.icon} caption={card.caption} tone={card.tone} selected={status === card.id} onClick={() => onSelect(card.id)} />)}
     </div>
   </section>;
 }
