@@ -468,6 +468,7 @@ export const DashboardViewSchema = z.strictObject({
   users: z.array(z.strictObject({
   id: IdSchema,
   name: NameSchema,
+  email: AdminUserSchema.shape.email.nullable(),
   departmentName: z.string(),
   activities: z.number().finite(),
   rfpCreates: z.number().finite(),

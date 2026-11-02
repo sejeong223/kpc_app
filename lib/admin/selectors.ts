@@ -108,9 +108,11 @@ export function buildDashboard(state: AdminStoreState, actor: AdminActor, query:
       const events = audits.filter((a) => a.actorId === id), userUsage = usage.filter((u) => u.userId === id), current = state.users.find((u) => u.id === id);
       const snapshot = [...events].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0];
       const name = snapshot?.actorName ?? userUsage[0]?.userName ?? current?.name ?? "삭제된 사용자";
+      // 이력의 식별 정보를 우선하고, 이동·삭제된 사용자의 현재 이메일은 가져오지 않는다.
+      const email = snapshot?.actorEmail ?? (current && !current.deletedAt && inScope(actor, current.departmentId) ? current.email : null);
       const departmentId = snapshot ? snapshot.departmentId : userUsage[0] ? userUsage[0].departmentId : current?.departmentId;
-      return { id, name, departmentName: state.departments.find((d) => d.id === departmentId)?.name ?? "미지정", activities: events.length,
+      return { id, name, email, departmentName: state.departments.find((d) => d.id === departmentId)?.name ?? "미지정", activities: events.length,
         rfpCreates: events.filter((a) => a.resource === "rfp" && a.action === "create").length, sectionWrites: events.filter((a) => a.resource === "document" && a.action === "update").length,
         generations: events.filter((a) => a.action === "generate").length, downloads: events.filter((a) => a.action === "export").length, failures: events.filter((a) => a.outcome === "failure").length, tokens: tokenTotal(userUsage), cost: costTotal(userUsage) };
-    }).filter((u) => matches(u.name + " " + u.departmentName, query.userSearch)).sort((a, b) => b.activities - a.activities || a.id.localeCompare(b.id)) };
+    }).filter((u) => matches(u.name + " " + u.departmentName + " " + (u.email ?? ""), query.userSearch)).sort((a, b) => b.activities - a.activities || a.id.localeCompare(b.id)) };
 }
