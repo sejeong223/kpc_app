@@ -13,7 +13,7 @@ Decisions: [2026-11-02-rfp-register](../decisions/2026-11-02-rfp-register.md)
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | RFP 등록 도메인·저장소·UI·라우트 연결 (단일 Phase) | [P01](../phases/2026-11-02-rfp-register/P01-rfp-register-ui/phase.md) |
+| P01 | `done` | RFP 등록 도메인·저장소·UI·라우트 연결 (단일 Phase) | [P01](../phases/2026-11-02-rfp-register/P01-rfp-register-ui/phase.md) |
 
 ## Out of Scope
 - 검토 목록(`pipeline`) 화면, 실제 RFP 파싱/LLM 호출, Cosmos DB·Blob 저장, 완료 제안 재사용, 작성 중 폼 임시 저장, 관리자 대시보드 집계 연동.
