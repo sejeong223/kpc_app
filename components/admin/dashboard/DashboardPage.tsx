@@ -31,12 +31,12 @@ export default function DashboardPage(): React.ReactElement {
   if (!access.data) return <AdminPage title="대시보드"><AdminAsyncState state={access.isError ? "error" : "loading"} onRetry={() => void access.refetch()} /></AdminPage>;
   if (!access.data.grants.dashboard.read) return <AdminPage title="대시보드"><AdminAsyncState state="forbidden" /></AdminPage>;
 
-  return <AdminPage title="대시보드" description={(access.data.actor.role === "super_admin" ? "전사" : "소속 부서") + " 제안 현황과 AI 활용을 살펴봅니다. 등록 구간과 상태를 선택하면 결과 분포와 RFP 목록에 반영됩니다."} actions={<>
+  return <AdminPage title="대시보드" actions={<>
     <AdminPeriodFilter compact value={{ from: query.from, to: query.to }} maxDate="2026-10-20" onChange={(period) => {
       setQuery(current => ({ ...current, ...period, bucketStart: null, rfpPage: 1 }));
       updateUi({ departmentPage: 1, userPage: 1, breakdownPages: { actions: 1, resources: 1, details: 1 }, focusRfpList: false });
     }} />
-    {access.data.grants.audit.read && <Link href="/workspace/audit" className="tw:inline-flex tw:min-h-(--dadam-control-height) tw:items-center tw:rounded-(--dadam-control-radius) tw:border tw:border-solid tw:border-(--dadam-control-border) tw:bg-(--kpc-card) tw:px-(--dadam-control-padding) tw:text-sm tw:text-(--dadam-control-ink) tw:no-underline tw:hover:bg-(--dadam-control-muted)">활동 로그 →</Link>}
+    {access.data.grants.audit.read && <Link href="/workspace/audit" className="tw:inline-flex tw:min-h-(--dadam-control-height-compact) tw:items-center tw:rounded-(--dadam-control-radius) tw:border tw:border-solid tw:border-(--dadam-control-border) tw:bg-(--kpc-card) tw:px-(--layout-control-gap) tw:text-xs tw:text-(--dadam-control-ink) tw:no-underline tw:hover:bg-(--dadam-control-muted)">활동 로그 →</Link>}
   </>}>
     <RfpSummary view={view} status={query.rfpStatus} onSelect={(rfpStatus) => { setQuery(current => ({ ...current, rfpStatus, rfpPage: 1 })); setTab("rfp"); }} />
     <DashboardActivitySummary view={view} />

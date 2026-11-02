@@ -25,14 +25,15 @@ const useStyles = makeStyles({
     ":hover": { ...shorthands.borderColor(control.borderHover) },
     ":focus-within": { ...shorthands.borderColor(tokens.colorBrandStroke1), boxShadow: control.focusShadow },
     '&:has([aria-invalid="true"])': { ...shorthands.borderColor(tokens.colorPaletteRedBorder2) },
-    "&:has(:disabled)": {
+    // 비활성 option이 포함된 활성 select까지 비활성으로 표시하지 않는다.
+    "&:has(input:disabled, select:disabled, textarea:disabled)": {
       ...shorthands.borderColor(control.border), backgroundColor: control.muted,
       color: control.disabled, cursor: "not-allowed", boxShadow: "none",
     },
     "@media (forced-colors: active)": {
       ...shorthands.borderColor("CanvasText"),
       ":focus-within": { outline: "2px solid Highlight", outlineOffset: "2px" },
-      "&:has(:disabled)": { ...shorthands.borderColor("GrayText"), color: "GrayText" },
+      "&:has(input:disabled, select:disabled, textarea:disabled)": { ...shorthands.borderColor("GrayText"), color: "GrayText" },
     },
   },
   input: {

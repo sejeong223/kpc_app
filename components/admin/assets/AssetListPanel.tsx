@@ -17,7 +17,6 @@ export interface AssetListPanelProps {
   onOpen(id:string):void;onCreate():void;onDuplicate(row:AssetRow):void;onToggle(row:AssetRow):void;onDelete(row:AssetRow):void;canCreate:boolean;
   onApply?(row:AssetRow):void;
 }
-export const ASSET_DATA_NOTICE="관리 정보는 임시 저장되며 새로고침하면 초기화됩니다. 업로드 파일은 실제로 분석합니다.";
 export const emptyAssetList:AssetList={rows:{items:[],total:0,page:1,pageSize:DEFAULT_PAGE_SIZE,totalPages:1},activeCount:0,inactiveCount:0};
 export function defaultAssetQuery(kind:AssetKind):AssetQuery{return {kind,search:"",visibility:"all",status:"all",page:1,pageSize:DEFAULT_PAGE_SIZE,sort:"updatedAt",direction:"desc"};}
 export default function AssetListPanel(props:AssetListPanelProps){

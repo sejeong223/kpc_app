@@ -43,7 +43,7 @@ export default function UsersPage(): React.ReactElement {
   if (grants.permissions.read) options.push({ value: "permissions", label: "역할별 권한" });
   const currentTab = options.find((o) => o.value === tab)?.value ?? options[0]?.value;
   if (!currentTab) return <AdminPage title="사용자 설정"><AdminAsyncState state="forbidden" /></AdminPage>;
-  return <AdminPage title="사용자 설정" description={actor.role === "department_admin" ? "소속 부서의 사용자 현황을 확인합니다." : "사용자와 그룹, 역할별 권한을 관리합니다."} actions={currentTab === "users" ? <>
+  return <AdminPage title="사용자 설정" actions={currentTab === "users" ? <>
     <Button disabled={exporting.isPending} onClick={() => exporting.mutate(query, { onSuccess: (csv) => downloadCsv("사용자-2026-10-20.csv", csv) })}>목록 내보내기</Button>
     {grants.users.create && <Button appearance="primary" onClick={() => setDirectory(true)}>사용자 추가</Button>}
   </> : undefined}>

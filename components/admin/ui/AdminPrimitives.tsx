@@ -6,10 +6,8 @@ import WorkspacePage, { type WorkspacePageProps } from "@/components/layout/Work
 type AdminPageProps = WorkspacePageProps;
 type AdminCardProps = WorkspaceCardProps;
 interface AdminMetricProps { label: string; value: string; caption?: string; unit?: string; icon?: React.ReactNode; selected?: boolean; onClick?: () => void; tone?: "neutral" | "brand" | "success" | "warning" | "danger" | "info" | "purple" }
-export function AdminPage({ dataNotice, dataNoticeSummary, className = "", ...props }: AdminPageProps): React.ReactElement {
+export function AdminPage({ className = "", ...props }: AdminPageProps): React.ReactElement {
   return <WorkspacePage {...props}
-    dataNotice={dataNotice === undefined ? "예시 데이터 · 기준일 2026.10.20" : dataNotice}
-    dataNoticeSummary={dataNoticeSummary ?? (dataNotice === undefined ? "예시 데이터" : undefined)}
     className={"tw:text-(--kpc-ink) tw:text-[12px] tw:leading-relaxed " + className} />;
 }
 export function AdminCard(props: AdminCardProps): React.ReactElement {

@@ -13,6 +13,6 @@ export default function AdminPeriodFilter({ value, onChange, maxDate, compact = 
     { id: "year", label: "올해", from: maxDate.slice(0, 4) + "-01-01" }, { id: "all", label: "전체 기간", from: "2025-01-01" },
   ];
   return <div className={compact ? "tw:min-w-0" : "tw:min-w-0 tw:rounded-(--kpc-radius-card) tw:border tw:border-solid tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:p-(--layout-card-inset)"}>
-    <DateRangeFilter value={displayed} onChange={change} maxDate={maxDate} error={error} presets={presets.map(preset => ({ ...preset, to: maxDate }))} />
+    <DateRangeFilter compact={compact} value={displayed} onChange={change} maxDate={maxDate} error={error} presets={presets.map(preset => ({ ...preset, to: maxDate }))} />
   </div>;
 }

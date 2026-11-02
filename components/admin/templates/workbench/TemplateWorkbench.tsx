@@ -7,7 +7,6 @@ import { TemplateOptionsSchema } from "@/lib/pptx/options-schema";
 import { clearPptxDownloads,downloadPptxBytes } from "@/lib/pptx/download";
 import { AdminCard,AdminPage } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
-import { ASSET_DATA_NOTICE } from "@/components/admin/assets/AssetListPanel";
 import type { TemplateOptions } from "@/types/pptx-template";
 import TemplateApplyOptions from "./TemplateApplyOptions";
 import TemplateResultsPanel from "./TemplateResultsPanel";
@@ -41,10 +40,10 @@ export default function TemplateWorkbench({workId,onBack}:TemplateWorkbenchProps
     try{const result=await exporting.mutateAsync({workId,resultId:view.work.result.id});const current=await works.getWork(actor,workId);if(current.canDownload&&current.work.result?.id===view.work.result.id)downloadPptxBytes(result.bytes,result.filename);else setDownloadError("작업 설정이 변경되었습니다. 현재 결과를 확인하세요.");}
     catch(error){setDownloadError(error instanceof Error?error.message:"파일을 내려받지 못했습니다.");}finally{exporting.reset();}
   }
-  if(!allowed)return <AdminPage title="적용 테스트" dataNotice={ASSET_DATA_NOTICE} dataNoticeSummary="예시 데이터 · 새로고침 시 초기화" actions={<Button onClick={onBack}>목록으로</Button>}><AdminAsyncState state="forbidden" message="현재 권한으로 이 작업을 열 수 없습니다."/></AdminPage>;
-  if(!view||!data?.before)return <AdminPage title="적용 테스트" dataNotice={ASSET_DATA_NOTICE} dataNoticeSummary="예시 데이터 · 새로고침 시 초기화" actions={<Button onClick={onBack}>작업 닫기</Button>}><AdminAsyncState state={query.isError?"error":"loading"} message={query.error?.message} onRetry={()=>void query.refetch()}/></AdminPage>;
+  if(!allowed)return <AdminPage title="적용 테스트" actions={<Button onClick={onBack}>목록으로</Button>}><AdminAsyncState state="forbidden" message="현재 권한으로 이 작업을 열 수 없습니다."/></AdminPage>;
+  if(!view||!data?.before)return <AdminPage title="적용 테스트" actions={<Button onClick={onBack}>작업 닫기</Button>}><AdminAsyncState state={query.isError?"error":"loading"} message={query.error?.message} onRetry={()=>void query.refetch()}/></AdminPage>;
   const busy=command.isPending||view.work.status==="running",newer=view.newer.template||view.newer.skill;
-  return <AdminPage title="PPT 적용 테스트" description={`${view.templateName} v${view.work.template.revision} × ${view.skillName} v${view.work.skill.revision}`} dataNotice={ASSET_DATA_NOTICE} dataNoticeSummary="예시 데이터 · 새로고침 시 초기화" actions={<>
+  return <AdminPage title="PPT 적용 테스트" actions={<>
     <Button onClick={onBack}>작업 닫기</Button>
     {view.work.status==="running"?<Button disabled={cancel.isPending} onClick={()=>cancel.mutate({type:"cancel-work",id:workId})}>적용 취소</Button>:<Button appearance="primary" disabled={busy||!view.canReapply} onClick={()=>void apply("pinned")}>{view.work.result?"현재 버전 재적용":"Skill 적용 및 비교"}</Button>}
     {newer&&view.canApplyLatest&&<Button disabled={busy} onClick={()=>setLatest(true)}>최신 버전 재적용</Button>}

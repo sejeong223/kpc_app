@@ -60,7 +60,6 @@ export default function SkillEditorPage({detail,readOnly,onClose}:SkillEditorPag
   }
   async function reload(){const result=await latest.refetch();if(result.data){const next=initial(result.data,actor.departmentId);setDraft(next);setBaseline(JSON.stringify(next));setErrors({});command.reset();}}
   return <WorkspacePage stickyHeader title={detail?(editable?"Skill 편집":"Skill 상세"):"Skill 등록"} headingRef={heading}
-    description="PPT 편집 규칙을 설정합니다." dataNotice="관리 정보는 임시 저장되며 새로고침하면 초기화됩니다." dataNoticeSummary="예시 데이터 · 새로고침 시 초기화"
     className="tw:text-[12px] tw:text-(--kpc-ink)"
     leading={<Button appearance="subtle" disabled={command.isPending} onClick={close}>← Skill 목록</Button>}
     actions={<><Button disabled={command.isPending} onClick={close}>{editable?"취소":"닫기"}</Button>{editable&&<Button type="submit" form={formId} appearance="primary" disabled={!dirty||command.isPending}>{command.isPending?"저장 중…":detail?"저장":"등록"}</Button>}</>}>

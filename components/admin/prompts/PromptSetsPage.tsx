@@ -65,7 +65,7 @@ export default function PromptSetsPage(): React.ReactElement {
       <p>{detail.data.row.name}을 목록에서 삭제합니다. 기존 프로젝트의 적용 버전은 유지됩니다.</p>{command.error && <p role="alert">{command.error.message}</p>}
     </ModalFrame>}
   </>;
-  return <div ref={listRoot}><AdminPage title="프롬프트 세트" description="부서별 대표 목차와 목차별 작성 지침·소스 우선순위를 관리합니다." dataNotice="관리 정보와 사용 프로젝트는 예시 데이터입니다. 새로고침하면 변경사항이 초기화됩니다." dataNoticeSummary="예시 데이터">
+  return <div ref={listRoot}><AdminPage title="프롬프트 세트">
     {notice && <p role="status">{notice}</p>}{command.error && <p role="alert">{command.error.message}</p>}
     <PromptListPanel query={query} onQueryChange={setQuery} list={list.data} audience={audience.data} loading={list.isPending} error={list.error?.message} busy={command.isPending} canCreate={access.grants.promptSets.create}
       onRetry={() => void list.refetch()} onCreate={() => { command.reset(); setEditor({ detail: null }); }} onOpen={id => open(id)} onEdit={id => open(id, true)} onDuplicate={row => void execute({ type: "duplicate-prompt-set", target: { id: row.id, version: row.version } })} />

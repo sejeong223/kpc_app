@@ -33,7 +33,7 @@ export default async function WorkspaceScreenPage({
 
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
-      {screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title" description={`${item.label} 화면입니다.`}>{null}</WorkspacePage>}
+      {screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
     </PreviewRoleBoundary>
   );
 }

@@ -3,7 +3,7 @@ import WorkspacePage from "@/components/layout/WorkspacePage";
 
 export default function DashboardPage(): React.ReactElement {
   return (
-    <WorkspacePage title="홈" description="필요한 업무와 자료를 한곳에서 관리하는 공간입니다.">
+    <WorkspacePage title="홈">
       <WorkspaceCard title="내 워크스페이스" actions={<span className="workspace-home-badge">기본 공간</span>}>
         <p className="tw:text-[11px] tw:text-(--kpc-muted)">업무의 시작과 진행을 이곳에서 확인하세요.</p>
         <div className="workspace-home-empty-state">

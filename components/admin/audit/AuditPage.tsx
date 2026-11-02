@@ -18,7 +18,7 @@ export default function AuditPage(): React.ReactElement {
   const change = useCallback((value: AuditQuery) => { setQuery(value); setExpandedId(null); }, []);
   const sort = (key: AuditSortKey) => change({ ...query, sortKey: key, direction: query.sortKey === key ? query.direction === "asc" ? "desc" : "asc" : key === "occurredAt" || key === "tokens" ? "desc" : "asc", page: 1 });
   if (!access.data?.grants.audit.read) return <AdminPage title="활동 로그"><AdminAsyncState state="forbidden" /></AdminPage>;
-  return <AdminPage title="활동 로그" description={access.data.actor.role === "super_admin" ? "전사 사용자의 활동과 처리 결과를 확인합니다." : "우리 부서의 활동과 처리 결과를 확인합니다."}>
+  return <AdminPage title="활동 로그">
     <div className="tw:grid tw:grid-cols-3 tw:gap-(--layout-section-gap)" aria-label="결과 조건을 제외한 현재 필터의 건수">
       <AdminMetric label="전체 활동" value={data.data ? String(data.data.successCount + data.data.failureCount) : "—"} selected={query.outcome === "all"} onClick={() => change({ ...query, outcome: "all", page: 1 })} />
       <AdminMetric label="성공" value={String(data.data?.successCount ?? "—")} tone="success" selected={query.outcome === "success"} onClick={() => change({ ...query, outcome: "success", page: 1 })} />

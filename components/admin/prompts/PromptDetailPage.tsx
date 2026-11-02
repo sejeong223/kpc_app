@@ -18,7 +18,7 @@ export default function PromptDetailPage({ detail, audience, busy, error, onClos
   const [tab, setTab] = useState<typeof tabs[number]["value"]>("body"), [usagePage, setUsagePage] = useState(1), [historyPage, setHistoryPage] = useState(1);
   const { row, revision } = detail, target = { id: row.id, version: row.version };
   const usages = paginate(detail.usages, { page: usagePage, pageSize: 10 }), history = paginate(detail.history, { page: historyPage, pageSize: 10 });
-  return <AdminPage title={row.name} dataNotice="관리 정보는 임시 저장되며 새로고침하면 초기화됩니다." dataNoticeSummary="예시 데이터" leading={<Button appearance="subtle" onClick={onClose} disabled={busy}>← 프롬프트 세트 목록</Button>}
+  return <AdminPage title={row.name} leading={<Button appearance="subtle" onClick={onClose} disabled={busy}>← 프롬프트 세트 목록</Button>}
     actions={<><span className="tw:text-(--kpc-muted)">v{row.currentRevision} · {row.status === "active" ? "활성" : "초안"}</span>
       {row.capabilities.update && <><Button disabled={busy} onClick={onVisibility}>공개 범위</Button><Button disabled={busy} onClick={() => onCommand({ type: "set-prompt-status", target, status: row.status === "active" ? "draft" : "active" })}>{row.status === "active" ? "비활성화" : "활성화"}</Button></>}
       {row.capabilities.duplicate && <Button disabled={busy} onClick={() => onCommand({ type: "duplicate-prompt-set", target })}>복제</Button>}

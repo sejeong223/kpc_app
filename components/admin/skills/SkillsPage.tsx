@@ -6,7 +6,7 @@ import { useAssets,useAssetCommand } from "@/hooks/admin/use-assets";
 import { adminQueryKey } from "@/lib/admin/query-keys";
 import { AdminPage } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
-import AssetListPanel,{ASSET_DATA_NOTICE,defaultAssetQuery,emptyAssetList} from "@/components/admin/assets/AssetListPanel";
+import AssetListPanel,{defaultAssetQuery,emptyAssetList} from "@/components/admin/assets/AssetListPanel";
 import AssetDeleteDialog from "@/components/admin/assets/AssetDeleteDialog";
 import type { AssetCommand,AssetDetail,AssetRow } from "@/types/admin-assets";
 import SkillEditorPage from "./SkillEditorPage";
@@ -27,7 +27,7 @@ export default function SkillsPage(){
   async function execute(value:AssetCommand){try{const result=await command.mutateAsync(value);setDeletion(null);setNotice(value.type==="duplicate-asset"?"비공개·비활성 사본을 만들었습니다.":"변경사항을 저장했습니다.");if(value.type==="duplicate-asset")void open(result.assetId);}catch{/* 오류를 표시하고 선택을 유지한다. */}}
   if(!access?.grants.skills.read)return <AdminPage title="Skill"><AdminAsyncState state="forbidden"/></AdminPage>;
   if(editor)return <SkillEditorPage detail={editor.detail} readOnly={Boolean(editor.detail&&!editor.detail.asset.capabilities.update)} onClose={close}/>;
-  return <div ref={listRoot}><AdminPage title="Skill" description="제안서에 반복 적용할 글꼴·여백·표 서식을 관리합니다." dataNotice={ASSET_DATA_NOTICE} dataNoticeSummary="예시 데이터 · 새로고침 시 초기화">
+  return <div ref={listRoot}><AdminPage title="Skill">
     {notice&&<p role="status">{notice}</p>}{command.error&&<p role="alert">{command.error.message}</p>}{opening&&<p role="status">상세를 불러오는 중입니다.</p>}
     <AssetListPanel kind="skill" query={query} onQueryChange={setQuery} list={list.data??emptyAssetList} loading={list.isPending} error={list.error?.message??null} canCreate={access.grants.skills.create} onCreate={()=>begin(null)} onOpen={id=>void open(id)} onDuplicate={row=>void execute({type:"duplicate-asset",target:{id:row.id,version:row.version}})} onToggle={row=>void execute({type:"set-asset-status",target:{id:row.id,version:row.version},status:row.status==="active"?"inactive":"active"})} onDelete={row=>{command.reset();setDeletion(row);}}/>
     {list.isError&&<Button onClick={()=>void list.refetch()}>다시 시도</Button>}
