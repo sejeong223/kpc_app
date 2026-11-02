@@ -27,7 +27,7 @@ export default async function WorkspaceScreenPage({
   }
   if (screen === "tokens") redirect("/workspace/policy?tab=tokens");
   const tab = (await searchParams)?.tab;
-  if (screen === "users" || screen === "policy" || screen === "audit" || screen === "dashboard" || screen === "skills" || screen === "templates") {
+  if (screen === "users" || screen === "policy" || screen === "audit" || screen === "dashboard" || screen === "skills" || screen === "templates" || screen === "prompt-sets") {
     return <PreviewRoleBoundary requiredRole={item.requiredRole}><AdminScreenRouter screen={screen} requestedTab={tab === "models" || tab === "tokens" ? tab : null} /></PreviewRoleBoundary>;
   }
 
