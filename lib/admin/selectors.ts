@@ -35,16 +35,24 @@ export function buildSelfUsage(state: AdminStoreState, actor: AdminActor): SelfU
 export function selectTokens(state: AdminStoreState, actor: AdminActor, query: TokenQuery): TokenOverview {
   const scope = (departmentId: string | null) => inScope(actor, departmentId) && (!query.departmentId || query.departmentId === departmentId);
   const periodUsage = state.usages.filter((u) => scope(u.departmentId) && inPeriod(u.occurredAt, query));
+  // 월 전체 집계는 목록 필터와 분리하되, 과거 사용 이력의 부서 권한도 지킨다.
+  const monthlyUsage = state.usages.filter((u) => inScope(actor, u.departmentId) && toKoreanDay(u.occurredAt).startsWith(query.month));
   const rows = state.accounts.filter((a) => a.month === query.month).flatMap((a) => {
-    const user = state.users.find((u) => u.id === a.userId && !u.deletedAt && scope(u.departmentId));
+    const user = state.users.find((u) => u.id === a.userId && !u.deletedAt && inScope(actor, u.departmentId));
     if (!user) return [];
-    const usedTokens = tokenTotal(state.usages.filter((u) => u.userId === a.userId && scope(u.departmentId) && toKoreanDay(u.occurredAt).startsWith(query.month)));
+    const usedTokens = tokenTotal(monthlyUsage.filter((u) => u.userId === a.userId));
     const status: TokenOverview["rows"][number]["status"] = a.paused ? "paused" : usedTokens >= a.limitTokens ? "over" : usedTokens / a.limitTokens * 100 >= state.settings.warningPercents[0] ? "warning" : "normal";
     return [{ id: a.id, userId: user.id, name: user.name, departmentId: user.departmentId, departmentName: state.departments.find((d) => d.id === user.departmentId)?.name ?? "미지정", title: user.title, version: a.version, usedTokens, limitTokens: a.limitTokens, paused: a.paused, status }];
   });
-  return { rows: rows.filter((r) => matches(r.name + " " + r.departmentName, query.search) && (query.status === "all" || r.status === query.status)).sort((a, b) => a.name.localeCompare(b.name, "ko") || a.id.localeCompare(b.id)),
-    departments: visibleDepartments(state, actor), byDepartment: visibleDepartments(state, actor).filter((d) => !query.departmentId || d.id === query.departmentId).map((d) => ({ id: d.id, name: d.name, usedTokens: tokenTotal(periodUsage.filter((u) => u.departmentId === d.id)), userCount: rows.filter((r) => r.departmentId === d.id).length })),
-    usedTokens: tokenTotal(periodUsage), personalLimitsTotal: rows.reduce((n, r) => n + r.limitTokens, 0), cost: costTotal(periodUsage),
+  const departmentRows = rows.filter((r) => scope(r.departmentId));
+  const filtered = departmentRows.filter((r) => matches(r.name + " " + r.departmentName, query.search));
+  return { rows: filtered.filter((r) => query.status === "all" || r.status === query.status).sort((a, b) => b.usedTokens - a.usedTokens || a.name.localeCompare(b.name, "ko") || a.id.localeCompare(b.id)),
+    monthlyUsedTokens: tokenTotal(monthlyUsage),
+    monthlyLimitTokens: actor.role === "super_admin" ? state.settings.monthlyTokenLimit : rows.reduce((n, r) => n + r.limitTokens, 0),
+    warningPercents: state.settings.warningPercents,
+    statusCounts: { all: filtered.length, normal: filtered.filter((r) => r.status === "normal").length, warning: filtered.filter((r) => r.status === "warning").length, over: filtered.filter((r) => r.status === "over").length, paused: filtered.filter((r) => r.status === "paused").length },
+    departments: visibleDepartments(state, actor), byDepartment: visibleDepartments(state, actor).map((d) => ({ id: d.id, name: d.name, usedTokens: tokenTotal(monthlyUsage.filter((u) => u.departmentId === d.id)), userCount: rows.filter((r) => r.departmentId === d.id).length })).sort((a, b) => b.usedTokens - a.usedTokens || a.name.localeCompare(b.name, "ko")),
+    usedTokens: tokenTotal(periodUsage), personalLimitsTotal: departmentRows.reduce((n, r) => n + r.limitTokens, 0), cost: costTotal(periodUsage),
     models: state.models.map((m) => { const usage = periodUsage.filter((u) => u.modelId === m.id); return { id: m.id, modelName: m.name, inputTokens: usage.reduce((n, u) => n + u.inputTokens, 0), outputTokens: usage.reduce((n, u) => n + u.outputTokens, 0), ...costTotal(usage) }; }),
     settings: actor.role === "super_admin" ? { version: state.settings.version, updatedAt: state.settings.updatedAt, monthlyTokenLimit: state.settings.monthlyTokenLimit, defaultPersonalLimit: state.settings.defaultPersonalLimit, warningPercents: state.settings.warningPercents } : null };
 }

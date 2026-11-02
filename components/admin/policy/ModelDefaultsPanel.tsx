@@ -1,9 +1,10 @@
 "use client";
-import { Field } from "@fluentui/react-components";
 import { DadamButton as Button, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
+import AdminTable from "@/components/admin/ui/AdminTable";
+import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
 import { useAdminAccess, useAdminCommand, useAdminModels } from "@/hooks/admin/use-admin-data";
 import type { JobKind, ModelSettingsView } from "@/types/admin";
 const jobs: { id: JobKind; label: string; detail: string }[] = [
@@ -14,10 +15,14 @@ export default function ModelDefaultsPanel(): React.ReactElement {
   const query = useAdminModels(), access = useAdminAccess(), command = useAdminCommand();
   const [draft, setDraft] = useState<Pick<ModelSettingsView, "version" | "modelByJob"> | null>(null), [notice, setNotice] = useState("");
   const value = draft ?? query.data, canEdit = access.data?.grants.modelSettings.update;
-  return <AdminCard title="업무별 기본 모델" actions={canEdit ? <Button appearance="primary" disabled={!draft || command.isPending} onClick={() => { if (draft) command.mutate({ type: "save-model-defaults", version: draft.version, value: draft.modelByJob }, { onSuccess: () => { setDraft(null); setNotice("기본 모델을 저장했습니다."); } }); }}>변경 저장</Button> : undefined}>
-    {!query.data || !value ? <AdminAsyncState state={query.isError ? "error" : "loading"} onRetry={() => void query.refetch()} /> : <div className="tw:grid tw:gap-(--layout-section-gap) tw:md:grid-cols-2">
-      {jobs.map((job) => <div key={job.id} className="tw:rounded-lg tw:border tw:border-solid tw:border-(--kpc-line-soft) tw:p-(--layout-card-inset)"><Field label={job.label} hint={job.detail}>{canEdit ? <Select value={value.modelByJob[job.id]} disabled={command.isPending} onChange={(_, d) => { setDraft({ version: value.version, modelByJob: { ...value.modelByJob, [job.id]: d.value } }); setNotice(""); }}>{query.data!.models.map((model) => <option key={model.id} value={model.id}>{model.name}</option>)}</Select> : <strong>{query.data!.models.find((m) => m.id === value.modelByJob[job.id])?.name}</strong>}</Field></div>)}
-    </div>}
-    {notice && <p role="status">{notice}</p>}{command.error && <p role="alert">{command.error.message} 입력값은 유지됩니다. <Button onClick={() => { setDraft(null); command.reset(); void query.refetch(); }}>다시 불러오기</Button></p>}
+  return <AdminCard bodyPadding="flush" title="업무별 기본 모델" actions={<div className="tw:flex tw:items-center tw:gap-(--layout-control-gap)"><span className="tw:text-[11px] tw:text-(--kpc-muted)">{jobs.length}개 업무</span>{canEdit && <Button appearance="primary" disabled={!draft || command.isPending} onClick={() => { if (draft) command.mutate({ type: "save-model-defaults", version: draft.version, value: draft.modelByJob }, { onSuccess: () => { setDraft(null); setNotice("기본 모델을 저장했습니다."); } }); }}>변경 저장</Button>}</div>}>
+    {!query.data || !value ? <AdminAsyncState state={query.isError ? "error" : "loading"} onRetry={() => void query.refetch()} /> : <AdminTable label="업무별 기본 모델" rows={jobs} emptyMessage="등록된 업무가 없습니다." columns={[
+      { id: "job", label: "업무", width: "35%", render: (job) => <div className="tw:min-w-40"><strong>{job.label}</strong><div className="tw:text-[11px] tw:text-(--kpc-muted)">{job.detail}</div></div> },
+      { id: "model", label: "기본 모델", render: (job) => canEdit ? <Select className="tw:w-full tw:min-w-56" aria-label={job.label + " 기본 모델"} value={value.modelByJob[job.id]} disabled={command.isPending} onChange={(_, d) => { setDraft({ version: value.version, modelByJob: { ...value.modelByJob, [job.id]: d.value } }); setNotice(""); }}>{query.data?.models.map((model) => <option key={model.id} value={model.id}>{model.name}</option>)}</Select> : <strong>{query.data?.models.find((m) => m.id === value.modelByJob[job.id])?.name}</strong> },
+    ]} />}
+    {(notice || command.error || (query.data && query.isError)) && <WorkspaceCardSection>
+      {notice && <p role="status">{notice}</p>}{command.error && <p role="alert">{command.error.message} 입력값은 유지됩니다. <Button onClick={() => { setDraft(null); command.reset(); void query.refetch(); }}>다시 불러오기</Button></p>}
+      {query.isError && <AdminAsyncState state="error" onRetry={() => void query.refetch()} />}
+    </WorkspaceCardSection>}
   </AdminCard>;
 }

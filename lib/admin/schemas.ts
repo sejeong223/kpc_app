@@ -357,6 +357,10 @@ export type TokenPolicyView = z.infer<typeof TokenPolicyViewSchema>;
 
 export const TokenOverviewSchema = z.strictObject({
   rows: z.array(TokenAccountRowSchema),
+  monthlyUsedTokens: TokenSchema,
+  monthlyLimitTokens: z.number().int().nonnegative(),
+  warningPercents: AdminSettingsSchema.shape.warningPercents,
+  statusCounts: z.record(z.union([TokenAccountRowSchema.shape.status, z.literal("all")]), z.number().int().nonnegative()),
   departments: z.array(AdminDepartmentSchema),
   byDepartment: z.array(z.strictObject({
   id: IdSchema,
