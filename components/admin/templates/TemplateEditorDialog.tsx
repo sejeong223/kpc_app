@@ -1,5 +1,6 @@
 "use client";
-import { Button,Field,Input,Select,Textarea } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input, DadamSelect as Select, DadamTextarea as Textarea } from "@/components/ui/DadamControls";
 import { useEffect,useRef,useState } from "react";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { useAdminRuntime } from "@/components/admin/AdminRuntimeProvider";

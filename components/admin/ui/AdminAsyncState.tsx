@@ -1,5 +1,6 @@
 "use client";
-import { Button, Spinner } from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 interface AdminAsyncStateProps { state: "loading" | "error" | "forbidden" | "empty"; message?: string; onRetry?: () => void }
 const labels = { loading: "불러오는 중입니다.", error: "데이터를 불러오지 못했습니다.", forbidden: "이 화면에 접근할 권한이 없습니다.", empty: "조건에 맞는 결과가 없습니다." };
 export default function AdminAsyncState({ state, message, onRetry }: AdminAsyncStateProps): React.ReactElement {

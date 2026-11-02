@@ -27,13 +27,13 @@ export default async function WorkspaceScreenPage({
   }
   if (screen === "tokens") redirect("/workspace/policy?tab=tokens");
   const tab = (await searchParams)?.tab;
-  if (screen === "users" || screen === "policy" || screen === "audit" || screen === "dashboard" || screen === "skills" || screen === "templates") {
+  if (screen === "users" || screen === "policy" || screen === "audit" || screen === "dashboard" || screen === "skills" || screen === "templates" || screen === "prompt-sets") {
     return <PreviewRoleBoundary requiredRole={item.requiredRole}><AdminScreenRouter screen={screen} requestedTab={tab === "models" || tab === "tokens" ? tab : null} /></PreviewRoleBoundary>;
   }
 
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
-      {screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title" description={`${item.label} 화면입니다.`}>{null}</WorkspacePage>}
+      {screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
     </PreviewRoleBoundary>
   );
 }

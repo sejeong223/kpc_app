@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { useAdminRuntime } from "@/components/admin/AdminRuntimeProvider";
 import { useAssets,useAssetCommand } from "@/hooks/admin/use-assets";
 import { adminQueryKey } from "@/lib/admin/query-keys";
 import { AdminPage } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
-import AssetListPanel,{ASSET_DATA_NOTICE,defaultAssetQuery,emptyAssetList} from "@/components/admin/assets/AssetListPanel";
+import AssetListPanel,{defaultAssetQuery,emptyAssetList} from "@/components/admin/assets/AssetListPanel";
 import AssetDeleteDialog from "@/components/admin/assets/AssetDeleteDialog";
 import type { AssetCommand,AssetDetail,AssetRow } from "@/types/admin-assets";
 import TemplateEditorDialog from "./TemplateEditorDialog";
@@ -25,7 +25,7 @@ export default function TemplatesPage(){
   async function execute(value:AssetCommand){try{const result=await command.mutateAsync(value);setDeletion(null);setNotice(value.type==="duplicate-asset"?"비공개·비활성 사본을 만들었습니다.":"변경사항을 저장했습니다.");if(value.type==="duplicate-asset")void open(result.assetId);}catch{/* 오류를 표시하고 선택을 유지한다. */}}
   if(!access?.grants.templates.read)return <AdminPage title="Template"><AdminAsyncState state="forbidden"/></AdminPage>;
   if(activeWork)return <TemplateWorkbench workId={activeWork} onBack={()=>setActiveWork(null)}/>;
-  return <AdminPage title="Template" description="PPTX·POTX 원본을 분석하고 템플릿 버전과 적용 설정을 관리합니다." dataNotice={ASSET_DATA_NOTICE} dataNoticeSummary="예시 데이터 · 새로고침 시 초기화">
+  return <AdminPage title="Template">
     {notice&&<p role="status">{notice}</p>}{command.error&&<p role="alert">{command.error.message}</p>}{opening&&<p role="status">상세를 불러오는 중입니다.</p>}
     <AssetListPanel kind="template" query={query} onQueryChange={setQuery} list={list.data??emptyAssetList} loading={list.isPending} error={list.error?.message??null} canCreate={access.grants.templates.create} onCreate={()=>setEditor({detail:null})} onOpen={id=>void open(id)} onDuplicate={row=>void execute({type:"duplicate-asset",target:{id:row.id,version:row.version}})} onToggle={row=>void execute({type:"set-asset-status",target:{id:row.id,version:row.version},status:row.status==="active"?"inactive":"active"})} onDelete={row=>{command.reset();setDeletion(row);}} onApply={row=>{workCommand.reset();setApplyTemplate(row.id);}}/>
     {list.isError&&<Button onClick={()=>void list.refetch()}>다시 시도</Button>}

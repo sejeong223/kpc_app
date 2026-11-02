@@ -1,0 +1,27 @@
+/* DADAM 입력 컴포넌트의 공통 원본. 포털과 모든 관리 화면에서 공유한다. */
+:root {
+  --dadam-accent: #0072e5;
+  --dadam-accent-hover: #0063c7;
+  --dadam-accent-pressed: #0054a9;
+  --dadam-accent-ink: #0067d1;
+  --dadam-accent-soft: #edf5ff;
+  --dadam-accent-soft-hover: #e1eeff;
+  --dadam-control-border: #cdd5e0;
+  --dadam-control-border-hover: #98abc2;
+  --dadam-control-surface: #fff;
+  --dadam-control-muted: #f5f7fa;
+  --dadam-control-ink: #20344d;
+  --dadam-control-placeholder: #7b8797;
+  --dadam-control-disabled: #9aa5b3;
+  --dadam-control-radius: 8px;
+  --dadam-control-height: 38px;
+  --dadam-control-height-compact: 32px;
+  --dadam-control-height-large: 44px;
+  --dadam-control-font-size: 14px;
+  --dadam-control-font-size-compact: 12px;
+  --dadam-control-line-height: 20px;
+  --dadam-control-padding: 12px;
+  --dadam-checkbox-size: 18px;
+  --dadam-checkbox-radius: 4px;
+  --dadam-control-focus-shadow: 0 0 0 3px rgb(0 114 229 / 12%);
+}

@@ -1,5 +1,5 @@
 "use client";
-import { Checkbox } from "@fluentui/react-components";
+import { DadamCheckbox as Checkbox } from "@/components/ui/DadamControls";
 import TemplateMappingFields from "../TemplateMappingFields";
 import type { TemplateOptions } from "@/types/pptx-template";
 import type { TemplatePreviewData } from "@/types/template-work";

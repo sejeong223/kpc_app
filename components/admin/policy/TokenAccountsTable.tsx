@@ -1,5 +1,6 @@
 "use client";
-import { Badge, Button, Input, ProgressBar } from "@fluentui/react-components";
+import { Badge, ProgressBar } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import AdminTable, { type AdminColumn } from "@/components/admin/ui/AdminTable";
 import type { AdminCommand, TokenAccountRow } from "@/types/admin";

@@ -1,6 +1,6 @@
 "use client";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
-import { Button, Input } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
@@ -8,11 +8,12 @@ import AdminPager from "@/components/admin/ui/AdminPager";
 import AdminTable from "@/components/admin/ui/AdminTable";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { useAdminAccess, useAdminCommand, useAdminGroups } from "@/hooks/admin/use-admin-data";
-import type { AdminGroup, AdminGroupRow } from "@/types/admin";
+import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
+import type { AdminGroup, AdminGroupRow, GroupQuery } from "@/types/admin";
 import GroupEditorDialog from "./GroupEditorDialog";
 
 export default function GroupsPanel(): React.ReactElement {
-  const [query, setQuery] = useState({ search: "", page: 1, pageSize: 20 as const });
+  const [query, setQuery] = useState<GroupQuery>({ search: "", page: 1, pageSize: DEFAULT_PAGE_SIZE });
   const groups = useAdminGroups(query), access = useAdminAccess(), command = useAdminCommand();
   const [editor, setEditor] = useState<{ group: AdminGroupRow | null } | null>(null), [deleting, setDeleting] = useState<AdminGroup | null>(null), [undo, setUndo] = useState<string | null>(null), [notice, setNotice] = useState("");
   const grants = access.data?.grants;

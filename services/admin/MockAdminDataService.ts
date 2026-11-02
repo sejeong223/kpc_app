@@ -1,5 +1,9 @@
 import { getAuditOperation } from "@/lib/admin/audit-operation";
 import { z } from "zod";
+import { PromptCommandSchema, PromptQuerySchema } from "@/lib/admin/prompts/schemas";
+import { applyPromptCommand, PROMPT_COMMAND_LABELS } from "@/lib/admin/prompts/commands";
+import { canReadPrompt, promptDetail, promptRevision, selectPromptSets } from "@/lib/admin/prompts/selectors";
+import type { PromptCommand, PromptQuery } from "@/types/admin-prompts";
 import { TemplateFileStore } from "./TemplateFileStore";
 import { IdSchema } from "@/lib/admin/record-schema";
 import { AssetCommandSchema, AssetKindSchema, AssetQuerySchema, AppliedAssetRefSchema } from "@/lib/admin/assets/schemas";
@@ -10,7 +14,7 @@ import { checkPptxAbort } from "@/lib/pptx/errors";
 import type { AppliedAssetRef, AssetCommand, AssetDetail, AssetKind, AssetList, AssetQuery, AssetReceipt, AssetRecord, ResolvedAsset, TemplateExtraction, TemplateDraft } from "@/types/admin-assets";
 import type { TemplateObject } from "@/types/pptx-template";
 import { ADMIN_DIRECTORY } from "@/config/admin-seed";
-import { ADMIN_RESOURCES, CRUD_ACTIONS } from "@/config/admin-permissions";
+import { ADMIN_RESOURCES, CRUD_ACTIONS, SUPER_ADMIN_ROLE_GRANTS } from "@/config/admin-permissions";
 import { AdminDataError, validationError } from "@/lib/admin/errors";
 import { assertPermission, canPerform } from "@/lib/admin/permissions";
 import { requireVersion, uniqueTargets, validDepartment, validateGrants } from "@/lib/admin/command-validation";
@@ -36,6 +40,8 @@ export class MockAdminDataService implements AdminDataService {
   private readonly files: TemplateFileStore;
   constructor(options: MockAdminOptions) {
     this.state = structuredClone(AdminStoreStateSchema.parse(options.seed));
+    // 이전 체크값으로 권한이 낮아진 상태도 고정 권한으로 복구한다.
+    this.state.roleGrants = [structuredClone(SUPER_ADMIN_ROLE_GRANTS), ...this.state.roleGrants.filter((row) => row.role !== "super_admin")];
     this.createId = options.createId ?? (() => crypto.randomUUID());
     this.files = options.files ?? new TemplateFileStore();
   }
@@ -65,6 +71,27 @@ export class MockAdminDataService implements AdminDataService {
     return structuredClone({ actor, grants, revision: this.state.revision, permissionRevision: this.state.permissionRevision, departments: visibleDepartments(this.state, actor), logicalNow: this.state.logicalNow });
   }
   async getAccess(input: AdminActor): Promise<AdminAccessView> { return this.getAccessSnapshot(input); }
+  async getPromptSets(input: AdminActor, query: PromptQuery) {
+    const actor = this.access(input, "promptSets"), q = parse(PromptQuerySchema, query);
+    return structuredClone(selectPromptSets(this.state, actor, q));
+  }
+  async getPromptSet(input: AdminActor, id: string) {
+    const actor = this.access(input, "promptSets"), target = parse(IdSchema, id);
+    const record = this.state.promptSets.records.find(row => row.id === target && !row.deletedAt);
+    if (!record) throw new AdminDataError("NOT_FOUND", "프롬프트 세트를 찾을 수 없습니다.");
+    if (!canReadPrompt(this.state, actor, record)) throw new AdminDataError("FORBIDDEN", "이 프롬프트 세트에 접근할 수 없습니다.");
+    return structuredClone(promptDetail(this.state, actor, record));
+  }
+  async getPromptAudience(input: AdminActor) { return structuredClone(assetAudience(this.state, this.access(input, "promptSets"))); }
+  async executePrompt(input: AdminActor, raw: PromptCommand) {
+    const actor = this.actor(input), command = parse(PromptCommandSchema, raw), draft = this.draft();
+    const result = applyPromptCommand(draft, actor, command, this.createId), record = result.record;
+    if (result.changed) {
+      this.addAudit(draft, actor, result.action, "promptSets", record.id, promptRevision(draft, record).name, record.ownerDepartmentId, PROMPT_COMMAND_LABELS[command.type]);
+      this.commit(draft);
+    }
+    return { id: record.id, version: record.version, contentRevision: record.currentRevision };
+  }
   async getAssets(input: AdminActor, query: AssetQuery): Promise<AssetList> {
     const q = parse(AssetQuerySchema, query), actor = this.access(input, assetResource(q.kind));
     return structuredClone(selectAssets(this.state, actor, q));

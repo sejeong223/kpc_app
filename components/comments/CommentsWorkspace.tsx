@@ -139,7 +139,7 @@ export default function CommentsWorkspace(): React.ReactElement {
       const point = clientPointToRatio({ x: e.clientX, y: e.clientY }, boundsOf(e.currentTarget)); if (point) controller?.placePin(point);
     }}
     onKeyDown={e => { if (e.target === e.currentTarget && state.pinMode && ["Enter", " "].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); controller?.placePin({ xRatio: .5, yRatio: .5 }); } }}>
-    <div className={styles.intro} data-comment-control><WorkspaceHeader title="제작" headingId="workspace-screen-title" actions={<CommentCreateButton />} description="핀 생성 버튼을 누르고 원하는 위치에 의견을 남겨보세요." />
+    <div className={styles.intro} data-comment-control><WorkspaceHeader title="제작" headingId="workspace-screen-title" actions={<CommentCreateButton />} />
       {state.pinMode && <p className={styles.text} role="status">의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
       {(state.status === "idle" || state.status === "loading") && <p className={styles.text} role="status">코멘트를 불러오는 중입니다.</p>}
     </div>

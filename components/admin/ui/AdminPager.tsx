@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { getPaginationItems } from "@/lib/pagination";
 interface AdminPagerProps { page: number; total: number; pageSize: number; onChange(page: number): void }
 export default function AdminPager({ page, total, pageSize, onChange }: AdminPagerProps): React.ReactElement {

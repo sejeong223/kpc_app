@@ -2,27 +2,37 @@
 import { buildChartCoordinates, type ChartPoint } from "@/lib/admin/chart-data";
 import type { NamedCount } from "@/types/admin";
 interface AdminSeriesChartProps { label: string; points: readonly ChartPoint[]; kind: "bar" | "line"; unit: string; selectedId?: string | null; onSelect?: (id: string | null) => void }
-interface AdminBreakdownProps { label: string; items: readonly NamedCount[]; selectedId?: string | null; onSelect?: (id: string | null) => void }
+interface AdminBreakdownProps { label: string; items: readonly NamedCount[]; selectedId?: string | null; onSelect?: (id: string | null) => void; columns?: 1 | 2; maxCount?: number }
 export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSelect }: AdminSeriesChartProps): React.ReactElement {
   const coordinates = buildChartCoordinates(points, 720, 200), maximum = Math.max(1, ...points.map((p) => p.value));
   return <figure className="tw:m-0 tw:min-w-0"><figcaption className="tw:mb-(--layout-section-gap) tw:text-[11px] tw:text-(--kpc-muted)">{label} · 단위: {unit}{onSelect ? " · 막대를 선택하면 해당 구간을 볼 수 있습니다." : ""}</figcaption>
-    {!points.length ? <p role="status" className="tw:py-10 tw:text-center tw:text-(--kpc-muted)">선택 기간에 데이터가 없습니다.</p> : kind === "line" ? <svg className="tw:block tw:h-auto tw:w-full" viewBox="0 0 720 200" role="img" aria-label={label + " 추이. 자세한 값은 아래 데이터 표에서 확인할 수 있습니다."}>
+    {!points.length ? <p role="status" className="tw:py-10 tw:text-center tw:text-(--kpc-muted)">선택 기간에 데이터가 없습니다.</p> : kind === "line" ? <svg className="tw:block tw:h-52 tw:w-full" viewBox="0 0 720 200" role="img" aria-label={label + " 추이. 자세한 값은 아래 데이터 표에서 확인할 수 있습니다."}>
       <line x1="24" y1="176" x2="696" y2="176" stroke="var(--kpc-line)" /><polyline fill="none" stroke="var(--kpc-brand)" strokeWidth="2" points={coordinates.map((p) => p.x + "," + p.y).join(" ")} />
       {coordinates.map((p, i) => <g key={p.id}><circle cx={p.x} cy={p.y} r={points.length > 30 ? 2 : 3} fill="var(--kpc-brand)"><title>{p.tooltip}</title></circle>{(i === 0 || i === points.length - 1 || i % Math.ceil(points.length / 6) === 0) && <text x={p.x} y="195" textAnchor="middle" fontSize="10" fill="var(--kpc-muted)">{p.label}</text>}</g>)}
-    </svg> : <div className="tw:flex tw:h-52 tw:items-end tw:gap-(--layout-inline-gap) tw:border-0 tw:border-b tw:border-solid tw:border-(--kpc-line)">
+    </svg> : <div className="tw:relative tw:pl-10"><div aria-hidden="true" className="tw:pointer-events-none tw:absolute tw:inset-x-0 tw:top-[12px] tw:h-40 tw:pl-10">
+      {[1, 0.5, 0].map(fraction => <div key={fraction} className="tw:absolute tw:right-0 tw:left-10 tw:border-0 tw:border-t tw:border-dashed tw:border-(--kpc-line)" style={{ top: (1 - fraction) * 160 }}><span className="tw:absolute tw:-top-2 tw:right-full tw:mr-(--layout-control-gap) tw:text-[10px] tw:text-(--kpc-muted)">{(maximum * fraction).toLocaleString("ko-KR", { maximumFractionDigits: 1, notation: "compact" })}</span></div>)}
+    </div><div className="tw:relative tw:flex tw:h-52 tw:items-end tw:gap-(--layout-inline-gap)">
       {points.map((point, i) => {
-        const content = <><span className="tw:block tw:w-full tw:rounded-t-sm" style={{ height: Math.max(1, point.value / maximum * 160), backgroundColor: selectedId === point.id ? "var(--kpc-brand)" : "var(--kpc-chart-soft)" }} /><span className="tw:mt-(--layout-control-gap) tw:block tw:h-7 tw:whitespace-nowrap tw:text-center tw:text-[10px] tw:text-(--kpc-muted)">{i === 0 || i === points.length - 1 || i % Math.ceil(points.length / 6) === 0 ? point.label : ""}</span></>;
-        const classes = "tw:m-0 tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:justify-end tw:border-0 tw:bg-transparent tw:p-0";
+        const content = <><span className="tw:mx-auto tw:block tw:w-full tw:max-w-7 tw:rounded-t-sm" style={{ height: point.value === 0 ? 0 : Math.max(2, point.value / maximum * 160), backgroundColor: selectedId === point.id ? "var(--kpc-info)" : "color-mix(in srgb, var(--kpc-info) 55%, var(--kpc-card))" }} /><span className="tw:mt-(--layout-control-gap) tw:block tw:h-7 tw:whitespace-nowrap tw:text-center tw:text-[10px] tw:text-(--kpc-muted)">{i === 0 || i === points.length - 1 || i % Math.ceil(points.length / 6) === 0 ? point.label : ""}</span></>;
+        const classes = "tw:m-0 tw:flex tw:h-full tw:min-w-0 tw:flex-1 tw:flex-col tw:justify-end tw:border-0 tw:bg-transparent tw:p-0 tw:focus-visible:outline-2 tw:focus-visible:outline-(--kpc-info)";
         return onSelect ? <button key={point.id} type="button" className={classes} aria-label={point.tooltip} title={point.tooltip} aria-pressed={selectedId === point.id} onClick={() => onSelect(selectedId === point.id ? null : point.id)}>{content}</button> : <div key={point.id} className={classes} title={point.tooltip}>{content}</div>;
       })}
-    </div>}
+    </div></div>}
     <details className="tw:mt-(--layout-section-gap) tw:text-[11px]"><summary className="tw:cursor-pointer tw:text-(--kpc-secondary)">데이터 표 보기</summary><div className="tw:mt-(--layout-control-gap) tw:max-h-60 tw:overflow-auto"><table className="tw:w-full tw:border-collapse"><caption className="tw:sr-only">{label}의 정확한 수치</caption><thead><tr><th scope="col" className="tw:p-(--layout-control-gap) tw:text-left">기간</th><th scope="col" className="tw:p-(--layout-control-gap) tw:text-right">{unit}</th></tr></thead><tbody>{points.map((p) => <tr key={p.id}><th scope="row" className="tw:p-(--layout-control-gap) tw:text-left tw:font-normal">{p.label}</th><td className="tw:p-(--layout-control-gap) tw:text-right tw:tabular-nums">{p.value.toLocaleString("ko-KR")}</td></tr>)}</tbody></table></div></details>
   </figure>;
 }
+interface AdminStackedBarProps { label: string; segments: readonly { id: string; label: string; count: number; color: string }[]; compact?: boolean }
+export function AdminStackedBar({ label, segments, compact = false }: AdminStackedBarProps): React.ReactElement {
+  const total = segments.reduce((sum, segment) => sum + segment.count, 0);
+  return <div role="img" aria-label={label + (total ? ": " + segments.map(segment => `${segment.label} ${segment.count}건`).join(", ") : ": 0건")}
+    className={"tw:flex tw:w-full tw:overflow-hidden tw:rounded-md tw:bg-(--kpc-line-soft) " + (compact ? "tw:h-2.5 tw:min-w-28" : "tw:h-6")}>
+    {segments.filter(segment => segment.count > 0).map(segment => <span key={segment.id} title={`${segment.label} ${segment.count}건 · ${(segment.count / total * 100).toFixed(1)}%`} aria-hidden="true" style={{ width: segment.count / total * 100 + "%", backgroundColor: segment.color }} />)}
+  </div>;
+}
 const statusColors: Record<string, string> = { review: "var(--kpc-muted)", writing: "var(--kpc-info)", submitted: "var(--kpc-purple)", won: "var(--kpc-success)", lost: "var(--kpc-danger)", dropped: "var(--kpc-secondary)" };
-export function AdminBreakdown({ label, items, selectedId, onSelect }: AdminBreakdownProps): React.ReactElement {
-  const maximum = Math.max(1, ...items.map((i) => i.count));
-  return <div aria-label={label} className="tw:flex tw:flex-col tw:gap-(--layout-section-gap)">{!items.length && <p className="tw:text-(--kpc-muted)">선택 기간에 데이터가 없습니다.</p>}{items.map((item) => {
+export function AdminBreakdown({ label, items, selectedId, onSelect, columns = 1, maxCount = 0 }: AdminBreakdownProps): React.ReactElement {
+  const maximum = Math.max(1, maxCount, ...items.map((i) => i.count));
+  return <div aria-label={label} className={"tw:gap-(--layout-section-gap) " + (columns === 2 ? "tw:grid tw:md:grid-cols-2" : "tw:flex tw:flex-col")}>{!items.length && <p className="tw:text-(--kpc-muted)">선택 기간에 데이터가 없습니다.</p>}{items.map((item) => {
     const content = <><span className="tw:mb-(--layout-inline-gap) tw:flex tw:justify-between tw:gap-(--layout-section-gap)"><span className="tw:break-words">{item.label}</span><span className="tw:shrink-0 tw:tabular-nums">{item.count.toLocaleString("ko-KR")}건{item.failures > 0 && <span className="tw:ml-(--layout-control-gap) tw:text-(--kpc-danger)">실패 {item.failures}</span>}</span></span><span className="tw:block tw:h-1.5 tw:rounded-full tw:bg-(--kpc-line-soft)"><span className="tw:block tw:h-full tw:rounded-full" style={{ width: item.count / maximum * 100 + "%", backgroundColor: statusColors[item.id] ?? "var(--kpc-brand)" }} /></span></>;
     return onSelect ? <button key={item.id} type="button" className="tw:m-0 tw:border-0 tw:bg-transparent tw:p-(--layout-inline-gap) tw:text-left" aria-pressed={item.id === selectedId} onClick={() => onSelect(item.id === selectedId ? null : item.id)}>{content}</button> : <div key={item.id}>{content}</div>;
   })}</div>;

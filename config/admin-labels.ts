@@ -4,6 +4,12 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = { apply: "서식
 export const AUDIT_RESOURCE_LABELS: Record<AuditResource, string> = { ...ADMIN_RESOURCE_LABELS, rfp: "RFP", document: "제안 문서", usage: "AI 사용량" };
 export const FEATURE_LABELS: Record<UsageFeature, string> = { rfp: "RFP 분석", draft: "초안 생성", polish: "문장 다듬기", slides: "슬라이드 생성", review: "검수·누락 점검" };
 export const AUDIT_COMMAND_OPERATIONS: readonly { detail:string;resource:AuditResource;action:AuditAction;label:string }[] = [
+  {detail:"프롬프트 세트 등록",resource:"promptSets",action:"create",label:"프롬프트 세트 등록"},
+  {detail:"프롬프트 세트 복제",resource:"promptSets",action:"create",label:"프롬프트 세트 복제"},
+  {detail:"프롬프트 세트 수정",resource:"promptSets",action:"update",label:"프롬프트 세트 수정"},
+  {detail:"프롬프트 세트 상태 변경",resource:"promptSets",action:"update",label:"프롬프트 세트 상태 변경"},
+  {detail:"프롬프트 세트 공개 범위 변경",resource:"promptSets",action:"update",label:"프롬프트 세트 공개 범위 변경"},
+  {detail:"프롬프트 세트 삭제",resource:"promptSets",action:"delete",label:"프롬프트 세트 삭제"},
   {detail:"create-user",resource:"users",action:"create",label:"사용자 등록"},
   {detail:"add-directory-users",resource:"users",action:"create",label:"조직도 사용자 등록"},
   {detail:"update-user",resource:"users",action:"update",label:"사용자 정보 수정"},

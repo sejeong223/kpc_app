@@ -1,5 +1,6 @@
 "use client";
-import { Button,Spinner } from "@fluentui/react-components";
+import { Spinner } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { useId,useState } from "react";
 import { TEMPLATE_LIMITS } from "@/lib/pptx/limits";
 interface TemplateFileInputProps {disabled:boolean;filename:string|null;progress:string|null;error:string|null;onSelect(file:File):void;onCancel():void;onUseExample():void}

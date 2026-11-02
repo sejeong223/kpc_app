@@ -1,7 +1,8 @@
 "use client";
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
-import { Button, Field, Input } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";

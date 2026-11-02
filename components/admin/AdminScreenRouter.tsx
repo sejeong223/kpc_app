@@ -10,20 +10,22 @@ import AuditPage from "@/components/admin/audit/AuditPage";
 import DashboardPage from "@/components/admin/dashboard/DashboardPage";
 import SkillsPage from "@/components/admin/skills/SkillsPage";
 import TemplatesPage from "@/components/admin/templates/TemplatesPage";
+import PromptSetsPage from "@/components/admin/prompts/PromptSetsPage";
 
-interface AdminScreenRouterProps { screen: "users" | "policy" | "audit" | "dashboard" | "skills" | "templates"; requestedTab: "models" | "tokens" | null }
+interface AdminScreenRouterProps { screen: "users" | "policy" | "audit" | "dashboard" | "skills" | "templates" | "prompt-sets"; requestedTab: "models" | "tokens" | null }
 function ScreenContent({ screen, requestedTab }: AdminScreenRouterProps): React.ReactElement {
   const access = useAdminAccess();
   const title = getSidebarItemByScreen(screen)!.label;
   if (access.isError) return <AdminPage title={title}><AdminAsyncState state="error" message={access.error.message} onRetry={() => void access.refetch()} /></AdminPage>;
   if (!access.data) return <AdminPage title={title}><AdminAsyncState state="loading" /></AdminPage>;
-  const allowed = screen === "policy" ? access.data.grants.modelSettings.read || access.data.grants.pricing.read || access.data.grants.tokenPolicies.read || access.data.grants.tokenRequests.read : screen === "users" ? access.data.grants.users.read || access.data.grants.groups.read || access.data.grants.permissions.read : access.data.grants[screen].read;
+  const allowed = screen === "policy" ? access.data.grants.modelSettings.read || access.data.grants.pricing.read || access.data.grants.tokenPolicies.read || access.data.grants.tokenRequests.read : screen === "users" ? access.data.grants.users.read || access.data.grants.groups.read || access.data.grants.permissions.read : access.data.grants[screen === "prompt-sets" ? "promptSets" : screen].read;
   if (!allowed) return <AdminPage title={title}><AdminAsyncState state="forbidden" /></AdminPage>;
   if (screen === "users") return <UsersPage />;
   if (screen === "policy") return <ModelTokenPage requestedTab={requestedTab} />;
   if (screen === "audit") return <AuditPage />;
   if (screen === "skills") return <SkillsPage />;
   if (screen === "templates") return <TemplatesPage />;
+  if (screen === "prompt-sets") return <PromptSetsPage />;
   return <DashboardPage />;
 }
 export default function AdminScreenRouter(props: AdminScreenRouterProps): React.ReactElement {

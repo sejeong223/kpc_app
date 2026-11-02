@@ -5,9 +5,8 @@ import WorkspaceHeader from "./WorkspaceHeader";
 
 export interface WorkspacePageProps {
   title: string;
-  description?: string;
-  dataNotice?: string | null;
-  dataNoticeSummary?: string;
+  /** 메뉴명은 접근성용으로만 남기고 등록·수정·상세 제목만 명시적으로 표시한다. */
+  showTitle?: boolean;
   leading?: React.ReactNode;
   actions?: React.ReactNode;
   headingId?: string;
@@ -23,7 +22,7 @@ export default function WorkspacePage({ children, className = "", stickyHeader =
   useEffect(() => {
     const page = root.current, element = heading.current;
     if (!page || !element || !stickyHeader) return;
-    // 안내 펼침·액션 줄바꿈으로 바뀐 높이도 미리보기의 sticky 위치에 반영한다.
+    // 액션 줄바꿈으로 바뀐 높이도 미리보기의 sticky 위치에 반영한다.
     const measure = () => {
       const height = element.getBoundingClientRect().height;
       if (Number.isFinite(height) && height >= 0) page.style.setProperty("--layout-sticky-header-height", height + "px");

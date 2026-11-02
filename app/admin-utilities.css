@@ -1,6 +1,8 @@
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme) prefix(tw);
 @import "tailwindcss/utilities.css" layer(utilities) prefix(tw) source(none);
-@source "../components/**/*.{ts,tsx}";
+@source "../components/admin";
+@source "../components/layout";
+@source "../components/ui";
 @source "../hooks/admin";
 @source "./";

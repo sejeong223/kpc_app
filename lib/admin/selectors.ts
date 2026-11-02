@@ -1,6 +1,7 @@
 import { getAuditOperation,countAuditOperations } from "@/lib/admin/audit-operation";
 import { sumMoney } from "@/lib/admin/cost";
 import { clampActivityPeriod, toKoreanDay } from "@/lib/admin/dates";
+import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
 import type { AdminActor, AdminAuditEvent, AdminDepartment, AdminStoreState, AdminUsage, AuditList, AuditQuery, DashboardQuery, DashboardView, MoneyTotal, NamedCount, PageInput, PageResult, Period, RfpStatus, SelfUsageView, TokenOverview, TokenQuery, UserList, UserQuery } from "@/types/admin";
 
 export const inScope = (actor: AdminActor, departmentId: string | null): boolean => actor.role === "super_admin" || (actor.role === "department_admin" && actor.departmentId !== null && actor.departmentId === departmentId);
@@ -93,7 +94,7 @@ export function buildDashboard(state: AdminStoreState, actor: AdminActor, query:
     activities: audits.length, activeUsers: new Set(audits.map((a) => a.actorId)).size, generations: audits.filter((a) => a.action === "generate").length, downloads: audits.filter((a) => a.action === "export").length,
     tokens: tokenTotal(usage), cost: costTotal(usage), registrations, distribution: rfpCounts(selected), selectedRfpCount: selected.length, wonBudgetKrw: selected.filter((r) => r.status === "won").reduce((n, r) => n + r.budgetKrw, 0),
     departments: visibleDepartments(state, actor).map((d) => { const rows = rfps.filter((r) => r.departmentId === d.id); return { id: d.id, name: d.name, counts: rfpCounts(rows), total: rows.length, wonBudgetKrw: rows.filter((r) => r.status === "won").reduce((n, r) => n + r.budgetKrw, 0) }; }),
-    rfps: paginate(filtered.map((r) => ({ ...r, pmName: state.users.find((u) => u.id === r.pmId)?.name ?? "삭제된 사용자", departmentName: state.departments.find((d) => d.id === r.departmentId)?.name ?? "미지정" })), { page: query.rfpPage, pageSize: 10 }),
+    rfps: paginate(filtered.map((r) => ({ ...r, pmName: state.users.find((u) => u.id === r.pmId)?.name ?? "삭제된 사용자", departmentName: state.departments.find((d) => d.id === r.departmentId)?.name ?? "미지정" })), { page: query.rfpPage, pageSize: DEFAULT_PAGE_SIZE }),
     trends, actions: breakdown(audits, "action"), resources: breakdown(audits, "resource"), details: countAuditOperations(audits),
     users: [...userIds].map((id) => {
       const events = audits.filter((a) => a.actorId === id), userUsage = usage.filter((u) => u.userId === id), current = state.users.find((u) => u.id === id);

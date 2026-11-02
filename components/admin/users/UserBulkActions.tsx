@@ -1,5 +1,5 @@
 "use client";
-import { Button, Select } from "@fluentui/react-components";
+import { DadamButton as Button, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { ADMIN_ROLES, ADMIN_ROLE_LABELS } from "@/config/admin-permissions";
 import { AdminRoleSchema } from "@/lib/admin/schemas";

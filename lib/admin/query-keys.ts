@@ -1,7 +1,8 @@
 import type { AdminActor, AdminRole, AuditQuery, DashboardQuery, GroupQuery, TokenQuery, UserQuery } from "@/types/admin";
 import type { Query, QueryClient } from "@tanstack/react-query";
 import type { AssetQuery } from "@/types/admin-assets";
-export type AdminQueryFilter = UserQuery | GroupQuery | TokenQuery | AuditQuery | DashboardQuery | AssetQuery | {assetId:string} | {workId:string;workRevision:number} | {fileRefId:string;assetId:string|null};
+import type { PromptQuery } from "@/types/admin-prompts";
+export type AdminQueryFilter = UserQuery | GroupQuery | TokenQuery | AuditQuery | DashboardQuery | AssetQuery | PromptQuery | {promptSetId:string|null} | {assetId:string} | {workId:string;workRevision:number} | {fileRefId:string;assetId:string|null};
 export function adminQueryKey(input: { actor: AdminActor; revision: number; kind: string; filter?: AdminQueryFilter }): readonly ["admin-mock", string, AdminRole, string | null, number, string, AdminQueryFilter | null] {
   return ["admin-mock", input.actor.userId, input.actor.role, input.actor.departmentId, input.revision, input.kind, input.filter ?? null];
 }

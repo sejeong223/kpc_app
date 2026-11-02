@@ -1,5 +1,6 @@
 "use client";
-import { Field,Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useId,useState } from "react";
 import { PAGE_TYPES,PAGE_LABEL } from "@/config/skill-options";
 import type { PageType,SkillRules } from "@/lib/skills/schema";

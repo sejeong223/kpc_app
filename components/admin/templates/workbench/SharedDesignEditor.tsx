@@ -1,5 +1,6 @@
 "use client";
-import { Button,Checkbox,Field,Input,Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamCheckbox as Checkbox, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useState } from "react";
 import { canEditShared,type SharedDesign } from "@/lib/pptx/shared-design";
 import { SharedDesignEditSchema,type AppearanceField } from "@/lib/pptx/shared-schema";

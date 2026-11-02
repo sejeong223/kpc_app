@@ -1,9 +1,11 @@
 "use client";
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
-import { Button,Field,Input,Select } from "@fluentui/react-components";
+import { Field } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useAdminRuntime } from "@/components/admin/AdminRuntimeProvider";
 import { AssetQuerySchema } from "@/lib/admin/assets/schemas";
+import { DEFAULT_PAGE_SIZE,PAGE_SIZE_OPTIONS } from "@/config/pagination";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import AdminTable,{type AdminColumn} from "@/components/admin/ui/AdminTable";
 import AdminPager from "@/components/admin/ui/AdminPager";
@@ -15,9 +17,8 @@ export interface AssetListPanelProps {
   onOpen(id:string):void;onCreate():void;onDuplicate(row:AssetRow):void;onToggle(row:AssetRow):void;onDelete(row:AssetRow):void;canCreate:boolean;
   onApply?(row:AssetRow):void;
 }
-export const ASSET_DATA_NOTICE="관리 정보는 임시 저장되며 새로고침하면 초기화됩니다. 업로드 파일은 실제로 분석합니다.";
-export const emptyAssetList:AssetList={rows:{items:[],total:0,page:1,pageSize:20,totalPages:1},activeCount:0,inactiveCount:0};
-export function defaultAssetQuery(kind:AssetKind):AssetQuery{return {kind,search:"",visibility:"all",status:"all",page:1,pageSize:20,sort:"updatedAt",direction:"desc"};}
+export const emptyAssetList:AssetList={rows:{items:[],total:0,page:1,pageSize:DEFAULT_PAGE_SIZE,totalPages:1},activeCount:0,inactiveCount:0};
+export function defaultAssetQuery(kind:AssetKind):AssetQuery{return {kind,search:"",visibility:"all",status:"all",page:1,pageSize:DEFAULT_PAGE_SIZE,sort:"updatedAt",direction:"desc"};}
 export default function AssetListPanel(props:AssetListPanelProps){
   const {access}=useAdminRuntime(),grant=access?.grants[props.kind==="skill"?"skills":"templates"];
   const change=(patch:Partial<AssetQuery>)=>{const parsed=AssetQuerySchema.safeParse({...props.query,...patch,page:1});if(parsed.success)props.onQueryChange(parsed.data);};
@@ -42,7 +43,7 @@ export default function AssetListPanel(props:AssetListPanelProps){
       <Field label="검색"><Input value={props.query.search} placeholder="이름·약칭·설명 검색" onChange={(_,data)=>change({search:data.value})}/></Field>
       <Field label="공개 범위"><Select value={props.query.visibility} onChange={(_,data)=>change({visibility:AssetQuerySchema.shape.visibility.parse(data.value)})}><option value="all">전체</option><option value="organization">전사 공개</option><option value="department">부서 공개</option><option value="group">그룹 공개</option><option value="user">사용자 공개</option></Select></Field>
       <Field label="상태"><Select value={props.query.status} onChange={(_,data)=>change({status:AssetQuerySchema.shape.status.parse(data.value)})}><option value="all">전체</option><option value="active">활성</option><option value="inactive">비활성</option></Select></Field>
-      <Field label="표시 개수"><Select value={props.query.pageSize} onChange={(_,data)=>change({pageSize:AssetQuerySchema.shape.pageSize.parse(Number(data.value))})}>{[10,20,50].map(n=><option key={n} value={n}>{n}개</option>)}</Select></Field>
+      <Field label="표시 개수"><Select value={props.query.pageSize} onChange={(_,data)=>change({pageSize:AssetQuerySchema.shape.pageSize.parse(Number(data.value))})}>{PAGE_SIZE_OPTIONS.map(n=><option key={n} value={n}>{n}개</option>)}</Select></Field>
       <span className="tw:pb-(--layout-control-gap) tw:text-(--kpc-muted)">활성 {props.list.activeCount} · 비활성 {props.list.inactiveCount}</span>
     </WorkspaceToolbar>
     </WorkspaceCardSection>

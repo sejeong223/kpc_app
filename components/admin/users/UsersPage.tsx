@@ -1,7 +1,7 @@
 "use client";
 import WorkspaceToolbar from "@/components/layout/WorkspaceToolbar";
 import { WorkspaceCardSection } from "@/components/layout/WorkspaceCard";
-import { Button, Input, Select } from "@fluentui/react-components";
+import { DadamButton as Button, DadamInput as Input, DadamSelect as Select } from "@/components/ui/DadamControls";
 import { useEffect, useState } from "react";
 import { AdminCard, AdminMetric, AdminPage } from "@/components/admin/ui/AdminPrimitives";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
@@ -9,6 +9,7 @@ import AdminPager from "@/components/admin/ui/AdminPager";
 import AdminTabs from "@/components/admin/ui/AdminTabs";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { ADMIN_ROLES, ADMIN_ROLE_LABELS } from "@/config/admin-permissions";
+import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
 import { useAdminAccess, useAdminCommand, useAdminUsers, useExportUsers } from "@/hooks/admin/use-admin-data";
 import { downloadCsv } from "@/lib/admin/csv";
 import { UserStatusSchema } from "@/lib/admin/schemas";
@@ -24,7 +25,7 @@ type UsersTab = "users" | "groups" | "permissions";
 export default function UsersPage(): React.ReactElement {
   const access = useAdminAccess(), command = useAdminCommand(), exporting = useExportUsers();
   const [tab, setTab] = useState<UsersTab>("users"), [search, setSearch] = useState("");
-  const [query, setQuery] = useState<UserQuery>({ search: "", departmentId: null, role: "all", status: "all", page: 1, pageSize: 20 });
+  const [query, setQuery] = useState<UserQuery>({ search: "", departmentId: null, role: "all", status: "all", page: 1, pageSize: DEFAULT_PAGE_SIZE });
   const list = useAdminUsers(query);
   const [selected, setSelected] = useState<AdminUser[]>([]), [editor, setEditor] = useState<{ user: AdminUser | null } | null>(null), [directory, setDirectory] = useState(false);
   const [deleting, setDeleting] = useState<AdminUser[]>([]), [undo, setUndo] = useState<string | null>(null), [notice, setNotice] = useState("");
@@ -42,7 +43,7 @@ export default function UsersPage(): React.ReactElement {
   if (grants.permissions.read) options.push({ value: "permissions", label: "역할별 권한" });
   const currentTab = options.find((o) => o.value === tab)?.value ?? options[0]?.value;
   if (!currentTab) return <AdminPage title="사용자 설정"><AdminAsyncState state="forbidden" /></AdminPage>;
-  return <AdminPage title="사용자 설정" description={actor.role === "department_admin" ? "소속 부서의 사용자 현황을 확인합니다." : "사용자와 그룹, 역할별 권한을 관리합니다."} actions={currentTab === "users" ? <>
+  return <AdminPage title="사용자 설정" actions={currentTab === "users" ? <>
     <Button disabled={exporting.isPending} onClick={() => exporting.mutate(query, { onSuccess: (csv) => downloadCsv("사용자-2026-10-20.csv", csv) })}>목록 내보내기</Button>
     {grants.users.create && <Button appearance="primary" onClick={() => setDirectory(true)}>사용자 추가</Button>}
   </> : undefined}>

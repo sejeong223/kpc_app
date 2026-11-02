@@ -5,6 +5,8 @@ import type { AdminActor, AdminResource, CrudAction, RoleGrants } from "@/types/
 export function canPerform(actor: AdminActor, rows: readonly RoleGrants[], resource: AdminResource, action: CrudAction): boolean {
   if (actor.role === "department_admin" && actor.departmentId === null) return false;
   const ceiling = CRUD_CEILING.find((row) => row.role === actor.role)?.grants[resource];
+  // 슈퍼 관리자는 저장된 체크값과 관계없이 모든 지원 작업을 사용할 수 있다.
+  if (actor.role === "super_admin") return Boolean(ceiling?.read && ceiling[action]);
   const grants = rows.find((row) => row.role === actor.role)?.grants[resource];
   return Boolean(ceiling?.read && ceiling[action] && grants?.read && grants[action]);
 }

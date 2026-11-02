@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@fluentui/react-components";
+import { DadamButton as Button } from "@/components/ui/DadamControls";
 import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
 import type { TemplateWorkListItem,WorkStatus } from "@/types/template-work";
 export const WORK_STATUS:Record<WorkStatus,string>={ready:"적용 대기",running:"적용 중",succeeded:"적용 완료",failed:"적용 실패",cancelled:"취소됨"};
