@@ -1,6 +1,6 @@
 # Task: T02 사용자 식별과 IndexedDB 저장소
 
-## Status: pending
+## Status: done
 
 ## Goal
 등록한 RFP를 로그인 사용자별 네임스페이스로 IndexedDB(`kpc-rfp-register`)에 저장·조회하는 `IndexedDbRfpRepository`와 식별 함수 `resolveRfpIdentity`를 만든다. 새로고침 후에도 데이터가 남고(D06), 다른 계정과 섞이지 않게(D07) 하기 위함이다.
@@ -58,9 +58,9 @@ export class IndexedDbRfpRepository implements RfpRepository { constructor(optio
 - `close()` 후 다시 열면 같은 DB를 사용한다(데이터 유지).
 
 ## Acceptance Criteria
-- [ ] 사용자별로 저장 결과가 분리되고, 재연결 후에도 유지된다.
-- [ ] 오류가 모두 `RfpError`의 정해진 code로 나온다.
-- [ ] I03 검토 포인트 확인, typecheck·lint 0 error.
+- [x] 사용자별로 저장 결과가 분리되고, 재연결 후에도 유지된다.
+- [x] 오류가 모두 `RfpError`의 정해진 code로 나온다.
+- [x] I03 검토 포인트 확인, typecheck·lint 0 error.
 
 ## Validation
 - `npm.cmd run typecheck` / `npm.cmd run lint` — 0 error
@@ -79,6 +79,6 @@ Task: T02-rfp-repository
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과 (typecheck·lint 통과, I03 검토 포인트는 저장소 밖 fake-indexeddb 임시 스크립트로 확인)
 - commit: pending

@@ -3,13 +3,13 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | RFP 상수·zod 스키마·폼 상태 순수 로직 | [T01](./T01-rfp-domain-form.md) |
-| T02 | `pending` | 사용자 식별 + IndexedDB 저장소 | [T02](./T02-rfp-repository.md) |
+| T01 | `done ✅` | RFP 상수·zod 스키마·폼 상태 순수 로직 | [T01](./T01-rfp-domain-form.md) |
+| T02 | `in_progress 🔵` | 사용자 식별 + IndexedDB 저장소 | [T02](./T02-rfp-repository.md) |
 | T03 | `pending` | 업로드 드롭존·파일 목록·검토자 선택 컴포넌트 | [T03](./T03-upload-reviewer-components.md) |
 | T04 | `pending` | 등록 화면 조립·라우트 연결·전체 검증 | [T04](./T04-register-page-route.md) |
 
 ## Progress
-- done: 0/4 (active: T01)
+- done: 1/4 (active: T02)
 
 ## Phase Rules
 - 브라우저 검증 제외 ([정책](../../../decisions/2026-10-30-task-validation-policy.md)). 자동 검증만 사용.
