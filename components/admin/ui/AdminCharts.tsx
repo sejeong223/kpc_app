@@ -2,7 +2,7 @@
 import { buildChartCoordinates, type ChartPoint } from "@/lib/admin/chart-data";
 import type { NamedCount } from "@/types/admin";
 interface AdminSeriesChartProps { label: string; points: readonly ChartPoint[]; kind: "bar" | "line"; unit: string; selectedId?: string | null; onSelect?: (id: string | null) => void }
-interface AdminBreakdownProps { label: string; items: readonly NamedCount[]; selectedId?: string | null; onSelect?: (id: string | null) => void }
+interface AdminBreakdownProps { label: string; items: readonly NamedCount[]; selectedId?: string | null; onSelect?: (id: string | null) => void; columns?: 1 | 2; maxCount?: number }
 export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSelect }: AdminSeriesChartProps): React.ReactElement {
   const coordinates = buildChartCoordinates(points, 720, 200), maximum = Math.max(1, ...points.map((p) => p.value));
   return <figure className="tw:m-0 tw:min-w-0"><figcaption className="tw:mb-(--layout-section-gap) tw:text-[11px] tw:text-(--kpc-muted)">{label} · 단위: {unit}{onSelect ? " · 막대를 선택하면 해당 구간을 볼 수 있습니다." : ""}</figcaption>
@@ -20,9 +20,9 @@ export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSele
   </figure>;
 }
 const statusColors: Record<string, string> = { review: "var(--kpc-muted)", writing: "var(--kpc-info)", submitted: "var(--kpc-purple)", won: "var(--kpc-success)", lost: "var(--kpc-danger)", dropped: "var(--kpc-secondary)" };
-export function AdminBreakdown({ label, items, selectedId, onSelect }: AdminBreakdownProps): React.ReactElement {
-  const maximum = Math.max(1, ...items.map((i) => i.count));
-  return <div aria-label={label} className="tw:flex tw:flex-col tw:gap-(--layout-section-gap)">{!items.length && <p className="tw:text-(--kpc-muted)">선택 기간에 데이터가 없습니다.</p>}{items.map((item) => {
+export function AdminBreakdown({ label, items, selectedId, onSelect, columns = 1, maxCount = 0 }: AdminBreakdownProps): React.ReactElement {
+  const maximum = Math.max(1, maxCount, ...items.map((i) => i.count));
+  return <div aria-label={label} className={"tw:gap-(--layout-section-gap) " + (columns === 2 ? "tw:grid tw:md:grid-cols-2" : "tw:flex tw:flex-col")}>{!items.length && <p className="tw:text-(--kpc-muted)">선택 기간에 데이터가 없습니다.</p>}{items.map((item) => {
     const content = <><span className="tw:mb-(--layout-inline-gap) tw:flex tw:justify-between tw:gap-(--layout-section-gap)"><span className="tw:break-words">{item.label}</span><span className="tw:shrink-0 tw:tabular-nums">{item.count.toLocaleString("ko-KR")}건{item.failures > 0 && <span className="tw:ml-(--layout-control-gap) tw:text-(--kpc-danger)">실패 {item.failures}</span>}</span></span><span className="tw:block tw:h-1.5 tw:rounded-full tw:bg-(--kpc-line-soft)"><span className="tw:block tw:h-full tw:rounded-full" style={{ width: item.count / maximum * 100 + "%", backgroundColor: statusColors[item.id] ?? "var(--kpc-brand)" }} /></span></>;
     return onSelect ? <button key={item.id} type="button" className="tw:m-0 tw:border-0 tw:bg-transparent tw:p-(--layout-inline-gap) tw:text-left" aria-pressed={item.id === selectedId} onClick={() => onSelect(item.id === selectedId ? null : item.id)}>{content}</button> : <div key={item.id}>{content}</div>;
   })}</div>;
