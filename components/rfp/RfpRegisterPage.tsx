@@ -97,7 +97,7 @@ export default function RfpRegisterPage({
 
   return <WorkspacePage title="RFP 등록" showTitle>
     <div className="tw:mx-auto tw:flex tw:w-full tw:max-w-[960px] tw:min-w-0 tw:flex-col tw:gap-(--layout-section-gap)">
-      <RfpUploadZone phase={state.phase} error={state.fileError}
+      <RfpUploadZone phase={state.phase}
         onFiles={(files) => addFiles(files.map((f) => ({ name: f.name, sizeBytes: f.size })))}
         onSample={() => addFiles(RFP_SAMPLE_FILES.map((f) => ({ ...f })))} onRestart={restart} />
       <RfpFileList files={state.files} disabled={locked}

@@ -1,6 +1,6 @@
 # Task: T02 드롭존·파일 목록·검토자 선택 부품 디자인
 
-## Status: pending
+## Status: done
 
 ## Goal
 기존 부품 3개(`RfpUploadZone`·`RfpFileList`·`ReviewerPicker`)의 모양을 레퍼런스 CSS(`.drop`·`.filelist .f`·`.rchip.reg-rv`·검토자 팝오버) 크기·간격으로 바꾸고, 드롭존에서 파일 거절 문구를 없앤다(알림으로 대체 — T03). props 계약은 `error` 제거 외에는 유지해 T03이 연결만 하게 한다.
@@ -9,6 +9,12 @@
 - D01: 레퍼런스 배치·모양·크기 그대로, 빨강 → 파랑(`--kpc-brand` 계열). 어두운 버튼 `#303238`(hover `#1d1e22`).
 - D04: 드롭존 아래 파일 거절 문구 삭제. reducer의 `fileError` 상태는 유지(T03이 알림 문구로 사용).
 - Phase Rules: Fluent 컴포넌트 모양 변경은 `makeStyles`, 일반 요소는 `tw:`.
+
+## Execution Note (2026-11-03, 사용자 지시)
+- 사용자 결정: 버튼·입력 부품은 **원격(upstream)의 공통 부품**을 쓴다. 레퍼런스 크기(32/26px 버튼·26px select)보다 이 결정이 우선한다.
+  - 버튼: `components/common/Button`(기본 38px, `dark` 프리셋은 샘플 버튼, `ghost`는 20px × 버튼). 작은 버튼("다시 하기"·"검토자 추가")은 `tw:h-(--dadam-control-height-compact)`(32px)·12px.
+  - 파일 종류: `DadamSelect size="small"`(32px, 폭 120px). 검색: `DadamInput size="small"`. 체크박스: `DadamCheckbox`.
+- Fluent `Avatar`는 22px 크기가 없어 24px를 썼다.
 
 ## Implementation
 
@@ -56,9 +62,9 @@
   6. 닫힐 때 검색어 초기화·`autoFocus`·`filterReviewerCandidates` 사용·props 계약 유지.
 
 ## Acceptance Criteria
-- [ ] 세 부품이 결정 D01 표의 크기·모양을 따르고 빨강 계열 색이 없다(`git grep -n -i "d7192f\|c91c2b\|fff0f2" components/rfp` 결과 없음).
-- [ ] 드롭존에 파일 거절 문구가 없고 `RfpUploadZone`에 `error` prop이 없다. 등록 화면 호출부도 컴파일된다.
-- [ ] typecheck·lint·build 통과.
+- [x] 세 부품이 결정 D01 표의 크기·모양을 따르고 빨강 계열 색이 없다(`git grep -n -i "d7192f\|c91c2b\|fff0f2" components/rfp` 결과 없음).
+- [x] 드롭존에 파일 거절 문구가 없고 `RfpUploadZone`에 `error` prop이 없다. 등록 화면 호출부도 컴파일된다.
+- [x] typecheck·lint·build 통과.
 
 ## Validation
 - `npm.cmd run typecheck` — 0 error
@@ -77,9 +83,10 @@ Task: T02-parts-design
 - 드롭존 46px 아이콘 상자·어두운 샘플 버튼·4px 진행바, 파일 거절 문구 제거
 - 파일 행 레퍼런스 모양(크기 표시 제거, 대표 RFP 파랑 배지)
 - 검토자 30px 칩과 아바타·부서 2줄 팝오버 목록
+- 버튼·선택·검색·체크박스는 원격 공통 부품(Button·DadamControls) 사용
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

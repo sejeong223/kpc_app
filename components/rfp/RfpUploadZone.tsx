@@ -1,26 +1,35 @@
 "use client";
 
-import { Button, ProgressBar } from "@fluentui/react-components";
-import { ArrowUpload20Regular, Sparkle20Regular } from "@fluentui/react-icons";
+import { makeStyles, ProgressBar, progressBarClassNames } from "@fluentui/react-components";
+import { ArrowUpload16Regular, ArrowUpload24Regular, Checkmark24Regular, Sparkle16Regular } from "@fluentui/react-icons";
 import { useId, useRef, useState } from "react";
 
+import Button from "@/components/common/Button";
 import type { RfpFormPhase } from "@/lib/rfp/form";
 
 interface RfpUploadZoneProps {
   phase: RfpFormPhase;
-  error: string | null;
-  onFiles(files: File[]): void; // 크기 검사는 reducer가 담당
+  onFiles(files: File[]): void; // 크기 검사는 reducer가 담당, 거절 문구는 호출부 알림으로 표시
   onSample(): void;
   onRestart(): void;
 }
 
 const COPY: Record<RfpFormPhase, { title: string; hint: string }> = {
-  idle: { title: "RFP 파일을 놓으면 사업개요가 자동으로 채워집니다", hint: "PDF · HWP · DOCX · 파일당 50MB · 대표 RFP 300쪽 이하 권장" },
+  idle: { title: "RFP 파일을 여기에 놓으면 사업개요가 자동으로 채워집니다", hint: "PDF · HWP · DOCX · 파일당 50MB · 대표 RFP 300쪽 이하 권장" },
   analyzing: { title: "RFP를 분석하고 있어요…", hint: "사업명·발주처·예산·기간·마감일을 찾아 입력합니다" },
-  extracted: { title: "AI가 사업개요를 채웠어요", hint: "강조 표시된 칸은 AI가 채운 값입니다. 원문 페이지와 다르면 바로 고치세요." },
+  extracted: { title: "AI가 사업개요를 채웠어요", hint: "노란색 칸은 AI가 채운 값입니다. 원문 페이지와 다르면 바로 고치세요." },
 };
 
-export default function RfpUploadZone({ phase, error, onFiles, onSample, onRestart }: RfpUploadZoneProps): React.ReactElement {
+// 레퍼런스 4px 진행바. Fluent 기본 두께·색을 덮어쓴다.
+const useStyles = makeStyles({
+  bar: {
+    height: "4px", borderRadius: "2px", backgroundColor: "#eef0f2",
+    [`& .${progressBarClassNames.bar}`]: { height: "4px", borderRadius: "2px", backgroundColor: "var(--kpc-brand)" },
+  },
+});
+
+export default function RfpUploadZone({ phase, onFiles, onSample, onRestart }: RfpUploadZoneProps): React.ReactElement {
+  const styles = useStyles();
   const inputId = useId();
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -32,26 +41,25 @@ export default function RfpUploadZone({ phase, error, onFiles, onSample, onResta
     onDragOver={(event) => { event.preventDefault(); if (!busy) setOver(true); }}
     onDragLeave={() => setOver(false)}
     onDrop={(event) => { event.preventDefault(); setOver(false); accept(event.dataTransfer.files); }}
-    className={"tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-(--layout-section-gap) tw:rounded-lg tw:border tw:border-dashed tw:p-(--layout-card-inset) "
-      + (over ? "tw:border-(--kpc-brand) tw:bg-(--kpc-brand-soft)" : "tw:border-(--kpc-line-strong) tw:bg-(--kpc-card)")}>
-    <span aria-hidden="true" className="tw:flex tw:size-10 tw:flex-none tw:items-center tw:justify-center tw:rounded-lg tw:bg-(--kpc-brand-soft) tw:text-(--kpc-brand)">
-      {phase === "extracted" ? <Sparkle20Regular /> : <ArrowUpload20Regular />}
+    className={"tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-4 tw:rounded-[14px] tw:border-[1.5px] tw:border-dashed tw:p-[22px] tw:min-[761px]:flex-nowrap "
+      + (over ? "tw:border-(--kpc-brand) tw:bg-(--kpc-brand-soft)" : "tw:border-[#d3d5db] tw:bg-(--kpc-card)")}>
+    <span aria-hidden="true" className="tw:flex tw:size-[46px] tw:flex-none tw:items-center tw:justify-center tw:rounded-[12px] tw:bg-(--kpc-brand-soft) tw:text-(--kpc-brand)">
+      {phase === "extracted" ? <Checkmark24Regular style={{ width: 22, height: 22 }} /> : <ArrowUpload24Regular style={{ width: 22, height: 22 }} />}
     </span>
-    <div className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-(--layout-inline-gap)">
-      <h2 className="tw:m-0 tw:text-[13px] tw:font-bold">{copy.title}</h2>
-      <p className="tw:m-0 tw:text-[11px] tw:text-(--kpc-muted)">{copy.hint}</p>
-      {busy && <ProgressBar aria-label="RFP 분석 진행" thickness="medium" />}
+    <div className="tw:min-w-0 tw:flex-1">
+      <h2 className="tw:m-0 tw:text-[12px] tw:font-extrabold tw:text-(--kpc-ink)">{copy.title}</h2>
+      <p className={"tw:text-[11px] tw:text-(--kpc-muted) " + (busy ? "tw:mx-0 tw:mt-1 tw:mb-2" : "tw:mx-0 tw:mt-[3px] tw:mb-0")}>{copy.hint}</p>
+      {busy && <ProgressBar aria-label="RFP 분석 진행" className={styles.bar} />}
     </div>
-    <div className="tw:flex tw:flex-wrap tw:gap-(--layout-control-gap)">
+    <div className="tw:flex tw:flex-none tw:flex-wrap tw:gap-2">
       {phase === "extracted"
-        ? <Button onClick={onRestart}>다시 하기</Button>
+        ? <Button className="tw:h-(--dadam-control-height-compact) tw:text-[12px]" onClick={onRestart}>다시 하기</Button>
         : <>
-          <Button icon={<ArrowUpload20Regular />} disabled={busy} onClick={() => input.current?.click()}>파일 선택</Button>
-          <Button appearance="primary" icon={<Sparkle20Regular />} disabled={busy} onClick={onSample}>샘플 RFP로 체험</Button>
+          <Button disabled={busy} onClick={() => input.current?.click()}><ArrowUpload16Regular aria-hidden="true" />파일 선택</Button>
+          <Button className="dark" disabled={busy} onClick={onSample}><Sparkle16Regular aria-hidden="true" />샘플 RFP로 체험</Button>
         </>}
     </div>
     <input ref={input} id={inputId} type="file" multiple hidden accept=".pdf,.hwp,.hwpx,.doc,.docx" disabled={busy}
       onChange={(event) => { accept(event.currentTarget.files); event.currentTarget.value = ""; }} />
-    {error && <p role="alert" className="tw:m-0 tw:w-full tw:text-[12px] tw:text-(--kpc-danger)">{error}</p>}
   </section>;
 }
