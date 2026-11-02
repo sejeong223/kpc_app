@@ -161,6 +161,15 @@
 - 현재 설치된 Tailwind 소스 스캐너에서 `components/**/*.{ts,tsx}` 패턴과 기존 `tw:` 후보 인식을 읽기 전용으로 확인했다. 공통 코드 및 일반 사용처를 포함하되 README·첨부 HTML·테스트를 탐색 대상에 섞지 않는 경로로 계획한다.
 - 앱에서 아직 import하지 않는 예시 컴포넌트의 CSS가 Next 빌드 결과에 포함된다고 가정하지 않는다. 실제 Tailwind 입력을 메모리에서 컴파일하는 로컬 검사와 CSS 구조 검토를 따로 계획한다. 새 페이지를 연결하여 검증하지 않는다.
 
+## D13. 실행 후 사용자 수정 — Button.tsx 단일 파일
+
+- **Chosen**: 버튼 구현·dadam 테마 참조·상태별 CSS를 `components/common/Button.tsx` 하나에 둔다. 기존 파일 분리 청사진은 이 버튼에 한해 대체한다.
+- **Source**: 사용자 직접 지시 — “module.css도 필요없어... 그냥 button.tsx 안에 다 합쳐줘.”
+- **Rationale**: 버튼 한 개를 수정하기 위해 여러 구현 파일을 탐색해야 하는 부담을 줄인다.
+- `Button.module.css`, `button-theme.ts`, `Button.examples.tsx`, `index.ts`를 제거했다. 후속 사용자 요청으로 README도 제거해 common에는 `Button.tsx`만 남긴다. 직접 `import Button from "@/components/common/Button"`으로 사용한다.
+- 기존 Griffel의 makeStaticStyles를 Button.tsx 안에서 사용한다. dadamTheme/dadamUi 값을 직접 참조하고, CSS 레이어와 선택자 범위·표준 button props·active/disabled 계약은 유지한다. 별도 Provider나 새 의존성은 추가하지 않는다.
+- 이 변경은 완료된 계획에 대한 직접 수정 요청이다. 새 인터뷰·계획·Task를 만들거나 다른 기존 화면을 변경하지 않는다.
+
 ## 다음 단계
 
-`/memory-plan common-button`으로 이 결정에 근거한 작업 계획과 Task 청사진을 작성한다. 인터뷰 단계에서는 현재 작업 포인터를 전환하거나 구현을 시작하지 않는다.
+초기 계획의 T01/T02 실행은 완료했다. 이후 직접 수정은 D13의 단일 파일 구성을 따른다. 새 요청 없이 과거 파일 분리 구조를 복원하지 않는다.

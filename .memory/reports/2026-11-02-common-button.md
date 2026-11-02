@@ -5,6 +5,7 @@
 - Plan: [2026-11-02-common-button](../plans/2026-11-02-common-button.md)
 - Phase: P01-common-button, done2/2
 - 실행 요청: `/mea`에 따라 T01 → T02 순차 구현·검증·Task별 한국어 커밋.
+- 최신 후속 수정: 사용자 지시로 구현과 스타일을 `Button.tsx` 한 파일에 통합했다. 아래 T01/T02 표는 초기 이력이며, 현재 구조와 검증 결과는 마지막 후속 수정 항목을 따른다.
 
 ## 구현 결과
 
@@ -31,7 +32,7 @@ import { Button } from "@/components/common";
 - `active`는 호출부가 유지하는 선택 표시이고 `disabled`는 실제 실행 차단이다. 토글 호출부가 같은 선택값으로 `aria-pressed`를 전달한다.
 - 기본 디자인은 components CSS 레이어, 사용처 `tw:`는 utilities 레이어다. 클래스 문자열 순서나 inline width/background 고정에 기대지 않는다.
 - 기존 화면의 Button import와 ui/layout 파일 위치는 유지했다. 새 메뉴/route/카탈로그, API/DB/권한 변경은 없다.
-- 사용법: [README](../../components/common/README.md), 타입 검사 가능한 예시: [Button.examples.tsx](../../components/common/Button.examples.tsx).
+- 초기 사용 문서 `README.md`와 `Button.examples.tsx`는 후속 사용자 요청으로 제거했다. 현재 사용 방식은 마지막 후속 수정 항목을 따른다.
 
 ## 검증 결과
 
@@ -65,3 +66,15 @@ DOM에서는 기본 type의 제출 방지, explicit submit/reset, 외부 form �
 - T02: 이 보고서를 포함하는 `docs(common): 공통 버튼 사용 예시와 스타일 검증 가이드 추가` 커밋. `git log -1 --format="%h %s" --grep="Task: T02-examples-and-validation"`로 정확한 hash를 조회할 수 있으며 로컬 current와 최종 응답에도 기록한다.
 - Task별 커밋은 Plan/Phase/Task footer를 포함한다. 원격 push·외부 게시/배포는 수행하지 않는다.
 - 모든 Task 완료 후 phase/plan은 done2/2, 로컬 current의 Active Task는 없음으로 정리한다.
+
+## 후속 직접 수정: Button.tsx 단일 파일 통합
+
+- 사용자 지시: “module.css도 필요없어... 그냥 button.tsx 안에 다 합쳐줘.”
+- 구현·기존 dadam 값 참조·상태 CSS를 `components/common/Button.tsx`에 모았다. 별도 CSS 변수 매핑 객체도 제거하고 dadamTheme/dadamUi를 스타일에서 직접 참조한다.
+- `Button.module.css`, `button-theme.ts`, `Button.examples.tsx`, `index.ts`를 제거했고 후속 요청으로 `README.md`도 제거했다. common에는 `Button.tsx`만 남는다.
+- 가져오기: `import Button from "@/components/common/Button"`. 표준 props/ref, children, tw 클래스 조절, active/disabled 계약은 유지한다.
+- 기존 `makeStaticStyles`로 등록하며 새 Provider나 라이브러리를 추가하지 않았다. 기본 스타일은 기존처럼 components 레이어에 있어 utilities가 우선한다.
+- 최종 로컬 검사: 2파일26개 통과(DOM9·스타일17). 제거된 예시/내보내기 전용 검사는 없애고 CSS 등록·레이어·기존 테마값 검사를 단일 파일 구조에 맞췄다. 클래스 조절은 메모리 안의 호출부 후보로 Tailwind를 컴파일해 검증했다.
+- 실제 production 모드 React 서버 렌더링도 확인했다. 버튼2개가 단일 style 요소를 공유하며 레이어 CSS와 버튼 마커가 포함됐다. Griffel 렌더러별 중복 등록 방지도 로컬 검사에서 통과했다.
+- `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build`, `git diff --check` 통과. 브라우저 검증은 기존 정책대로 제외했다.
+- 이 후속 수정은 사용자 요청에 따라 별도 커밋으로 기록한다. 초기 두 커밋의 이력은 그대로 유지한다.
