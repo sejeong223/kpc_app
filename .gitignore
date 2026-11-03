@@ -48,3 +48,5 @@ next-env.d.ts
 
 # Local task pointer
 /.memory/current.md
+
+.claude/*

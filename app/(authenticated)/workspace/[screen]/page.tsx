@@ -5,6 +5,7 @@ import AdminScreenRouter from "@/components/admin/AdminScreenRouter";
 import CommentsWorkspace from "@/components/comments/CommentsWorkspace";
 import { ProjectHeaderPage } from "@/components/common/ProjectHeader";
 import PreviewRoleBoundary from "@/components/profile/PreviewRoleBoundary";
+import RfpRegisterPage from "@/components/rfp/RfpRegisterPage";
 import { serverEnv } from "@/config/env";
 import { getSidebarItemByScreen } from "@/config/sidebar";
 import { requireRole } from "@/lib/auth/guards";
@@ -35,6 +36,7 @@ export default async function WorkspaceScreenPage({
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
       {screen === "write" ? <CommentsWorkspace />
+        : screen === "register" ? <RfpRegisterPage />
         : ["analysis", "files", "toc", "setup", "review"].includes(screen) ? <ProjectHeaderPage title={item.label} headingId="workspace-screen-title" />
         : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
     </PreviewRoleBoundary>
