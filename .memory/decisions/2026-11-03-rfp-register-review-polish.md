@@ -23,6 +23,7 @@
 - **Rationale**: 레퍼런스 `toast()`는 단일 `#toast` 요소의 내용만 교체하고 `clearTimeout` 후 2.2초 타이머를 다시 건다. 검토자를 연달아 지정할 때 알림이 위로 쌓이던 문제를 없앤다.
 - 코드 확인: `useAppToast` 사용처는 현재 RFP 등록 화면뿐. `TokenDialogs`는 별도 Toaster라 영향 없음.
 - 설계 기본값: 같은 위치(본문 가운데 아래 64px)에서 교체. Fluent는 같은 `toastId`로 다시 `dispatchToast`하면 무시하므로, 고정 id + `updateToast` 또는 이전 알림 `dismissToast` 후 새로 띄우기 중 타이머 재시작이 확실한 쪽을 계획 단계에서 확인해 고른다. `intent`(성공·오류 아이콘)도 새 알림 기준으로 바뀐다.
+- **구현 정정 (2026-11-03, T02 리뷰 수정)**: Fluent `Toaster`의 `updateToast`가 화면을 다시 그리지 않고, 개발 모드 StrictMode에서 `'unmounted'` 상태가 즉시 와서 바꿔치기가 보장되지 않았다(알림이 쌓임). 그래서 Fluent Toaster 대신 레퍼런스 `toast()`와 같은 **직접 그린 단일 알림 상자**(`useSyncExternalStore` 모듈 저장소 + 2.2초 타이머 재시작)로 구현한다. 선행 결정 D02의 "Fluent `Toaster` + 공용 훅" 중 Fluent Toaster 사용 부분을 대체하며, 공용 훅 `useAppToast().notify`와 모양·위치는 유지한다.
 
 ## D04. 사람 아바타 — 사진 우선, 없으면 성씨
 - **Chosen**: 레퍼런스처럼 사용자 프로필(아바타)을 보여 준다. 프로필 사진이 있으면 사진, 없으면 성씨(이름 첫 글자)로 표시한다. 추후 Entra ID 프로필 사진이 들어간다. (사용자 지시)

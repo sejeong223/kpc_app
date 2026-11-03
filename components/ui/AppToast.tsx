@@ -1,34 +1,51 @@
 "use client";
 
-import { makeStyles, Toast, Toaster, ToastTitle, tokens, useToastController } from "@fluentui/react-components";
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { Checkmark16Regular, ErrorCircle16Regular, Info16Regular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
-// TokenDialogs의 Toaster(useId 기반)와 겹치지 않도록 고정 id를 쓴다.
-export const APP_TOASTER_ID = "app-toaster";
 export const APP_TOAST_TIMEOUT_MS = 2200;
 export type AppToastIntent = "success" | "error" | "info";
 
-// 화면에 떠 있는 공통 알림 id. 레퍼런스처럼 알림은 하나만 두고, 훅 인스턴스가 여럿이어도 공유한다.
-let liveToastId: string | null = null;
-let toastSeq = 0;
+// 레퍼런스 toast()처럼 앱 전체에 알림 상자는 하나다. 새 알림은 내용을 바꾸고 타이머를 다시 건다.
+// Fluent Toaster는 updateToast가 다시 그리지 않고, 개발 모드 StrictMode에서 'unmounted' 상태가 바로 와서
+// "같은 자리 바꿔치기"를 보장할 수 없어 직접 그린다.
+interface AppToastMessage { id: number; message: string; intent: AppToastIntent }
+
+let current: AppToastMessage | null = null;
+let seq = 0;
+const listeners = new Set<() => void>();
+
+function show(message: string, intent: AppToastIntent): void {
+  current = { id: ++seq, message, intent };
+  listeners.forEach((listener) => listener());
+}
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+const getSnapshot = () => current;
+const getServerSnapshot = () => null;
 
 const useStyles = makeStyles({
-  // TokenDialogs와 같은 z-index 층에 둔다. Fluent 기본 고정 폭(292px)을 풀어 레퍼런스처럼 글자 길이에 맞춘다.
-  toaster: { zIndex: 4400, width: "max-content", maxWidth: "calc(100vw - 32px)" },
-  // 여러 개가 쌓여도 각 알림이 자기 폭으로 가운데 정렬되게 한다.
+  // 레퍼런스 .toast: 본문 가운데 아래 64px, 글자 길이에 맞춘 폭, 나타날 때 20px 위로 올라온다.
   toast: {
-    width: "fit-content", maxWidth: "100%", marginLeft: "auto", marginRight: "auto", boxSizing: "border-box",
+    position: "fixed", bottom: "64px", zIndex: 4400, boxSizing: "border-box",
+    width: "max-content", maxWidth: "calc(100vw - 32px)",
+    display: "flex", alignItems: "center", gap: "8px",
     padding: "10px 16px", borderRadius: "10px", backgroundColor: "#1d1e22", color: "#ffffff",
-    boxShadow: "0 18px 48px rgba(16,17,20,.16), 0 2px 6px rgba(16,17,20,.06)", fontFamily: tokens.fontFamilyBase,
+    boxShadow: "0 18px 48px rgba(16,17,20,.16), 0 2px 6px rgba(16,17,20,.06)",
+    fontFamily: tokens.fontFamilyBase, fontSize: "12px", fontWeight: 650, lineHeight: "18px", overflowWrap: "anywhere",
+    opacity: 0, pointerEvents: "none", transform: "translateX(-50%) translateY(20px)",
+    transitionProperty: "opacity, transform", transitionDuration: ".2s",
+    "@media (prefers-reduced-motion: reduce)": { transitionDuration: "0s" },
   },
-  title: { color: "#ffffff", fontSize: "12px", fontWeight: 650, lineHeight: "18px", overflowWrap: "anywhere" },
-  icon: { color: "#ffffff" },
-  iconError: { color: "#ffd1d7" },
+  shown: { opacity: 1, pointerEvents: "auto", transform: "translateX(-50%) translateY(0)" },
+  icon: { flexShrink: 0, color: "#ffffff" },
+  iconError: { flexShrink: 0, color: "#ffd1d7" },
 });
 
 // 레퍼런스처럼 사이드바를 뺀 본문 가운데에 두기 위해, 본문 중심과 뷰포트 중심의 차이(px)를 잰다.
-// Toaster는 body 포털이라 AppShell의 --nav-sidebar-width를 읽을 수 없으므로 실제 위치를 측정한다.
 function useMainCenterOffset(): number {
   const [offset, setOffset] = useState(0);
   useEffect(() => {
@@ -47,34 +64,36 @@ function useMainCenterOffset(): number {
   return offset;
 }
 
-// 인증 레이아웃에서 한 번만 렌더한다. 알림을 보내기 전에는 빈 컨테이너만 남는다.
+// 인증 레이아웃에서 한 번만 렌더한다. 알림 전에는 보이지 않는 빈 상자만 남는다.
 export function AppToaster(): React.ReactElement {
   const styles = useStyles();
   const horizontal = useMainCenterOffset();
-  return <Toaster toasterId={APP_TOASTER_ID} position="bottom" offset={{ vertical: 64, horizontal }} timeout={APP_TOAST_TIMEOUT_MS} pauseOnHover className={styles.toaster} />;
+  const toast = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [hiddenId, setHiddenId] = useState<number | null>(null);
+  const [hovered, setHovered] = useState(false);
+  const visible = toast !== null && toast.id !== hiddenId;
+
+  // 새 알림(id 변경)마다 타이머를 다시 건다. 마우스를 올린 동안은 멈춘다.
+  useEffect(() => {
+    if (!toast || hovered) return;
+    const timer = setTimeout(() => setHiddenId(toast.id), APP_TOAST_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [toast, hovered]);
+
+  const icon = toast?.intent === "error" ? <ErrorCircle16Regular aria-hidden="true" className={styles.iconError} />
+    : toast?.intent === "info" ? <Info16Regular aria-hidden="true" className={styles.icon} />
+      : <Checkmark16Regular aria-hidden="true" className={styles.icon} />;
+
+  // 내용이 바뀔 때 스크린 리더가 읽도록 상자는 항상 DOM에 둔다.
+  return <div role="status" aria-live="polite" aria-atomic="true" aria-hidden={visible ? undefined : true}
+    data-app-toast={toast?.intent} className={mergeClasses(styles.toast, visible && styles.shown)}
+    style={{ left: `calc(50% + ${horizontal}px)` }}
+    onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+    {toast && <>{icon}<span>{toast.message}</span></>}
+  </div>;
 }
 
 export function useAppToast(): { notify(message: string, intent?: AppToastIntent): void } {
-  const styles = useStyles();
-  const { dispatchToast, updateToast } = useToastController(APP_TOASTER_ID);
-  const notify = useCallback((message: string, intent: AppToastIntent = "success") => {
-    const media = intent === "error" ? <ErrorCircle16Regular className={styles.iconError} />
-      : intent === "info" ? <Info16Regular className={styles.icon} /> : <Checkmark16Regular className={styles.icon} />;
-    const content = <Toast className={styles.toast}><ToastTitle className={styles.title} media={media}>{message}</ToastTitle></Toast>;
-    // 떠 있는 알림이 있으면 문구만 바꾼다. updateToast는 타이머를 다시 마운트해 2.2초를 처음부터 센다.
-    if (liveToastId) {
-      updateToast({ toastId: liveToastId, content, intent, timeout: APP_TOAST_TIMEOUT_MS });
-      return;
-    }
-    // 같은 id는 사라지는 애니메이션 중에도 무시되므로 매번 새 id로 띄운다.
-    const toastId = `app-toast-${++toastSeq}`;
-    liveToastId = toastId;
-    dispatchToast(content, {
-      toastId, intent,
-      onStatusChange: (_event, data) => {
-        if ((data.status === "dismissed" || data.status === "unmounted") && liveToastId === toastId) liveToastId = null;
-      },
-    });
-  }, [dispatchToast, updateToast, styles]);
+  const notify = useCallback((message: string, intent: AppToastIntent = "success") => show(message, intent), []);
   return { notify };
 }

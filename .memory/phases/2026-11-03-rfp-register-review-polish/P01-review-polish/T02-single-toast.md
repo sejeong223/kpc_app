@@ -12,6 +12,19 @@
 ## Preconditions
 - `components/ui/AppToast.tsx`에 선행 계획의 **리뷰 수정(알림 폭·본문 가운데, 미커밋)** 이 남아 있으면, 이 Task 시작 전에 별도 커밋되어 있어야 한다(`git diff components/ui/AppToast.tsx`가 비어 있는지 확인). 비어 있지 않으면 사용자에게 확인 후 진행.
 
+## Review Fixes (2026-11-03, 사용자 확인 후 재구현)
+- **증상**: 검토자를 빠르게 연달아 체크하면 알림이 같은 자리에서 바뀌지 않고 여러 개로 쌓였다.
+- **원인 (Fluent `@fluentui/react-toast` 동작)**:
+  1. `updateToast` 이벤트 처리기(`lib/state/useToaster.js` `updateToast = (e) => toaster.updateToast(e.detail)`)가 내부 값만 바꾸고 `forceUpdate`를 부르지 않는다 → 문구가 화면에 반영되지 않는다(만들 때 `buildToast`만 `forceUpdate`).
+  2. `ToastContainer`가 `useEffect(() => () => onStatusChange('unmounted'))`로 정리 시 상태를 알린다. 개발 모드 StrictMode는 effect를 마운트→정리→재마운트하므로 알림이 뜨자마자 `'unmounted'`가 와서 `liveToastId`가 비워졌고, 다음 `notify`가 새 알림을 띄워 쌓였다.
+- **조치**: Fluent `Toaster`/`Toast`를 쓰지 않고 레퍼런스 `toast()`와 같은 **단일 알림 상자**를 직접 그린다(`components/ui/AppToast.tsx`).
+  - 모듈 저장소(`current: { id, message, intent } | null`, `listeners`) + `useSyncExternalStore`(서버 스냅샷 `null`). `notify` → `show()`가 `id`를 올리고 구독자에게 알린다.
+  - `AppToaster`는 `role="status" aria-live="polite" aria-atomic="true"` 상자 하나를 항상 렌더. `visible = toast !== null && toast.id !== hiddenId`.
+  - 타이머: `useEffect([toast, hovered])`에서 `setTimeout(() => setHiddenId(toast.id), APP_TOAST_TIMEOUT_MS)`, 정리 시 `clearTimeout` → 새 알림마다 2.2초 재시작, 마우스 올린 동안 정지(기존 `pauseOnHover` 대체).
+  - 모양·위치 유지: `#1d1e22`, 12px 650, padding 10px 16px, radius 10px, `width: max-content`, 본문 가운데(`left: calc(50% + {useMainCenterOffset}px)`, `translateX(-50%)`), bottom 64px, z-index 4400. 레퍼런스처럼 opacity·`translateY(20px→0)` 0.2s 전환, `prefers-reduced-motion`이면 0s.
+  - 공개 API 유지: `AppToaster`, `useAppToast().notify(message, intent)`, `APP_TOAST_TIMEOUT_MS`, `AppToastIntent`. 미사용 `APP_TOASTER_ID` 삭제.
+- 아래 I01 본문(Fluent `updateToast` 방식)은 이 조치로 대체되었다.
+
 ## Implementation
 
 ### I01. 단일 알림 바꿔치기
@@ -94,4 +107,4 @@ Task: T02-single-toast
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 12a1824
