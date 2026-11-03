@@ -1,5 +1,6 @@
 "use client";
 import { DadamButton as Button, DadamCheckbox as Checkbox } from "@/components/ui/DadamControls";
+import { ChevronDownRegular, ChevronRightRegular } from "@fluentui/react-icons";
 import { Fragment, useId } from "react";
 
 export interface AdminColumn<Row extends { id: string }> { id: string; label: string; render(row: Row): React.ReactNode; width?: string; align?: "start" | "end"; sortable?: boolean }
@@ -21,9 +22,9 @@ export default function AdminTable<Row extends { id: string }>({ label, rows, co
           {column.sortable && onSort ? <Button appearance="transparent" size="small" onClick={() => onSort(column.id)}>{column.label}{sort?.columnId === column.id ? sort.direction === "asc" ? " ↑" : " ↓" : " ↕"}</Button> : column.label}
         </th>)}
       </tr></thead>
-      <tbody>{rows.length === 0 ? <tr><td className={cell} colSpan={columns.length + Number(Boolean(onSelectionChange)) + Number(Boolean(onExpand))}><p className="tw:my-(--layout-section-gap) tw:text-center tw:text-(--kpc-muted)">{emptyMessage}</p></td></tr> : rows.map((row, index) => <Fragment key={row.id}><tr className="tw:hover:bg-(--kpc-bg)">
+      <tbody>{rows.length === 0 ? <tr><td className={cell} colSpan={columns.length + Number(Boolean(onSelectionChange)) + Number(Boolean(onExpand))}><p className="tw:my-(--layout-section-gap) tw:text-center tw:text-(--kpc-muted)">{emptyMessage}</p></td></tr> : rows.map((row, index) => <Fragment key={row.id}><tr className={expandedId === row.id ? "tw:bg-(--kpc-brand-soft)" : "tw:hover:bg-(--kpc-bg)"}>
         {onSelectionChange && <td className={cell}><Checkbox aria-label={label + " " + (index + 1) + "행 선택"} disabled={isSelectable && !isSelectable(row)} checked={selectedIds.includes(row.id)} onChange={(_, data) => onSelectionChange(data.checked === true ? [...new Set([...selected.map((r) => r.id), row.id])] : selected.filter((r) => r.id !== row.id).map((r) => r.id))} /></td>}
-        {onExpand && <td className={cell}><Button size="small" appearance="subtle" aria-expanded={expandedId === row.id} aria-controls={id + "-" + index} aria-label={(index + 1) + "행 상세 " + (expandedId === row.id ? "닫기" : "보기")} onClick={() => onExpand(expandedId === row.id ? null : row.id)}>{expandedId === row.id ? "−" : "+"}</Button></td>}
+        {onExpand && <td className={cell}><Button size="small" appearance="subtle" icon={expandedId === row.id ? <ChevronDownRegular /> : <ChevronRightRegular />} aria-expanded={expandedId === row.id} aria-controls={id + "-" + index} aria-label={(index + 1) + "행 상세 " + (expandedId === row.id ? "닫기" : "보기")} onClick={() => onExpand(expandedId === row.id ? null : row.id)} /></td>}
         {columns.map((column) => <td key={column.id} className={cell} style={{ textAlign: column.align === "end" ? "right" : "left" }}>{column.render(row)}</td>)}
       </tr>{expandedId === row.id && renderExpanded && <tr><td id={id + "-" + index} className={cell + " tw:bg-(--kpc-bg)"} colSpan={columns.length + Number(Boolean(onSelectionChange)) + Number(Boolean(onExpand))}>{renderExpanded(row)}</td></tr>}</Fragment>)}</tbody>
     </table>
