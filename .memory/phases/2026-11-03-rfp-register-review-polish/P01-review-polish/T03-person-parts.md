@@ -1,6 +1,6 @@
 # Task: T03 공통 사람 부품(`PersonAvatar`·`PersonCheckList`)과 후보 데이터
 
-## Status: pending
+## Status: done
 
 ## Goal
 레퍼런스 검토자 목록 행(`revItems()`)을 재사용 가능한 공통 부품으로 만든다. 아바타는 사진이 있으면 사진, 없으면 성씨(이름 첫 글자)를 보여 주고, 행에는 이름·직급 / 부서와 역할 배지(SA·Admin)가 붙는다. 검토자 후보 데이터에 `role`·`photoUrl`을 더하고 레퍼런스 정렬 함수를 추가한다. 화면 연결은 T04.
@@ -161,9 +161,9 @@
 - `tw:sr-only`·`tw:h-[18px]`·`tw:bg-[#f4f5f7]` 클래스가 빌드 CSS에 생성됨(`cat .next/static/chunks/*.css | grep -oF 'h-\[18px\]'`).
 
 ## Acceptance Criteria
-- [ ] `components/ui/PersonAvatar.tsx`·`components/ui/PersonCheckList.tsx`가 생기고 위 시그니처를 따른다.
-- [ ] `ReviewerCandidate`에 `role`·`photoUrl`이 있고 `sortReviewerCandidates`가 레퍼런스 순서로 정렬한다.
-- [ ] typecheck·lint·build 통과.
+- [x] `components/ui/PersonAvatar.tsx`·`components/ui/PersonCheckList.tsx`가 생기고 위 시그니처를 따른다.
+- [x] `ReviewerCandidate`에 `role`·`photoUrl`이 있고 `sortReviewerCandidates`가 레퍼런스 순서로 정렬한다.
+- [x] typecheck·lint·build 통과.
 
 ## Validation
 - `npm.cmd run typecheck` — 0 error
@@ -185,6 +185,6 @@ Task: T03-person-parts
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
