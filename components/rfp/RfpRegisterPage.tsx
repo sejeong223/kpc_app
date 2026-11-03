@@ -140,7 +140,7 @@ export default function RfpRegisterPage({
         onSample={() => addFiles(RFP_SAMPLE_FILES.map((f) => ({ ...f })))} onRestart={restart} />
       <RfpFileList files={state.files} disabled={locked}
         onKindChange={(id, kind) => dispatch({ type: "set-file-kind", id, kind })} onRemove={(id) => dispatch({ type: "remove-file", id })} />
-      <WorkspaceCard title="사업개요" actions={<span className="tw:text-[11px] tw:text-(--kpc-muted)"><span aria-hidden="true" className="tw:text-(--kpc-brand)">* </span>필수 {progress.done}/{progress.total}</span>}>
+      <WorkspaceCard title="사업개요" titleMeta={<span className="tw:ml-1 tw:text-[11px] tw:text-(--kpc-muted)"><span aria-hidden="true" className="tw:text-(--kpc-brand)">* </span>필수 {progress.done}/{progress.total}</span>}>
         <div className={GRID}>
           <Field className={styles.field} label={label("name")} required>
             <DadamInput ref={nameInput} className={inputClass("name")} placeholder="내부에서 부를 이름" value={state.values.name} disabled={locked} onChange={setField("name")} {...aiProps("name")} />
