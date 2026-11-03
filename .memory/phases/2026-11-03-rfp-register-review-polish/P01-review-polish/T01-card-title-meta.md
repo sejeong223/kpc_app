@@ -107,4 +107,4 @@ Task: T01-card-title-meta
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 41e6c5a
