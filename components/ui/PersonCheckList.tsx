@@ -33,19 +33,23 @@ const ROLE_BADGES: Partial<Record<AdminRole, { short: string; full: string }>> =
 };
 
 // 줄 순서는 people 그대로 그린다. 정렬은 호출부 책임(체크할 때 줄이 움직이지 않게).
+// 높이·스크롤은 갖지 않는다. 감싸는 쪽이 정한다(레퍼런스: 목록 max-height 300px, 팝오버 전체 스크롤).
+// 행 모양은 레퍼런스 .pop .it — 마우스 올림·선택 모두 #f4f5f7.
 export function PersonCheckList<T extends PersonListItem>({
   people, selectedIds, onToggle, max, disabled = false, itemLabel, emptyText = "검색 결과가 없습니다", className = "",
 }: PersonCheckListProps<T>): React.ReactElement {
   if (!people.length) return <p className="tw:m-0 tw:py-2 tw:text-center tw:text-[12px] tw:text-(--kpc-muted)">{emptyText}</p>;
   const full = max !== undefined && selectedIds.size >= max;
-  return <div className={"tw:flex tw:flex-col " + className}>
+  // relative: 체크박스 입력·아바타 이니셜·sr-only 같은 absolute 요소가 바깥 스크롤 영역(팝오버)을 기준으로
+  // 배치되어 목록 스크롤을 빠져나가 바깥 높이를 늘리는 것을 막는다.
+  return <div className={"tw:relative tw:flex tw:flex-col " + className}>
     {people.map((p) => {
       const checked = selectedIds.has(p.id);
       const locked = disabled || (!checked && full);
       const badge = p.role ? ROLE_BADGES[p.role] : undefined;
       return <label key={p.id} className={"tw:flex tw:items-center tw:gap-2 tw:rounded-lg tw:px-[9px] tw:py-2 "
         + (locked ? "tw:cursor-not-allowed tw:opacity-50 " : "tw:cursor-pointer ")
-        + (checked ? "tw:bg-(--kpc-brand-soft)" : "tw:hover:bg-[#f4f5f7]")}>
+        + (checked ? "tw:bg-[#f4f5f7]" : "tw:hover:bg-[#f4f5f7]")}>
         <DadamCheckbox checked={checked} disabled={locked} aria-label={itemLabel ? itemLabel(p) : `${p.name} 선택`} onChange={() => onToggle(p)} />
         <PersonAvatar name={p.name} photoUrl={p.photoUrl} colorId={p.id} size={20} />
         <span className="tw:min-w-0 tw:flex-1 tw:text-[12px]">

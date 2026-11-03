@@ -10,6 +10,19 @@
 - D06·D07: 공통 부품 사용, 정렬은 열 때·검색할 때만, 정렬 기준 지정자는 열 때 고정.
 - 근거(코드 확인): Fluent 위치 계산의 flip은 `fallbackStrategy: 'bestFit'`(`@fluentui/react-positioning/lib/middleware/flip.js`) — 위·아래 모두 다 안 들어가면 덜 넘치는 쪽(대개 위)을 고른다. 또한 flip이 `autoSize`(maxSize)보다 먼저 돌아 "아래로 줄여서 열기"가 되지 않는다. → **방향은 직접 계산하고 Fluent flip은 `pinned: true`로 끈다.**
 
+## Review Fixes (2026-11-03, 사용자 확인 + 사용자 허용 하의 Playwright 진단)
+- **증상**: ① 팝오버를 줄였을 때 안쪽 목록이 1줄만 보임 ② 팝오버 바깥 스크롤이 내용보다 더 내려가 빈 화면이 보임 ③ 버튼 아래 공간이 없어도 위로 안 열리고 계속 아래로 열림.
+- **진단** (사용자가 이번에 한해 브라우저 실행 허용, 실행 중이던 개발 서버 + Edge `channel: "msedge"`, 스크립트는 세션 scratchpad): 내용은 약 387px(제목·검색 87 + 목록 300)인데 팝오버 `scrollHeight`가 **787px**. 목록 안 `position: absolute` 요소(체크박스 숨은 input, 아바타 이니셜, 배지 `tw:sr-only`)의 기준 부모가 목록이 아니라 팝오버(Fluent가 `position:absolute`)라 목록 스크롤을 빠져나가 팝오버 높이를 늘렸다. → 787px로 판정해 위로 못 열고(②③), 화면 밖으로 넘친 팝오버가 페이지 높이도 늘렸다.
+- **조치**:
+  1. `PersonCheckList` 루트에 `tw:relative` (T03 Review Fixes 참고) — absolute 자식이 목록 안에 갇힌다.
+  2. 팝오버를 레퍼런스 `.pop`처럼 **블록 + 전체 스크롤**로: `PopoverSurface` `tw:block`(flex 제거), `style={{ maxHeight: maxHeight ?? "70vh", overflowY: "auto" }}`. 안쪽 목록 `tw:max-h-[300px] tw:overflow-y-auto`는 줄지 않는다(①). 검색칸은 레퍼런스 `.search`처럼 `<div className="tw:mx-1 tw:mb-1.5 tw:flex">` + `DadamInput className="tw:min-w-0 tw:flex-1"`.
+- **수정 후 측정** (뷰포트 1280×720 등):
+  - 버튼이 아래 끝 근처(top 658): `top-start`, scrollHeight 402 = clientHeight 402
+  - 버튼이 가운데(top 476, 아래 212px): 위에 통째로 들어가 `top-start`
+  - 아래에 다 들어감(top 150): `bottom-start`, maxHeight 70vh
+  - 위·아래 모두 부족(뷰포트 높이 520, top 276): `bottom-start`, maxHeight 196px, 화면 안(bottom 510 < 520), 팝오버 전체 스크롤
+- 이 진단 실행은 브라우저 검증 제외 정책의 예외(사용자 명시 허용)이며, 이후 Task 검증 방식은 바뀌지 않는다.
+
 ## Implementation
 
 ### I01. 열림 방향 계산
@@ -156,4 +169,4 @@ Task: T04-reviewer-picker
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 80357c9

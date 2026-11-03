@@ -18,7 +18,7 @@ Decisions: [2026-11-03-rfp-register-review-polish](../decisions/2026-11-03-rfp-r
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 필수 표시 위치 → 단일 알림 → 공통 사람 부품 → 검토자 팝오버 연결 (단일 Phase) | [P01](../phases/2026-11-03-rfp-register-review-polish/P01-review-polish/phase.md) |
+| P01 | `done ✅` | 필수 표시 위치 → 단일 알림 → 공통 사람 부품 → 검토자 팝오버 연결 (단일 Phase) | [P01](../phases/2026-11-03-rfp-register-review-polish/P01-review-polish/phase.md) |
 
 ## Out of Scope
 - Entra ID(Microsoft Graph) 프로필 사진 실제 연동(`photoUrl` 자리만 만든다), `ProfileMenu` 아바타 통일, `TokenDialogs` 알림 이전, 검토 목록 화면.

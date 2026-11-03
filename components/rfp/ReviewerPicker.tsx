@@ -85,11 +85,14 @@ export default function ReviewerPicker({ selected, disabled, onToggle, onRemove,
       <PopoverTrigger disableButtonEnhancement>
         <Button ref={triggerRef} className="tw:h-(--dadam-control-height-compact) tw:text-[12px]" disabled={disabled}><Add12Regular aria-hidden="true" />검토자 추가</Button>
       </PopoverTrigger>
-      <PopoverSurface ref={surfaceRef} aria-label="검토자 선택" style={maxHeight !== null ? { maxHeight, overflowY: "auto" } : undefined}
-        className="tw:flex tw:w-[320px] tw:max-w-[calc(100vw-32px)] tw:flex-col tw:rounded-[12px] tw:p-1.5">
+      {/* 레퍼런스 .pop처럼 블록 + 팝오버 전체 스크롤(기본 70vh). 줄어들어도 안쪽 목록(300px)은 같이 줄지 않는다. */}
+      <PopoverSurface ref={surfaceRef} aria-label="검토자 선택" style={{ maxHeight: maxHeight ?? "70vh", overflowY: "auto" }}
+        className="tw:block tw:w-[320px] tw:max-w-[calc(100vw-32px)] tw:rounded-[12px] tw:p-1.5">
         <p className="tw:m-0 tw:px-[9px] tw:pt-2 tw:pb-1 tw:text-[10px] tw:font-black tw:text-(--kpc-muted)">검토 담당자 지정 · 여러 명 가능</p>
-        <DadamInput ref={searchInput} size="small" className="tw:mx-1 tw:mb-1.5" contentBefore={<Search16Regular />} placeholder="이름 · 부서 검색" aria-label="검토자 검색" value={query} onChange={(_, data) => setQuery(data.value)} />
-        <div className="tw:flex tw:max-h-[300px] tw:flex-col tw:overflow-y-auto">
+        <div className="tw:mx-1 tw:mb-1.5 tw:flex">
+          <DadamInput ref={searchInput} size="small" className="tw:min-w-0 tw:flex-1" contentBefore={<Search16Regular />} placeholder="이름 · 부서 검색" aria-label="검토자 검색" value={query} onChange={(_, data) => setQuery(data.value)} />
+        </div>
+        <div className="tw:max-h-[300px] tw:overflow-y-auto">
           <PersonCheckList people={rows} selectedIds={selectedIds} max={RFP_REVIEWER_MAX}
             itemLabel={(c) => `${c.name} 검토자 선택`} onToggle={(c) => onToggle({ id: c.id, name: c.name })} />
         </div>

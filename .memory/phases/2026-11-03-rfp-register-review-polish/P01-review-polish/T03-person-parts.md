@@ -11,6 +11,11 @@
 - D06: 공통 `components/ui/PersonAvatar.tsx`·`components/ui/PersonCheckList.tsx`. 목록만 담당(검색·제목은 호출부).
 - D07: 정렬 = 고정된 지정자 → 같은 부서 → 가나다.
 
+## Review Fixes (2026-11-03, T04 진단 결과 반영)
+- `PersonCheckList` 루트를 `tw:relative tw:flex tw:flex-col`로. 행 안 absolute 요소(Fluent Checkbox 숨은 input, Avatar 이니셜, 배지 `tw:sr-only`)가 바깥 스크롤 영역을 기준으로 배치되어 목록 스크롤을 빠져나가고 바깥 높이를 늘리던 문제(팝오버 scrollHeight 787px) 방지. 이 부품을 어떤 스크롤 영역에 넣어도 안전하다.
+- 행 배경을 레퍼런스 `.pop .it:hover, .pop .it.on{background:#f4f5f7}`에 맞춰 **선택 시에도 `#f4f5f7`**(기존 `--kpc-brand-soft`에서 변경).
+- 부품은 높이·스크롤을 갖지 않는다(감싸는 쪽이 정함) — 주석으로 명시.
+
 ## Implementation
 
 ### I01. `PersonAvatar` (new)
@@ -187,4 +192,4 @@ Task: T03-person-parts
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: f8cd5b9
