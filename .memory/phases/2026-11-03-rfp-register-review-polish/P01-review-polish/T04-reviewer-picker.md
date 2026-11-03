@@ -1,6 +1,6 @@
 # Task: T04 검토자 팝오버에 공통 부품·정렬·열림 방향 연결
 
-## Status: pending
+## Status: done
 
 ## Goal
 `ReviewerPicker`가 T03의 `PersonCheckList`·`PersonAvatar`를 쓰고, 목록을 열 때 "지정자 → 내 부서 → 가나다"로 정렬하며(체크 시 줄 고정), 팝오버를 레퍼런스 `popAt()` 규칙(아래 우선·높이 줄이기 최소 160px·필요할 때만 위)으로 연다.
@@ -129,10 +129,10 @@
 - T03 `PersonCheckList` 행에 SA/Admin 배지(시드: 정소담·이예진 SA, 부서 관리자 Admin).
 
 ## Acceptance Criteria
-- [ ] `ReviewerPicker`가 `PersonCheckList`·`PersonAvatar`·`sortReviewerCandidates`를 쓴다.
-- [ ] 팝오버 방향·최대 높이가 레퍼런스 `popAt` 규칙으로 정해지고 Fluent flip은 꺼져 있다(`pinned: true`).
-- [ ] 등록 화면이 `preferredDepartment={profile.department}`를 넘긴다.
-- [ ] typecheck·lint·build 통과.
+- [x] `ReviewerPicker`가 `PersonCheckList`·`PersonAvatar`·`sortReviewerCandidates`를 쓴다.
+- [x] 팝오버 방향·최대 높이가 레퍼런스 `popAt` 규칙으로 정해지고 Fluent flip은 꺼져 있다(`pinned: true`).
+- [x] 등록 화면이 `preferredDepartment={profile.department}`를 넘긴다.
+- [x] typecheck·lint·build 통과.
 
 ## Validation
 - `npm.cmd run typecheck` — 0 error
@@ -154,6 +154,6 @@ Task: T04-reviewer-picker
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

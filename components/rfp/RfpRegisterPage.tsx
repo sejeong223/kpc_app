@@ -175,7 +175,7 @@ export default function RfpRegisterPage({
               </div>
             </Field>
             <Field className={mergeClasses(styles.field, FULL)} label={RFP_FIELD_LABELS.reviewers} required>
-              <ReviewerPicker selected={state.reviewers} disabled={locked} onToggle={toggleReviewer} onRemove={removeReviewer} />
+              <ReviewerPicker selected={state.reviewers} disabled={locked} preferredDepartment={profile.department} onToggle={toggleReviewer} onRemove={removeReviewer} />
             </Field>
             <Field className={mergeClasses(styles.field, FULL)} label={RFP_FIELD_LABELS.memo}>
               <DadamTextarea rows={3} resize="vertical" className={styles.textarea} value={state.values.memo} disabled={locked} onChange={setField("memo")} />
