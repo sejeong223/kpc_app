@@ -88,7 +88,7 @@ const useStyles = makeStyles({
   reworkGroup: { minWidth: 0 },
   reworkSections: { padding: 0, margin: 0, listStyleType: "none" },
   reworkSection: { padding: "3px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  warning: { display: "flex", alignItems: "flex-start", gap: "6px", padding: "8px 10px", margin: "0 0 10px", borderRadius: dadamUi.controlRadius, backgroundColor: tokens.colorStatusWarningBackground1, color: tokens.colorStatusWarningForeground1 },
+  warning: { display: "flex", alignItems: "center", gap: "6px", padding: "8px 10px", margin: "0 0 10px", borderRadius: dadamUi.controlRadius, backgroundColor: tokens.colorStatusWarningBackground1, color: tokens.colorStatusWarningForeground1 },
   notice: { display: "flex", alignItems: "center", gap: "6px", padding: "10px 12px", margin: "0 0 12px", borderRadius: dadamUi.controlRadius, backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2 },
   version: { display: "flex", flexDirection: "column", gap: "2px", padding: "10px 12px", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
 });

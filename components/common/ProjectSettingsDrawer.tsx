@@ -69,8 +69,9 @@ const useStyles = makeStyles({
   },
   backdrop: { zIndex: 4000, backgroundColor: "rgba(17,18,22,.28)" },
   header: { flexDirection: "row", alignItems: "center", padding: "14px 16px", gap: "8px", borderBottom: `1px solid ${tokens.colorNeutralStroke2}`, flexShrink: 0, minWidth: 0 },
-  heading: { margin: 0, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: dadamUi.titleSize, lineHeight: dadamUi.titleLineHeight, fontWeight: tokens.fontWeightSemibold },
-  subtitle: { minWidth: 0, maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight },
+  heading: { margin: 0, flexShrink: 0, whiteSpace: "nowrap", fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, fontWeight: 600 },
+  subtitle: { flex: 1, minWidth: 0, whiteSpace: "normal", wordBreak: "keep-all", overflowWrap: "anywhere", color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight },
+  settingsIcon: { width: "18px", height: "18px", flexShrink: 0 },
   headerIcon: { width: "14px", height: "14px", flexShrink: 0 },
   close: { width: "32px", height: "32px", padding: 0, flexShrink: 0, marginLeft: "auto" },
   body: { minWidth: 0, minHeight: 0, flex: 1, overflow: "auto", padding: "16px", ":first-child": { paddingTop: "16px" }, ":last-child": { paddingBottom: "16px" } },
@@ -91,6 +92,7 @@ const useStyles = makeStyles({
   },
   state: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px" },
   badge: { display: "inline-flex", alignItems: "center", flexShrink: 0, height: "20px", padding: "0 7px", borderRadius: dadamUi.controlRadius, backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, fontWeight: tokens.fontWeightSemibold, whiteSpace: "nowrap" },
+  stateBadge: { height: "auto", padding: "4px 10px" },
   stateButton: { height: "26px", minHeight: "26px", padding: "0 9px", columnGap: "6px", marginLeft: "auto", fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight },
   smallIcon: { width: "12px", height: "12px", flexShrink: 0 },
   tableScroll: { width: "100%", maxWidth: "100%", overflowX: "auto" },
@@ -159,7 +161,7 @@ export default function ProjectSettingsDrawer({ id, project, onClose, returnFocu
     onOpenChange={(_event, data) => { if (!data.open) close(); }}
     onKeyDownCapture={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); close(); } }}>
     <DrawerHeader className={styles.header}>
-      <Settings16Regular className={styles.headerIcon} aria-hidden={true} />
+      <Settings16Regular className={styles.settingsIcon} aria-hidden={true} />
       <h2 id={`${id}-title`} className={styles.heading}>프로젝트 설정</h2>
       <span id={`${id}-project`} className={styles.subtitle} title={project.name}>{project.name}</span>
       <Button className={mergeClasses(styles.close, "ghost")} aria-label="프로젝트 설정 닫기" onClick={close}><Dismiss16Regular className={styles.headerIcon} aria-hidden={true} /></Button>
@@ -176,7 +178,7 @@ export default function ProjectSettingsDrawer({ id, project, onClose, returnFocu
           <div className={styles.field}><label className={styles.label} htmlFor={`${id}-budget`}>사업 예산</label><DadamInput id={`${id}-budget`} className={styles.input} value={draft.budgetEok} onChange={(_event, data) => changeInformation("budgetEok", data.value)} /></div>
           <div className={styles.field}><label className={styles.label} htmlFor={`${id}-due`}>제출 마감일</label><DadamInput id={`${id}-due`} className={styles.input} value={draft.dueDate} onChange={(_event, data) => changeInformation("dueDate", data.value)} /></div>
           <div className={mergeClasses(styles.field, styles.fullField)}><span className={styles.label}>진행 상태</span><div className={styles.state}>
-            <span className={styles.badge}>{stageLabels[project.stage]}</span>
+            <span className={mergeClasses(styles.badge, styles.stateBadge)}>{stageLabels[project.stage]}</span>
             {project.stage === "active" && <Button className={styles.stateButton} disabled><Dismiss16Regular className={styles.smallIcon} aria-hidden={true} />진행안함으로 전환</Button>}
             {project.stage === "drop" && <Button className={mergeClasses(styles.stateButton, "primary")} disabled>진행 중으로 되돌리기</Button>}
           </div></div>
