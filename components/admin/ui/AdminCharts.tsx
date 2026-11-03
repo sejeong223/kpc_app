@@ -1,15 +1,15 @@
 "use client";
 import { useId } from "react";
-import Button from "@/components/common/Button";
-import { buildChartCoordinates, type ChartPoint } from "@/lib/admin/chart-data";
+import { buildChartCoordinates } from "@/lib/admin/chart-data";
 import type { NamedCount } from "@/types/admin";
 import AdminDotTrack from "./AdminDotTrack";
 import AdminChartDataTable from "./AdminChartDataTable";
-interface AdminSeriesChartProps { label: string; points: readonly ChartPoint[]; kind: "bar" | "line"; unit: string; selectedId?: string | null; onSelect?: (id: string | null) => void; color?: string; area?: boolean; variant?: "default" | "simple" }
+import AdminBarChart, { type AdminBarChartProps } from "./AdminBarChart";
+interface AdminSeriesChartProps extends Omit<AdminBarChartProps, "compact"> { kind: "bar" | "line"; area?: boolean; variant?: "default" | "simple" }
 interface AdminBreakdownProps { label: string; items: readonly NamedCount[]; selectedId?: string | null; onSelect?: (id: string | null) => void; columns?: 1 | 2; maxCount?: number; variant?: "bar" | "dot"; colorForId?: (id: string) => string }
 export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSelect, color = "var(--kpc-info)", area = true, variant = "default" }: AdminSeriesChartProps): React.ReactElement {
   const coordinates = buildChartCoordinates(points, 720, 200), maximum = Math.max(1, ...points.map((p) => p.value));
-  const simple = variant === "simple" && kind === "bar", plotHeight = simple ? 120 : 160;
+  const simple = variant === "simple" && kind === "bar";
   const fillId = useId();
   return <figure className="tw:m-0 tw:min-w-0"><figcaption className={simple ? "tw:sr-only" : "tw:mb-(--layout-section-gap) tw:text-[11px] tw:text-(--kpc-muted)"}>{label} · 단위: {unit}{onSelect ? " · 막대를 선택하면 해당 구간을 볼 수 있습니다." : ""}</figcaption>
     {!points.length ? <p role="status" className="tw:py-10 tw:text-center tw:text-(--kpc-muted)">선택 기간에 데이터가 없습니다.</p> : kind === "line" ? <svg className="tw:block tw:h-52 tw:w-full" viewBox="0 0 720 200" role="img" aria-label={label + " 추이. 자세한 값은 아래 데이터 표에서 확인할 수 있습니다."}>
@@ -18,16 +18,7 @@ export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSele
       {area && coordinates.length > 1 && <path d={"M " + coordinates[0].x + " 176 L " + coordinates.map(p => p.x + " " + p.y).join(" L ") + " L " + coordinates[coordinates.length - 1].x + " 176 Z"} fill={"url(#" + fillId + ")"} />}
       <polyline fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={coordinates.map(p => p.x + "," + p.y).join(" ")} />
       {coordinates.map((p, i) => <g key={p.id}><circle cx={p.x} cy={p.y} r={points.length > 30 ? 2 : 3} fill={color}><title>{p.tooltip}</title></circle>{(i === 0 || i === points.length - 1 || i % Math.ceil(points.length / 6) === 0) && <text x={p.x} y="195" textAnchor={i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"} fontSize="10" fill="var(--kpc-muted)">{p.label}</text>}</g>)}
-    </svg> : <div className="tw:relative tw:pl-10"><div aria-hidden="true" className="tw:pointer-events-none tw:absolute tw:inset-x-0 tw:top-[12px] tw:pl-10" style={{ height: plotHeight }}>
-      {(simple ? [1, 0] : [1, 0.5, 0]).map(fraction => <div key={fraction} className="tw:absolute tw:right-0 tw:left-10 tw:border-0 tw:border-t tw:border-dashed tw:border-(--kpc-line)" style={{ top: (1 - fraction) * plotHeight }}><span className="tw:absolute tw:-top-2 tw:right-full tw:mr-(--layout-control-gap) tw:text-[10px] tw:whitespace-nowrap tw:text-(--kpc-muted)">{(maximum * fraction).toLocaleString("ko-KR", { maximumFractionDigits: 1, notation: "compact" })}</span></div>)}
-    </div><div className="tw:relative tw:flex tw:items-end" style={{ height: plotHeight + 48, gap: `min(var(--layout-inline-gap), ${40 / Math.max(1, points.length)}%)` }}>
-      {points.map((point, i) => {
-        const showLabel = i === 0 || i === points.length - 1 || (simple ? i === Math.floor((points.length - 1) / 2) : i % Math.ceil(points.length / 6) === 0);
-        const content = <><span className="tw:mx-auto tw:block tw:w-full tw:max-w-7 tw:rounded-t-md" style={{ height: point.value === 0 ? 0 : Math.max(2, point.value / maximum * plotHeight), background: simple || selectedId === point.id ? color : `linear-gradient(to top, color-mix(in srgb, ${color} 65%, var(--kpc-card)), ${color})` }} /><span className="tw:relative tw:mt-(--layout-control-gap) tw:block tw:h-7 tw:whitespace-nowrap tw:text-[10px] tw:font-normal tw:text-(--kpc-muted)"><span className={"tw:absolute " + (i === 0 ? "tw:left-0" : i === points.length - 1 ? "tw:right-0" : "tw:left-1/2 tw:-translate-x-1/2")}>{showLabel ? point.label : ""}</span></span></>;
-        const classes = "tw:m-0 tw:flex tw:h-full tw:min-w-0 tw:flex-1 tw:flex-col tw:justify-end tw:border-0 tw:bg-transparent tw:p-0 tw:focus-visible:outline-2 tw:focus-visible:outline-(--kpc-info)";
-        return onSelect ? <Button key={point.id} className={classes + " tw:items-stretch tw:rounded-md"} aria-label={point.tooltip} title={point.tooltip} aria-pressed={selectedId === point.id} onClick={() => onSelect(selectedId === point.id ? null : point.id)}>{content}</Button> : <div key={point.id} className={classes} title={point.tooltip}>{content}</div>;
-      })}
-    </div></div>}
+    </svg> : <AdminBarChart key={label + ":" + points[0]?.id + ":" + points[points.length - 1]?.id} label={label} points={points} unit={unit} color={color} selectedId={selectedId} onSelect={onSelect} compact={simple} />}
     <AdminChartDataTable label={label} points={points} unit={unit} />
   </figure>;
 }
