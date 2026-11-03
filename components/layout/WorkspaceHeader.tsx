@@ -13,6 +13,7 @@ export interface WorkspaceHeaderProps extends Pick<WorkspacePageProps,
   "title" | "showTitle" | "leading" | "actions" | "headingId" | "headingRef"> {
   headerRef?: React.Ref<HTMLElement>;
   sticky?: boolean;
+  className?: string;
 }
 
 const useStyles = makeStyles({
@@ -27,7 +28,7 @@ const useStyles = makeStyles({
 
 export default function WorkspaceHeader({
   title, showTitle = false, leading, actions,
-  headingId, headingRef, headerRef, sticky = false,
+  headingId, headingRef, headerRef, sticky = false, className,
 }: WorkspaceHeaderProps): React.ReactElement {
   const styles = useStyles();
   const navigation = useWorkspaceNavigation();
@@ -41,7 +42,8 @@ export default function WorkspaceHeader({
     {(hasToolbar || navigation) && <header ref={headerRef} data-workspace-header className={
       "tw:min-w-0 tw:flex-col tw:gap-(--layout-control-gap) " +
       (hasToolbar ? "tw:flex" : "tw:hidden tw:[@media(max-width:760px)]:flex") +
-      (sticky ? " tw:sticky tw:top-0 tw:z-10 tw:bg-(--kpc-bg)" : "")
+      (sticky ? " tw:sticky tw:top-0 tw:z-10 tw:bg-(--kpc-bg)" : "") +
+      (className ? " " + className : "")
     }>
       <div className="tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)">
         {navigation && <DadamThemeScope><Button type="button" className={styles.menu}

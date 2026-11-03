@@ -1,14 +1,26 @@
 # Plan: 프로젝트 공용 헤더·팝업·설정 패널
 
 - Date: 2026-11-03
-- Status: done
+- Status: in_progress
 - Decisions: [확정 결정](../decisions/2026-11-03-project-header.md)
 - 기준 코드: `b443fc079707cf799f1e1362e8c7340d5e950ca7`
-- 실행 완료: T01/T02/T03 구현·검증 완료. Task별 실행 기록과 로컬 current의 커밋 이력을 참고한다.
+- 실행 이력: T01/T02/T03은 완료 기록을 보존한다. 2026-11-03 사용자 검토에서 발견한 HTML 불일치를 T04/T05로 보정하며 현재 포인터는 T04다.
 
 ## Goal
 
 AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나의 프로젝트 헤더를 재사용한다. 프로젝트 선택과 알림 토스트, 재작업·완성 모달, 완성본 팝업, 설정의 네 탭을 UI 범위에서 구현한다. 리뷰와 완료한 제안 메뉴를 추가하되 완료한 제안에는 프로젝트 헤더를 넣지 않는다.
+
+추가 목표: 첨부 HTML의 배치·치수·간격·문구·아이콘·컨트롤 종류를 복원하고 색·글꼴·굵기·모서리·그림자·상태 표현만 기존 dadam 테마로 적용한다. 공용 컴포넌트의 기본 크기를 그대로 쓰는 것을 HTML 재현으로 간주하지 않는다. 후속 사용자 요청으로 확정된 헤더 34px, 프로젝트명 600, 배지 패딩, D-day, 체크 우측 상단, 공용 dadam 폰트는 유지한다.
+
+## Revision Basis — 2026-11-03
+
+- 원본: `C:/Users/김세정/Downloads/KPC_제안서_UI_v12 8.html`. `openLoopHist`, `confirmDone`, `confirmRedo`, `drawerHtml` 및 관련 CSS를 읽어 비교했다. 스크립트의 저장·다운로드·업무 전환은 새 구현 권한이 아니다.
+- 팝업 버튼은 원본 `btn xs`의 높이22/좌우7/아이콘12인데 현재 기본 CommonButton 높이38/좌우12에 아이콘이 없다.
+- 설정은 원본 폭560/max96vw/제목14px 16px/본문16px인데 현재 Fluent medium 폭592, 기본 제목24px 24px 8px, 본문 좌우24px에 별도 panel 상단20px가 섞여 있다. 이는 dadam 원본 레이아웃을 따른 결과가 아니다.
+- 기본정보 2열→1열, 알림 설명 삭제·수신 버튼→체크박스, 권한 아바타·툴팁 누락, 로그 부가정보를 별도 열로 분리한 차이를 수정한다.
+- `DadamInput`은 **KPC가 Fluent Input을 감싼 로컬 래퍼**다. 실제 dadam 앱에 같은 이름의 컴포넌트가 있다는 의미가 아니다. `DadamControls.tsx` root padding12와 Fluent input 기본 padding12가 함께 선언되어 있음을 소스로 확인했으나 브라우저 computed style을 측정하지 않았다. 사용자 정상 다담 입력창 이미지와 혼동하지 않는다.
+- 실제 dadam 원본 `dadam_app/dadam_app/app/(authenticated)/meetings/_components/MeetingListMobileView.tsx`는 `@fluentui/react-components`의 Input을 직접 import한다. 이번 계획은 KPC 설정의 입력란만 HTML 기준으로 보정하며 DadamControls 전역 변경을 승인된 것으로 간주하지 않는다.
+- 코드 수정 없이 계획만 갱신한다. 기존 미커밋 ProjectHeader.tsx/WorkspaceHeader.tsx 수정은 보존한다.
 
 ## Scope and Boundaries
 
@@ -25,7 +37,7 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `done` | 공용 상태·헤더·메뉴 연결 후 모달/팝업·설정 패널 완성 | [P01](../phases/2026-11-03-project-header/P01-project-header/phase.md) |
+| P01 | `in_progress` | 기존 연결 유지 및 HTML 기준 팝업·설정 디자인 보정 | [P01](../phases/2026-11-03-project-header/P01-project-header/phase.md) |
 
 ## Task Sequence
 
@@ -34,8 +46,12 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 | T01 | 여섯 화면의 공용 헤더, 프로젝트 선택/토스트, 리뷰·완료한 제안 메뉴 | 새 config/Provider/ProjectHeader와 기존 layout·AppShell·sidebar·WorkspacePage·route·CommentsWorkspace |
 | T02 | 재작업·완성 중앙 모달과 완성본 팝업을 헤더 버튼에서 열고 닫음 | ProjectHeader.tsx |
 | T03 | 설정 오른쪽 패널의 네 탭과 임시 입력, 전체 연결 마무리 | 새 ProjectSettingsDrawer.tsx와 ProjectHeader.tsx |
+| T04 (done) | 완성본 작은 버튼·아이콘, 완성/재작업 모달의 원본 배치·내용 복원 | ProjectHeader.tsx, ModalFrame.tsx의 선택적 스타일 슬롯 |
+| T05 (in_progress) | 설정 패널 치수·2열 폼·입력 여백·권한/알림/로그 구성 복원 | ProjectSettingsDrawer.tsx, config/project-header.ts의 알림 예시 기본값 |
 
 상태와 사이드바를 T01에서 함께 연결해야 메뉴 이동 후에도 프로젝트와 PM 메뉴 표시가 일치한다. 모달과 설정 패널은 서로 다른 UI 단위이므로 별도 Task로 나누되 모두 같은 Phase에서 구현한다. T01/T02의 중간 커밋은 후속 버튼 연결이 남아 있는 단계임을 기록한다.
+
+보정도 두 Task로 나눈다. T04는 헤더의 팝업/중앙 모달, T05는 별도 파일에 있는 설정 패널 전체를 담당한다. 같은 패널의 여백과 탭 내용을 따로 나누면 중간 단계에 레이아웃이 섞이므로 T05에서 함께 검증한다. 완료된 T01~T03을 되돌려 재실행하거나 새 Phase를 만들지 않는다.
 
 ## Production File Structure
 
@@ -50,6 +66,8 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 
 기존 수정 파일은 `app/(authenticated)/layout.tsx`, `app/(authenticated)/workspace/[screen]/page.tsx`, `config/sidebar.ts`, `components/layout/AppShell.tsx`, `NavSidebar.tsx`, `WorkspacePage.tsx`, `components/comments/CommentsWorkspace.tsx`다. 기존 Button·WorkspaceHeader·ModalFrame·코멘트 저장소·인증·테마는 재사용하는 읽기 전용 경계다.
 
+위 파일 목록은 T01~T03 이력이다. 보정 T04/T05는 새 생산 파일 없이 기존 파일만 수정한다. ModalFrame에는 호출부별 `slotClassNames` 선택적 속성만 추가하고 기존 기본 모양/포커스/닫기 계약은 보존한다. DadamControls·Button·WorkspaceHeader·팀원 CSS는 보정 중 읽기 전용이며 기존 미커밋 사용자 요청 수정도 되돌리지 않는다.
+
 ## Regression Boundaries
 
 1. WorkspacePage는 선택적 headerComponent 슬롯만 추가한다. 기본 화면의 헤더·접근성 제목·모바일 메뉴·sticky 측정은 그대로 유지한다.
@@ -63,15 +81,16 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 
 - 코멘트는 사용자별 `production-preview` surface에 저장된다. 헤더 프로젝트를 바꿔도 코멘트는 유지된다. 결정 D13에서 이미 제외한 프로젝트별 저장소 설계를 이번 Task로 추가하지 않는다.
 - 실제 업무 프로젝트/권한 모델과 이번 예시 데이터를 합치지 않는다. 관리자 프로젝트 참조·전체 Tailwind 설정 정리·기존 버튼 체계 통합도 범위 밖이다.
+- KPC DadamInput 전역 여백 정리는 다른 사용처까지 바꿀 수 있다. 사용자는 실제 다담 입력창에는 문제가 없다고 정정했다. 원본 다담과 KPC 래퍼를 구분하며, 다른 화면의 결함이나 전역 수정 필요성이 입증됐다고 기록하지 않는다. 이번에는 설정 호출부의 로컬 스타일만 보정한다.
 
 ## Validation and Execution
 
 - 각 Task 구현 후 `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build`, `git diff --check`를 실행한다. 실제 픽셀·브라우저 조작을 검증했다고 보고하지 않는다.
 - Task의 Acceptance Criteria를 정적 코드로 확인하고 결과를 기록한다. 기존 실패가 있으면 원인과 본 변경의 관계를 구분하며 검증하지 않은 항목을 통과로 적지 않는다.
 - Task별 지정 한국어 커밋을 사용한다. 실행 단계에서만 관련 파일을 명시적으로 stage한다. `.memory/current.md`는 로컬 포인터로 강제 추가/커밋하지 않는다. push·배포는 범위 밖이다.
-- [현재 포인터](../current.md)는 P01/T01부터 시작한다. 완료한 이전 계획은 재실행하지 않는다.
+- [현재 포인터](../current.md)는 P01/T04부터 시작한다. T04 → T05 순서이며 완료한 T01~T03과 이전 계획은 재실행하지 않는다.
 
 ## Progress
 
-- done: 3/3
-- active: 없음 — 모든 Task 완료
+- done: 4/5
+- active: T05-html-settings
