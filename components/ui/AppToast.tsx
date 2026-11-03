@@ -6,7 +6,12 @@ import { useCallback, useEffect, useState } from "react";
 
 // TokenDialogs의 Toaster(useId 기반)와 겹치지 않도록 고정 id를 쓴다.
 export const APP_TOASTER_ID = "app-toaster";
+export const APP_TOAST_TIMEOUT_MS = 2200;
 export type AppToastIntent = "success" | "error" | "info";
+
+// 화면에 떠 있는 공통 알림 id. 레퍼런스처럼 알림은 하나만 두고, 훅 인스턴스가 여럿이어도 공유한다.
+let liveToastId: string | null = null;
+let toastSeq = 0;
 
 const useStyles = makeStyles({
   // TokenDialogs와 같은 z-index 층에 둔다. Fluent 기본 고정 폭(292px)을 풀어 레퍼런스처럼 글자 길이에 맞춘다.
@@ -46,19 +51,30 @@ function useMainCenterOffset(): number {
 export function AppToaster(): React.ReactElement {
   const styles = useStyles();
   const horizontal = useMainCenterOffset();
-  return <Toaster toasterId={APP_TOASTER_ID} position="bottom" offset={{ vertical: 64, horizontal }} timeout={2200} pauseOnHover className={styles.toaster} />;
+  return <Toaster toasterId={APP_TOASTER_ID} position="bottom" offset={{ vertical: 64, horizontal }} timeout={APP_TOAST_TIMEOUT_MS} pauseOnHover className={styles.toaster} />;
 }
 
 export function useAppToast(): { notify(message: string, intent?: AppToastIntent): void } {
   const styles = useStyles();
-  const { dispatchToast } = useToastController(APP_TOASTER_ID);
+  const { dispatchToast, updateToast } = useToastController(APP_TOASTER_ID);
   const notify = useCallback((message: string, intent: AppToastIntent = "success") => {
     const media = intent === "error" ? <ErrorCircle16Regular className={styles.iconError} />
       : intent === "info" ? <Info16Regular className={styles.icon} /> : <Checkmark16Regular className={styles.icon} />;
-    dispatchToast(
-      <Toast className={styles.toast}><ToastTitle className={styles.title} media={media}>{message}</ToastTitle></Toast>,
-      { intent },
-    );
-  }, [dispatchToast, styles]);
+    const content = <Toast className={styles.toast}><ToastTitle className={styles.title} media={media}>{message}</ToastTitle></Toast>;
+    // 떠 있는 알림이 있으면 문구만 바꾼다. updateToast는 타이머를 다시 마운트해 2.2초를 처음부터 센다.
+    if (liveToastId) {
+      updateToast({ toastId: liveToastId, content, intent, timeout: APP_TOAST_TIMEOUT_MS });
+      return;
+    }
+    // 같은 id는 사라지는 애니메이션 중에도 무시되므로 매번 새 id로 띄운다.
+    const toastId = `app-toast-${++toastSeq}`;
+    liveToastId = toastId;
+    dispatchToast(content, {
+      toastId, intent,
+      onStatusChange: (_event, data) => {
+        if ((data.status === "dismissed" || data.status === "unmounted") && liveToastId === toastId) liveToastId = null;
+      },
+    });
+  }, [dispatchToast, updateToast, styles]);
   return { notify };
 }

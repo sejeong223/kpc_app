@@ -1,6 +1,6 @@
 # Task: T02 공통 알림 "항상 하나"
 
-## Status: pending
+## Status: done
 
 ## Goal
 `useAppToast().notify`를 연달아 불러도 알림이 쌓이지 않고, 화면에 떠 있는 알림 하나의 문구·아이콘만 바뀌며 2.2초를 처음부터 다시 센다(레퍼런스 `toast()`). 검토자를 연달아 지정할 때 알림이 위로 쌓이던 문제를 없앤다.
@@ -68,9 +68,9 @@
 - `TokenDialogs`의 알림(다른 toasterId)은 영향 없음.
 
 ## Acceptance Criteria
-- [ ] 알림이 쌓이지 않고 하나의 알림에서 문구·아이콘이 바뀐다(코드 기준).
-- [ ] 문구가 바뀔 때마다 2.2초가 다시 시작된다(`updateToast` → `updateId` 증가).
-- [ ] typecheck·lint·build 통과.
+- [x] 알림이 쌓이지 않고 하나의 알림에서 문구·아이콘이 바뀐다(코드 기준).
+- [x] 문구가 바뀔 때마다 2.2초가 다시 시작된다(`updateToast` → `updateId` 증가).
+- [x] typecheck·lint·build 통과.
 
 ## Validation
 - `npm.cmd run typecheck` — 0 error
@@ -92,6 +92,6 @@ Task: T02-single-toast
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending
