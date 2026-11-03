@@ -198,7 +198,7 @@ Task: T02-completion-overlays
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: 이 Task를 완료 처리한 커밋 (Task: T02-completion-overlays footer로 식별)
+- commit: 48c4cf5
 
 검증 후 이 Task의 생산 변경과 .memory 진행 기록만 명시적으로 stage한다. local current는 강제 추가/커밋하지 않는다. 완료 시 phase/plan 진행률과 current를 T03으로 전진한다. push·배포는 하지 않는다.
 

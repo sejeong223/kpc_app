@@ -12,6 +12,7 @@ import { getProjectHeaderView } from "@/config/project-header";
 import { dadamUi } from "@/lib/ui/dadam-theme";
 import Button from "./Button";
 import { useProjectHeader } from "./ProjectHeaderProvider";
+import ProjectSettingsDrawer from "./ProjectSettingsDrawer";
 
 export type ProjectHeaderProps = Omit<WorkspaceHeaderProps, "leading" | "actions">;
 type HeaderOverlay = null | "projects" | "history" | "complete" | "redo" | "settings";
@@ -64,6 +65,7 @@ function ProjectHeaderContent({ selectorRef, ...props }: ProjectHeaderProps & { 
   const historyRef = useRef<HTMLButtonElement>(null);
   const completeRef = useRef<HTMLButtonElement>(null);
   const redoRef = useRef<HTMLButtonElement>(null);
+  const settingsRef = useRef<HTMLButtonElement>(null);
   const id = useId();
   const openOverlay = (next: Exclude<HeaderOverlay, null>) => {
     if ((next === "redo" && !view.showRedo) || (next === "history" && !view.showHistory)
@@ -73,12 +75,14 @@ function ProjectHeaderContent({ selectorRef, ...props }: ProjectHeaderProps & { 
   };
   const closeOverlay = () => setOverlay(null);
   const closeProjects = () => {
+    if (overlay !== "projects") return;
     setOverlay(null);
-    requestAnimationFrame(() => { if (selectorRef.current?.isConnected) selectorRef.current.focus({ preventScroll: true }); });
+    requestAnimationFrame(() => { if (selectorRef.current?.isConnected && !document.querySelector("[data-modal-frame], [data-project-header-overlay]")) selectorRef.current.focus({ preventScroll: true }); });
   };
   const closeHistory = () => {
+    if (overlay !== "history") return;
     setOverlay(null);
-    requestAnimationFrame(() => { if (historyRef.current?.isConnected && !document.querySelector("[data-modal-frame]")) historyRef.current.focus({ preventScroll: true }); });
+    requestAnimationFrame(() => { if (historyRef.current?.isConnected && !document.querySelector("[data-modal-frame], [data-project-header-overlay]")) historyRef.current.focus({ preventScroll: true }); });
   };
   const fixedSections = project.sections.filter(section => section.state === "done");
   const reworkSections = project.sections.filter(section => section.state === "doing");
@@ -95,7 +99,7 @@ function ProjectHeaderContent({ selectorRef, ...props }: ProjectHeaderProps & { 
           <ChevronDown16Regular aria-hidden={true} />
         </Button>
       </PopoverTrigger>
-      <PopoverSurface id={`${id}-projects`} role="dialog" aria-label="프로젝트 선택" className={styles.popup}
+      <PopoverSurface id={`${id}-projects`} role="dialog" aria-label="프로젝트 선택" className={styles.popup} data-project-header-overlay={overlay === "projects" ? "" : undefined}
         onKeyDownCapture={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeProjects(); } }}>
         <h2 className={styles.popupTitle}>내가 참여 중</h2>
         <div className={styles.options}>{projects.map(item => <Button key={item.id} className={mergeClasses(styles.projectOption, item.id === project.id ? "soft" : "ghost")}
@@ -114,7 +118,7 @@ function ProjectHeaderContent({ selectorRef, ...props }: ProjectHeaderProps & { 
       <PopoverTrigger disableButtonEnhancement><Button ref={historyRef} className={styles.action} aria-haspopup="dialog" aria-expanded={overlay === "history"} aria-controls={`${id}-history`}>
         <History16Regular aria-hidden={true} />완성본 {view.historyCount}
       </Button></PopoverTrigger>
-      <PopoverSurface id={`${id}-history`} role="dialog" aria-label="완성본 이력" tabIndex={-1} className={styles.popup}
+      <PopoverSurface id={`${id}-history`} role="dialog" aria-label="완성본 이력" tabIndex={-1} className={styles.popup} data-project-header-overlay={overlay === "history" ? "" : undefined}
         onKeyDownCapture={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeHistory(); } }}>
         <h2 className={styles.popupTitle}>회차별 완성본</h2>
         {[...project.versions].sort((a, b) => b.round - a.round).map(version => <article className={styles.version} key={`${project.id}-${version.round}`}>
@@ -127,7 +131,7 @@ function ProjectHeaderContent({ selectorRef, ...props }: ProjectHeaderProps & { 
     </Popover>}
     {view.showComplete && <Button ref={completeRef} className={mergeClasses(styles.action, "primary")} disabled={view.completeDisabled}
       aria-haspopup="dialog" aria-expanded={overlay === "complete"} aria-controls={`${id}-complete`} onClick={() => openOverlay("complete")}><Checkmark16Regular aria-hidden={true} />완성</Button>}
-    <Button className={styles.action} title="프로젝트 설정"><Settings16Regular aria-hidden={true} />설정</Button>
+    <Button ref={settingsRef} className={styles.action} title="프로젝트 설정" aria-haspopup="dialog" aria-expanded={overlay === "settings"} aria-controls={`${id}-settings`} onClick={() => openOverlay("settings")}><Settings16Regular aria-hidden={true} />설정</Button>
   </>} />
     {overlay === "complete" && <ModalFrame open title={`${project.round}차 완성`} subtitle={project.name} contentKey={`${project.id}:complete:${project.round}`} onClose={closeOverlay}
       footer={<><Button onClick={closeOverlay}>취소</Button><Button className="primary" disabled>{project.round}차 완성</Button></>}>
@@ -159,6 +163,7 @@ function ProjectHeaderContent({ selectorRef, ...props }: ProjectHeaderProps & { 
         </section>)}</div>
       </div>
     </ModalFrame>}
+    {overlay === "settings" && <ProjectSettingsDrawer id={`${id}-settings`} project={project} onClose={closeOverlay} returnFocusRef={settingsRef} />}
   </>;
 }
 

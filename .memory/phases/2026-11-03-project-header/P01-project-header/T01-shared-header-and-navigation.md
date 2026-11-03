@@ -251,7 +251,7 @@ Task: T01-shared-header-and-navigation
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: 이 Task를 완료 처리한 커밋 (Task: T01-shared-header-and-navigation footer로 식별)
+- commit: d1826e7
 
 검증 후 관련 파일만 명시적으로 stage한다. local 전용 `.memory/current.md`는 강제 추가/커밋하지 않는다. 완료 시 phase/plan 진행률과 current를 T02로 전진한다. push·배포는 하지 않는다.
 

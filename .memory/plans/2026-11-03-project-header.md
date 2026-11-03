@@ -1,10 +1,10 @@
 # Plan: 프로젝트 공용 헤더·팝업·설정 패널
 
 - Date: 2026-11-03
-- Status: in_progress
+- Status: done
 - Decisions: [확정 결정](../decisions/2026-11-03-project-header.md)
 - 기준 코드: `b443fc079707cf799f1e1362e8c7340d5e950ca7`
-- 실행 진행 중: T01/T02 구현·검증 완료. Task별 실행 기록과 current 포인터를 따른다.
+- 실행 완료: T01/T02/T03 구현·검증 완료. Task별 실행 기록과 로컬 current의 커밋 이력을 참고한다.
 
 ## Goal
 
@@ -25,7 +25,7 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 공용 상태·헤더·메뉴 연결 후 모달/팝업·설정 패널 완성 | [P01](../phases/2026-11-03-project-header/P01-project-header/phase.md) |
+| P01 | `done` | 공용 상태·헤더·메뉴 연결 후 모달/팝업·설정 패널 완성 | [P01](../phases/2026-11-03-project-header/P01-project-header/phase.md) |
 
 ## Task Sequence
 
@@ -73,5 +73,5 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 
 ## Progress
 
-- done: 2/3
-- active: P01/T03
+- done: 3/3
+- active: 없음 — 모든 Task 완료
