@@ -1,6 +1,6 @@
 # Task: T03 등록 화면 디자인·알림 4종 연결
 
-## Status: pending
+## Status: done
 
 ## Goal
 `RfpRegisterPage`의 사업개요 폼을 레퍼런스 모양(노란 AI 칸·보라 AI 태그·파란 필수 별표·원형 기간 칩·큰 등록 버튼·폭 제한 없음)으로 바꾸고, 레퍼런스 알림 4종(분석 완료·업로드 제한 초과·검토자 지정/해제·등록 성공)을 T01 공통 알림으로 띄우며, 화면 안 성공 문구를 없앤다.
@@ -9,6 +9,12 @@
 - D01: 레퍼런스 값 그대로, 빨강 → 파랑. AI 칸 노랑(`#fffdf3`/`#ecd98f`)·AI 태그 보라(`#6b3fc4`/`#f4effe`)는 의미 색이라 유지.
 - D03: 알림은 4종만. 파일 종류 변경·파일 빼기·다시 하기·업로드 시작·사업기간 칩에는 알림 없음.
 - D04: 등록 성공 `role="status"` 문구 삭제(알림만). 등록 실패 `role="alert"`·사용자 정보 없음 `role="alert"`는 유지. 같은 업로드 오류가 반복돼도 매번 알림.
+
+## Execution Note (2026-11-03, 사용자 지시)
+- T02와 같은 결정으로 원격 공통 부품을 썼다: 입력칸 `DadamInput`(38px)·`DadamTextarea`, 사업기간 칩·등록 버튼은 `components/common/Button`.
+  - 칩: 높이 28px·radius 14px·11.5px를 `tw:`로 덮어쓰고, 선택 시 `active` 클래스 + `aria-pressed`(공통 Button의 선택 모양).
+  - 등록 버튼: `primary` 프리셋(기본 38px)에 padding 0 16px·13px 700, 오른쪽 `ArrowRight16Regular`.
+- 레퍼런스 입력 높이 32px(I03-7)는 적용하지 않았다(원격 부품 38px 우선).
 
 ## Implementation
 
@@ -61,10 +67,10 @@ export function describeFileRejection(currentCount: number, incoming: { name: st
 - `git grep -n -i "d7192f\|c91c2b\|fff0f2\|max-w-\[960px\]" components/rfp` 결과 없음.
 
 ## Acceptance Criteria
-- [ ] 알림 4종이 D03 문구대로 연결되고 그 외 동작에는 알림이 없다.
-- [ ] 등록 성공 화면 문구가 없고 실패 문구는 남는다.
-- [ ] 폼이 D01 표의 모양을 따른다(코드 값 기준).
-- [ ] typecheck·lint·build 통과.
+- [x] 알림 4종이 D03 문구대로 연결되고 그 외 동작에는 알림이 없다.
+- [x] 등록 성공 화면 문구가 없고 실패 문구는 남는다.
+- [x] 폼이 D01 표의 모양을 따른다(코드 값 기준).
+- [x] typecheck·lint·build 통과.
 
 ## Validation
 - `npm.cmd run typecheck` — 0 error
@@ -83,9 +89,10 @@ Task: T03-page-design-notify
 - 노란 AI 칸·보라 AI 태그·파란 필수 별표·원형 기간 칩·큰 등록 버튼
 - 분석 완료·업로드 제한·검토자 지정/해제·등록 성공 알림 연결
 - 등록 성공 화면 문구 제거, 업로드 거절 문구 계산을 describeFileRejection으로 분리
+- 입력칸·칩·등록 버튼은 원격 공통 부품(DadamControls·Button) 사용
 ```
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
+- [x] 구현 완료
+- [x] 검증 통과
 - commit: pending

@@ -45,22 +45,29 @@ export function formatBudget(digits: string): string {
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-function addFiles(state: RfpFormState, incoming: { id: string; name: string; sizeBytes: number }[]): RfpFormState {
+// dispatch 전에 알림 문구를 알아야 하므로 reducer 밖에서도 부를 수 있게 분리한다.
+export function describeFileRejection(currentCount: number, incoming: { name: string; sizeBytes: number }[]): string | null {
   const oversized = incoming.filter((f) => f.sizeBytes > RFP_FILE_MAX_BYTES);
-  const allowed = incoming.filter((f) => f.sizeBytes <= RFP_FILE_MAX_BYTES);
-  const room = Math.max(0, RFP_FILE_MAX_COUNT - state.files.length);
-  const accepted = allowed.slice(0, room);
+  const allowedCount = incoming.length - oversized.length;
+  const room = Math.max(0, RFP_FILE_MAX_COUNT - currentCount);
   const messages: string[] = [];
   if (oversized.length) {
     messages.push(`${oversized[0].name}${oversized.length > 1 ? ` 외 ${oversized.length - 1}개` : ""}: 파일당 50MB를 넘을 수 없습니다.`);
   }
-  if (allowed.length > room) messages.push(`파일은 최대 ${RFP_FILE_MAX_COUNT}개까지 올릴 수 있습니다.`);
+  if (allowedCount > room) messages.push(`파일은 최대 ${RFP_FILE_MAX_COUNT}개까지 올릴 수 있습니다.`);
+  return messages.length ? messages.join(" ") : null;
+}
+
+function addFiles(state: RfpFormState, incoming: { id: string; name: string; sizeBytes: number }[]): RfpFormState {
+  const allowed = incoming.filter((f) => f.sizeBytes <= RFP_FILE_MAX_BYTES);
+  const room = Math.max(0, RFP_FILE_MAX_COUNT - state.files.length);
+  const accepted = allowed.slice(0, room);
   const hadMain = state.files.length > 0;
   const added: RfpFileMeta[] = accepted.map((f, i) => {
     const main = !hadMain && i === 0;
     return { id: f.id, name: f.name, sizeBytes: f.sizeBytes, kind: main ? "rfp" : "related", isMain: main };
   });
-  return { ...state, files: [...state.files, ...added], fileError: messages.length ? messages.join(" ") : null };
+  return { ...state, files: [...state.files, ...added], fileError: describeFileRejection(state.files.length, incoming) };
 }
 
 function removeFile(state: RfpFormState, id: string): RfpFormState {
