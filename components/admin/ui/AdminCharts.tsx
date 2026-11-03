@@ -4,6 +4,7 @@ import Button from "@/components/common/Button";
 import { buildChartCoordinates, type ChartPoint } from "@/lib/admin/chart-data";
 import type { NamedCount } from "@/types/admin";
 import AdminDotTrack from "./AdminDotTrack";
+import AdminChartDataTable from "./AdminChartDataTable";
 interface AdminSeriesChartProps { label: string; points: readonly ChartPoint[]; kind: "bar" | "line"; unit: string; selectedId?: string | null; onSelect?: (id: string | null) => void; color?: string; area?: boolean }
 interface AdminBreakdownProps { label: string; items: readonly NamedCount[]; selectedId?: string | null; onSelect?: (id: string | null) => void; columns?: 1 | 2; maxCount?: number; variant?: "bar" | "dot"; colorForId?: (id: string) => string }
 export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSelect, color = "var(--kpc-info)", area = true }: AdminSeriesChartProps): React.ReactElement {
@@ -17,7 +18,7 @@ export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSele
       <polyline fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={coordinates.map(p => p.x + "," + p.y).join(" ")} />
       {coordinates.map((p, i) => <g key={p.id}><circle cx={p.x} cy={p.y} r={points.length > 30 ? 2 : 3} fill={color}><title>{p.tooltip}</title></circle>{(i === 0 || i === points.length - 1 || i % Math.ceil(points.length / 6) === 0) && <text x={p.x} y="195" textAnchor={i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"} fontSize="10" fill="var(--kpc-muted)">{p.label}</text>}</g>)}
     </svg> : <div className="tw:relative tw:pl-10"><div aria-hidden="true" className="tw:pointer-events-none tw:absolute tw:inset-x-0 tw:top-[12px] tw:h-40 tw:pl-10">
-      {[1, 0.5, 0].map(fraction => <div key={fraction} className="tw:absolute tw:right-0 tw:left-10 tw:border-0 tw:border-t tw:border-dashed tw:border-(--kpc-line)" style={{ top: (1 - fraction) * 160 }}><span className="tw:absolute tw:-top-2 tw:right-full tw:mr-(--layout-control-gap) tw:text-[10px] tw:text-(--kpc-muted)">{(maximum * fraction).toLocaleString("ko-KR", { maximumFractionDigits: 1, notation: "compact" })}</span></div>)}
+      {[1, 0.5, 0].map(fraction => <div key={fraction} className="tw:absolute tw:right-0 tw:left-10 tw:border-0 tw:border-t tw:border-dashed tw:border-(--kpc-line)" style={{ top: (1 - fraction) * 160 }}><span className="tw:absolute tw:-top-2 tw:right-full tw:mr-(--layout-control-gap) tw:text-[10px] tw:whitespace-nowrap tw:text-(--kpc-muted)">{(maximum * fraction).toLocaleString("ko-KR", { maximumFractionDigits: 1, notation: "compact" })}</span></div>)}
     </div><div className="tw:relative tw:flex tw:h-52 tw:items-end" style={{ gap: `min(var(--layout-inline-gap), ${40 / Math.max(1, points.length)}%)` }}>
       {points.map((point, i) => {
         const content = <><span className="tw:mx-auto tw:block tw:w-full tw:max-w-7 tw:rounded-t-md" style={{ height: point.value === 0 ? 0 : Math.max(2, point.value / maximum * 160), background: selectedId === point.id ? color : `linear-gradient(to top, color-mix(in srgb, ${color} 65%, var(--kpc-card)), ${color})` }} /><span className="tw:relative tw:mt-(--layout-control-gap) tw:block tw:h-7 tw:whitespace-nowrap tw:text-[10px] tw:font-normal tw:text-(--kpc-muted)"><span className={"tw:absolute " + (i === 0 ? "tw:left-0" : i === points.length - 1 ? "tw:right-0" : "tw:left-1/2 tw:-translate-x-1/2")}>{i === 0 || i === points.length - 1 || i % Math.ceil(points.length / 6) === 0 ? point.label : ""}</span></span></>;
@@ -25,7 +26,7 @@ export function AdminSeriesChart({ label, points, kind, unit, selectedId, onSele
         return onSelect ? <Button key={point.id} className={classes + " tw:items-stretch tw:rounded-md"} aria-label={point.tooltip} title={point.tooltip} aria-pressed={selectedId === point.id} onClick={() => onSelect(selectedId === point.id ? null : point.id)}>{content}</Button> : <div key={point.id} className={classes} title={point.tooltip}>{content}</div>;
       })}
     </div></div>}
-    <details className="tw:mt-(--layout-section-gap) tw:text-[11px]"><summary className="tw:cursor-pointer tw:text-(--kpc-secondary)">데이터 표 보기</summary><div className="tw:mt-(--layout-control-gap) tw:max-h-60 tw:overflow-auto"><table className="tw:w-full tw:border-collapse"><caption className="tw:sr-only">{label}의 정확한 수치</caption><thead><tr><th scope="col" className="tw:p-(--layout-control-gap) tw:text-left">기간</th><th scope="col" className="tw:p-(--layout-control-gap) tw:text-right">{unit}</th></tr></thead><tbody>{points.map((p) => <tr key={p.id}><th scope="row" className="tw:p-(--layout-control-gap) tw:text-left tw:font-normal">{p.label}</th><td className="tw:p-(--layout-control-gap) tw:text-right tw:tabular-nums">{p.value.toLocaleString("ko-KR")}</td></tr>)}</tbody></table></div></details>
+    <AdminChartDataTable label={label} points={points} unit={unit} />
   </figure>;
 }
 interface AdminStackedBarProps { label: string; segments: readonly { id: string; label: string; count: number; color: string }[]; compact?: boolean }
