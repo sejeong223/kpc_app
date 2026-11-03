@@ -16,6 +16,11 @@
   - 파일 종류: `DadamSelect size="small"`(32px, 폭 120px). 검색: `DadamInput size="small"`. 체크박스: `DadamCheckbox`.
 - Fluent `Avatar`는 22px 크기가 없어 24px를 썼다.
 
+## Review Fixes (2026-11-03, 완료 후 사용자 확인 반영)
+- **"검토자 추가"를 누르면 페이지가 위로 스크롤되던 문제**: Popover가 열린 직후 위치 계산 전(화면 위쪽)에 Fluent 자동 포커스와 검색칸 `autoFocus`가 포커스를 옮겨 브라우저가 그 위치로 스크롤했다.
+  → `Popover`에 `unstable_disableAutoFocus`, 검색칸 `autoFocus` 삭제, `open`이 true가 된 다음 프레임에 `searchInput.current?.focus({ preventScroll: true })`(`useEffect` + `requestAnimationFrame`, 정리 시 `cancelAnimationFrame`). 열리면 바로 검색 입력 가능한 동작은 유지. 아래 I03-6은 이 내용으로 갱신되었다.
+- 주의: `unstable_` 접두 prop은 Fluent 업데이트 때 바뀔 수 있으므로 업그레이드 후 다시 확인한다.
+
 ## Implementation
 
 ### I01. RfpUploadZone
@@ -59,7 +64,7 @@
   3. 칩 영역과 버튼은 한 줄 `flex-wrap`, gap 6px.
   4. PopoverSurface(`aria-label="검토자 선택"`): 폭 320px, padding 6px, radius 12px. 안: 그룹 제목 "검토 담당자 지정 · 여러 명 가능"(10px 850 `--kpc-muted`, padding 8px 9px 4px) → 검색 Input(아이콘, margin 0 4px 6px) → 목록(max-height 300px, overflow auto).
   5. 목록 행(레퍼런스 `.pop .it.rv-it`): `label` 요소 전체가 클릭 영역, `display:flex; align-items:center; gap:8px; padding:8px 9px; border-radius:8px`, hover 배경 `#f4f5f7`, 선택 시 배경 `--kpc-brand-soft`. 내용: Fluent `Checkbox`(라벨 없이, `aria-label="{이름} 검토자 선택"`) → Avatar 22 → 텍스트 블록(`flex:1; min-width:0`): 1행 `<b>{이름}</b> <span meta>{직급}</span>`, 2행 meta `{부서}`(말줄임). 20명 도달 시 미선택 행 disabled(체크박스 disabled + 행 `opacity:.5`).
-  6. 닫힐 때 검색어 초기화·`autoFocus`·`filterReviewerCandidates` 사용·props 계약 유지.
+  6. 닫힐 때 검색어 초기화·`filterReviewerCandidates` 사용·props 계약 유지. 열릴 때 검색칸 포커스는 `autoFocus` 대신 `unstable_disableAutoFocus` + `focus({ preventScroll: true })`(Review Fixes).
 
 ## Acceptance Criteria
 - [x] 세 부품이 결정 D01 표의 크기·모양을 따르고 빨강 계열 색이 없다(`git grep -n -i "d7192f\|c91c2b\|fff0f2" components/rfp` 결과 없음).
@@ -89,4 +94,4 @@ Task: T02-parts-design
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 4bf76db (Review Fixes는 별도 커밋)

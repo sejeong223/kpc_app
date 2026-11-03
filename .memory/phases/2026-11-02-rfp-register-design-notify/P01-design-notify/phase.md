@@ -3,12 +3,12 @@
 ## Tasks
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| T01 | `pending` | 앱 공통 알림(AppToaster·useAppToast) + 레이아웃 1줄 연결 | [T01](./T01-app-toast.md) |
-| T02 | `pending` | 드롭존·파일 목록·검토자 선택 부품을 레퍼런스 모양으로 | [T02](./T02-parts-design.md) |
-| T03 | `pending` | 등록 화면 폼 디자인 + 알림 4종 연결 + 화면 문구 정리 | [T03](./T03-page-design-notify.md) |
+| T01 | `done ✅` | 앱 공통 알림(AppToaster·useAppToast) + 레이아웃 1줄 연결 | [T01](./T01-app-toast.md) |
+| T02 | `done ✅` | 드롭존·파일 목록·검토자 선택 부품을 레퍼런스 모양으로 | [T02](./T02-parts-design.md) |
+| T03 | `done ✅` | 등록 화면 폼 디자인 + 알림 4종 연결 + 화면 문구 정리 | [T03](./T03-page-design-notify.md) |
 
 ## Progress
-- done: 0/3 (active: T01)
+- done: 3/3 (완료)
 
 ## Phase Rules
 - 브라우저 검증 제외([정책](../../../decisions/2026-10-30-task-validation-policy.md)), `tests/` 폴더·테스트 파일 작성 제외. 검증은 `npm.cmd run typecheck`·`npm.cmd run lint`·`npm.cmd run build` + Task별 동작 검토 포인트(코드 확인).

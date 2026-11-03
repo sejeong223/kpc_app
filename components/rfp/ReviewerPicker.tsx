@@ -2,7 +2,7 @@
 
 import { Avatar, Popover, PopoverSurface, PopoverTrigger } from "@fluentui/react-components";
 import { Add12Regular, Dismiss12Regular, Search16Regular } from "@fluentui/react-icons";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Button from "@/components/common/Button";
 import { DadamCheckbox, DadamInput } from "@/components/ui/DadamControls";
@@ -25,6 +25,13 @@ export default function ReviewerPicker({ selected, disabled, onToggle, onRemove,
   const rows = useMemo(() => filterReviewerCandidates(pool, query), [pool, query]);
   const selectedIds = new Set(selected.map((p) => p.id));
   const full = selected.length >= RFP_REVIEWER_MAX;
+  const searchInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => searchInput.current?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
 
   return <div className="tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-1.5">
     {selected.length > 0 && <ul aria-label="선택한 검토자" className="tw:m-0 tw:flex tw:list-none tw:flex-wrap tw:gap-1.5 tw:p-0">
@@ -36,14 +43,15 @@ export default function ReviewerPicker({ selected, disabled, onToggle, onRemove,
         </Button>
       </li>)}
     </ul>}
-    <Popover open={open} trapFocus positioning={{ position: "below", align: "start", offset: 6 }}
+    {/* 열린 직후엔 위치 계산 전이라 기본 자동 포커스가 페이지를 위로 스크롤한다. 끄고 preventScroll로 직접 포커스한다. */}
+    <Popover open={open} trapFocus unstable_disableAutoFocus positioning={{ position: "below", align: "start", offset: 6 }}
       onOpenChange={(_, data) => { setOpen(data.open); if (!data.open) setQuery(""); }}>
       <PopoverTrigger disableButtonEnhancement>
         <Button className="tw:h-(--dadam-control-height-compact) tw:text-[12px]" disabled={disabled}><Add12Regular aria-hidden="true" />검토자 추가</Button>
       </PopoverTrigger>
       <PopoverSurface aria-label="검토자 선택" className="tw:flex tw:w-[320px] tw:max-w-[calc(100vw-32px)] tw:flex-col tw:rounded-[12px] tw:p-1.5">
         <p className="tw:m-0 tw:px-[9px] tw:pt-2 tw:pb-1 tw:text-[10px] tw:font-black tw:text-(--kpc-muted)">검토 담당자 지정 · 여러 명 가능</p>
-        <DadamInput autoFocus size="small" className="tw:mx-1 tw:mb-1.5" contentBefore={<Search16Regular />} placeholder="이름 · 부서 검색" aria-label="검토자 검색" value={query} onChange={(_, data) => setQuery(data.value)} />
+        <DadamInput ref={searchInput} size="small" className="tw:mx-1 tw:mb-1.5" contentBefore={<Search16Regular />} placeholder="이름 · 부서 검색" aria-label="검토자 검색" value={query} onChange={(_, data) => setQuery(data.value)} />
         <div className="tw:flex tw:max-h-[300px] tw:flex-col tw:overflow-y-auto">
           {rows.length ? rows.map((c) => {
             const checked = selectedIds.has(c.id);

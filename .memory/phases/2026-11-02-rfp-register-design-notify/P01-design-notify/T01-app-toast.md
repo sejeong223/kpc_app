@@ -3,11 +3,18 @@
 ## Status: done
 
 ## Goal
-어느 화면에서든 `useAppToast().notify(message, intent)` 한 줄로 레퍼런스 모양(아래 가운데, 어두운 배경, 약 2.2초)의 알림을 띄울 수 있게 공통 Toaster를 만들고 인증 레이아웃에 한 번만 둔다. RFP 등록 화면(T03)과 이후 화면이 같은 알림을 재사용하기 위함이다.
+어느 화면에서든 `useAppToast().notify(message, intent)` 한 줄로 레퍼런스 모양(본문 영역 아래 가운데, 글자 길이에 맞춘 폭, 어두운 배경, 약 2.2초)의 알림을 띄울 수 있게 공통 Toaster를 만들고 인증 레이아웃에 한 번만 둔다. RFP 등록 화면(T03)과 이후 화면이 같은 알림을 재사용하기 위함이다.
 
 ## Decision Summary
 - D02: 앱 공통 알림, Fluent `Toaster` + 공용 훅, 레퍼런스 `.toast` 모양.
 - 기존 `components/profile/token/TokenDialogs.tsx`의 Toaster(자체 `toasterId`, bottom-end, 3.5초)는 변경하지 않는다. `useToastController(toasterId)`는 같은 id의 Toaster로만 보내므로 서로 섞이지 않는다.
+
+## Review Fixes (2026-11-03, 완료 후 사용자 확인 반영)
+사용자가 화면에서 확인한 뒤 요청한 수정. 아래 I01 본문은 이 내용으로 갱신되었다.
+- **알림 폭을 글자 길이에 맞춤**: Fluent `Toaster` 루트가 `width: 292px`로 고정되어 짧은 문구도 292px 상자에 왼쪽 정렬로 보였다. 레퍼런스 `.toast`는 폭 지정 없이 `translateX(-50%)`로 글자 길이만큼만 차지한다.
+  → `toaster`에 `width: "max-content"`, `toast`에 `width: "fit-content"`·`marginLeft/Right: "auto"`·`maxWidth: "100%"`.
+- **본문(사이드바 제외) 가운데에 표시**: 초기 설계의 "뷰포트 가운데"를 정정. Toaster가 body 포털이라 `--nav-sidebar-width`를 읽을 수 없으므로, `AppShell`의 `#main-content` 위치를 측정해 `offset.horizontal`로 넘긴다(`useMainCenterOffset`).
+- 관련 커밋: (리뷰 수정 커밋에 포함)
 
 ## Implementation
 
@@ -25,10 +32,12 @@ export function useAppToast(): { notify(message: string, intent?: AppToastIntent
 ```
 - `AppToaster`:
   ```tsx
-  <Toaster toasterId={APP_TOASTER_ID} position="bottom" offset={{ vertical: 64 }} timeout={2200} pauseOnHover className={styles.toaster} />
+  const horizontal = useMainCenterOffset();
+  <Toaster toasterId={APP_TOASTER_ID} position="bottom" offset={{ vertical: 64, horizontal }} timeout={2200} pauseOnHover className={styles.toaster} />
   ```
-  - `position="bottom"`은 뷰포트 가로 가운데. 레퍼런스는 사이드바를 뺀 본문 가운데지만, Toaster가 `document.body` 포털이라 `AppShell` 루트에만 정의된 `--nav-sidebar-width`를 읽을 수 없다 → **뷰포트 가운데로 한다(설계 기본값).** 사이드바 폭만큼 보정하는 작업은 하지 않는다.
-  - styles.toaster: `{ zIndex: 4400, maxWidth: "calc(100vw - 32px)" }` (TokenDialogs와 같은 z-index 층).
+  - `position="bottom"`은 `left: calc(50% + {horizontal}px)` + `translateX(-50%)`. 레퍼런스처럼 **사이드바를 뺀 본문 가운데**에 두기 위해 `horizontal`을 측정한다(Review Fixes에서 정정 — 초기엔 뷰포트 가운데).
+  - `useMainCenterOffset()`(파일 내부 훅): `document.getElementById("main-content")`(AppShell의 `<main>`)의 `getBoundingClientRect()`로 `rect.left + rect.width / 2 - document.documentElement.clientWidth / 2`를 계산. `ResizeObserver`(사이드바 접기·펼치기 → 본문 폭 변화, 연결 직후 1회 호출로 초기값도 계산) + `window` `resize`로 갱신. `#main-content`가 없으면 0(뷰포트 가운데).
+  - styles.toaster: `{ zIndex: 4400, width: "max-content", maxWidth: "calc(100vw - 32px)" }` (TokenDialogs와 같은 z-index 층). Fluent 기본 `width: 292px`를 풀어 글자 길이에 맞춘다(Griffel reset 스타일보다 atomic className이 우선).
 - `useAppToast`: `const { dispatchToast } = useToastController(APP_TOASTER_ID)`; `notify`를 `useCallback`으로 고정해 반환(의존성 배열 `[dispatchToast, styles]`).
   ```tsx
   dispatchToast(
@@ -41,7 +50,7 @@ export function useAppToast(): { notify(message: string, intent?: AppToastIntent
   );
   ```
 - `makeStyles` (레퍼런스 `.toast`):
-  - `toast`: `backgroundColor: "#1d1e22"`, `color: "#ffffff"`, `borderRadius: "10px"`, `padding: "10px 16px"`, `boxShadow: "0 18px 48px rgba(16,17,20,.16), 0 2px 6px rgba(16,17,20,.06)"`, `width: "auto"`, `maxWidth: "calc(100vw - 32px)"`, `boxSizing: "border-box"`, `fontFamily: tokens.fontFamilyBase`.
+  - `toast`: `backgroundColor: "#1d1e22"`, `color: "#ffffff"`, `borderRadius: "10px"`, `padding: "10px 16px"`, `boxShadow: "0 18px 48px rgba(16,17,20,.16), 0 2px 6px rgba(16,17,20,.06)"`, `width: "fit-content"`, `maxWidth: "100%"`, `marginLeft: "auto"`, `marginRight: "auto"`(여러 개가 쌓여도 각자 폭으로 가운데 정렬), `boxSizing: "border-box"`, `fontFamily: tokens.fontFamilyBase`.
   - `title`: `color: "#ffffff"`, `fontSize: "12px"`, `fontWeight: 650`, `lineHeight: "18px"`, `overflowWrap: "anywhere"`.
   - `icon`: `color: "#ffffff"`; `iconError`: `color: "#ffd1d7"`(레퍼런스 `.toast-undo` 글자색 계열, 어두운 배경에서 대비 확보).
   - Toast 기본 흰 배경을 이기도록 반드시 `Toast`/`ToastTitle`의 `className`으로 넘긴다(Tailwind 클래스 금지 — Phase Rules).
@@ -78,6 +87,8 @@ export function useAppToast(): { notify(message: string, intent?: AppToastIntent
 - `APP_TOASTER_ID`가 TokenDialogs의 `useId()` 값과 겹치지 않는다(문자열 고정 "app-toaster").
 - `notify`의 기본 intent가 success, error일 때 오류 아이콘.
 - 이번 Task에서 `useAppToast`를 호출하는 곳은 없다(T03에서 연결). 미사용 export는 lint 오류가 아니다.
+- (Review Fixes) 짧은 문구의 알림 상자가 글자 길이만큼만 차지하고, 사이드바를 접거나 펼쳐도 본문 가운데에 뜬다 — 브라우저 육안 확인 항목.
+- 검증 보조 스크립트(I02-b)는 Git Bash에서 역슬래시가 사라져 `false`가 나올 수 있다. 그때는 `cat .next/static/chunks/*.css | grep -oF 'md\:grid-cols-2'`처럼 고정 문자열로 확인한다.
 
 ## Acceptance Criteria
 - [x] `components/ui/AppToast.tsx`가 생기고 레이아웃에 `AppToaster`가 한 번 렌더된다.
@@ -108,4 +119,4 @@ Task: T01-app-toast
 ## Progress
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: pending
+- commit: 399a0c6 (Review Fixes는 별도 커밋)
