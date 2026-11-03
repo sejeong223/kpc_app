@@ -157,7 +157,7 @@ export const PreparedFileOperationSchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("add-files"), category: z.enum(["proposal", "related"]), files: z.array(PreparedUploadSchema).min(1).max(FILE_LIMITS.currentMaterials) }),
   ...sharedOperations,
 ]) satisfies z.ZodType<PreparedFileOperation>;
-const mutationFields = { projectId: FileIdSchema, expectedRevision: FileCounterSchema, expectedRound: FileCounterSchema };
-export const FileMutationSchema = z.strictObject({ ...mutationFields, operation: FileOperationSchema }) satisfies z.ZodType<FileMutation>;
+const mutationFields = { projectId: FileIdSchema, expectedRevision: FileCounterSchema, expectedRound: FileCounterSchema, expectedWorkspaceRevision: FileCounterSchema.optional() };
+export const FileMutationSchema = z.strictObject({ ...mutationFields, operation: FileOperationSchema }).refine(v => v.operation.type !== "start-round" || v.expectedWorkspaceRevision !== undefined, "제작 회차 버전을 확인해 주세요.") satisfies z.ZodType<FileMutation>;
 export const PreparedFileMutationSchema = z.strictObject({ ...mutationFields, operation: PreparedFileOperationSchema }) satisfies z.ZodType<PreparedFileMutation>;
 export const FileOriginalRequestSchema = z.strictObject({ projectId: FileIdSchema, round: FileCounterSchema, versionId: FileIdSchema }) satisfies z.ZodType<FileOriginalRequest>;

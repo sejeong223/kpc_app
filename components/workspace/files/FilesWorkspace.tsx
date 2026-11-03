@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
-import { useFileCommand, useFileProjects, useFileSelection, useFileWorkspace, useSelectFileProject } from "@/hooks/workspace/use-workspace-files";
+import { useFileCommand, useFileWorkspace } from "@/hooks/workspace/use-workspace-files";
+import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
 import { useFileDraftGuard } from "@/hooks/workspace/use-file-draft-guard";
 import { DadamButton } from "@/components/ui/DadamControls";
 import ModalFrame from "@/components/ui/ModalFrame";
@@ -16,33 +17,22 @@ import FileDiscardDialog from "./FileDiscardDialog";
 import FileUndoNotice from "./FileUndoNotice";
 import FilePreviewDialog from "./FilePreviewDialog";
 import ProjectSelector from "@/components/workspace/ProjectSelector";
+import { useProjectRound } from "@/hooks/workspace/use-project-round";
+import ProjectRoundDialog from "../shared/ProjectRoundDialog";
 import FileRoundSection from "./FileRoundSection";
 
 export default function FilesWorkspace({ onReconnect }: { onReconnect(): void }): React.ReactElement {
-  const projects = useFileProjects(), selection = useFileSelection(), choose = useSelectFileProject();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const firstId = projects.data?.[0]?.id;
-  const restoredId = selection.data && projects.data?.some(project => project.id === selection.data) ? selection.data : null;
-  // 저장된 마지막 선택은 최초 복원에만 사용한다. 다른 탭의 선택으로 편집 중인 프로젝트를 바꾸지 않는다.
-  if (selectedId === null && restoredId) setSelectedId(restoredId);
-  const validSelection = selectedId && projects.data?.some(project => project.id === selectedId) ? selectedId : restoredId;
-  const { mutate, isIdle } = choose;
-  useEffect(() => {
-    if (projects.isSuccess && selection.isSuccess && !validSelection && firstId && isIdle) mutate(firstId, { onSuccess: () => setSelectedId(firstId) });
-  }, [projects.isSuccess, selection.isSuccess, validSelection, firstId, isIdle, mutate]);
-  const error = projects.error ?? selection.error;
-  if (error) return <WorkspacePage title="파일 업로드"><AdminAsyncState state="error" message={error.message} onRetry={onReconnect} /></WorkspacePage>;
-  if (projects.isPending || selection.isPending) return <WorkspacePage title="파일 업로드"><AdminAsyncState state="loading" /></WorkspacePage>;
-  if (!projects.data?.length) return <WorkspacePage title="파일 업로드"><AdminAsyncState state="empty" message="참여 중인 프로젝트가 없습니다." /></WorkspacePage>;
-  const selectProject = (id: string) => choose.mutate(id, { onSuccess: () => setSelectedId(id) });
-  const selector = <ProjectSelector projects={projects.data} value={validSelection} disabled={choose.isPending} onChange={selectProject} />;
-  if (!validSelection || choose.isPending) return <WorkspacePage title="파일 업로드" leading={selector}>
-    {choose.error ? <AdminAsyncState state="error" message={choose.error.message} onRetry={() => choose.reset()} /> : <AdminAsyncState state="loading" message="프로젝트를 선택하는 중입니다." />}
-  </WorkspacePage>;
-  return <FileProjectWorkspace key={validSelection} projectId={validSelection} projects={projects.data} onSelect={selectProject} onReconnect={onReconnect} selectionError={choose.error?.message} />;
+  const {selection,projects,pending,error,choose}=useWorkspaceSelection();
+  const selectProject=(id:string)=>{void choose({projectId:id,sectionId:null,slideId:null,snapshotId:null}).catch(()=>{});};
+  const selector=<ProjectSelector projects={projects} value={selection.projectId} disabled={pending} onChange={selectProject}/>;
+  if(error)return <WorkspacePage title="파일 업로드" leading={selector}><AdminAsyncState state="error" message={error.message} onRetry={onReconnect}/></WorkspacePage>;
+  if(pending)return <WorkspacePage title="파일 업로드" leading={selector}><AdminAsyncState state="loading"/></WorkspacePage>;
+  if(!projects.length)return <WorkspacePage title="파일 업로드"><AdminAsyncState state="empty" message="참여 중인 프로젝트가 없습니다."/></WorkspacePage>;
+  if(!selection.projectId)return <WorkspacePage title="파일 업로드" leading={selector}><AdminAsyncState state="empty" message="프로젝트를 선택해 주세요."/></WorkspacePage>;
+  return <FileProjectWorkspace key={selection.projectId} projectId={selection.projectId} projects={projects} onSelect={selectProject} onReconnect={onReconnect}/>;
 }
 interface FileProjectWorkspaceProps { projectId: string; projects: WorkspaceProject[]; onSelect(id: string): void; onReconnect(): void; selectionError?: string }
-interface ActionConfirmation { operation: Extract<FileOperation, { type: "remove" | "start-round" }>; revision: number; round: number; label: string }
+interface ActionConfirmation { operation: Extract<FileOperation, { type: "remove" | "start-round" }>; revision: number; round: number; workspaceRevision?: number; label: string }
 function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, selectionError }: FileProjectWorkspaceProps): React.ReactElement {
   const query = useFileWorkspace(projectId);
   const command = useFileCommand();
@@ -59,6 +49,8 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const closeDraft = useCallback(() => { setDialog(null); setDirty(false); setLocalError(null); reset(); }, [reset]);
   const guard = useFileDraftGuard({ dirty, busy: command.isPending, onDiscard: closeDraft });
+  const {choose}=useWorkspaceSelection();
+  const roundFlow=useProjectRound(projectId,async()=>{closeDraft();setRemoval(null);setPreview(null);await choose({projectId,sectionId:null,slideId:null,snapshotId:null});});
   const expireUndo = useCallback(() => setRemoval(null), []);
   const data = query.data;
   const previewResource = !query.error && preview ? data?.rounds.find(round => round.number === preview.round)?.resources.find(resource => resource.version.id === preview.resource.version.id) : null;
@@ -79,14 +71,14 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
     setDialog({ type: "edit", projectId, baseRevision: view.revision, baseRound: view.currentRound, source: latest,
       copyToCurrent: latest.version.createdInRound < view.currentRound || latest.currentVersionId === null });
   }
-  async function execute(operation: FileOperation, base?: { revision: number; round: number }): Promise<void> {
+  async function execute(operation: FileOperation, base?: { revision: number; round: number; workspaceRevision?: number }): Promise<void> {
     if (running.current) return;
     if (!data || query.error) {
       const failure = new WorkspaceFileError("CONFLICT", "최신 자료를 다시 불러온 뒤 저장해 주세요."); setLocalError(failure); throw failure;
     }
     running.current = true; setLocalError(null); setNotice("");
     try {
-      const result = await command.mutateAsync({ projectId, expectedRevision: base?.revision ?? data.revision, expectedRound: base?.round ?? data.currentRound, operation });
+      const result = await command.mutateAsync({ projectId, expectedRevision: base?.revision ?? data.revision, expectedRound: base?.round ?? data.currentRound, ...(operation.type === "start-round" ? { expectedWorkspaceRevision: base?.workspaceRevision ?? data.workspaceRevision } : {}), operation });
       if (!mounted.current) return;
       if (operation.type === "remove") setRemoval(result.state.removals.find(item => item.id === result.removalId) ?? null);
       else if (operation.type === "undo-remove" || operation.type === "start-round") setRemoval(null);
@@ -115,12 +107,14 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
       settings: { kind: "web", priority: "normal", instruction: value.instruction }, web: { type: "web", url: value.url, period: value.period } });
     return submit({ type: "add-web", ...value });
   }
-  const selector = <ProjectSelector projects={projects} value={projectId} disabled={busy} onChange={id => { if (id !== projectId) guard.request(() => onSelect(id)); }} />;
+  const selector = <ProjectSelector projects={projects} value={projectId} disabled={busy} onChange={id => { if (id !== projectId) onSelect(id); }} />;
   return <WorkspacePage title="파일 업로드" leading={selector} actions={data && <>
     <span className="tw:text-xs tw:text-(--kpc-secondary)">현재 자료 <b>{data.currentCount}</b> / 30개 · 파일당 50MB</span>
     <progress value={data.currentCount} max={30} aria-label="현재 회차 자료 사용량" className="tw:h-1.5 tw:w-20 tw:accent-(--dadam-accent)" />
-    {data.canStartRound && <DadamButton disabled={busy || query.isFetching || Boolean(query.error)} onClick={() => setConfirmation({ operation: { type: "start-round" }, revision: data.revision, round: data.currentRound, label: `${data.currentRound + 1}차 자료함` })}>다음 회차 시작</DadamButton>}
+    {data.canStartRound && <DadamButton disabled={busy || query.isFetching || Boolean(query.error)} onClick={() => roundFlow.open("start-round")}>다음 회차 시작</DadamButton>}
   </>}>
+    {roundFlow.dialog&&<ProjectRoundDialog key={roundFlow.dialog.view.state.revision} open mode={roundFlow.dialog.mode} view={roundFlow.dialog.view} busy={roundFlow.busy} error={roundFlow.error} onClose={roundFlow.close} onConfirm={input=>{void roundFlow.confirm(input).catch(()=>{});}}/>}
+    {!roundFlow.dialog&&roundFlow.error&&<p role="alert">{roundFlow.error}</p>}
     {selectionError && <p role="alert" className="tw:m-0 tw:text-red-700">{selectionError}</p>}
     {!dialog && !confirmation && error && <div role="alert" className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap) tw:text-red-700">{error.message}<DadamButton disabled={busy} onClick={() => { reset(); setLocalError(null); void query.refetch(); }}>최신 자료 다시 불러오기</DadamButton></div>}
     {notice && <p role="status" className="tw:m-0 tw:text-xs tw:text-(--dadam-accent-ink)">{notice}</p>}
@@ -139,7 +133,7 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
       ? <FileSettingsDialog {...dialogProps} resource={dialog.source} copyToCurrent={dialog.copyToCurrent} onSubmit={settings => submit({ type: "edit", assetId: dialog.source.asset.id, sourceVersionId: dialog.source.version.id, settings, web: null })} />
       : <WebReferenceDialog {...dialogProps} initial={{ url: dialog.source.version.source.url, period: dialog.source.version.source.period, instruction: dialog.source.version.instruction }} copyToCurrent={dialog.copyToCurrent} onSubmit={saveWeb} />)}
     {confirmation && <ModalFrame open title={confirmation.operation.type === "remove" ? "자료를 삭제할까요?" : "다음 회차를 시작할까요?"} subtitle={confirmation.label} contentKey={confirmation.operation.type} onClose={() => { if (!busy) { setConfirmation(null); reset(); } }}
-      footer={<><span className="tw:mr-auto" /><DadamButton disabled={busy} onClick={() => { setConfirmation(null); reset(); }}>취소</DadamButton><DadamButton appearance="primary" disabled={busy} onClick={() => { void execute(confirmation.operation, { revision: confirmation.revision, round: confirmation.round }).catch(() => {}); }}>{busy ? "저장 중…" : "확인"}</DadamButton></>}>
+      footer={<><span className="tw:mr-auto" /><DadamButton disabled={busy} onClick={() => { setConfirmation(null); reset(); }}>취소</DadamButton><DadamButton appearance="primary" disabled={busy} onClick={() => { void execute(confirmation.operation, { revision: confirmation.revision, round: confirmation.round, workspaceRevision: confirmation.workspaceRevision }).catch(() => {}); }}>{busy ? "저장 중…" : "확인"}</DadamButton></>}>
       <p>{confirmation.operation.type === "remove" ? "현재 회차에서만 제외됩니다. 이전 회차의 보관본은 유지되며, 삭제 후 15초 동안 되돌릴 수 있습니다." : "이전 회차를 읽기 전용으로 보관하고 현재 자료와 참조 순서를 새 회차에 계승합니다."}</p>
       {error && <p role="alert" className="tw:m-0 tw:text-red-700">{error.message} 취소 후 최신 자료를 다시 확인해 주세요.</p>}
     </ModalFrame>}

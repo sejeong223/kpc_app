@@ -38,16 +38,16 @@ function referencedVersionIds(state: FileProjectState): Set<string> {
   ]);
 }
 
-function retainReferencedVersions(state: FileProjectState): void {
-  const retained = referencedVersionIds(state);
+function retainReferencedVersions(state: FileProjectState, protectedVersions: readonly string[] = []): void {
+  const retained = new Set([...referencedVersionIds(state), ...protectedVersions]);
   state.versions = state.versions.filter(version => retained.has(version.id));
   const assets = new Set(state.versions.map(version => version.assetId));
   state.assets = state.assets.filter(asset => assets.has(asset.id));
 }
 
-export function collectRetainedBlobIds(state: FileProjectState): ReadonlySet<string> {
+export function collectRetainedBlobIds(state: FileProjectState, protectedVersions: readonly string[] = []): ReadonlySet<string> {
   // 만료된 삭제 기록은 전이에서 정리한다. 여기서는 전달된 보존 참조를 빠짐없이 보호한다.
-  const retained = referencedVersionIds(state);
+  const retained = new Set([...referencedVersionIds(state), ...protectedVersions]);
   return new Set(state.versions.flatMap(version => retained.has(version.id) && version.source.type === "file" ? [version.source.blobId] : []));
 }
 
@@ -72,7 +72,7 @@ function assertProjectManager(context: FileCommandContext): void {
   }
 }
 
-export function applyFileMutation(source: FileProjectState, input: PreparedFileMutation, context: FileCommandContext): FileReceipt {
+export function applyFileMutation(source: FileProjectState, input: PreparedFileMutation, context: FileCommandContext, protectedVersions: readonly string[] = []): FileReceipt {
   const checked = checkedContext(context);
   const stored = FileProjectStateSchema.safeParse(source);
   if (!stored.success) throw new WorkspaceFileError("STORAGE", "저장된 자료 정보가 올바르지 않습니다.");
@@ -105,7 +105,7 @@ export function applyFileMutation(source: FileProjectState, input: PreparedFileM
     }
   }
   state.removals = state.removals.filter(removal => removal.round === state.currentRound && Date.parse(removal.expiresAt) > now);
-  retainReferencedVersions(state);
+  retainReferencedVersions(state, protectedVersions);
   const round = currentRoundOf(state);
   const createdAssetIds: string[] = [];
   let removalId: string | null = null;
@@ -206,22 +206,29 @@ export function applyFileMutation(source: FileProjectState, input: PreparedFileM
     }
     case "start-round": {
       assertProjectManager(checked);
-      if (state.currentRound === Number.MAX_SAFE_INTEGER) throw new WorkspaceFileError("LIMIT", "회차 한도에 도달했습니다.");
-      round.sealedAt = checked.now;
-      state.currentRound++;
-      state.rounds.push({ number: state.currentRound, createdAt: checked.now, createdBy: checked.identity.actor.id,
-        sealedAt: null, categoryOrder: [...round.categoryOrder], entries: round.entries.map(entry => ({ ...entry })) });
-      state.removals = [];
-      break;
+      return { state: advanceFileRound(state, checked), createdAssetIds, removalId };
     }
     case "reorder":
       assertProjectManager(checked);
       round.categoryOrder = [...operation.categoryOrder];
       break;
   }
-  retainReferencedVersions(state);
+  retainReferencedVersions(state, protectedVersions);
   state.revision++;
   const result = FileProjectStateSchema.safeParse(state);
   if (!result.success) throw new WorkspaceFileError("STORAGE", "자료 변경 결과를 검증하지 못했습니다.");
   return { state: result.data, createdAssetIds, removalId };
+}
+
+// 통합 작업 회차가 위임 권한을 확인한 뒤 사용하는 순수 전이다.
+export function advanceFileRound(source: FileProjectState, context: FileCommandContext): FileProjectState {
+  const checked = checkedContext(context), state = FileProjectStateSchema.parse(structuredClone(source));
+  if (state.projectId !== checked.project.id) throw new WorkspaceFileError("NOT_FOUND", "프로젝트가 다릅니다.");
+  if (state.currentRound === Number.MAX_SAFE_INTEGER || state.revision === Number.MAX_SAFE_INTEGER) throw new WorkspaceFileError("LIMIT", "회차 한도에 도달했습니다.");
+  const round = currentRoundOf(state);
+  round.sealedAt = checked.now;
+  state.currentRound++;
+  state.rounds.push({ number: state.currentRound, createdAt: checked.now, createdBy: checked.identity.actor.id, sealedAt: null, categoryOrder: [...round.categoryOrder], entries: round.entries.map(entry => ({ ...entry })) });
+  state.removals = []; state.revision++;
+  return FileProjectStateSchema.parse(state);
 }

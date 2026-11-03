@@ -57,6 +57,7 @@ async function readObject(node:Element,index:number,ctx:ReadContext,source:Templ
   const body=textBody(node),text=textValue(body),r=box(node,fallback),xf=transform(node)??(fallback?transform(fallback):undefined);
   let role:ObjectRole=['title','ctrTitle'].includes(phType)?'title':phType==='subTitle'?'sub':'body';
   const obj:TemplateObject={...r,id:`${ctx.path}#${index}`,name,kind:'unsupported',role:'keep',inferred:false,text,style:style(body,ctx,fallback,role,node),fill:color(one(node,NS.p,'spPr'),ctx,'transparent'),stroke:color(one(one(node,NS.p,'spPr'),NS.a,'ln'),ctx,'transparent'),geometry:all(node,NS.a,'prstGeom')[0]?.getAttribute('prst')??'rect',rotation:attrNumber(xf,'rot')/60000,cells:[],columnWidths:[],rowHeights:[],cellStyles:[],cellFills:[],imageData:'',imageWidth:0,imageHeight:0,crop:[0,0,0,0],reasons:[],notices:[],inherited:!transform(node)&&!!fallback,merged:false,index,source};
+  obj.shapeId=nv?.getAttribute('id')??'';
   if(r.w<=0||r.h<=0)obj.reasons.push('위치·크기를 확인할 수 없습니다. 레이아웃/마스터 상속이나 특수 좌표를 사용합니다.');
   if(obj.rotation!==0||readXmlBoolean(xf?.getAttribute('flipH'))||readXmlBoolean(xf?.getAttribute('flipV')))obj.reasons.push('회전/반전된 요소는 배치와 텍스트 기준이 달라 원본을 유지합니다.');
   if(readXmlBoolean(nv?.getAttribute('hidden')))obj.reasons.push('숨김 요소의 의도를 보존하기 위해 수정하지 않습니다.');

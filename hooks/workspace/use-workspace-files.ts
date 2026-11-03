@@ -40,9 +40,9 @@ export function useFileCommand() {
   return useMutation<FileReceipt, WorkspaceFileError, FileMutation>({ mutationKey: keys.mutation, retry: false, gcTime: 0,
     mutationFn: input => runtime.service.execute(input),
     onSuccess: async (_, input) => {
-      if (runtime.isActive()) await client.invalidateQueries({ queryKey: keys.project(input.projectId), exact: true });
+      if (runtime.isActive()) { if(runtime.onProjectChange)await runtime.onProjectChange(input.projectId);else await client.invalidateQueries({ queryKey: keys.project(input.projectId), exact: true }); }
     }, onError: async (error, input) => {
-      if (runtime.isActive() && error.code === "CONFLICT") await client.invalidateQueries({ queryKey: keys.project(input.projectId), exact: true });
+      if (runtime.isActive() && error.code === "CONFLICT") { if(runtime.onProjectChange)await runtime.onProjectChange(input.projectId);else await client.invalidateQueries({ queryKey: keys.project(input.projectId), exact: true }); }
     } });
 }
 export function useFileOriginal() {

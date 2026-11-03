@@ -1,5 +1,8 @@
 import { getAuditOperation } from "@/lib/admin/audit-operation";
 import { z } from "zod";
+import { canConsumeAsset, canConsumePrompt } from "@/lib/workspace/production/asset-policy";
+import { WorkspaceError } from "@/lib/workspace/production/errors";
+import type { AssetPin, WorkspaceAssetAccess, WorkspaceAssetChoice, WorkspaceAssetKind, WorkspaceAssetSource } from "@/types/workspace-production";
 import { PromptCommandSchema, PromptQuerySchema } from "@/lib/admin/prompts/schemas";
 import { applyPromptCommand, PROMPT_COMMAND_LABELS } from "@/lib/admin/prompts/commands";
 import { canReadPrompt, promptDetail, promptRevision, selectPromptSets } from "@/lib/admin/prompts/selectors";
@@ -47,6 +50,52 @@ export class MockAdminDataService implements AdminDataService {
   }
   subscribe = (listener: () => void): (() => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   getRevision = (): number => this.state.revision;
+  private workspaceSource(input: AdminActor, kind: WorkspaceAssetKind, id: string, revisionId: string | null, mode: "new" | "existing"): WorkspaceAssetSource {
+    const actor = this.actor(input); parse(z.enum(["prompt", "skill", "template"]), kind); parse(IdSchema, id); if (revisionId !== null) parse(IdSchema, revisionId);
+    parse(z.enum(["new", "existing"]), mode);
+    if (kind === "prompt") {
+      const record = this.state.promptSets.records.find(row => row.id === id);
+      if (!record) throw new WorkspaceError("ASSET_UNAVAILABLE", "프롬프트 원본을 확인할 수 없습니다. 다시 선택해 주세요.");
+      if (!canConsumePrompt(this.state, actor, record, mode)) throw new WorkspaceError("FORBIDDEN", "이 프롬프트 세트를 사용할 수 없습니다.");
+      const snapshot = this.state.promptSets.revisions.find(row => row.promptSetId === id && (revisionId === null ? row.revision === record.currentRevision : row.id === revisionId));
+      if (!snapshot) throw new WorkspaceError("ASSET_UNAVAILABLE", "프롬프트 버전을 확인할 수 없습니다. 다시 선택해 주세요.");
+      if (mode === "new" && snapshot.revision !== record.currentRevision) throw new WorkspaceError("CONFLICT", "프롬프트 버전이 변경되었습니다. 다시 선택해 주세요.");
+      return { choice: { kind, id, name: snapshot.name, revisionId: snapshot.id, revision: snapshot.revision, ownerDepartmentId: record.ownerDepartmentId, active: record.status === "active" && !record.deletedAt, hasOriginal: true }, snapshot: structuredClone(snapshot), bytes: null };
+    }
+    const record = this.state.assets.records.find(row => row.id === id && row.kind === kind);
+    if (!record) throw new WorkspaceError("ASSET_UNAVAILABLE", "자산 원본을 확인할 수 없습니다. 다시 선택해 주세요.");
+    if (!canConsumeAsset(this.state, actor, record, mode)) throw new WorkspaceError("FORBIDDEN", "이 자산을 사용할 수 없습니다.");
+    const snapshot = assetRevisions(this.state, record).find(row => revisionId === null ? row.revision === record.currentRevision : row.id === revisionId);
+    if (!snapshot) throw new WorkspaceError("ASSET_UNAVAILABLE", "자산 버전을 확인할 수 없습니다. 다시 선택해 주세요.");
+    if (mode === "new" && snapshot.revision !== record.currentRevision) throw new WorkspaceError("CONFLICT", "자산 버전이 변경되었습니다. 다시 선택해 주세요.");
+    let hasOriginal = true;
+    if (snapshot.kind === "template") try { this.files.getSource(snapshot.definition.fileRefId); } catch (error) { if (!(error instanceof AdminDataError) || error.code !== "NOT_FOUND") throw error; hasOriginal = false; }
+    return { choice: { kind, id, name: snapshot.name, revisionId: snapshot.id, revision: snapshot.revision, ownerDepartmentId: record.ownerDepartmentId, active: record.status === "active" && !record.deletedAt, hasOriginal }, snapshot: structuredClone(snapshot), bytes: null };
+  }
+  async listWorkspaceAssets(input: AdminActor, kind: WorkspaceAssetKind): Promise<WorkspaceAssetChoice[]> {
+    const actor = this.actor(input); parse(z.enum(["prompt", "skill", "template"]), kind);
+    const records = kind === "prompt" ? this.state.promptSets.records.filter(r => canConsumePrompt(this.state, actor, r, "new")) : this.state.assets.records.filter(r => r.kind === kind && canConsumeAsset(this.state, actor, r, "new"));
+    return records.map(record => this.workspaceSource(actor, kind, record.id, null, "new").choice);
+  }
+  async resolveWorkspaceAsset(input: AdminActor, kind: WorkspaceAssetKind, id: string, revisionId: string | null, mode: "new" | "existing"): Promise<WorkspaceAssetSource> {
+    const source = this.workspaceSource(input, kind, id, revisionId, mode);
+    if ("kind" in source.snapshot && source.snapshot.kind === "template") {
+      if (!source.choice.hasOriginal) throw new WorkspaceError("ASSET_UNAVAILABLE", "Template 원본을 확인할 수 없습니다. 다시 등록해 주세요.");
+      source.bytes = this.files.getSource(source.snapshot.definition.fileRefId).document.bytes.slice();
+    }
+    return source;
+  }
+  checkWorkspaceAsset(input: AdminActor, pin: AssetPin): WorkspaceAssetAccess {
+    try {
+      const source = this.workspaceSource(input, pin.kind, pin.assetId, pin.revisionId, "existing");
+      if (source.choice.revision !== pin.revision) return { status: "unavailable", reason: "적용 버전을 확인할 수 없습니다. 다시 선택해 주세요." };
+      return { status: "available", catalogRevision: this.state.revision };
+    } catch (error) {
+      if (error instanceof WorkspaceError) return { status: error.code === "FORBIDDEN" ? "forbidden" : "unavailable", reason: error.message };
+      if (error instanceof AdminDataError) return { status: "forbidden", reason: error.message };
+      throw error;
+    }
+  }
   // 미리보기 역할은 유지하되 편집된 자기 계정의 부서·표시 정보를 런타임에 반영한다.
   getCurrentActor(input: AdminActor): AdminActor {
     const user = this.state.users.find((row) => row.id === input.userId && !row.deletedAt);

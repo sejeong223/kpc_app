@@ -8,6 +8,7 @@ export const ROLE_LABEL:Record<ObjectRole,string>={title:'제목',sub:'리딩 �
 export interface Box {x:number;y:number;w:number;h:number}
 export interface TextStyle {face:string;size:number;bold:boolean;color:string;align:'left'|'center'|'right';lh:number;para:number;padV:number;padH:number}
 export interface TemplateObject extends Box {
+  shapeId?:string;
   id:string;name:string;kind:'text'|'shape'|'table'|'image'|'unsupported';role:ObjectRole;inferred:boolean;
   text:string;style:TextStyle;fill:string;stroke:string;geometry:string;rotation:number;
   cells:string[][];columnWidths:number[];rowHeights:number[];cellStyles:TextStyle[][];cellFills:string[][];

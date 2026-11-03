@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminScreenRouter from "@/components/admin/AdminScreenRouter";
 
-import CommentsWorkspace from "@/components/comments/CommentsWorkspace";
+import WorkspaceScreen from "@/components/workspace/WorkspaceScreen";
 import FilesScreen from "@/components/workspace/files/FilesScreen";
 import PreviewRoleBoundary from "@/components/profile/PreviewRoleBoundary";
 import { serverEnv } from "@/config/env";
@@ -21,8 +21,7 @@ export default async function WorkspaceScreenPage({
   const item = getSidebarItemByScreen(screen);
   if (!item) notFound();
 
-  // Only these empty preview pages bypass roles when auth is disabled.
-  // Keep real admin routes and requireRole's existing policy unchanged.
+  // 실제 관리자 경로는 기존 서버 역할 검사와 미리보기 역할 경계를 유지한다.
   if (serverEnv.authEnabled && item.requiredRole) {
     await requireRole(item.requiredRole, screen === "tokens" ? "/workspace/tokens" : item.href);
   }
@@ -34,7 +33,7 @@ export default async function WorkspaceScreenPage({
 
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
-      {screen === "files" ? <FilesScreen /> : screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
+      {screen === "files" ? <FilesScreen /> : screen === "write" || screen === "toc" || screen === "setup" ? <WorkspaceScreen screen={screen}/> : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
     </PreviewRoleBoundary>
   );
 }

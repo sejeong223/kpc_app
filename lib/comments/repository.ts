@@ -7,6 +7,7 @@ import { applyCommentCommand, CommentError, validateCommentSnapshot } from "./do
 import { createCommentSeed } from "./seed";
 
 export interface CommentRepository {
+  readExisting?(identity: CommentIdentity): Promise<CommentSnapshot|null>;
   load(identity: CommentIdentity): Promise<CommentSnapshot>;
   execute(identity: CommentIdentity, command: CommentCommand): Promise<CommentSnapshot>;
   close(): void;
@@ -28,6 +29,7 @@ function checkIdentity(identity: CommentIdentity): void {
 }
 
 export class IndexedDbCommentRepository implements CommentRepository {
+  private readonly archiveClosers=new Set<()=>void>();
   private connection: IDBDatabase | null = null;
   private opening: Promise<IDBDatabase> | null = null;
   private cancelOpen: (() => void) | null = null;
@@ -96,6 +98,7 @@ export class IndexedDbCommentRepository implements CommentRepository {
 
   close(): void {
     this.generation++;
+    this.archiveClosers.forEach(close=>close());this.archiveClosers.clear();
     this.cancelOpen?.();
     this.cancelOpen = null;
     this.connection?.close();
@@ -104,6 +107,42 @@ export class IndexedDbCommentRepository implements CommentRepository {
   }
 
   load(identity: CommentIdentity): Promise<CommentSnapshot> { return this.transact(identity); }
+  async readExisting(identity:CommentIdentity):Promise<CommentSnapshot|null>{
+    checkIdentity(identity);const generation=this.generation,factory=this.options.factory??globalThis.indexedDB,name=this.options.dbName??COMMENT_DB_NAME;
+    if(!factory)throw new CommentError("db_unavailable","이 브라우저에서 이전 의견 저장소를 사용할 수 없습니다.");
+    if(typeof factory.databases==="function"){const list=await factory.databases();if(generation!==this.generation)throw new CommentError("storage","저장소 연결이 종료되었습니다.");if(!list.some(d=>d.name===name))return null;}
+    return new Promise((resolve,reject)=>{
+      let db:IDBDatabase|null=null,tx:IDBTransaction|null=null,settled=false,missing=false;
+      const finish=(value:CommentSnapshot|null,error?:Error)=>{if(settled)return;settled=true;this.archiveClosers.delete(cancel);db?.close();if(error)reject(error);else resolve(value);};
+      const cancel=()=>{try{tx?.abort();}catch{/* 이미 종료된 읽기는 닫기만 한다. */}finish(null,new CommentError("storage","저장소 연결이 종료되었습니다."));};
+      this.archiveClosers.add(cancel);let request:IDBOpenDBRequest;
+      try{request=factory.open(name);}catch(error){finish(null,storageError(error));return;}
+      request.onupgradeneeded=event=>{missing=event.oldVersion===0;request.transaction?.abort();};
+      request.onerror=()=>{if(missing)finish(null);else finish(null,storageError(request.error));};
+      request.onblocked=()=>finish(null,new CommentError("db_blocked","다른 탭을 닫고 이전 의견을 다시 조회해 주세요."));
+      request.onsuccess=()=>{
+        db=request.result;if(settled||generation!==this.generation){db.close();if(!settled)cancel();return;}
+        if(db.version!==COMMENT_DB_VERSION||stores.some(s=>!db!.objectStoreNames.contains(s))){finish(null,new CommentError("invalid","이전 의견 저장소의 버전이나 구조가 예상과 다릅니다."));return;}
+        db.onversionchange=cancel;
+        try{
+          tx=db.transaction(stores,"readonly");let result:CommentSnapshot|null=null,failure:Error|null=null,remaining=4;
+          // IndexedDB 외부 데이터 경계는 기존 snapshot 검증기로 좁힌다.
+          const values:Record<string,unknown>={},scope=identity.scope,key=[scope.namespace,scope.surfaceId];
+          const requests:[string,IDBRequest][]=[["surfaces",tx.objectStore("surfaces").get(key)],["users",tx.objectStore("users").index("byNamespace").getAll(scope.namespace)],["threads",tx.objectStore("threads").index("bySurface").getAll(key)],["messages",tx.objectStore("messages").index("bySurface").getAll(key)]];
+          tx.oncomplete=()=>generation===this.generation?finish(result,failure??undefined):cancel();
+          tx.onabort=()=>finish(null,failure??storageError(tx?.error));
+          tx.onerror=()=>{failure=storageError(tx?.error);};
+          for(const [key,req]of requests){req.onerror=()=>{failure=storageError(req.error);};req.onsuccess=()=>{values[key]=req.result;if(--remaining!==0)return;try{
+            if(values.surfaces===undefined)return;
+            if(!Array.isArray(values.users))throw new CommentError("invalid","이전 의견 참여자 정보가 다릅니다.");
+            const users=values.users.map((v:unknown)=>{if(!v||typeof v!=="object"||!("namespace"in v)||v.namespace!==scope.namespace)throw new CommentError("invalid","다른 저장 범위의 참여자입니다.");const {namespace,...user}=v;void namespace;return user;});
+            result=validateCommentSnapshot({scope,surface:values.surfaces,users,threads:values.threads,messages:values.messages},scope);
+            if(!result.users.some(u=>u.id===identity.actor.id))throw new CommentError("forbidden","본인의 이전 의견만 조회할 수 있습니다.");
+          }catch(error){failure=storageError(error);tx?.abort();}};}
+        }catch(error){finish(null,storageError(error));}
+      };
+    });
+  }
   execute(identity: CommentIdentity, command: CommentCommand): Promise<CommentSnapshot> { return this.transact(identity, command); }
 
   private async transact(identity: CommentIdentity, command?: CommentCommand): Promise<CommentSnapshot> {

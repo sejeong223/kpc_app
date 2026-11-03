@@ -74,6 +74,8 @@ export interface FileResourceView {
 }
 export interface FileRoundView extends Omit<FileRound, "entries"> { readOnly: boolean; resources: FileResourceView[] }
 export interface FileWorkspaceView {
+  workspaceRevision: number;
+  phase: "writing" | "completed";
   project: WorkspaceProject;
   revision: number;
   currentRound: number;
@@ -93,6 +95,7 @@ export type FileOperation =
   | { type: "start-round" }
   | { type: "reorder"; categoryOrder: FileCategory[] };
 export interface FileMutation {
+  expectedWorkspaceRevision?: number;
   projectId: string;
   expectedRevision: number;
   expectedRound: number;
@@ -119,6 +122,7 @@ export interface StoredFileBlob {
 }
 export interface StoredFilePreference { namespace: string; key: "selected-project"; projectId: string }
 export interface FileRepository {
+  loadViewContext(projectId: string): Promise<import("./workspace-production").FileViewContext>;
   load(projectId: string): Promise<FileProjectState>;
   execute(input: FileMutation): Promise<FileReceipt>;
   readOriginal(input: FileOriginalRequest): Promise<File>;

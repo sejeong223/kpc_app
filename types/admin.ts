@@ -1,9 +1,10 @@
 import type { AssetDataService } from "@/types/admin-assets";
 import type { PromptDataService } from "@/types/admin-prompts";
+import type { WorkspaceAssetHost } from "@/types/workspace-production";
 export type { AdminRole, CrudAction, AdminResource, UserStatus, RequestStatus, JobKind, UsageFeature, RfpStatus, AuditAction, AuditResource, AdminRecord, AdminDepartment, AdminUser, AdminDirectoryEntry, AdminGroup, AdminGroupRow, AdminModel, AdminPrice, CostSnapshot, AdminUsage, AdminTokenAccount, AdminTokenRequest, AdminAuditEvent, AdminRfp, AdminRfpRow, RoleGrants, AdminSettings, AdminActor, AdminStoreState, NewAdminUser, EditAdminUser, GroupDraft, VersionedRef, Period, PageInput, MoneyTotal, UserQuery, GroupQuery, AuditSortKey, AuditQuery, TokenQuery, DashboardQuery, UserList, TokenAccountRow, ModelCostRow, TokenOverview, TokenPolicyView, ModelSettingsView, PricingView, SelfUsageView, AuditList, TrendPoint, NamedCount, DashboardView, AdminAccessView, AdminErrorCode, AdminCommand, CommandReceipt, PageResult } from "@/lib/admin/schemas";
 import type { AdminDirectoryEntry, AdminGroupRow, AdminTokenRequest, RoleGrants, AdminActor, UserQuery, GroupQuery, AuditQuery, TokenQuery, DashboardQuery, UserList, TokenOverview, ModelSettingsView, PricingView, SelfUsageView, AuditList, DashboardView, AdminAccessView, AdminCommand, CommandReceipt, PageResult } from "@/lib/admin/schemas";
 
-export interface AdminDataService extends AssetDataService, PromptDataService {
+export interface AdminDataService extends AssetDataService, PromptDataService, WorkspaceAssetHost {
   getAccess(actor: AdminActor): Promise<AdminAccessView>;
   getUsers(actor: AdminActor, query: UserQuery): Promise<UserList>;
   getGroups(actor: AdminActor, query: GroupQuery): Promise<PageResult<AdminGroupRow>>;

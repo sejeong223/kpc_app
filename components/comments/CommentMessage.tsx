@@ -20,7 +20,7 @@ export function CommentBody({ draft }: { draft: CommentDraft }): React.ReactElem
   return <div className={styles.body}>{splitCommentText(draft).map((part, i) => part.kind === "mention" ? <span key={i} className={styles.mention}>{part.text}</span> : part.text)}</div>;
 }
 export interface CommentMessageViewProps {
-  message: CommentMessage; now: number; showActions: boolean; disabled: boolean;
+  message: Pick<CommentMessage,"id"|"text"|"mentions"|"authorId"|"authorName"|"createdAt"|"updatedAt">&{deleted?:boolean}; now: number; showActions: boolean; disabled: boolean;
   onEdit(): void; onDelete(): void; children?: React.ReactNode;
 }
 export default function CommentMessageView({ message, now, showActions, disabled, onEdit, onDelete, children }: CommentMessageViewProps): React.ReactElement {

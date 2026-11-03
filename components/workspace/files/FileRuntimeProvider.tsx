@@ -8,8 +8,9 @@ import { IndexedDbFileRepository } from "@/services/workspace/IndexedDbFileRepos
 import { WorkspaceFileService } from "@/services/workspace/WorkspaceFileService";
 import type { FileIdentity } from "@/types/workspace-files";
 
-export interface FileRuntimeValue { identity: FileIdentity; service: WorkspaceFileService; queryScope: FileQueryScope; isActive(): boolean }
+export interface FileRuntimeValue { identity: FileIdentity; service: WorkspaceFileService; queryScope: FileQueryScope; isActive(): boolean; onProjectChange?(id:string):Promise<void> }
 const Context = createContext<FileRuntimeValue | null>(null);
+export function FileRuntimeBridge({value,children}:{value:FileRuntimeValue;children:React.ReactNode}):React.ReactElement{return <Context.Provider value={value}>{children}</Context.Provider>;}
 export default function FileRuntimeProvider({ identity, children }: { identity: FileIdentity; children: React.ReactNode }): React.ReactElement {
   const client = useQueryClient();
   const instanceId = useId();
