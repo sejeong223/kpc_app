@@ -3,6 +3,7 @@ import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminScreenRouter from "@/components/admin/AdminScreenRouter";
 
 import CommentsWorkspace from "@/components/comments/CommentsWorkspace";
+import FilesScreen from "@/components/workspace/files/FilesScreen";
 import PreviewRoleBoundary from "@/components/profile/PreviewRoleBoundary";
 import { serverEnv } from "@/config/env";
 import { getSidebarItemByScreen } from "@/config/sidebar";
@@ -33,7 +34,7 @@ export default async function WorkspaceScreenPage({
 
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
-      {screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
+      {screen === "files" ? <FilesScreen /> : screen === "write" ? <CommentsWorkspace /> : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
     </PreviewRoleBoundary>
   );
 }

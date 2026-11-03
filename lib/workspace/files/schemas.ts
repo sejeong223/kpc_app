@@ -6,6 +6,7 @@ import type {
   FileVersion, PreparedFileMutation, PreparedFileOperation, PreparedUpload, WebOriginal, WorkspaceProject,
 } from "@/types/workspace-files";
 import { hasControlCharacters, normalizeWebUrl, validateUploadFile } from "./validation";
+import { WorkspaceFileError } from "./errors";
 
 export const FileIdSchema = z.string().min(1).max(FILE_LIMITS.idLength).regex(/^\S+$/);
 export const FileCounterSchema = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER);
@@ -134,7 +135,8 @@ export const FileProjectStateSchema = z.strictObject({
 const UploadFileSchema = z.custom<File>(value => typeof File !== "undefined" && value instanceof File)
   .superRefine((file, context) => {
     try { validateUploadFile(file); } catch (error) {
-      context.addIssue({ code: "custom", message: error instanceof Error ? error.message : "파일을 확인해 주세요." });
+      context.addIssue({ code: "custom", message: error instanceof Error ? error.message : "파일을 확인해 주세요.",
+        params: { fileErrorCode: error instanceof WorkspaceFileError ? error.code : "VALIDATION" } });
     }
   });
 export const FileUploadDraftSchema = z.strictObject({ ...FileSettingsSchema.shape, file: UploadFileSchema }) satisfies z.ZodType<FileUploadDraft>;

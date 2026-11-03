@@ -1,7 +1,7 @@
 "use client";
 
 import type { Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { createContext, useContext, useMemo } from "react";
 
 export interface AuthRuntimeContextValue {
@@ -17,26 +17,26 @@ export interface ProvidersProps {
   session: Session | null;
 }
 
-export default function Providers({
-  children,
-  authEnabled,
-  session,
-}: ProvidersProps): React.ReactElement {
-  const runtime = useMemo(
-    () => ({ authEnabled, session }),
-    [authEnabled, session],
-  );
+type AuthRuntimeBridgeProps = Pick<ProvidersProps, "children" | "authEnabled">;
 
+function AuthRuntimeBridge({ children, authEnabled }: AuthRuntimeBridgeProps): React.ReactElement {
+  const { data, status } = useSession();
+  const runtime = useMemo(
+    () => ({ authEnabled, session: authEnabled && status !== "unauthenticated" && !data?.error ? data : null }),
+    [authEnabled, data, status],
+  );
+  return <AuthRuntimeContext.Provider value={runtime}>{children}</AuthRuntimeContext.Provider>;
+}
+
+export default function Providers({ children, authEnabled, session }: ProvidersProps): React.ReactElement {
   return (
-    <AuthRuntimeContext.Provider value={runtime}>
-      <SessionProvider
-        refetchInterval={authEnabled ? 15 * 60 : 0}
-        refetchOnWindowFocus={authEnabled}
-        session={session}
-      >
-        {children}
-      </SessionProvider>
-    </AuthRuntimeContext.Provider>
+    <SessionProvider
+      refetchInterval={authEnabled ? 15 * 60 : 0}
+      refetchOnWindowFocus={authEnabled}
+      session={session}
+    >
+      <AuthRuntimeBridge authEnabled={authEnabled}>{children}</AuthRuntimeBridge>
+    </SessionProvider>
   );
 }
 

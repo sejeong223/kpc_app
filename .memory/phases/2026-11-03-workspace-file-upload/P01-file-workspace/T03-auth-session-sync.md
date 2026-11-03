@@ -1,6 +1,6 @@
 # Task: T03 공통 인증 세션 갱신 연결
 
-## Status: pending
+## Status: done
 
 ## Goal
 SessionProvider가 자동 갱신하거나 로그아웃으로 변경한 세션이 useAuthRuntime 소비자에게 즉시 같은 값으로 전달되게 한다. 최초 서버 props 세션을 계속 사용하는 구조를 제거한다.
@@ -92,10 +92,10 @@ declare function useAuthRuntime(): AuthRuntimeContextValue;
 | 오류 후 정상 재인증 | 새 정상 data |
 
 ## Acceptance Criteria
-- [ ] bridge의 useSession이 SessionProvider 내부이며 기존 Context API가 유지된다.
-- [ ] props.session은 초기 SessionProvider 값으로만 사용하고 갱신 시 fallback하지 않는다.
-- [ ] 인증 비활성 preview와 기존 서버 guard·refetch 설정이 유지된다.
-- [ ] 소비자의 identity/roles 파생과 오래된 데이터 정리 경로를 정적으로 확인한다.
+- [x] bridge의 useSession이 SessionProvider 내부이며 기존 Context API가 유지된다.
+- [x] props.session은 초기 SessionProvider 값으로만 사용하고 갱신 시 fallback하지 않는다.
+- [x] 인증 비활성 preview와 기존 서버 guard·refetch 설정이 유지된다.
+- [x] 소비자의 identity/roles 파생과 오래된 데이터 정리 경로를 정적으로 확인한다.
 
 ## Validation
 - npm run typecheck — Provider/기존 소비자 API 호환.
@@ -117,6 +117,9 @@ Task: T03-auth-session-sync
 ~~~
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 모든 Task 완료 후 일괄 커밋 (사용자 지시 2026-11-03).
+
+## 실행 결과 — 2026-11-03
+- typecheck/lint/build/공백 검사 통과. 설치된 next-auth 구현과 8개 세션 상태표, 기존 소비자 identity·role 파생을 정적 확인. 실제 로그인/갱신 브라우저 검증 제외. 기존 baseline-browser-mapping 데이터 노후 경고만 발생.

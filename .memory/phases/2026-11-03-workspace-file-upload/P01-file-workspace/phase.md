@@ -2,18 +2,18 @@
 
 - Date: 2026-11-03
 - Plan: [프로젝트 파일 업로드 자료함](../../../plans/2026-11-03-workspace-file-upload.md)
-- Status: in_progress (T01 완료, T02 다음 실행)
+- Status: done
 
 ## Tasks
 
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done ✅` | 자료 모델·권한·회차 규칙 | [T01](./T01-domain-contracts.md) |
-| T02 | `in_progress 🔵` | 원본 파일·설정의 원자적 로컬 저장 | [T02](./T02-indexeddb-storage.md) |
-| T03 | `pending` | 공통 인증 세션 갱신 연결 | [T03](./T03-auth-session-sync.md) |
-| T04 | `pending` | Query·프로젝트 선택·자료함 화면 | [T04](./T04-runtime-and-workspace.md) |
-| T05 | `pending` | 파일·웹 편집과 회차 액션 | [T05](./T05-material-editing.md) |
-| T06 | `pending` | 실제 미리보기·다운로드·최종 검증 | [T06](./T06-preview-and-validation.md) |
+| T02 | `done ✅` | 원본 파일·설정의 원자적 로컬 저장 | [T02](./T02-indexeddb-storage.md) |
+| T03 | `done ✅` | 공통 인증 세션 갱신 연결 | [T03](./T03-auth-session-sync.md) |
+| T04 | `done ✅` | Query·프로젝트 선택·자료함 화면 | [T04](./T04-runtime-and-workspace.md) |
+| T05 | `done ✅` | 파일·웹 편집과 회차 액션 | [T05](./T05-material-editing.md) |
+| T06 | `done ✅` | 실제 미리보기·다운로드·최종 검증 | [T06](./T06-preview-and-validation.md) |
 
 ## Execution Rules
 
@@ -24,6 +24,6 @@
 
 ## Progress
 
-- done: 1/6 (active: T02)
-- implementation: T01 도메인 구현·검증 완료. T02 포인터 활성화, 저장소 구현 시작 전.
+- done: 6/6 (active: 없음)
+- implementation: T01~T06 구현 및 검증 완료. T01 기존 커밋 유지, T02~T06 최종 일괄 커밋.
 - T01 검증: typecheck/lint/차이 공백 검사 및 인라인 78개 경계 확인 통과. 브라우저·DB 검증 제외.

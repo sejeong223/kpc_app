@@ -1,6 +1,6 @@
 # Task: T02 원본 파일·설정의 원자적 로컬 저장
 
-## Status: pending
+## Status: done
 
 ## Goal
 실제 파일과 자료 설정을 사용자·프로젝트별 IndexedDB에 함께 저장하고, 다시 열었을 때 같은 회차와 원본을 읽을 수 있는 저장소·서비스를 완성한다. 저장 실패나 두 탭의 충돌이 일부 성공으로 남지 않아야 한다.
@@ -225,11 +225,11 @@ declare class WorkspaceFileService {
 - 서버 Blob/Cosmos 서비스나 키·환경설정·API route는 수정하지 않는다.
 
 ## Acceptance Criteria
-- [ ] reload와 재접속에 필요한 metadata/원본/선택이 별도 namespace로 보관된다.
-- [ ] add batch 실패·quota·transaction abort 시 자료 카드만 남거나 원본만 남는 부분 저장이 없다.
-- [ ] stale revision 및 다른 프로젝트의 version/blob 접근을 거부한다.
-- [ ] 과거 회차 원본은 GC에서 보호되고 같은 파일 버전 편집으로 Blob이 복제되지 않는다.
-- [ ] DB 로드 오류는 빈 DB 초기화로 처리하지 않고 늦은 요청·dispose를 차단한다.
+- [x] reload와 재접속에 필요한 metadata/원본/선택이 별도 namespace로 보관된다.
+- [x] add batch 실패·quota·transaction abort 시 자료 카드만 남거나 원본만 남는 부분 저장이 없다.
+- [x] stale revision 및 다른 프로젝트의 version/blob 접근을 거부한다.
+- [x] 과거 회차 원본은 GC에서 보호되고 같은 파일 버전 편집으로 Blob이 복제되지 않는다.
+- [x] DB 로드 오류는 빈 DB 초기화로 처리하지 않고 늦은 요청·dispose를 차단한다.
 
 ## Validation
 - npm run typecheck — 저장소/서비스 인터페이스와 T01 타입 일치.
@@ -250,6 +250,9 @@ Task: T02-indexeddb-storage
 ~~~
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 모든 Task 완료 후 일괄 커밋 (사용자 지시 2026-11-03).
+
+## 실행 결과 — 2026-11-03
+- typecheck/lint/공백 검사 통과. fake-indexeddb 인라인 확인: 원본·회차·선택 재접속 복원, 동시 충돌, 사용자 격리, dispose, QUOTA 주입 롤백. 실제 브라우저 영속성·용량 검증은 미실시.

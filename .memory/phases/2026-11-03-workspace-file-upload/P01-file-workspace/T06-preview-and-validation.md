@@ -1,6 +1,6 @@
 # Task: T06 실제 미리보기·다운로드·최종 검증
 
-## Status: pending
+## Status: done
 
 ## Goal
 등록한 원본을 PDF·TXT로 미리 보고 지원하지 않는 문서는 원본을 다운로드할 수 있도록 연결한다. 확정 결정과 기획 요소의 대응 및 자동 검증 결과를 보고서로 남겨 전체 자료함 작업을 완료한다.
@@ -229,12 +229,12 @@ declare function FilePreviewDialog(props: FilePreviewDialogProps): React.ReactEl
   7. 보고서에 브라우저 검증 미실시, PDF/native 다운로드/저장 용량 실측 미실시, 지원 텍스트 인코딩, 서버 미연결, SPA history 전체 차단 미보장 등을 분리 기록한다. typecheck/build 통과를 모든 UI 동작 검증으로 표현하지 않는다.
 
 ## Acceptance Criteria
-- [ ] PDF·TXT는 실제 원본에서 표시되고 기타 문서는 원본 다운로드 가능 구조다.
-- [ ] 가짜 파일 본문/검색 결과/원본 누락 다운로드가 없다.
-- [ ] 모달 종료·파일/사용자 전환에서 URL/File 참조와 늦은 결과를 정리한다.
-- [ ] 기획 대응·권한·회차·30개·저장 오류·인증 변경을 정적으로 확인하고 누락/후속 범위를 기록한다.
-- [ ] typecheck/lint/build/diff 검증 결과와 미실시 제한을 보고서에 명확히 적는다.
-- [ ] 전체 완료 후에만 Phase/Plan/current를 완료로 전진한다.
+- [x] PDF·TXT는 실제 원본에서 표시되고 기타 문서는 원본 다운로드 가능 구조다.
+- [x] 가짜 파일 본문/검색 결과/원본 누락 다운로드가 없다.
+- [x] 모달 종료·파일/사용자 전환에서 URL/File 참조와 늦은 결과를 정리한다.
+- [x] 기획 대응·권한·회차·30개·저장 오류·인증 변경을 정적으로 확인하고 누락/후속 범위를 기록한다.
+- [x] typecheck/lint/build/diff 검증 결과와 미실시 제한을 보고서에 명확히 적는다.
+- [x] 전체 완료 후에만 Phase/Plan/current를 완료로 전진한다.
 
 ## Validation
 - npm run typecheck — 전체 타입 통과.
@@ -257,6 +257,9 @@ Task: T06-preview-and-validation
 ~~~
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 모든 Task 완료 후 일괄 커밋 (사용자 지시 2026-11-03).
+
+## 실행 결과 — 2026-11-03
+- 최종 typecheck/lint/build 통과. 실제 원본 PDF/TXT 및 다운로드 연결, 미리보기 유틸 23개·저장소 실패 경계 21개 인라인 확인 통과. 기획·권한·회차·수명 정적 검토와 미실시 제한은 .memory/reports/2026-11-03-workspace-file-upload-validation.md에 기록. 사용자 요청대로 T02~T06 일괄 커밋.

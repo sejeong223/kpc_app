@@ -1,6 +1,6 @@
 # Task: T04 Query·프로젝트 선택·자료함 화면
 
-## Status: pending
+## Status: done
 
 ## Goal
 /workspace/files에 사용자별 서비스와 TanStack Query를 연결하고 프로젝트별 3개 자료 영역 및 회차를 읽을 수 있게 한다. 다른 사용자의 캐시나 이전 프로젝트 응답을 새 화면에 표시하지 않는다.
@@ -252,10 +252,10 @@ declare function FileResourceCard(props: FileResourceCardProps): React.ReactElem
   4. JSX의 hook/store는 client 경계 내부, route는 기존 server component. SSR 평가 시 IDB/File 참조가 없어야 한다.
 
 ## Acceptance Criteria
-- [ ] files route가 3영역·현재/과거 회차·프로젝트 선택을 공통 스타일로 표시하는 구조다.
-- [ ] 선택 상태가 namespace별 저장되고 오류·빈 목록·권한 없음이 구분된다.
-- [ ] 계정·역할 전환 및 StrictMode에서 오래된 service/캐시를 공유하거나 새 인스턴스를 잘못 종료하지 않는다.
-- [ ] 미구현 편집/미리보기 버튼은 나타나지 않으며 다른 메뉴 라우팅을 유지한다.
+- [x] files route가 3영역·현재/과거 회차·프로젝트 선택을 공통 스타일로 표시하는 구조다.
+- [x] 선택 상태가 namespace별 저장되고 오류·빈 목록·권한 없음이 구분된다.
+- [x] 계정·역할 전환 및 StrictMode에서 오래된 service/캐시를 공유하거나 새 인스턴스를 잘못 종료하지 않는다.
+- [x] 미구현 편집/미리보기 버튼은 나타나지 않으며 다른 메뉴 라우팅을 유지한다.
 
 ## Validation
 - npm run typecheck — route/DTO/컴포넌트/훅 props 일치.
@@ -277,6 +277,9 @@ Task: T04-runtime-and-workspace
 ~~~
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 모든 Task 완료 후 일괄 커밋 (사용자 지시 2026-11-03).
+
+## 실행 결과 — 2026-11-03
+- typecheck/lint/build/공백 검사 통과. 신규 Hook 경고는 inline effect로 수정 후 대상 eslint 재통과. 사용자·역할·인스턴스별 Query key와 scope 정리, placeholder 미사용, 조건부 액션, 회차 접힘, 일반 메뉴 route를 정적 검토. 실제 화면 검증 미실시.

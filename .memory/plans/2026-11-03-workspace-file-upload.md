@@ -1,7 +1,7 @@
 # Plan: 프로젝트 파일 업로드 자료함
 
 - Date: 2026-11-03
-- Status: in_progress
+- Status: done
 - Decisions: [확정 결정](../decisions/2026-11-03-workspace-file-upload.md), D01~D19
 - 작업 시작 기준: `dev`, HEAD `b2781b8`, origin/dev 대비 ahead 5. 기존 결정 문서만 untracked이며 구현 변경 없음.
 
@@ -13,7 +13,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 파일 자료함과 공통 인증 연결, 완료 1/6 | [P01](../phases/2026-11-03-workspace-file-upload/P01-file-workspace/phase.md) |
+| P01 | `done` | 파일 자료함과 공통 인증 연결, 완료 6/6 | [P01](../phases/2026-11-03-workspace-file-upload/P01-file-workspace/phase.md) |
 
 ## Task 구조와 의존성
 
@@ -55,13 +55,13 @@
 
 ## Commit / 실행 정책
 
-- Task별 Commit Message를 청사진에 제공한다. 이번 요청은 계획 작성이므로 현재 커밋·push는 하지 않는다.
+- 실행 정책: 2026-11-03 사용자 지시에 따라 기존 T01 커밋은 유지하고 T02~T06은 완료 후 한 번에 커밋한다. Push 없음.
 - 다음 `/memory-execute`에서 기본 프로젝트 순차 실행 규칙을 따르되, 사용자가 모든 Task 후 단일 커밋 등 방식을 지정하면 그 지시가 우선한다. 과거 다른 기능의 push 요청을 이번 변경의 push 승인으로 확대하지 않는다.
 - 완료된 기존 계획 `2026-11-03-dashboard-bar-density`와 커밋 `b2781b8`은 보존한다. 새 current 포인터만 T01로 이동한다.
 
 ## Progress
 
-- done: 1/6
-- active: P01-T02 (저장소 구현 시작 전)
+- done: 6/6
+- active: 없음 (전체 완료)
 - T01: 자료 모델·권한·회차 전이 구현 완료. typecheck/lint 및 인라인 78개 경계 확인 통과.
-- plan documents: 결정·청사진을 T01 구현과 함께 커밋. 화면/DB/인증 갱신은 후속 Task에서 순차 진행.
+- T02~T06: 저장소·인증·Query/화면·편집·미리보기 구현 및 검증 완료. 검증 보고서: ../reports/2026-11-03-workspace-file-upload-validation.md.
