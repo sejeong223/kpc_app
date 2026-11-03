@@ -13,11 +13,13 @@ export interface WorkspacePageProps {
   headingRef?: React.Ref<HTMLHeadingElement>;
   stickyHeader?: boolean;
   headerComponent?: React.ComponentType<WorkspaceHeaderProps>;
+  /** 지정하면 화면 높이에 맞추고 본문만 스크롤하여 하단 액션을 계속 표시한다. */
+  footer?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }
 
-export default function WorkspacePage({ children, className = "", stickyHeader = false, headerComponent: HeaderComponent = WorkspaceHeader, ...header }: WorkspacePageProps): React.ReactElement {
+export default function WorkspacePage({ children, footer, className = "", stickyHeader = false, headerComponent: HeaderComponent = WorkspaceHeader, ...header }: WorkspacePageProps): React.ReactElement {
   const root = useRef<HTMLDivElement>(null);
   const heading = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -39,8 +41,15 @@ export default function WorkspacePage({ children, className = "", stickyHeader =
     };
   }, [stickyHeader]);
 
-  return <div ref={root} data-workspace-page className={"tw:flex tw:min-w-0 tw:flex-col tw:gap-(--layout-section-gap) " + className}>
+  return <div ref={root} data-workspace-page className={"tw:flex tw:min-w-0 tw:flex-col tw:gap-(--layout-section-gap) " +
+    (footer ? "tw:relative tw:h-[calc(100dvh-var(--layout-page-inset)-var(--layout-page-inset))] tw:min-h-0 " : "") + className}>
     <HeaderComponent {...header} headerRef={heading} sticky={stickyHeader} />
-    {children}
+    {footer ? <>
+      <div data-workspace-scroll-region role="region" aria-label={`${header.title} 입력 영역`} tabIndex={0}
+        className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:scroll-py-2 tw:focus-visible:outline-2 tw:focus-visible:-outline-offset-2 tw:focus-visible:outline-(--kpc-brand)">
+        {children}
+      </div>
+      <div data-workspace-footer className="tw:min-w-0 tw:shrink-0 tw:space-y-(--layout-control-gap)">{footer}</div>
+    </> : children}
   </div>;
 }

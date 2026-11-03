@@ -32,6 +32,11 @@ const useStyles = makeStyles({
     padding: "var(--layout-page-inset)",
     ":focus": { outlineStyle: "none" },
   },
+  productionContent: {
+    maxWidth: "none", margin: 0, padding: 0, width: "100%", display: "flex",
+    flexDirection: "column", minHeight: "100svh",
+    "@media (max-width: 760px)": { padding: 0 },
+  },
   adminContent: { backgroundColor: "var(--kpc-bg)" },
   backdrop: {
     display: "none",
@@ -157,6 +162,7 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
         <main id="main-content" ref={mainRef} className={mergeClasses(
           styles.content,
           ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent,
+          pathname === "/workspace/write" && styles.productionContent,
         )} tabIndex={-1}>{children}</main>
         <ProjectHeaderToaster />
       </div>

@@ -41,7 +41,7 @@ export default function RfpUploadZone({ phase, onFiles, onSample, onRestart }: R
     onDragOver={(event) => { event.preventDefault(); if (!busy) setOver(true); }}
     onDragLeave={() => setOver(false)}
     onDrop={(event) => { event.preventDefault(); setOver(false); accept(event.dataTransfer.files); }}
-    className={"tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-4 tw:rounded-[14px] tw:border-[1.5px] tw:border-dashed tw:p-[22px] tw:min-[761px]:flex-nowrap "
+    className={"tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-(--layout-section-gap) tw:rounded-[14px] tw:border-[1.5px] tw:border-dashed tw:p-(--layout-card-inset) tw:min-[761px]:flex-nowrap "
       + (over ? "tw:border-(--kpc-brand) tw:bg-(--kpc-brand-soft)" : "tw:border-[#d3d5db] tw:bg-(--kpc-card)")}>
     <span aria-hidden="true" className="tw:flex tw:size-[46px] tw:flex-none tw:items-center tw:justify-center tw:rounded-[12px] tw:bg-(--kpc-brand-soft) tw:text-(--kpc-brand)">
       {phase === "extracted" ? <Checkmark24Regular style={{ width: 22, height: 22 }} /> : <ArrowUpload24Regular style={{ width: 22, height: 22 }} />}

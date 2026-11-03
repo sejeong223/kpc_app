@@ -6,6 +6,7 @@ import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import Button from "@/components/common/Button";
 import WorkspaceCard from "@/components/layout/WorkspaceCard";
+import WorkspaceActionRow from "@/components/layout/WorkspaceActionRow";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import { useProfilePreview } from "@/components/profile/ProfilePreviewProvider";
 import { useAuthRuntime } from "@/components/providers";
@@ -133,7 +134,15 @@ export default function RfpRegisterPage({
   const setField = (field: RfpTextField) => (_: unknown, data: { value: string }) => dispatch({ type: "set-field", field, value: data.value });
   const locked = analyzing || submitting;
 
-  return <WorkspacePage title="RFP 등록" showTitle>
+  return <WorkspacePage title="RFP 등록" footer={<>
+    <WorkspaceActionRow actions={<Button className="primary tw:px-4 tw:text-[13px] tw:font-bold" disabled={progress.done < progress.total || submitting || analyzing || !identity} onClick={() => void submit()}>
+      {submitting ? "등록 중…" : "등록"}<ArrowRight16Regular aria-hidden="true" />
+    </Button>}>
+      {progress.missing.length > 0 && <p className="tw:m-0 tw:text-right tw:text-[11px] tw:text-(--kpc-muted)">필수 항목: {progress.missing.join(", ")}</p>}
+    </WorkspaceActionRow>
+    {!identity && <p role="alert" className="tw:m-0 tw:text-[12px] tw:text-(--kpc-danger)">사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.</p>}
+    {submitError && <p role="alert" className="tw:m-0 tw:text-[12px] tw:text-(--kpc-danger)">{submitError}</p>}
+  </>}>
     <div className="tw:flex tw:w-full tw:min-w-0 tw:flex-col tw:gap-(--layout-section-gap)">
       <RfpUploadZone phase={state.phase}
         onFiles={(files) => addFiles(files.map((f) => ({ name: f.name, sizeBytes: f.size })))}
@@ -158,8 +167,8 @@ export default function RfpRegisterPage({
             <DadamTextarea rows={3} resize="vertical" className={textareaClass("summary")} value={state.values.summary} disabled={locked} onChange={setField("summary")} {...aiProps("summary")} />
           </Field>
         </div>
-        <section aria-label="추가 정보" className="tw:mt-[18px] tw:min-w-0 tw:border-0 tw:border-t tw:border-dashed tw:border-(--kpc-line) tw:pt-4">
-          <h3 className="tw:mt-0 tw:mb-3 tw:text-[12.5px] tw:font-extrabold tw:text-[#34363c]">추가 정보</h3>
+        <section aria-label="추가 정보" className="tw:min-w-0 tw:border-0 tw:border-t tw:border-dashed tw:border-(--kpc-line) tw:pt-(--layout-section-gap)">
+          <h3 className="tw:mt-0 tw:mb-(--layout-control-gap) tw:text-[12.5px] tw:font-extrabold tw:text-[#34363c]">추가 정보</h3>
           <div className={GRID}>
             <Field className={mergeClasses(styles.field, FULL)} label={label("official")}>
               <DadamInput className={inputClass("official")} value={state.values.official} disabled={locked} onChange={setField("official")} {...aiProps("official")} />
@@ -183,14 +192,6 @@ export default function RfpRegisterPage({
           </div>
         </section>
       </WorkspaceCard>
-      <div className="tw:mt-3.5 tw:flex tw:flex-wrap tw:items-center tw:justify-end tw:gap-(--layout-control-gap)">
-        {progress.missing.length > 0 && <span className="tw:text-[11px] tw:text-(--kpc-muted)">필수 항목: {progress.missing.join(", ")}</span>}
-        <Button className="primary tw:px-4 tw:text-[13px] tw:font-bold" disabled={progress.done < progress.total || submitting || analyzing || !identity} onClick={() => void submit()}>
-          {submitting ? "등록 중…" : "등록"}<ArrowRight16Regular aria-hidden="true" />
-        </Button>
-      </div>
-      {!identity && <p role="alert" className="tw:m-0 tw:text-[12px] tw:text-(--kpc-danger)">사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.</p>}
-      {submitError && <p role="alert" className="tw:m-0 tw:text-[12px] tw:text-(--kpc-danger)">{submitError}</p>}
     </div>
   </WorkspacePage>;
 }

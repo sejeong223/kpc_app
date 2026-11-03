@@ -27,8 +27,8 @@ function CommentScopeProvider({ identity, children }: { identity: CommentIdentit
   const pathname = usePathname();
   useEffect(() => { controller.updateActor(identity.actor); }, [controller, identity.actor]);
   useEffect(() => {
-    // 제작은 프로젝트별 의견을 사용한다. 이전 전역 저장소를 자동 로드하거나 seed하지 않는다.
-    controller.suspendUi();
+    if (pathname === "/workspace/write") void controller.load();
+    else controller.suspendUi();
   }, [controller, pathname]);
   useEffect(() => () => controller.dispose(), [controller]);
   const value = useMemo(() => ({ identity, state, controller }), [identity, state, controller]);

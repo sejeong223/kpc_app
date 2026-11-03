@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminScreenRouter from "@/components/admin/AdminScreenRouter";
+import CommentsWorkspace from "@/components/comments/CommentsWorkspace";
 
 import WorkspaceScreen from "@/components/workspace/WorkspaceScreen";
 import FilesScreen from "@/components/workspace/files/FilesScreen";
@@ -37,7 +38,8 @@ export default async function WorkspaceScreenPage({
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
       {screen === "register" ? <RfpRegisterPage />
         : screen === "files" ? <FilesScreen />
-        : screen === "write" || screen === "toc" || screen === "setup" ? <WorkspaceScreen screen={screen} />
+        : screen === "write" ? <CommentsWorkspace />
+        : screen === "toc" || screen === "setup" ? <WorkspaceScreen screen={screen} />
         : screen === "analysis" || screen === "review" ? <ProjectHeaderPage title={item.label} headingId="workspace-screen-title" />
         : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
     </PreviewRoleBoundary>
