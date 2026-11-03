@@ -56,7 +56,7 @@ export default function RfpUploadZone({ phase, onFiles, onSample, onRestart }: R
         ? <Button className="tw:h-(--dadam-control-height-compact) tw:text-[12px]" onClick={onRestart}>다시 하기</Button>
         : <>
           <Button disabled={busy} onClick={() => input.current?.click()}><ArrowUpload16Regular aria-hidden="true" />파일 선택</Button>
-          <Button className="dark" disabled={busy} onClick={onSample}><Sparkle16Regular aria-hidden="true" />샘플 RFP로 체험</Button>
+          <Button className="primary" disabled={busy} onClick={onSample}><Sparkle16Regular aria-hidden="true" />샘플 RFP로 체험</Button>
         </>}
     </div>
     <input ref={input} id={inputId} type="file" multiple hidden accept=".pdf,.hwp,.hwpx,.doc,.docx" disabled={busy}
