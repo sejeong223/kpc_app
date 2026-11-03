@@ -1,5 +1,7 @@
 "use client";
 import Button from "@/components/common/Button";
+import AdminDotTrack from "@/components/admin/ui/AdminDotTrack";
+import { dashboardCategoryColor } from "@/config/dashboard-charts";
 import { ArrowRightRegular } from "@fluentui/react-icons";
 import type { DashboardView } from "@/types/admin";
 import DashboardCard from "./DashboardCard";
@@ -13,7 +15,7 @@ export default function DepartmentSnapshot({ rows, onOpen }: DepartmentSnapshotP
     {!rows.length ? <p role="status" className="tw:py-4 tw:text-(--kpc-muted)">조회 가능한 부서가 없습니다.</p> : <ol className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:gap-3 tw:p-0">
       {sorted.slice(0, 4).map((row, index) => <li key={row.id} className="tw:grid tw:grid-cols-[20px_minmax(0,1fr)_minmax(40px,1.3fr)_42px] tw:items-center tw:gap-2">
         <span className="tw:text-[11px] tw:text-(--kpc-muted)">{index + 1}</span><span className="tw:truncate tw:font-medium" title={row.name}>{row.name}</span>
-        <span aria-hidden="true" className="tw:h-1.5 tw:rounded-full tw:bg-(--kpc-line-soft)"><span className="tw:block tw:h-full tw:rounded-full tw:bg-(--kpc-info)" style={{ width: row.total / maximum * 100 + "%" }} /></span><strong className="tw:text-right tw:tabular-nums">{row.total}<span className="tw:ml-1 tw:text-[10px] tw:font-normal tw:text-(--kpc-muted)">건</span></strong>
+        <AdminDotTrack value={row.total} maximum={maximum} color={dashboardCategoryColor(row.id)} /><strong className="tw:text-right tw:tabular-nums">{row.total}<span className="tw:ml-1 tw:text-[10px] tw:font-normal tw:text-(--kpc-muted)">건</span></strong>
       </li>)}
     </ol>}
   </DashboardCard>;

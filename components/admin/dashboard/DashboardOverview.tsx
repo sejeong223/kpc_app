@@ -21,9 +21,9 @@ export default function DashboardOverview({ view, query, onShowList, onOpenUsage
   return <>
     <section aria-label="핵심 운영 지표" className="tw:grid tw:grid-cols-1 tw:gap-(--layout-section-gap) tw:min-[480px]:grid-cols-2 tw:xl:grid-cols-4">
       <AdminMetric variant="insight" label="등록된 RFP" value={view.totalRfps.toLocaleString("ko-KR")} unit="건" caption="조회 기간 내 전체 제안 기회" icon={<DocumentRegular />} tone="info" onClick={() => showStatus("all")} />
-      <AdminMetric variant="insight" label="진행 중" value={(counts.review + counts.writing).toLocaleString("ko-KR")} unit="건" caption={`검토 중 ${counts.review}건 · 작성 중 ${counts.writing}건`} icon={<HistoryRegular />} tone="purple" onClick={() => showStatus("progress")} />
+      <AdminMetric variant="insight" label="진행 중" value={(counts.review + counts.writing).toLocaleString("ko-KR")} unit="건" caption={`검토 중 ${counts.review}건 · 작성 중 ${counts.writing}건`} icon={<HistoryRegular />} tone="info" onClick={() => showStatus("progress")} />
       <AdminMetric variant="insight" label="수주율" value={formatWinRate(counts.won, counts.lost)} caption={`수주 ${counts.won}건 / 결과 확정 ${counts.won + counts.lost}건`} icon={<TrophyRegular />} tone="success" onClick={() => showStatus("won")} />
-      <AdminMetric variant="insight" label="AI Token 사용" value={formatTokenCount(view.tokens)} caption={formatKrw(view.cost.krwMicros) + " · " + (view.activityPeriod ? view.activityPeriod.from.slice(5) + "~" + view.activityPeriod.to.slice(5) : "집계 기간 없음")} icon={<DataUsageRegular />} tone="info" onClick={onOpenUsage} />
+      <AdminMetric variant="insight" label="AI Token 사용" value={formatTokenCount(view.tokens)} caption={formatKrw(view.cost.krwMicros) + " · " + (view.activityPeriod ? view.activityPeriod.from.slice(5) + "~" + view.activityPeriod.to.slice(5) : "집계 기간 없음")} icon={<DataUsageRegular />} tone="purple" onClick={onOpenUsage} />
     </section>
     <div className="tw:grid tw:items-stretch tw:gap-(--layout-section-gap) tw:lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]">
       <RfpRegistrationPanel view={view} query={allQuery} onShowList={onShowList} /><RfpStatusPanel view={view} onSelect={showStatus} />

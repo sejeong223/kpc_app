@@ -1,9 +1,12 @@
 "use client";
 import DashboardCard from "./DashboardCard";
 import { AdminBreakdown } from "@/components/admin/ui/AdminCharts";
+import AdminCompositionChart from "@/components/admin/ui/AdminCompositionChart";
 import AdminPager from "@/components/admin/ui/AdminPager";
 import { AUDIT_ACTION_LABELS, AUDIT_RESOURCE_LABELS } from "@/config/admin-labels";
+import { DASHBOARD_CHART_COLORS, dashboardCategoryColor } from "@/config/dashboard-charts";
 import { DEFAULT_PAGE_SIZE } from "@/config/pagination";
+import { summarizeChartSegments } from "@/lib/admin/chart-data";
 import { AuditActionSchema, AuditResourceSchema } from "@/lib/admin/schemas";
 import { paginate } from "@/lib/admin/selectors";
 import type { DashboardView, NamedCount } from "@/types/admin";
@@ -19,10 +22,21 @@ export default function ActivityBreakdownPanel({ view, pages, onPageChange }: Ac
         return { ...item, label: kind.value === "actions" && action.success ? AUDIT_ACTION_LABELS[action.data] : kind.value === "resources" && resource.success ? AUDIT_RESOURCE_LABELS[resource.data] : item.label };
       });
       const rows = paginate(items, { page: pages[kind.value], pageSize: DEFAULT_PAGE_SIZE });
+      const colorForId = (id: string) => dashboardCategoryColor(kind.value === "details" ? id.split(":")[0] : id);
+      const breakdown = <>
+        <AdminBreakdown label={kind.label} items={rows.items} variant="dot" colorForId={colorForId} columns={kind.value === "details" ? 2 : 1} maxCount={Math.max(1, ...items.map(item => item.count))} />
+        {rows.total > DEFAULT_PAGE_SIZE && <AdminPager {...rows} onChange={page => onPageChange(kind.value, page)} />}
+      </>;
       return <DashboardCard key={kind.value} title={kind.label} className={kind.value === "details" ? "tw:lg:col-span-2" : ""}
         actions={<span className="tw:text-[11px] tw:text-(--kpc-muted)">{kind.value === "details" ? "활동 로그의 세부 작업 기준 · " : ""}총 {items.length}개 분류</span>}>
-        <AdminBreakdown label={kind.label} items={rows.items} columns={kind.value === "details" ? 2 : 1} maxCount={Math.max(1, ...items.map(item => item.count))} />
-        {rows.total > DEFAULT_PAGE_SIZE && <AdminPager {...rows} onChange={page => onPageChange(kind.value, page)} />}
+        {kind.value === "details" ? breakdown : <>
+          <AdminCompositionChart label={kind.label + " 구성 비율"} kind={kind.value === "actions" ? "donut" : "strip"}
+            segments={summarizeChartSegments(items.map(item => ({ ...item, color: colorForId(item.id) })), DASHBOARD_CHART_COLORS.other)} />
+          {items.length > 0 && <details className="tw:border-0 tw:border-t tw:border-solid tw:border-(--kpc-line-soft) tw:pt-3">
+            <summary className="tw:cursor-pointer tw:text-[11px] tw:text-(--kpc-secondary)">전체 {items.length}개 분류 보기</summary>
+            <div className="tw:mt-4 tw:flex tw:flex-col tw:gap-3">{breakdown}</div>
+          </details>}
+        </>}
       </DashboardCard>;
     })}
   </div>;

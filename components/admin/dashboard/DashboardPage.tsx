@@ -12,7 +12,7 @@ import { useAdminAccess, useAdminDashboard } from "@/hooks/admin/use-admin-data"
 import type { DashboardQuery } from "@/types/admin";
 import RfpStatisticsPanel from "./RfpStatisticsPanel";
 import RfpRecordsPanel from "./RfpRecordsPanel";
-import UsageTrendPanel from "./UsageTrendPanel";
+import UsageTrendPanel, { type UsageChartKind } from "./UsageTrendPanel";
 import ActivityBreakdownPanel, { type BreakdownKind } from "./ActivityBreakdownPanel";
 import UserActivityPanel from "./UserActivityPanel";
 import DashboardActivitySummary from "./DashboardActivitySummary";
@@ -25,11 +25,11 @@ type DashboardTab = typeof dashboardTabs[number]["value"];
 interface DashboardUiState {
   departmentPage: number; userPage: number; focusRfpList: boolean;
   rfpView: "records" | "statistics" | "departments";
-  chartKind: "bar" | "line"; breakdownPages: Record<BreakdownKind, number>;
+  chartKind: UsageChartKind; breakdownPages: Record<BreakdownKind, number>;
 }
 export default function DashboardPage(): React.ReactElement {
   const [tab, setTab] = useState<DashboardTab>("overview");
-  const [ui, setUi] = useState<DashboardUiState>({ departmentPage: 1, userPage: 1, focusRfpList: false, rfpView: "records", chartKind: "line", breakdownPages: { actions: 1, resources: 1, details: 1 } });
+  const [ui, setUi] = useState<DashboardUiState>({ departmentPage: 1, userPage: 1, focusRfpList: false, rfpView: "records", chartKind: "auto", breakdownPages: { actions: 1, resources: 1, details: 1 } });
   const [query, setQuery] = useState<DashboardQuery>({ from: "2025-01-01", to: "2026-10-20", rfpStatus: "all", bucketStart: null, userSearch: "", rfpPage: 1 });
   // 상태/페이지를 조회하는 동안에도 같은 기간의 요약 숫자와 버튼을 유지한다.
   const summary = useAdminDashboard({ ...query, rfpStatus: "all", bucketStart: null, userSearch: "", rfpPage: 1 });
