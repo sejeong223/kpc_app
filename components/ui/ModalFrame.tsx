@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Dialog, DialogContent, DialogSurface, DialogTitle, makeStyles, tokens, shorthands } from "@fluentui/react-components";
+import { Button, Dialog, DialogContent, DialogSurface, DialogTitle, makeStyles, mergeClasses, tokens, shorthands } from "@fluentui/react-components";
 import { dadamUi } from "@/lib/ui/dadam-theme";
 import { Dismiss12Regular } from "@fluentui/react-icons";
 import { useEffect, useId, useLayoutEffect, useRef } from "react";
@@ -14,6 +14,7 @@ export interface ModalFrameProps {
   children: React.ReactNode;
   footer: React.ReactNode;
   onClose(): void;
+  slotClassNames?: Partial<Record<"header" | "body" | "footer", string>>;
 }
 
 const useStyles = makeStyles({
@@ -52,7 +53,7 @@ const useStyles = makeStyles({
 });
 
 export default function ModalFrame({
-  open, title, subtitle, width = 560, contentKey, children, footer, onClose,
+  open, title, subtitle, width = 560, contentKey, children, footer, onClose, slotClassNames,
 }: ModalFrameProps): React.ReactElement {
   const styles = useStyles();
   const id = useId();
@@ -97,15 +98,15 @@ export default function ModalFrame({
           onClose();
         }}
       >
-        <header className={styles.header}>
+        <header className={mergeClasses(styles.header, slotClassNames?.header)}>
           <div className={styles.heading}>
             <DialogTitle ref={titleRef} id={id + "-title"} tabIndex={-1} className={styles.title}>{title}</DialogTitle>
             {subtitle && <p className={styles.subtitle} id={id + "-description"}>{subtitle}</p>}
           </div>
           <Button type="button" appearance="subtle" className={styles.close} icon={{ children: <Dismiss12Regular />, className: styles.closeIcon }} aria-label="모달 닫기" onClick={onClose} />
         </header>
-        <DialogContent ref={bodyRef} className={styles.body} tabIndex={0} role="region" aria-label={title + " 내용"} data-modal-body>{children}</DialogContent>
-        <footer className={styles.footer}>{footer}</footer>
+        <DialogContent ref={bodyRef} className={mergeClasses(styles.body, slotClassNames?.body)} tabIndex={0} role="region" aria-label={title + " 내용"} data-modal-body>{children}</DialogContent>
+        <footer className={mergeClasses(styles.footer, slotClassNames?.footer)}>{footer}</footer>
       </DialogSurface>
     </Dialog>
   );

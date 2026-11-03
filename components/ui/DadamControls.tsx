@@ -36,8 +36,13 @@ const useStyles = makeStyles({
       "&:has(input:disabled, select:disabled, textarea:disabled)": { ...shorthands.borderColor("GrayText"), color: "GrayText" },
     },
   },
+  // 아이콘이 없는 쪽은 Fluent가 안쪽 input에 여백을 주므로 바깥 틀까지 주면 두 배가 된다.
+  // 아이콘 있는 쪽만 바깥 틀에, 없는 쪽은 안쪽 input에 여백을 준다.
+  inputBefore: { paddingLeft: control.padding },
+  inputAfter: { paddingRight: control.padding },
+  inputPlainStart: { [`& .${inputClassNames.input}`]: { paddingLeft: control.padding } },
+  inputPlainEnd: { [`& .${inputClassNames.input}`]: { paddingRight: control.padding } },
   input: {
-    paddingLeft: control.padding, paddingRight: control.padding,
     [`& .${inputClassNames.input}`]: {
       minWidth: 0, fontSize: "inherit", lineHeight: control.lineHeight, color: "inherit",
       "::placeholder": { color: control.placeholder, opacity: 1 },
@@ -106,7 +111,9 @@ const useStyles = makeStyles({
 
 export const DadamInput = forwardRef<HTMLInputElement, InputProps>(function DadamInput({ className, size = "medium", ...props }, ref) {
   const styles = useStyles();
-  return <Input {...props} ref={ref} size={size} className={mergeClasses(styles.base, styles.field, styles.input, styles[size], className)} />;
+  return <Input {...props} ref={ref} size={size} className={mergeClasses(styles.base, styles.field, styles.input,
+    props.contentBefore ? styles.inputBefore : styles.inputPlainStart, props.contentAfter ? styles.inputAfter : styles.inputPlainEnd,
+    styles[size], className)} />;
 });
 
 export const DadamSelect = forwardRef<HTMLSelectElement, SelectProps>(function DadamSelect({ className, size = "medium", ...props }, ref) {

@@ -4,7 +4,9 @@ import AdminScreenRouter from "@/components/admin/AdminScreenRouter";
 
 import WorkspaceScreen from "@/components/workspace/WorkspaceScreen";
 import FilesScreen from "@/components/workspace/files/FilesScreen";
+import { ProjectHeaderPage } from "@/components/common/ProjectHeader";
 import PreviewRoleBoundary from "@/components/profile/PreviewRoleBoundary";
+import RfpRegisterPage from "@/components/rfp/RfpRegisterPage";
 import { serverEnv } from "@/config/env";
 import { getSidebarItemByScreen } from "@/config/sidebar";
 import { requireRole } from "@/lib/auth/guards";
@@ -33,7 +35,11 @@ export default async function WorkspaceScreenPage({
 
   return (
     <PreviewRoleBoundary requiredRole={item.requiredRole}>
-      {screen === "files" ? <FilesScreen /> : screen === "write" || screen === "toc" || screen === "setup" ? <WorkspaceScreen screen={screen}/> : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
+      {screen === "register" ? <RfpRegisterPage />
+        : screen === "files" ? <FilesScreen />
+        : screen === "write" || screen === "toc" || screen === "setup" ? <WorkspaceScreen screen={screen} />
+        : screen === "analysis" || screen === "review" ? <ProjectHeaderPage title={item.label} headingId="workspace-screen-title" />
+        : <WorkspacePage title={item.label} headingId="workspace-screen-title">{null}</WorkspacePage>}
     </PreviewRoleBoundary>
   );
 }

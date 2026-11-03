@@ -4,5 +4,7 @@
 @source "../components/admin";
 @source "../components/layout";
 @source "../components/ui";
+@source "../components/rfp";
+@source "../components/workspace";
 @source "../hooks/admin";
 @source "./";

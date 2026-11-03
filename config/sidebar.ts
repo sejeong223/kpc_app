@@ -9,6 +9,8 @@ export type SidebarScreen =
   | "toc"
   | "setup"
   | "write"
+  | "review"
+  | "done"
   | "prompt-sets"
   | "skills"
   | "templates"
@@ -26,6 +28,8 @@ export type SidebarIcon =
   | "list"
   | "settings"
   | "edit"
+  | "review"
+  | "completed"
   | "prompts"
   | "skills"
   | "template"
@@ -53,6 +57,7 @@ export interface SidebarNavigationContext {
   authenticated: boolean;
   roles?: readonly string[];
   previewRole?: PreviewRole;
+  isProjectPm?: boolean;
 }
 
 function navigationItem(
@@ -86,6 +91,8 @@ export const sidebarGroups: readonly SidebarNavigationGroup[] = [
       navigationItem("toc", "목차", "list"),
       navigationItem("setup", "제작 설정", "settings"),
       navigationItem("write", "제작", "edit"),
+      navigationItem("review", "리뷰", "review"),
+      navigationItem("done", "완료한 제안", "completed"),
     ],
   },
   {
@@ -117,7 +124,7 @@ export function getVisibleSidebarGroups(
           context.authEnabled
             ? !item.requiredRole || hasRole(context.roles, item.requiredRole)
             : !item.requiredRole || (context.previewRole ?? "super_admin") !== "user",
-      ),
+      ).filter(item => item.id !== "review" || context.isProjectPm === true),
     }))
     .filter((group) => group.items.length > 0);
 }
