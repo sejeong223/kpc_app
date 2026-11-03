@@ -4,7 +4,7 @@
 - Status: in_progress
 - Decisions: [확정 결정](../decisions/2026-11-03-project-header.md)
 - 기준 코드: `b443fc079707cf799f1e1362e8c7340d5e950ca7`
-- 실행 진행 중: T01 구현·검증 완료. Task별 실행 기록과 current 포인터를 따른다.
+- 실행 진행 중: T01/T02 구현·검증 완료. Task별 실행 기록과 current 포인터를 따른다.
 
 ## Goal
 
@@ -73,5 +73,5 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 
 ## Progress
 
-- done: 1/3
-- active: P01/T02
+- done: 2/3
+- active: P01/T03

@@ -10,8 +10,8 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | 예시 모델·공유 선택·공용 헤더·토스트·리뷰/완료한 제안 메뉴 | [T01](./T01-shared-header-and-navigation.md) |
-| T02 | `in_progress` | 재작업/완성 모달과 완성본 팝업, 최종 실행 비활성 | [T02](./T02-completion-overlays.md) |
-| T03 | `pending` | 설정 네 탭과 임시 입력 수명, 전체 통합 확인 | [T03](./T03-settings-drawer.md) |
+| T02 | `done` | 재작업/완성 모달과 완성본 팝업, 최종 실행 비활성 | [T02](./T02-completion-overlays.md) |
+| T03 | `in_progress` | 설정 네 탭과 임시 입력 수명, 전체 통합 확인 | [T03](./T03-settings-drawer.md) |
 
 ## Phase Acceptance
 
@@ -23,7 +23,7 @@
 
 ## Progress
 
-- done: 1/3 (active: T02)
-- T01 commit: Task T01 완료 커밋
-- T02 commit: pending
+- done: 2/3 (active: T03)
+- T01 commit: d1826e7
+- T02 commit: Task T02 완료 커밋
 - T03 commit: pending
