@@ -15,7 +15,9 @@ import {
   DataBarVerticalRegular,
   DismissRegular,
   DocumentAddRegular,
+  DocumentCheckmarkRegular,
   EditRegular,
+  EyeRegular,
   HistoryRegular,
   MoneyRegular,
   PeopleRegular,
@@ -31,6 +33,7 @@ import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 
 import { useAuthRuntime } from "@/components/providers";
+import { useProjectHeader } from "@/components/common/ProjectHeaderProvider";
 import { useProfilePreview } from "@/components/profile/ProfilePreviewProvider";
 import ProfileMenu from "@/components/profile/ProfileMenu";
 import { getVisibleSidebarGroups, type SidebarIcon } from "@/config/sidebar";
@@ -44,6 +47,8 @@ const icons = {
   list: TextBulletListLtrRegular,
   settings: SettingsRegular,
   edit: EditRegular,
+  review: EyeRegular,
+  completed: DocumentCheckmarkRegular,
   prompts: SparkleRegular,
   skills: AppsRegular,
   template: SlideLayoutRegular,
@@ -291,12 +296,14 @@ export default function NavSidebar({
   const styles = useStyles();
   const { authEnabled, session } = useAuthRuntime();
   const { state } = useProfilePreview();
+  const { isPm } = useProjectHeader();
   const pathname = usePathname();
   const groups = getVisibleSidebarGroups({
     authEnabled,
     authenticated: session !== null,
     roles: session?.user.roles,
     previewRole: state.previewRole,
+    isProjectPm: isPm,
   });
   const navId = `${id}-navigation`;
 

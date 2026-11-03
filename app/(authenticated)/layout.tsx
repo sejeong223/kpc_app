@@ -5,6 +5,7 @@ import ProfilePreviewProvider from "@/components/profile/ProfilePreviewProvider"
 import TokenDialogs from "@/components/profile/token/TokenDialogs";
 import AdminRuntimeProvider from "@/components/admin/AdminRuntimeProvider";
 import CommentsProvider from "@/components/comments/CommentsProvider";
+import ProjectHeaderProvider from "@/components/common/ProjectHeaderProvider";
 import { requireAppAccess } from "@/lib/auth/guards";
 
 // 배포 후에도 매 요청에서 세션과 앱 역할을 검사한다.
@@ -19,7 +20,7 @@ export default async function AuthenticatedLayout({
       <ProfilePreviewProvider>
         <AdminRuntimeProvider>
           <CommentsProvider>
-            <AppShell>{children}</AppShell>
+            <ProjectHeaderProvider><AppShell>{children}</AppShell></ProjectHeaderProvider>
             <DadamThemeScope><TokenDialogs /></DadamThemeScope>
           </CommentsProvider>
         </AdminRuntimeProvider>

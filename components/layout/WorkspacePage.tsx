@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import WorkspaceHeader from "./WorkspaceHeader";
+import WorkspaceHeader, { type WorkspaceHeaderProps } from "./WorkspaceHeader";
 
 export interface WorkspacePageProps {
   title: string;
@@ -12,11 +12,12 @@ export interface WorkspacePageProps {
   headingId?: string;
   headingRef?: React.Ref<HTMLHeadingElement>;
   stickyHeader?: boolean;
+  headerComponent?: React.ComponentType<WorkspaceHeaderProps>;
   className?: string;
   children: React.ReactNode;
 }
 
-export default function WorkspacePage({ children, className = "", stickyHeader = false, ...header }: WorkspacePageProps): React.ReactElement {
+export default function WorkspacePage({ children, className = "", stickyHeader = false, headerComponent: HeaderComponent = WorkspaceHeader, ...header }: WorkspacePageProps): React.ReactElement {
   const root = useRef<HTMLDivElement>(null);
   const heading = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -39,7 +40,7 @@ export default function WorkspacePage({ children, className = "", stickyHeader =
   }, [stickyHeader]);
 
   return <div ref={root} data-workspace-page className={"tw:flex tw:min-w-0 tw:flex-col tw:gap-(--layout-section-gap) " + className}>
-    <WorkspaceHeader {...header} headerRef={heading} sticky={stickyHeader} />
+    <HeaderComponent {...header} headerRef={heading} sticky={stickyHeader} />
     {children}
   </div>;
 }

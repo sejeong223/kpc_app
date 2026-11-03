@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useComments } from "@/components/comments/CommentsProvider";
+import { ProjectHeaderToaster } from "@/components/common/ProjectHeaderProvider";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import { WorkspaceNavigationProvider } from "./WorkspaceNavigation";
 
@@ -163,6 +164,7 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
           ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent,
           pathname === "/workspace/write" && styles.productionContent,
         )} tabIndex={-1}>{children}</main>
+        <ProjectHeaderToaster />
       </div>
     </div>
     </WorkspaceNavigationProvider>
