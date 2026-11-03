@@ -1,5 +1,5 @@
 import { DadamButton as Button } from "@/components/ui/DadamControls";
-import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
+import DashboardCard from "./DashboardCard";
 import { AdminStackedBar } from "@/components/admin/ui/AdminCharts";
 import type { DashboardQuery, DashboardView } from "@/types/admin";
 import { formatWinRate, rfpSegments } from "./rfp-presentation";
@@ -13,7 +13,7 @@ export default function RfpResultsPanel({ view, query, onChange, onSelectStatus 
     { label: "수주 금액 합계", value: (view.wonBudgetKrw / 100000000).toLocaleString("ko-KR", { maximumFractionDigits: 2 }) + "억 원", hint: "수주 건의 예산 기준" },
     { label: "Drop 비율", value: (total ? view.distribution.dropped / total * 100 : 0).toFixed(1) + "%", hint: "선택 구간 등록 건 기준" },
   ];
-  return <AdminCard title="결과 분포" actions={<div className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)">
+  return <DashboardCard title="결과 분포" actions={<div className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)">
     {bucket ? <Button size="small" aria-label="RFP 등록 구간 해제" onClick={() => onChange({ ...query, bucketStart: null, rfpPage: 1 })}>{bucket.label} 등록분 ×</Button> : <span className="tw:text-(--kpc-muted)">전체</span>}
     <span role="status" className="tw:text-(--kpc-secondary) tw:tabular-nums">{total.toLocaleString("ko-KR")}건</span>
   </div>}>
@@ -30,5 +30,5 @@ export default function RfpResultsPanel({ view, query, onChange, onSelectStatus 
     <dl className="tw:m-0 tw:grid tw:grid-cols-1 tw:gap-(--layout-control-gap) tw:border-0 tw:border-t tw:border-solid tw:border-(--kpc-line-soft) tw:pt-(--layout-section-gap) tw:sm:grid-cols-3">
       {stats.map(stat => <div key={stat.label}><dt className="tw:text-[11px] tw:text-(--kpc-muted)">{stat.label}</dt><dd className="tw:m-0 tw:text-[18px] tw:font-bold tw:tabular-nums">{stat.value}</dd><span className="tw:text-[10px] tw:text-(--kpc-muted)">{stat.hint}</span></div>)}
     </dl>
-  </AdminCard>;
+  </DashboardCard>;
 }

@@ -1,5 +1,5 @@
 "use client";
-import { AdminCard } from "@/components/admin/ui/AdminPrimitives";
+import DashboardCard from "./DashboardCard";
 import { AdminBreakdown } from "@/components/admin/ui/AdminCharts";
 import AdminPager from "@/components/admin/ui/AdminPager";
 import { AUDIT_ACTION_LABELS, AUDIT_RESOURCE_LABELS } from "@/config/admin-labels";
@@ -19,11 +19,11 @@ export default function ActivityBreakdownPanel({ view, pages, onPageChange }: Ac
         return { ...item, label: kind.value === "actions" && action.success ? AUDIT_ACTION_LABELS[action.data] : kind.value === "resources" && resource.success ? AUDIT_RESOURCE_LABELS[resource.data] : item.label };
       });
       const rows = paginate(items, { page: pages[kind.value], pageSize: DEFAULT_PAGE_SIZE });
-      return <AdminCard key={kind.value} title={kind.label} className={kind.value === "details" ? "tw:lg:col-span-2" : ""}
+      return <DashboardCard key={kind.value} title={kind.label} className={kind.value === "details" ? "tw:lg:col-span-2" : ""}
         actions={<span className="tw:text-[11px] tw:text-(--kpc-muted)">{kind.value === "details" ? "활동 로그의 세부 작업 기준 · " : ""}총 {items.length}개 분류</span>}>
         <AdminBreakdown label={kind.label} items={rows.items} columns={kind.value === "details" ? 2 : 1} maxCount={Math.max(1, ...items.map(item => item.count))} />
         {rows.total > DEFAULT_PAGE_SIZE && <AdminPager {...rows} onChange={page => onPageChange(kind.value, page)} />}
-      </AdminCard>;
+      </DashboardCard>;
     })}
   </div>;
 }
