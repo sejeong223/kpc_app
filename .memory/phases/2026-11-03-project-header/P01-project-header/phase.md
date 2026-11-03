@@ -2,8 +2,8 @@
 
 - Plan: [2026-11-03-project-header](../../../plans/2026-11-03-project-header.md)
 - Decisions: [확정 결정](../../../decisions/2026-11-03-project-header.md)
-- Status: in_progress
-- 실행 순서: T01 → T02 → T03 완료 이력 보존. 남은 작업은 T04 → T05이며 단계별 구현·검증·한국어 커밋 후 포인터를 전진한다.
+- Status: done
+- 실행 순서: T01 → T02 → T03 완료 이력 보존. 후속 T04 → T05도 구현·검증·한국어 커밋을 완료했다. 남은 Task 없음.
 
 ## Tasks
 
@@ -13,7 +13,7 @@
 | T02 | `done` | 재작업/완성 모달과 완성본 팝업, 최종 실행 비활성 | [T02](./T02-completion-overlays.md) |
 | T03 | `done` | 설정 네 탭과 임시 입력 수명, 전체 통합 확인 | [T03](./T03-settings-drawer.md) |
 | T04 | `done` | HTML 기준 완성본 팝업·완성/재작업 모달 보정 | [T04](./T04-html-overlays.md) |
-| T05 | `in_progress` | HTML 기준 설정 패널 네 탭·여백·설명 복원 | [T05](./T05-html-settings.md) |
+| T05 | `done` | HTML 기준 설정 패널 네 탭·여백·설명 복원 | [T05](./T05-html-settings.md) |
 
 ## Phase Acceptance
 
@@ -23,15 +23,15 @@
 - [x] 설정 네 탭의 임시 입력은 탭 이동에 유지되고 닫기/프로젝트·메뉴 변경에 초기화된다.
 - [x] 기존 핀·인증·전역 스타일을 보존한다. tests 생성 및 브라우저 검증을 하지 않는다.
 - [x] HTML의 완성본 버튼22px·아이콘과 모달 구조/치수/문구를 복원한다.
-- [ ] 설정 폭560/max96vw·본문16px·2열 폼·입력란 단일10px 여백을 지정한다.
-- [ ] 네 알림 설명·수신 방식 버튼·권한 아바타/툴팁·로그4열을 원본과 대조한다.
-- [ ] 원본에 없는 문구/필드/컨트롤 추가와 누락이 없는지 T04/T05 대조표를 항목별 확인한다. 실제 픽셀 검증은 미실시로 기록한다.
+- [x] 설정 폭560/max96vw·본문16px·2열 폼·입력란 단일10px 여백을 지정한다.
+- [x] 네 알림 설명·수신 방식 버튼·권한 아바타/툴팁·로그4열을 원본과 대조한다.
+- [x] 원본에 없는 문구/필드/컨트롤 추가와 누락이 없는지 T04/T05 대조표를 항목별 확인한다. 실제 픽셀 검증은 미실시로 기록한다.
 
 ## Progress
 
-- done: 4/5 (active: T05)
+- done: 5/5 (active: 없음)
 - T01 commit: d1826e7
 - T02 commit: 48c4cf5
 - T03 commit: 이 phase를 완료 처리한 커밋 (Task: T03-settings-drawer footer)
-- T04 commit: 이 Task 완료 커밋 (Task: T04-html-overlays footer)
-- T05 commit: pending
+- T04 commit: e7fc228
+- T05 commit: 이 Task 완료 커밋 (Task: T05-html-settings footer)

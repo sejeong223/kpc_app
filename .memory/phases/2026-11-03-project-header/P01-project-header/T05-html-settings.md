@@ -1,6 +1,6 @@
 # Task: T05 HTML 기준 설정 패널 네 탭·여백·설명 복원
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -208,15 +208,15 @@
 
 ## Acceptance Criteria
 
-- [ ] 설정 폭560/max96vw, 제목 한 줄14px16px/gear, 탭 본문 밖, 본문16px/panel0을 소스로 확인한다.
-- [ ] 기본정보2열/gap12px14px, label gap5, input32px/root10+slot0. 다른 입력창과 실제 dadam 코드 변경 없음.
-- [ ] HTML 원문 라벨/예산단위/text 입력을 유지하고 불필요한 달력·number spinner·분리단위·중복단위 라벨을 제거한다.
-- [ ] 권한 이름행의 avatar22/PM배지, 체크16, 첫열34%/나머지중앙, 원문5개툴팁이 있다.
-- [ ] 알림4개 정확한 제목/설명과 수신 방식2개 다중 선택 버튼이 있다. 원본에 없는 fieldset/legend 제거.
-- [ ] 알림6개초기true, 탭이동유지/닫기초기화, 실제 저장·헤더/권한/발송에 미반영.
-- [ ] 로그4열, 부서정보 첫셀 유지, 표 내부 가로스크롤/권한표 폭과 분리.
-- [ ] PM/grant 조건, Tab/label/aria/포커스/오버레이·코멘트 경계 유지.
-- [ ] 새 생산파일/테스트/README/index/별도CSS 없음. T04 포함 헤더 기존후속수정 회귀 없음.
+- [x] 설정 폭560/max96vw, 제목 한 줄14px16px/gear, 탭 본문 밖, 본문16px/panel0을 소스로 확인한다.
+- [x] 기본정보2열/gap12px14px, label gap5, input32px/root10+slot0. 다른 입력창과 실제 dadam 코드 변경 없음.
+- [x] HTML 원문 라벨/예산단위/text 입력을 유지하고 불필요한 달력·number spinner·분리단위·중복단위 라벨을 제거한다.
+- [x] 권한 이름행의 avatar22/PM배지, 체크16, 첫열34%/나머지중앙, 원문5개툴팁이 있다.
+- [x] 알림4개 정확한 제목/설명과 수신 방식2개 다중 선택 버튼이 있다. 원본에 없는 fieldset/legend 제거.
+- [x] 알림6개초기true, 탭이동유지/닫기초기화, 실제 저장·헤더/권한/발송에 미반영.
+- [x] 로그4열, 부서정보 첫셀 유지, 표 내부 가로스크롤/권한표 폭과 분리.
+- [x] PM/grant 조건, Tab/label/aria/포커스/오버레이·코멘트 경계 유지.
+- [x] 새 생산파일/테스트/README/index/별도CSS 없음. T04 포함 헤더 기존후속수정 회귀 없음.
 
 ## Validation
 
@@ -245,8 +245,19 @@ Task: T05-html-settings
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 Task 완료 커밋 (Task: T05-html-settings footer)
 
 검증 후 관련 파일만 명시적으로 stage해 한국어로 커밋한다. current는 로컬 전용이며 강제 추가하지 않는다. T05 완료 시 plan/phase를 done5/5, current Active Task를 없음으로 갱신하며 이전 T01~T03/T04 이력을 보존한다. push/배포는 수행하지 않는다.
+
+## Execution Record — 2026-11-03
+
+- typecheck, 변경 파일 ESLint, production build, git diff --check 통과. HTML drawerHtml 및 치수·문구표를 각 JSX/Griffel 규칙과 정적으로 대조했다.
+- 패널560/max96vw, 제목행14px16px/gear, 본문 밖38px탭, 본문16px/panel0 적용. DrawerBody 마지막 자식의 Fluent 기본 패딩도 로컬 클래스에서 보정했다.
+- 기본정보2열/gap12px14px, 입력32px/root10px+내부input0px 적용. 원본 라벨·텍스트 예산단위·text 입력으로 복원했다. KPC 공용 DadamControls 및 실제 dadam 저장소는 변경하지 않았다.
+- 권한 이름열34%/아바타22px/PM배지/체크16px 및 5개 설명을 복원했다. 알림4개 원문 제목·설명과 앱 내 알림/이메일 다중 선택 버튼을 적용하고 UI fixture 기본값6개true로 맞췄다.
+- 로그4열로 부서 정보를 이름 옆에 유지했다. 원본 로그 최소폭880px는 표 컨테이너 안에서 스크롤하고 권한표는 minWidth0/fixed로 분리했다.
+- draft 불변복사/함수형 업데이트, PM/grant 제한, 탭전환 유지/닫기·프로젝트·메뉴 변경 초기화, 실제 저장·발송·다운로드 제외를 확인했다. 앞서 완료한 T04와 기존 헤더 개선은 보존했다.
+- 새 생산/README/index/CSS/test 파일 및 tests 폴더 없음. 브라우저/E2E/스크린샷/dev server·실제 픽셀/IME/키보드 조작은 미실시다. 타입·빌드 및 소스 대조를 실제 화면 검증으로 보고하지 않는다.
+- 기존 baseline-browser-mapping 경고는 빌드를 막지 않아 의존성은 변경하지 않았다. 범위 밖 신규 결함: 특이사항 없음. 다른 화면의 입력란 전역 수정은 수행하지 않았다.

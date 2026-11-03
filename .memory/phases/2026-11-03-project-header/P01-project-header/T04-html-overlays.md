@@ -187,7 +187,7 @@ Task: T04-html-overlays
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: 이 Task 완료 커밋 (Task: T04-html-overlays footer)
+- commit: e7fc228
 
 실행 전 미커밋 diff를 기록하고 사용자 선행 수정은 보존한다. Task 관련 경로/hunk만 명시적으로 stage하며 `git add .` 금지. `.memory/current.md`는 로컬 전용으로 커밋하지 않는다. T04 완료 후 phase done4/5, current T05로 전진한다. push/배포 없음.
 

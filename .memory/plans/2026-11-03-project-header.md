@@ -1,10 +1,10 @@
 # Plan: 프로젝트 공용 헤더·팝업·설정 패널
 
 - Date: 2026-11-03
-- Status: in_progress
+- Status: done
 - Decisions: [확정 결정](../decisions/2026-11-03-project-header.md)
 - 기준 코드: `b443fc079707cf799f1e1362e8c7340d5e950ca7`
-- 실행 이력: T01/T02/T03은 완료 기록을 보존한다. 2026-11-03 사용자 검토에서 발견한 HTML 불일치를 T04/T05로 보정하며 현재 포인터는 T04다.
+- 실행 이력: T01/T02/T03 완료 기록을 보존하고, 2026-11-03 사용자 검토에서 발견한 HTML 불일치를 T04/T05로 보정했다. 총5/5 완료, 남은 Task 없음.
 
 ## Goal
 
@@ -37,7 +37,7 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 기존 연결 유지 및 HTML 기준 팝업·설정 디자인 보정 | [P01](../phases/2026-11-03-project-header/P01-project-header/phase.md) |
+| P01 | `done` | 기존 연결 유지 및 HTML 기준 팝업·설정 디자인 보정 | [P01](../phases/2026-11-03-project-header/P01-project-header/phase.md) |
 
 ## Task Sequence
 
@@ -47,7 +47,7 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 | T02 | 재작업·완성 중앙 모달과 완성본 팝업을 헤더 버튼에서 열고 닫음 | ProjectHeader.tsx |
 | T03 | 설정 오른쪽 패널의 네 탭과 임시 입력, 전체 연결 마무리 | 새 ProjectSettingsDrawer.tsx와 ProjectHeader.tsx |
 | T04 (done) | 완성본 작은 버튼·아이콘, 완성/재작업 모달의 원본 배치·내용 복원 | ProjectHeader.tsx, ModalFrame.tsx의 선택적 스타일 슬롯 |
-| T05 (in_progress) | 설정 패널 치수·2열 폼·입력 여백·권한/알림/로그 구성 복원 | ProjectSettingsDrawer.tsx, config/project-header.ts의 알림 예시 기본값 |
+| T05 (done) | 설정 패널 치수·2열 폼·입력 여백·권한/알림/로그 구성 복원 | ProjectSettingsDrawer.tsx, config/project-header.ts의 알림 예시 기본값 |
 
 상태와 사이드바를 T01에서 함께 연결해야 메뉴 이동 후에도 프로젝트와 PM 메뉴 표시가 일치한다. 모달과 설정 패널은 서로 다른 UI 단위이므로 별도 Task로 나누되 모두 같은 Phase에서 구현한다. T01/T02의 중간 커밋은 후속 버튼 연결이 남아 있는 단계임을 기록한다.
 
@@ -88,9 +88,15 @@ AI 분석·파일 업로드·목차·제작 설정·제작·리뷰에서 하나�
 - 각 Task 구현 후 `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build`, `git diff --check`를 실행한다. 실제 픽셀·브라우저 조작을 검증했다고 보고하지 않는다.
 - Task의 Acceptance Criteria를 정적 코드로 확인하고 결과를 기록한다. 기존 실패가 있으면 원인과 본 변경의 관계를 구분하며 검증하지 않은 항목을 통과로 적지 않는다.
 - Task별 지정 한국어 커밋을 사용한다. 실행 단계에서만 관련 파일을 명시적으로 stage한다. `.memory/current.md`는 로컬 포인터로 강제 추가/커밋하지 않는다. push·배포는 범위 밖이다.
-- [현재 포인터](../current.md)는 P01/T04부터 시작한다. T04 → T05 순서이며 완료한 T01~T03과 이전 계획은 재실행하지 않는다.
+- [현재 포인터](../current.md)의 Active Task는 없다. T04 → T05 순서로 구현·검증·커밋을 완료했으며 완료 Task와 이전 계획은 재실행하지 않는다.
 
 ## Progress
 
-- done: 4/5
-- active: T05-html-settings
+- done: 5/5
+- active: 없음
+
+## Revision Execution — 2026-11-03
+
+- T04 e7fc228: 완성본 팝업/모달 보정과 선행 동일 헤더 수정 보존. T05는 Task: T05-html-settings footer의 완료 커밋이다.
+- 두 Task 각각 typecheck·변경 파일 ESLint·build·diff 검사를 통과했다. HTML 원문/치수와 JSX/Griffel을 대조했고 브라우저/실제 픽셀 검증은 미실시다.
+- 공용 Button·DadamControls·팀원 CSS·실제 dadam 저장소 변경 없음. 새 생산파일/README/index/CSS/test 파일·tests 폴더 없음. 실제 저장/전송/다운로드는 제외한 UI 범위다.

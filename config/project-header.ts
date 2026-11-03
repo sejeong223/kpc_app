@@ -75,7 +75,7 @@ export interface ProjectHeaderView {
 }
 
 const allPermissions: readonly ProjectPermission[] = ["done", "redo", "setup", "assign", "grant"];
-const notifications: ProjectNotifications = { deadline: true, complete: true, rework: true, comment: true, inApp: true, email: false };
+const notifications: ProjectNotifications = { deadline: true, complete: true, rework: true, comment: true, inApp: true, email: true };
 
 export const PROJECT_HEADER_PROJECTS: readonly ProjectHeaderData[] = [
   {
