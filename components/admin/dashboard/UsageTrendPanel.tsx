@@ -22,9 +22,9 @@ export default function UsageTrendPanel({ view, chartKind, onChartKindChange }: 
       const weekly = chartKind === "auto" && item.value === "tokens", title = weekly ? "주별 AI Token 사용량" : item.title;
       return <DashboardCard key={item.value} title={title} className={index === 0 ? "tw:lg:col-span-2" : ""}
         actions={index === 0 && <SegmentedControl ariaLabel="사용량 차트 유형" options={[{ value: "auto", label: "패턴 보기" }, { value: "bar", label: "일별 막대" }, { value: "line", label: "일별 선" }]} value={chartKind} onChange={onChartKindChange} />}>
-        {chartKind === "auto" && !weekly ? <AdminCalendarHeatmap label={item.title} points={daily} unit={item.unit} color={DASHBOARD_CHART_COLORS[item.value]} /> : <>
+        {chartKind === "auto" && item.value === "activeUsers" ? <AdminCalendarHeatmap label={item.title} points={daily} unit={item.unit} color={DASHBOARD_CHART_COLORS[item.value]} /> : <>
           {weekly && <p className="tw:text-[11px] tw:text-(--kpc-secondary)">월–일 합계 · 첫 주와 마지막 주는 조회 기간 내 날짜만 포함합니다.</p>}
-          <AdminSeriesChart label={title} kind={chartKind === "auto" ? "bar" : chartKind} color={DASHBOARD_CHART_COLORS[item.value]} area={item.area} unit={item.unit} points={weekly ? sumWeeklyChartPoints(daily, item.unit) : daily} />
+          <AdminSeriesChart label={title} kind={chartKind === "auto" ? "bar" : chartKind} variant={item.value === "activities" ? "simple" : "default"} color={DASHBOARD_CHART_COLORS[item.value]} area={item.area} unit={item.unit} points={weekly ? sumWeeklyChartPoints(daily, item.unit) : daily} />
           {weekly && <AdminChartDataTable label={item.title} points={daily} unit={item.unit} summary="원본 일별 데이터 보기" />}
         </>}
       </DashboardCard>;
