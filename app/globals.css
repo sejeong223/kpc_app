@@ -41,12 +41,12 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; }
-button, input, select, textarea { font: inherit; }
+button:not([data-common-button]), input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 a { color: inherit; }
-button:focus-visible, a:focus-visible { outline: 3px solid #a5b4fc; outline-offset: 4px; }
+button:not([data-common-button]):focus-visible, a:focus-visible { outline: 3px solid #a5b4fc; outline-offset: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

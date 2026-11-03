@@ -43,6 +43,13 @@
    - 상위 `phase.md`의 진행률 갱신
    - `.memory/current.md`의 `Active Task`를 다음 Task로 전진
 
+## 테스트 디렉토리 생성 금지
+
+- 사용자 지시(2026-11-02): **앞으로 이 프로젝트에서 `tests/` 폴더를 절대 만들지 않는다.**
+- 로컬 전용, Git 제외, 임시 검증 목적이라도 생성하거나 삭제된 `tests/` 폴더를 복원하지 않는다.
+- 기존 Plan/Task/스킬의 테스트 폴더 생성 지시보다 이 최신 사용자 지시를 우선한다.
+- 검증은 기존 타입 검사·lint·build·정적 코드 검토 등을 활용한다. 이 지시만으로 기존 테스트 폴더나 파일을 삭제하지 않는다.
+
 ## Cosmos DB 스킬 사용 규칙
 
 - Cosmos DB for NoSQL 데이터 모델·컨테이너·파티션 키·쿼리·SDK·프로비저닝 작업 전에 `.agents/skills/cosmosdb-best-practices/SKILL.md`를 먼저 읽는다.

@@ -1,6 +1,8 @@
 "use client";
 
 import { Button, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { ArrowCounterclockwise16Regular, Checkmark16Regular, History16Regular, Settings16Regular } from "@fluentui/react-icons";
+import CommonButton from "@/components/common/Button";
 import { dadamUi } from "@/lib/ui/dadam-theme";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import { useEffect, useRef, useState } from "react";
@@ -18,6 +20,9 @@ const useStyles = makeStyles({
   surface: { position: "relative", flex: 1, width: "100%", minHeight: "100svh", overflow: "visible", backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1, ":focus": { outline: "none" } },
   creating: { cursor: "crosshair" },
   intro: { padding: "var(--layout-canvas-tools-inset)", display: "flex", flexDirection: "column", gap: "var(--layout-control-gap)" },
+  headerAction: { height: "34px", minHeight: "34px", paddingLeft: "12px", paddingRight: "12px", columnGap: "6px" },
+  headerIconAction: { width: "34px", minWidth: "34px", paddingLeft: "0px", paddingRight: "0px" },
+  canvasTools: { display: "flex", alignItems: "center", justifyContent: "flex-start", gap: "var(--layout-control-gap)" },
   text: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, margin: 0 },
   alert: { position: "relative", zIndex: 3, margin: "var(--layout-canvas-tools-inset)", padding: "var(--layout-card-inset)", border: `1px solid ${tokens.colorStatusDangerBorder1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
   hidden: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 },
@@ -139,7 +144,22 @@ export default function CommentsWorkspace(): React.ReactElement {
       const point = clientPointToRatio({ x: e.clientX, y: e.clientY }, boundsOf(e.currentTarget)); if (point) controller?.placePin(point);
     }}
     onKeyDown={e => { if (e.target === e.currentTarget && state.pinMode && ["Enter", " "].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); controller?.placePin({ xRatio: .5, yRatio: .5 }); } }}>
-    <div className={styles.intro} data-comment-control><WorkspaceHeader title="제작" headingId="workspace-screen-title" actions={<CommentCreateButton />} />
+    <div className={styles.intro} data-comment-control>
+      <WorkspaceHeader title="제작" headingId="workspace-screen-title" actions={<>
+        <CommonButton type="button" className={mergeClasses(styles.headerAction, styles.headerIconAction)} aria-label="재작업" title="재작업">
+          <ArrowCounterclockwise16Regular aria-hidden={true} focusable="false" />
+        </CommonButton>
+        <CommonButton type="button" className={styles.headerAction}>
+          <History16Regular aria-hidden={true} focusable="false" />완성본 1
+        </CommonButton>
+        <CommonButton type="button" className={mergeClasses(styles.headerAction, "primary")}>
+          <Checkmark16Regular aria-hidden={true} focusable="false" />완성
+        </CommonButton>
+        <CommonButton type="button" className={styles.headerAction} title="프로젝트 설정">
+          <Settings16Regular aria-hidden={true} focusable="false" />설정
+        </CommonButton>
+      </>} />
+      <div className={styles.canvasTools}><CommentCreateButton /></div>
       {state.pinMode && <p className={styles.text} role="status">의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
       {(state.status === "idle" || state.status === "loading") && <p className={styles.text} role="status">코멘트를 불러오는 중입니다.</p>}
     </div>
