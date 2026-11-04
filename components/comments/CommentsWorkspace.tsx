@@ -7,6 +7,7 @@ import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import { useEffect, useRef, useState } from "react";
 import type { CommentPoint } from "@/config/comments";
 import { clientPointToRatio, getPopupLimits, keepPinInsideSurface, placeCommentPopup, ratioToClientPoint, type CommentBounds, type PixelPoint } from "@/lib/comments/geometry";
+import LegacyCommentsArchive from "@/components/workspace/production/comments/LegacyCommentsArchive";
 import CommentCreateButton from "./CommentCreateButton";
 import CommentPin from "./CommentPin";
 import CommentPopover from "./CommentPopover";
@@ -33,7 +34,7 @@ const viewportBounds = (): CommentBounds => {
 };
 
 export default function CommentsWorkspace(): React.ReactElement {
-  const styles = useStyles(), { state, controller } = useComments();
+  const styles = useStyles(), { state, controller, capabilities } = useComments();
   const surface = useRef<HTMLElement>(null), gesture = useRef<PinGesture | null>(null), suppressClick = useRef<string | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [measurement, setMeasurement] = useState<Measurement | null>(null), [hovered, setHovered] = useState<string | null>(null);
@@ -71,6 +72,7 @@ export default function CommentsWorkspace(): React.ReactElement {
   }, [controller]);
 
   useEffect(() => {
+    if (capabilities.readOnly) return;
     const move = (e: PointerEvent) => {
       const g = gesture.current;
       if (!g || g.pointerId !== e.pointerId || !surface.current) return;
@@ -96,7 +98,7 @@ export default function CommentsWorkspace(): React.ReactElement {
     const escape = (e: KeyboardEvent) => { if (e.key === "Escape" && gesture.current) { e.preventDefault(); e.stopPropagation(); finish(true); } };
     window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", cancel); window.addEventListener("keydown", escape, true);
     return () => { gesture.current = null; window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", cancel); window.removeEventListener("keydown", escape, true); };
-  }, [controller]);
+  }, [controller, capabilities.readOnly]);
 
   useEffect(() => {
     const outside = (e: PointerEvent) => {
@@ -136,20 +138,21 @@ export default function CommentsWorkspace(): React.ReactElement {
 
   return <DadamThemeScope><section ref={surface} data-comment-surface className={mergeClasses(styles.surface, state.pinMode && styles.creating)} aria-labelledby="workspace-screen-title" tabIndex={0}
     onClick={e => {
-      if (!ready || state.busy || !state.pinMode || (e.target instanceof Element && e.target.closest("[data-comment-control], [data-comment-pin], button, a, input, textarea, select"))) return;
+      if (!capabilities.canCreate || !ready || state.busy || !state.pinMode || (e.target instanceof Element && e.target.closest("[data-comment-control], [data-comment-pin], button, a, input, textarea, select"))) return;
       const point = clientPointToRatio({ x: e.clientX, y: e.clientY }, boundsOf(e.currentTarget)); if (point) controller?.placePin(point);
     }}
-    onKeyDown={e => { if (e.target === e.currentTarget && state.pinMode && ["Enter", " "].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); controller?.placePin({ xRatio: .5, yRatio: .5 }); } }}>
+    onKeyDown={e => { if (e.target === e.currentTarget && capabilities.canCreate && state.pinMode && ["Enter", " "].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); controller?.placePin({ xRatio: .5, yRatio: .5 }); } }}>
     <div className={styles.intro} data-comment-control>
       <ProjectHeader title="제작" headingId="workspace-screen-title" />
-      <div className={styles.canvasTools}><CommentCreateButton /></div>
+      <div className={styles.canvasTools}><CommentCreateButton /><LegacyCommentsArchive /></div>
       {state.pinMode && <p className={styles.text} role="status">의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
       {(state.status === "idle" || state.status === "loading") && <p className={styles.text} role="status">코멘트를 불러오는 중입니다.</p>}
     </div>
-    <p className={styles.hidden} id="comment-pin-help">핀은 드래그하거나 Alt와 방향키로 이동할 수 있습니다. Shift를 함께 누르면 더 크게 이동합니다.</p>
+    <p className={styles.hidden} id="comment-pin-help">{capabilities.readOnly ? "핀을 선택하면 의견을 읽을 수 있습니다." : "핀은 드래그하거나 Alt와 방향키로 이동할 수 있습니다. Shift를 함께 누르면 더 크게 이동합니다."}</p>
     {state.error && !state.view && <div className={styles.alert} role="alert" data-comment-control>{state.error.message} {controller && <Button size="small" disabled={state.busy || state.status === "loading"} onClick={() => void controller.load()}>다시 불러오기</Button>}</div>}
     {measurement && pins.map(pin => {
       const tip = tipFor(pin.id)!;
+      const movable = pin.id === DRAFT_ID ? capabilities.canCreate : capabilities.moveThreadIds.includes(pin.id);
       return <CommentPin key={pin.id} pinId={pin.id} number={pin.number} status={pin.status} selected={selectedId === pin.id} disabled={!ready}
         position={{ x: tip.x - measurement.surface.left, y: tip.y - measurement.surface.top }} previewId={previewMessage?.threadId === pin.id ? `comment-preview-${pin.id}` : undefined}
         onActivate={() => { if (suppressClick.current === pin.id) return; setHovered(null); if (pin.id === DRAFT_ID) controller?.placePin(pin.point); else controller?.openThread(pin.id); }}
@@ -158,18 +161,18 @@ export default function CommentsWorkspace(): React.ReactElement {
           if (!visible) { setHovered(null); return; }
           hoverTimer.current = setTimeout(() => { if (!gesture.current && !controller?.getSnapshot().view && pin.status !== "draft") setHovered(pin.id); }, 200);
         }}
-        onPointerDown={e => {
+        onPointerDown={movable ? e => {
           if (!ready || state.busy || e.button !== 0 || !e.isPrimary) return;
           gesture.current = { id: pin.id, pointerId: e.pointerId, origin: { x: e.clientX, y: e.clientY }, offset: { x: e.clientX - tip.x, y: e.clientY - tip.y }, point: pin.point, moved: false, element: e.currentTarget };
           e.currentTarget.setPointerCapture(e.pointerId);
-        }}
-        onKeyDown={e => {
+        } : undefined}
+        onKeyDown={movable ? e => {
           if (!e.altKey || !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) return;
           e.preventDefault(); if (e.repeat || state.busy || !ready) return;
           const step = e.shiftKey ? .05 : .01;
           const point = { xRatio: Math.max(0, Math.min(1, pin.point.xRatio + (e.key === "ArrowRight" ? step : e.key === "ArrowLeft" ? -step : 0))), yRatio: Math.max(0, Math.min(1, pin.point.yRatio + (e.key === "ArrowDown" ? step : e.key === "ArrowUp" ? -step : 0))) };
           if (pin.id === DRAFT_ID) controller?.movePendingPin(point); else void controller?.moveThread(pin.id, point);
-        }} />;
+        } : undefined} />;
     })}
     {previewMessage && previewRect && <CommentPreview message={previewMessage} position={previewRect} width={previewRect.width} now={now} />}
     {selectedTip && limits && <CommentPopover key={selectedId} anchor={selectedTip} limits={limits} now={now} onClose={closeAndFocus} />}

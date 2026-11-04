@@ -9,7 +9,7 @@ import { createEmptyFileProject } from "@/lib/workspace/files/domain";
 import { createWorkspaceState } from "@/lib/workspace/production/domain";
 import {
   FileProjectRecordSchema,
-  WorkspaceRecordSchema,
+  StoredWorkspaceRecordSchema,
 } from "@/lib/workspace/production/storage-schemas";
 import { workspaceAssert as check } from "@/lib/workspace/production/errors";
 import type { WatchRequest } from "./WorkspaceDatabase";
@@ -78,7 +78,7 @@ export function readWorkspaceBundle(
   });
   watch(tx.objectStore("workspaces").get([namespace, projectId]), (value) => {
     if (value !== undefined) {
-      const r = WorkspaceRecordSchema.safeParse(value);
+      const r = StoredWorkspaceRecordSchema.safeParse(value);
       check(
         r.success &&
           r.data.namespace === namespace &&

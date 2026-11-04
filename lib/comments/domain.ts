@@ -41,7 +41,7 @@ const snapshotSchema = z.object({
     updatedAt: timestamp.nullable(), revision: integer, isSeed: z.boolean(),
   }).strict()),
 }).strict();
-const commandSchema = z.discriminatedUnion("type", [
+export const CommentCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("create-thread"), threadId: id, messageId: id, point: z.object(pointFields).strict(), draft: draftSchema }).strict(),
   z.object({ type: z.literal("reply"), threadId: id, messageId: id, draft: draftSchema }).strict(),
   z.object({ type: z.literal("edit-message"), messageId: id, expectedRevision: integer, draft: draftSchema }).strict(),
@@ -133,7 +133,7 @@ export function getThreadMessages(snapshot: CommentSnapshot, threadId: string): 
 
 export function applyCommentCommand(snapshot: CommentSnapshot, actor: CommentUser, input: CommentCommand, now: string): CommentSnapshot {
   const next = validateCommentSnapshot(snapshot, snapshot.scope);
-  const parsed = commandSchema.safeParse(input);
+  const parsed = CommentCommandSchema.safeParse(input);
   if (!parsed.success || !timestamp.safeParse(now).success || !userSchema.safeParse(actor).success) invalid();
   if (!next.users.some((u) => u.id === actor.id)) throw new CommentError("forbidden", "이 작업 영역의 사용자가 아닙니다.");
   const command = parsed.data;

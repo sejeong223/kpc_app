@@ -1,3 +1,4 @@
+import { CanvasCommentStateSchema, CanvasCommandSchema, canvasReferenceErrors } from "./canvas-schemas";
 import { z } from "zod";
 import {
   WORKSPACE_LIMITS as L,
@@ -14,9 +15,10 @@ import {
 import { FileRoundEntrySchema } from "@/lib/workspace/files/schemas";
 import type {
   ProjectWorkspaceState,
+  LegacyProjectWorkspaceState,
+  LegacyRoundBody,
   WorkspaceMutation,
   PreparedWorkspaceMutation,
-  RoundBody,
   AssetPin,
 } from "@/types/workspace-production";
 
@@ -35,6 +37,7 @@ const sources = z
   .max(3)
   .refine((a) => new Set(a).size === a.length);
 export const ProjectPermissionSchema = z.enum(PROJECT_PERMISSIONS);
+export const ProjectGrantSchema=z.strictObject({userId:id,permissions:z.array(ProjectPermissionSchema).max(5).refine(p=>new Set(p).size===p.length)});
 export const ChapterSchema = z.strictObject({ id, title });
 export const SectionSchema = z
   .strictObject({
@@ -250,7 +253,7 @@ export const ProjectThreadSchema = z
         ? v.resolvedBy === null && v.resolvedAt === null
         : v.resolvedBy !== null && v.resolvedAt !== null),
   );
-export const RoundBodySchema = z.strictObject({
+const LegacyRoundBodySchema = z.strictObject({
   chapters: z.array(ChapterSchema).max(L.chapters),
   sections: z.array(SectionSchema).max(L.sections),
   slides: z.array(ProposalSlideSchema).max(L.slides),
@@ -259,6 +262,7 @@ export const RoundBodySchema = z.strictObject({
   settings: ProjectSettingsSchema,
   threads: z.array(ProjectThreadSchema).max(5000),
 });
+export const RoundBodySchema = LegacyRoundBodySchema.extend({ canvasComments: CanvasCommentStateSchema });
 const pinBase = {
   id,
   assetId: id,
@@ -369,7 +373,7 @@ const undo = z.strictObject({
 });
 
 export function bodyReferenceErrors(
-  body: RoundBody,
+  body: LegacyRoundBody,
   pins: readonly AssetPin[],
 ): string[] {
   const errors: string[] = [],
@@ -447,32 +451,24 @@ export function bodyReferenceErrors(
   }
   return errors;
 }
-export const WorkspaceStateSchema = z
+const WorkspaceStateBase = z
   .strictObject({
-    nextCommentNumber: count.default(1),
-    schemaVersion: z.literal(1),
+    nextCommentNumber: count,
+    schemaVersion: z.literal(2),
     projectId: id,
     revision: count,
     inputRevision: count,
     currentRound: count,
     phase: z.enum(["writing", "completed"]),
-    grants: z.array(
-      z.strictObject({
-        userId: id,
-        permissions: z
-          .array(ProjectPermissionSchema)
-          .max(5)
-          .refine((p) => new Set(p).size === p.length),
-      }),
-    ),
+    grants: z.array(ProjectGrantSchema),
     body: RoundBodySchema,
     snapshots: z.array(snapshot),
     pins: z.array(AssetPinSchema),
     pptVersions: z.array(PptVersionSchema),
     reviews: z.array(ProjectThreadSchema),
     undo: undo.nullable(),
-  })
-  .superRefine((state, ctx) => {
+  });
+function validateStateReferences(state: Omit<LegacyProjectWorkspaceState, "schemaVersion">, ctx: z.RefinementCtx) {
     const issue = (message: string) =>
       ctx.addIssue({ code: "custom", message });
     for (const body of [
@@ -540,11 +536,23 @@ export const WorkspaceStateSchema = z
             v.manifest.inputRevision !== v.inputRevision))
       )
         issue("PPT 버전의 보관 연결이 다릅니다.");
-  }) satisfies z.ZodType<ProjectWorkspaceState>;
+}
+export const WorkspaceStateSchema = WorkspaceStateBase.superRefine(validateStateReferences).superRefine((state, ctx) => {
+  canvasReferenceErrors(state).forEach(message => ctx.addIssue({code:"custom",message}));
+}) satisfies z.ZodType<ProjectWorkspaceState>;
+export const LegacyWorkspaceStateSchema = z.strictObject({
+  ...WorkspaceStateBase.shape,
+  schemaVersion: z.literal(1),
+  nextCommentNumber: count.default(1),
+  body: LegacyRoundBodySchema,
+  snapshots: z.array(snapshot.extend({body: LegacyRoundBodySchema})),
+  undo: undo.extend({previousBody: LegacyRoundBodySchema}).nullable(),
+}).superRefine(validateStateReferences) satisfies z.ZodType<LegacyProjectWorkspaceState>;
 
 const op = <T extends string, S extends z.ZodRawShape>(type: T, fields: S) =>
   z.strictObject({ type: z.literal(type), ...fields });
 const publicOperations = [
+  op("canvas-command", {command:CanvasCommandSchema}),
   op("save-slide", {
     id,
     content: SlideContentSchema,
@@ -568,13 +576,8 @@ const publicOperations = [
     assigneeIds: ids.refine((a) => a.length > 0),
     reviewerIds: ids,
   }),
-  op("set-grants", {
-    userId: id,
-    permissions: z
-      .array(ProjectPermissionSchema)
-      .max(5)
-      .refine((p) => new Set(p).size === p.length),
-  }),
+  op("set-grants", ProjectGrantSchema.shape),
+  op("set-grants-batch", {grants:z.array(ProjectGrantSchema).min(1).max(1000).refine(rows=>new Set(rows.map(r=>r.userId)).size===rows.length)}),
   op("set-section-state", { id, state: z.enum(["writing", "done"]) }),
   op("unlock-section", { id }),
   op("add-check", { title, source: z.string().max(2000) }),

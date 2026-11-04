@@ -37,6 +37,8 @@ import { useProjectHeader } from "@/components/common/ProjectHeaderProvider";
 import { useProfilePreview } from "@/components/profile/ProfilePreviewProvider";
 import ProfileMenu from "@/components/profile/ProfileMenu";
 import { getVisibleSidebarGroups, type SidebarIcon } from "@/config/sidebar";
+import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
+import { isWorkspaceScreenId, workspaceHref } from "@/lib/workspace/production/routing";
 import { dadamUi } from "@/lib/ui/dadam-theme";
 
 const icons = {
@@ -298,6 +300,7 @@ export default function NavSidebar({
   const { state } = useProfilePreview();
   const { isPm } = useProjectHeader();
   const pathname = usePathname();
+  const {selection}=useWorkspaceSelection();
   const groups = getVisibleSidebarGroups({
     authEnabled,
     authenticated: session !== null,
@@ -347,7 +350,7 @@ export default function NavSidebar({
                 const active = pathname === item.href;
                 const link = (
                   <Link
-                    href={item.href}
+                    href={item.href.startsWith("/workspace/")&&isWorkspaceScreenId(item.href.slice(11))?workspaceHref(item.href.slice(11) as import("@/lib/workspace/production/routing").WorkspaceScreenId,selection):item.href}
                     className={mergeClasses(styles.link, active && styles.active)}
                     aria-label={item.label}
                     aria-current={active ? "page" : undefined}

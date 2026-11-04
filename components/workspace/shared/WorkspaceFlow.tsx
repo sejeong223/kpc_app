@@ -2,8 +2,6 @@
 import { useState } from "react";
 import { useWorkspaceRuntime } from "../WorkspaceProjectProvider";
 import type { WorkspaceSceneProps } from "../WorkspaceScreen";
-import { DadamButton } from "@/components/ui/DadamControls";
-import { useProjectRound } from "@/hooks/workspace/use-project-round";
 import { useWorkspaceProposals } from "@/hooks/workspace/use-workspace-proposals";
 import { loadProjectView } from "@/hooks/workspace/use-workspace-production";
 import type { MockRequest } from "@/types/workspace-production";
@@ -12,8 +10,6 @@ import ProductionWorkspace from "../production/ProductionWorkspace";
 import ProposalReview from "../production/ProposalReview";
 import ProductionJobStatus from "../production/ProductionJobStatus";
 import PptControls from "../production/PptControls";
-import ProjectRoundDialog from "./ProjectRoundDialog";
-import ProjectHistorySelector from "./ProjectHistorySelector";
 import { WorkspaceErrorText } from "./WorkspaceUi";
 export default function WorkspaceFlow({
   screen,
@@ -21,14 +17,6 @@ export default function WorkspaceFlow({
 }: WorkspaceSceneProps & { screen: "toc" | "write" }) {
   const [requestError, setRequestError] = useState<string | null>(null);
   const runtime = useWorkspaceRuntime(),
-    round = useProjectRound(scene.view.project.id, () =>
-      scene.choose({
-        projectId: scene.view.project.id,
-        sectionId: null,
-        slideId: null,
-        snapshotId: null,
-      }),
-    ),
     proposals = useWorkspaceProposals(),
     live = scene.liveView;
   const start = (request: MockRequest) => {
@@ -50,34 +38,6 @@ export default function WorkspaceFlow({
   };
   const actions = (
     <>
-      <ProjectHistorySelector
-        state={live.state}
-        snapshotId={scene.selection.snapshotId}
-        onSelect={(snapshotId) => {
-          void scene
-            .choose({
-              ...scene.selection,
-              snapshotId,
-              sectionId: null,
-              slideId: null,
-            })
-            .catch(() => {});
-        }}
-      />
-      {!scene.selection.snapshotId && (
-        <>
-          {live.capabilities.actions.complete && (
-            <DadamButton onClick={() => round.open("complete")}>
-              완성
-            </DadamButton>
-          )}
-          {live.capabilities.actions.rework && (
-            <DadamButton onClick={() => round.open("start-round")}>
-              재작업
-            </DadamButton>
-          )}
-        </>
-      )}
       <PptControls
         view={scene.view}
         liveView={live}
@@ -95,8 +55,7 @@ export default function WorkspaceFlow({
       <WorkspaceErrorText
         error={
           requestError ??
-          proposals.error ??
-          (!round.dialog ? round.error : null)
+          proposals.error
         }
       />
       <ProductionJobStatus
@@ -132,20 +91,6 @@ export default function WorkspaceFlow({
               .then(proposals.close)
               .catch(() => {});
           }}
-        />
-      )}
-      {round.dialog && (
-        <ProjectRoundDialog
-          key={round.dialog.mode + ":" + round.dialog.view.state.revision}
-          open
-          mode={round.dialog.mode}
-          view={round.dialog.view}
-          busy={round.busy}
-          error={round.error}
-          onConfirm={(input) => {
-            void round.confirm(input).catch(() => {});
-          }}
-          onClose={round.close}
         />
       )}
     </>

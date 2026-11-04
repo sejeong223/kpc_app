@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { selectFileSnapshot } from "@/lib/workspace/production/file-history";
+import type { FileWorkspaceView } from "@/types/workspace-files";
 import type {
   AssetPin,
   ExportRequest,
@@ -132,6 +134,11 @@ export class WorkspaceProductionService {
     const bundle = await this.options.repository.load(projectId);
     this.context(projectId);
     return bundle;
+  }
+  async loadFileSnapshot(projectId:string,snapshotId:string):Promise<FileWorkspaceView>{
+    check(WorkspaceIdSchema.safeParse(snapshotId).success,"VALIDATION","보관본을 확인해 주세요.");
+    const bundle=await this.load(projectId);
+    return selectFileSnapshot(bundle,this.context(projectId),snapshotId);
   }
   private async requested(input: ProjectRequest) {
     const parsed = ProjectRequestSchema.safeParse({

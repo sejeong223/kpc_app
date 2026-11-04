@@ -9,9 +9,13 @@ import type { WorkspaceDatabase } from "@/services/workspace/WorkspaceDatabase";
 import type { PromptSource, PromptRevision } from "./admin-prompts";
 import type { SkillAssetRevision, TemplateAssetRevision } from "./admin-assets";
 import type {
+  CommentThread,
+  CommentMessage,
+  CommentScope,
   CommentPoint,
   CommentMention,
   CommentDraft,
+  CommentCommand,
 } from "@/config/comments";
 import type { AdminActor } from "./admin";
 import type { TemplatePreviewData } from "./template-work";
@@ -166,7 +170,17 @@ export interface ProjectCommentThread {
   carriedFromId: string | null;
   messages: ProjectCommentMessage[];
 }
+export interface CanvasCommentThread extends Omit<CommentThread, keyof CommentScope> {
+  carriedFrom: { round: number; threadId: string } | null;
+}
+export type CanvasCommentMessage = Omit<CommentMessage, keyof CommentScope>;
+export interface CanvasCommentState {
+  nextNumber: number;
+  threads: CanvasCommentThread[];
+  messages: CanvasCommentMessage[];
+}
 export interface RoundBody {
+  canvasComments: CanvasCommentState;
   chapters: Chapter[];
   sections: Section[];
   slides: ProposalSlide[];
@@ -275,7 +289,7 @@ export interface WorkspaceUndo {
 }
 export interface ProjectWorkspaceState {
   nextCommentNumber: number;
-  schemaVersion: 1;
+  schemaVersion: 2;
   projectId: string;
   revision: number;
   inputRevision: number;
@@ -288,6 +302,15 @@ export interface ProjectWorkspaceState {
   pptVersions: PptVersion[];
   reviews: ProjectCommentThread[];
   undo: WorkspaceUndo | null;
+}
+export type LegacyRoundBody = Omit<RoundBody, "canvasComments">;
+export interface LegacyRoundSnapshot extends Omit<RoundSnapshot, "body"> { body: LegacyRoundBody }
+export interface LegacyWorkspaceUndo extends Omit<WorkspaceUndo, "previousBody"> { previousBody: LegacyRoundBody }
+export interface LegacyProjectWorkspaceState extends Omit<ProjectWorkspaceState, "schemaVersion" | "body" | "snapshots" | "undo"> {
+  schemaVersion: 1;
+  body: LegacyRoundBody;
+  snapshots: LegacyRoundSnapshot[];
+  undo: LegacyWorkspaceUndo | null;
 }
 export interface WorkspaceContext {
   identity: FileIdentity;
@@ -328,6 +351,8 @@ export type WorkspaceErrorCode =
   | "LAYOUT";
 
 export type WorkspaceOperation =
+  | {type:"set-grants-batch";grants:ProjectGrant[]}
+  | {type:"canvas-command";command:CommentCommand}
   | {
       type: "add-chapter";
       title: string;
@@ -757,6 +782,7 @@ export interface WorkspaceSelection {
   snapshotId: string | null;
 }
 export interface ProjectView {
+  roundCreatedAt: string;
   actor: Pick<FileIdentity["actor"], "id" | "role">;
   project: WorkspaceProject;
   members: WorkspaceMember[];

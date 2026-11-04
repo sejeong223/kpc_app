@@ -7,7 +7,7 @@ import type {
 import { WorkspaceError } from "@/lib/workspace/production/errors";
 import { applyWorkspaceMutation } from "@/lib/workspace/production/domain";
 import { canProjectAction } from "@/lib/workspace/production/permissions";
-import { WorkspaceRecordSchema } from "@/lib/workspace/production/storage-schemas";
+import { StoredWorkspaceRecordSchema } from "@/lib/workspace/production/storage-schemas";
 import { WorkspaceDatabase, type WatchRequest } from "./WorkspaceDatabase";
 import {
   readWorkspaceBundle,
@@ -396,7 +396,7 @@ export class IndexedDbFileRepository implements FileRepository {
                 const workspace =
                   saved === undefined
                     ? null
-                    : WorkspaceRecordSchema.parse(saved);
+                    : StoredWorkspaceRecordSchema.parse(saved);
                 if (
                   workspace &&
                   (workspace.namespace !== this.identity.namespace ||

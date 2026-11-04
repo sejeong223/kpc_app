@@ -1,3 +1,5 @@
+import { applyCanvasCommand, carryCanvasComments } from "./canvas-comments";
+import { emptyCanvasComments } from "./canvas-schemas";
 import type { FileProjectState } from "@/types/workspace-files";
 import type {
   AssetPin,
@@ -26,6 +28,7 @@ import {
 import {
   canEditSection,
   canManageProject,
+  applyProjectGrants,
   canProjectAction,
   isSectionAuthor,
 } from "./permissions";
@@ -71,6 +74,7 @@ export function emptyRoundBody(): RoundBody {
       overrides: [],
     },
     threads: [],
+    canvasComments: emptyCanvasComments(),
   };
 }
 export function createWorkspaceState(
@@ -86,7 +90,7 @@ export function createWorkspaceState(
   );
   return {
     nextCommentNumber: 1,
-    schemaVersion: 1,
+    schemaVersion: 2,
     projectId: context.project.id,
     revision: 1,
     inputRevision: 1,
@@ -195,7 +199,7 @@ export function applyWorkspaceMutation(
     ...state.pptVersions.flatMap((v) => [v.id, v.blobId]),
     ...state.snapshots.map((v) => v.id),
   ]);
-  for (const b of [body, ...state.snapshots.map((s) => s.body)])
+  for (const b of [body, ...state.snapshots.map((s) => s.body), ...(state.undo?[state.undo.previousBody]:[])])
     for (const row of [
       ...b.chapters,
       ...b.sections,
@@ -203,6 +207,8 @@ export function applyWorkspaceMutation(
       ...b.requirements,
       ...b.checklist,
       ...b.threads,
+      ...b.canvasComments.threads,
+      ...b.canvasComments.messages,
       ...b.threads.flatMap((t) => t.messages),
       ...b.slides.flatMap((s) => s.content.blocks),
     ])
@@ -335,6 +341,12 @@ export function applyWorkspaceMutation(
     applyProjectComment(state, operation, context, newId, createdIds);
   } else
     switch (operation.type) {
+      case "canvas-command": {
+        const next=applyCanvasCommand(state,operation.command,context,files.rounds[files.currentRound-1].createdAt,used);
+        body.canvasComments=next.canvas;
+        createdIds.push(...next.createdIds);
+        break;
+      }
       case "add-chapter": {
         structure([]);
         check(
@@ -478,28 +490,10 @@ export function applyWorkspaceMutation(
         });
         break;
       case "set-grants":
-        check(
-          canManageProject(context),
-          "FORBIDDEN",
-          "PM과 슈퍼 관리자만 권한을 지정할 수 있습니다.",
-        );
-        members([operation.userId]);
-        check(
-          operation.userId !== context.project.pmId &&
-            !context.members.some(
-              (m) => m.id === operation.userId && m.role === "super_admin",
-            ) &&
-            !(
-              operation.userId === actorId &&
-              context.identity.actor.role === "super_admin"
-            ),
-          "VALIDATION",
-          "고정 전체 권한은 변경할 수 없습니다.",
-        );
-        state.grants = [
-          ...state.grants.filter((g) => g.userId !== operation.userId),
-          { userId: operation.userId, permissions: operation.permissions },
-        ];
+        state.grants=applyProjectGrants(context,state,[{userId:operation.userId,permissions:operation.permissions}]);
+        break;
+      case "set-grants-batch":
+        state.grants=applyProjectGrants(context,state,operation.grants);
         break;
       case "set-section-state":
         edit(operation.id);
@@ -1077,6 +1071,7 @@ export function applyWorkspaceMutation(
           ...body.threads,
           ...state.reviews.filter((t) => t.round === state.currentRound),
         ].filter((t) => t.status === "open");
+        body.canvasComments=carryCanvasComments(body.canvasComments,state.currentRound,newId);
         files = advanceFileRound(files, context);
         state.currentRound = files.currentRound;
         state.phase = "writing";

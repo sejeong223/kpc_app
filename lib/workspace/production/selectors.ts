@@ -147,6 +147,7 @@ export function getCompletionSummary(state: ProjectWorkspaceState) {
     writingSections: state.body.sections.filter((s) => s.state === "writing")
       .length,
     openComments: [
+      ...state.body.canvasComments.threads,
       ...state.body.threads,
       ...state.reviews.filter((t) => t.round === state.currentRound),
     ].filter((t) => t.status === "open").length,
@@ -201,7 +202,10 @@ export function selectProjectView(
     "FORBIDDEN",
     "다른 프로젝트의 조회 정보입니다.",
   );
+  const round=bundle.files.rounds.find(r=>r.number===bundle.state.currentRound);
+  check(!!round,"STORAGE","현재 자료 회차를 찾을 수 없습니다.");
   return {
+    roundCreatedAt:round.createdAt,
     actor: { id: context.identity.actor.id, role: context.identity.actor.role },
     project: structuredClone(context.project),
     members: structuredClone([...context.members]),
@@ -220,6 +224,7 @@ export function selectSnapshotView(
   check(!!snapshot, "NOT_FOUND", "보관본이 없습니다.");
   return {
     ...view,
+    roundCreatedAt:snapshot.createdAt,
     state: {
       ...view.state,
       body: snapshot.body,

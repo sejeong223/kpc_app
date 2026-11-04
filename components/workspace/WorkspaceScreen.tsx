@@ -16,7 +16,7 @@ import type {
   WorkspaceSelection,
 } from "@/types/workspace-production";
 import { selectSnapshotView } from "@/lib/workspace/production/selectors";
-import ProjectSelector from "./ProjectSelector";
+import ProjectHeader from "@/components/common/ProjectHeader";
 import WorkspaceFlow from "./shared/WorkspaceFlow";
 import SetupWorkspace from "./setup/SetupWorkspace";
 import {
@@ -42,23 +42,7 @@ function ActiveGate({
     query = useProjectWorkspace(
       choice.error ? null : choice.selection.projectId,
     );
-  const selector = (
-    <ProjectSelector
-      projects={choice.projects}
-      value={choice.selection.projectId}
-      disabled={choice.pending}
-      onChange={(id) => {
-        void choice
-          .choose({
-            projectId: id,
-            sectionId: null,
-            slideId: null,
-            snapshotId: null,
-          })
-          .catch(() => {});
-      }}
-    />
-  );
+  const selector = null;
   let resolution: ReturnType<typeof resolveWorkspaceSelection> | null = null,
     resolutionError: Error | null = null;
   if (query.data && !choice.error)
@@ -77,13 +61,13 @@ function ActiveGate({
     (query.isPending && !choice.error && choice.selection.projectId)
   )
     return (
-      <WorkspacePage title={title} leading={selector}>
+      <WorkspacePage headerComponent={ProjectHeader} title={title} leading={selector}>
         <AdminAsyncState state="loading" />
       </WorkspacePage>
     );
   if (denied || choice.error || resolutionError || !query.data || !resolution)
     return (
-      <WorkspacePage title={title} leading={selector}>
+      <WorkspacePage headerComponent={ProjectHeader} title={title} leading={selector}>
         <AdminAsyncState
           state={error ? "error" : "empty"}
           message={
@@ -164,7 +148,7 @@ export function WorkspaceProjectGate({
       {runtime ? (
         <ActiveGate title={title}>{children}</ActiveGate>
       ) : (
-        <WorkspacePage title={title}>
+        <WorkspacePage headerComponent={ProjectHeader} title={title}>
           <AdminAsyncState
             state="forbidden"
             message="사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요."

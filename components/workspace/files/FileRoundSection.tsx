@@ -5,11 +5,11 @@ import { DadamButton } from "@/components/ui/DadamControls";
 import { FILE_CATEGORIES } from "@/config/workspace-files";
 import FileCategoryPanel, { CATEGORY_DRAG_TYPE, type FileCategoryPanelProps } from "./FileCategoryPanel";
 export interface FileRoundSectionProps extends Pick<FileCategoryPanelProps, "onAdd" | "onOpen" | "onEdit" | "onRemove" | "onDropFiles" | "disabled"> {
-  value: FileRoundView; canAdd: boolean; canReorder: boolean;
+  initialOpen?:boolean; value: FileRoundView; canAdd: boolean; canReorder: boolean;
   onReorder?(order: FileCategory[]): void;
 }
-export default function FileRoundSection({ value, canAdd, canReorder, onReorder, ...callbacks }: FileRoundSectionProps): React.ReactElement {
-  const [open, setOpen] = useState(!value.readOnly);
+export default function FileRoundSection({ value, initialOpen, canAdd, canReorder, onReorder, ...callbacks }: FileRoundSectionProps): React.ReactElement {
+  const [open, setOpen] = useState(initialOpen??!value.readOnly);
   const reorder = !value.readOnly && canReorder && onReorder ? (source: FileCategory, target: FileCategory) => {
     if (source === target || callbacks.disabled) return;
     const order = value.categoryOrder.filter(category => category !== source);

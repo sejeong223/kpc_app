@@ -58,11 +58,11 @@ function PinNumber({ value, className }: { value: number; className: string }): 
 export interface CommentPinProps {
   pinId: string; number: number; status: "draft" | CommentStatus; position: PixelPoint; selected: boolean; disabled: boolean;
   previewId?: string; onActivate(): void; onPreview(visible: boolean): void;
-  onPointerDown: React.PointerEventHandler<HTMLButtonElement>; onKeyDown: React.KeyboardEventHandler<HTMLButtonElement>;
+  onPointerDown?: React.PointerEventHandler<HTMLButtonElement>; onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
 }
 export default function CommentPin(p: CommentPinProps): React.ReactElement {
   const styles = useStyles();
-  return <button type="button" data-comment-pin={p.pinId} className={styles.hit} style={{ left: p.position.x, top: p.position.y }}
+  return <button type="button" data-comment-pin={p.pinId} className={styles.hit} style={{ left: p.position.x, top: p.position.y, cursor: p.onPointerDown ? "grab" : "pointer" }}
     aria-label={`코멘트 ${p.number} · ${p.status === "draft" ? "작성 중" : p.status === "resolved" ? "반영 완료" : "진행 중"}`}
     aria-expanded={p.selected} aria-controls={p.selected ? "production-comment-popup" : undefined} aria-describedby={p.previewId ?? "comment-pin-help"}
     disabled={p.disabled} onClick={p.onActivate} onPointerDown={p.onPointerDown} onKeyDown={p.onKeyDown}

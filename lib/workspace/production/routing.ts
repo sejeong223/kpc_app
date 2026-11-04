@@ -34,8 +34,12 @@ export function parseWorkspaceSelection(
   );
   return value;
 }
+export type WorkspaceScreenId="analysis"|"files"|"toc"|"setup"|"write"|"review";
+export function isWorkspaceScreenId(value:string):value is WorkspaceScreenId {
+  return ["analysis","files","toc","setup","write","review"].includes(value);
+}
 export function workspaceHref(
-  screen: "files" | "toc" | "setup" | "write",
+  screen: WorkspaceScreenId,
   selection: WorkspaceSelection,
 ): string {
   const params = new URLSearchParams();

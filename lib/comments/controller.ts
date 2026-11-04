@@ -135,6 +135,10 @@ export class CommentController {
     this.update({ view: null, pinMode: false, editingMessageId: null,
       pendingPoint: keepPending ? this.state.pendingPoint : null, drafts });
   }
+  discardDrafts(): void {
+    if(this.state.busy)return;
+    this.update({drafts:{},view:null,pendingPoint:null,editingMessageId:null,pinMode:false});
+  }
   suspendUi(): void { this.closePopup(); }
   setDraft(key: string, draft: CommentDraft): void {
     this.ui(() => {

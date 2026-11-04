@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { DadamButton } from "@/components/ui/DadamControls";
 import ModalFrame from "@/components/ui/ModalFrame";
-import { useComments } from "@/components/comments/CommentsProvider";
+import { useLegacyCommentIdentity } from "@/components/comments/CommentsProvider";
 import CommentMessageView from "@/components/comments/CommentMessage";
 import { useLegacyComments } from "@/hooks/workspace/use-legacy-comments";
 import type { CommentIdentity, CommentSnapshot } from "@/config/comments";
@@ -82,11 +82,11 @@ function ExistingArchive({
   );
 }
 export default function LegacyCommentsArchive() {
-  const { identity } = useComments(),
+  const identity = useLegacyCommentIdentity(),
     [open, setOpen] = useState(false);
   return identity ? (
     <>
-      <DadamButton onClick={() => setOpen(true)}>이전 의견 보관함</DadamButton>
+      <DadamButton onClick={() => setOpen(true)}>이전 의견</DadamButton>
       {open && (
         <ExistingArchive
           key={identity.scope.namespace + identity.actor.id}

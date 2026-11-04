@@ -2,7 +2,7 @@
 import { useId, useRef, useState } from "react";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { DadamButton, DadamSelect } from "@/components/ui/DadamControls";
-import { ALLOWED_FILE_EXTENSIONS, FILE_CATEGORIES, REFERENCE_KINDS, REFERENCE_PRIORITIES } from "@/config/workspace-files";
+import { ALLOWED_FILE_EXTENSIONS, FILE_LIMITS, FILE_CATEGORIES, REFERENCE_KINDS, REFERENCE_PRIORITIES } from "@/config/workspace-files";
 import { FileSettingsSchema } from "@/lib/workspace/files/schemas";
 import { guessReferenceKind, validateUploadFile } from "@/lib/workspace/files/validation";
 import FileReferenceFields from "./FileReferenceFields";
@@ -22,13 +22,13 @@ export default function FileUploadDialog(props: FileUploadDialogProps): React.Re
   const addPendingFiles = (files: File[]) => { if (!busy) changeRows([...rows, ...files.map(pendingRow)]); };
   const overflow = rows.length > availableSlots;
   const invalid = overflow || !rows.length || rows.some(row => row.validationError !== null || !FileSettingsSchema.safeParse({ kind: row.kind, priority: row.priority, instruction: row.instruction }).success);
-  return <ModalFrame open={props.open} title="파일 추가" subtitle={`${FILE_CATEGORIES.find(item => item.value === category)?.label} · 추가 가능 ${availableSlots}개 · 파일당 50MB`} width={820} contentKey={category} onClose={onClose}
+  return <ModalFrame open={props.open} title="파일 추가" subtitle={`${FILE_CATEGORIES.find(item => item.value === category)?.label} · 추가 가능 ${availableSlots}개 · 파일당 ${FILE_LIMITS.fileBytes / 1024 / 1024}MB · 이 브라우저에 저장`} width={820} contentKey={category} onClose={onClose}
     footer={<><span className="tw:mr-auto tw:text-xs tw:text-(--kpc-secondary)">선택한 파일 {rows.length}개</span><DadamButton disabled={busy} onClick={onClose}>취소</DadamButton><DadamButton appearance="primary" disabled={busy || invalid} onClick={() => { void onSubmit(rows.map(({ file, kind, priority, instruction }) => ({ file, kind, priority, instruction }))).catch(() => {}); }}>{busy ? "저장 중…" : "자료 추가"}</DadamButton></>}>
     <div className="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-(--layout-control-gap) tw:rounded-lg tw:border tw:border-dashed tw:border-(--dadam-control-border) tw:p-(--layout-card-inset)"
       onDragOver={event => { if (event.dataTransfer.types.includes("Files")) { event.preventDefault(); event.dataTransfer.dropEffect = busy ? "none" : "copy"; } }}
       onDrop={event => { if (event.dataTransfer.types.includes("Files")) { event.preventDefault(); addPendingFiles(Array.from(event.dataTransfer.files)); } }}>
       <div><b>파일을 끌어다 놓거나 선택하세요</b><p className="tw:mb-0 tw:text-xs tw:text-(--kpc-secondary)">PDF · HWP/HWPX · Word · PowerPoint · Excel · TXT</p></div>
-      <DadamButton disabled={busy} onClick={() => picker.current?.click()}>파일 선택</DadamButton>
+      <DadamButton disabled={busy} onClick={() => {if(picker.current){picker.current.value="";picker.current.click();}}}>파일 선택</DadamButton>
       <input ref={picker} type="file" multiple hidden accept={ALLOWED_FILE_EXTENSIONS.join(",")} onChange={event => { addPendingFiles(Array.from(event.currentTarget.files ?? [])); event.currentTarget.value = ""; }} />
     </div>
     {rows.length > 1 && <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)"><b>모든 파일에 적용</b>

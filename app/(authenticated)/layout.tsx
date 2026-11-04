@@ -1,3 +1,5 @@
+import WorkspaceProjectProvider from "@/components/workspace/WorkspaceProjectProvider";
+import WorkspaceSelectionProvider from "@/components/workspace/WorkspaceSelectionProvider";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import AppShell from "@/components/layout/AppShell";
 import FluentUiProvider from "@/components/providers/FluentUiProvider";
@@ -20,11 +22,13 @@ export default async function AuthenticatedLayout({
     <FluentUiProvider>
       <ProfilePreviewProvider>
         <AdminRuntimeProvider>
+          <WorkspaceProjectProvider><WorkspaceSelectionProvider>
           <CommentsProvider>
             <ProjectHeaderProvider><AppShell>{children}</AppShell></ProjectHeaderProvider>
             <DadamThemeScope><TokenDialogs /></DadamThemeScope>
             <DadamThemeScope><AppToaster /></DadamThemeScope>
           </CommentsProvider>
+          </WorkspaceSelectionProvider></WorkspaceProjectProvider>
         </AdminRuntimeProvider>
       </ProfilePreviewProvider>
     </FluentUiProvider>

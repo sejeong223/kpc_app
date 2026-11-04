@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import ProjectHeader from "@/components/common/ProjectHeader";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import { DadamButton } from "@/components/ui/DadamControls";
 import type { WorkspaceSceneProps } from "../WorkspaceScreen";
@@ -16,7 +17,7 @@ export default function SetupWorkspace({
   const [tab, setTab] = useState<WorkspaceAssetKind>("template"),
     runtime = useWorkspaceRuntime();
   return (
-    <WorkspacePage
+    <WorkspacePage headerComponent={ProjectHeader}
       title="제작 설정"
       leading={selector}
       actions={<WorkspaceLinks current="setup" selection={selection} />}

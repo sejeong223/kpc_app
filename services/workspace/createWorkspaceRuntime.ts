@@ -125,7 +125,7 @@ export function createWorkspaceRuntime(options: RuntimeOptions): {
     await Promise.all([
       client.invalidateQueries({
         queryKey: workspaceQueryKeys(queryScope).project(id),
-        exact: true,
+        exact: false,
       }),
       client.invalidateQueries({
         queryKey: fileQueryKeys(fileScope).project(id),

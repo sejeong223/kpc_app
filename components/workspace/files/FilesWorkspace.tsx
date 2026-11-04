@@ -2,13 +2,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
-import { useFileCommand, useFileWorkspace } from "@/hooks/workspace/use-workspace-files";
+import { useFileCommand, useFileWorkspace, useWorkspaceFileHistory } from "@/hooks/workspace/use-workspace-files";
 import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
+import { useFilePicker } from "@/hooks/workspace/use-file-picker";
+import { FILE_LIMITS } from "@/config/workspace-files";
 import { useFileDraftGuard } from "@/hooks/workspace/use-file-draft-guard";
 import { DadamButton } from "@/components/ui/DadamControls";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { WorkspaceFileError } from "@/lib/workspace/files/errors";
-import type { FileCategory, FileOperation, FileRemoval, FileResourceView, WorkspaceProject } from "@/types/workspace-files";
+import type { FileCategory, FileOperation, FileRemoval, FileResourceView } from "@/types/workspace-files";
 import type { FileDialogState, WebReferenceDraft } from "./file-ui-types";
 import FileUploadDialog from "./FileUploadDialog";
 import FileSettingsDialog from "./FileSettingsDialog";
@@ -16,25 +18,26 @@ import WebReferenceDialog from "./WebReferenceDialog";
 import FileDiscardDialog from "./FileDiscardDialog";
 import FileUndoNotice from "./FileUndoNotice";
 import FilePreviewDialog from "./FilePreviewDialog";
-import ProjectSelector from "@/components/workspace/ProjectSelector";
-import { useProjectRound } from "@/hooks/workspace/use-project-round";
-import ProjectRoundDialog from "../shared/ProjectRoundDialog";
+import { useProjectHeader } from "@/components/common/ProjectHeaderProvider";
+import ProjectHeader from "@/components/common/ProjectHeader";
 import FileRoundSection from "./FileRoundSection";
 
 export default function FilesWorkspace({ onReconnect }: { onReconnect(): void }): React.ReactElement {
-  const {selection,projects,pending,error,choose}=useWorkspaceSelection();
-  const selectProject=(id:string)=>{void choose({projectId:id,sectionId:null,slideId:null,snapshotId:null}).catch(()=>{});};
-  const selector=<ProjectSelector projects={projects} value={selection.projectId} disabled={pending} onChange={selectProject}/>;
-  if(error)return <WorkspacePage title="파일 업로드" leading={selector}><AdminAsyncState state="error" message={error.message} onRetry={onReconnect}/></WorkspacePage>;
-  if(pending)return <WorkspacePage title="파일 업로드" leading={selector}><AdminAsyncState state="loading"/></WorkspacePage>;
-  if(!projects.length)return <WorkspacePage title="파일 업로드"><AdminAsyncState state="empty" message="참여 중인 프로젝트가 없습니다."/></WorkspacePage>;
-  if(!selection.projectId)return <WorkspacePage title="파일 업로드" leading={selector}><AdminAsyncState state="empty" message="프로젝트를 선택해 주세요."/></WorkspacePage>;
-  return <FileProjectWorkspace key={selection.projectId} projectId={selection.projectId} projects={projects} onSelect={selectProject} onReconnect={onReconnect}/>;
+  const {selection,projects,pending,error}=useWorkspaceSelection();
+  const header=useProjectHeader();
+  const model=header.state.status==="ready"?header.state.model:null;
+  if(error&&!selection.projectId)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="error" message={error.message} onRetry={onReconnect}/></WorkspacePage>;
+  if(pending)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="loading"/></WorkspacePage>;
+  if(!projects.length)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="empty" message="참여 중인 프로젝트가 없습니다."/></WorkspacePage>;
+  if(!selection.projectId)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="empty" message="프로젝트를 선택해 주세요."/></WorkspacePage>;
+  return <FileProjectWorkspace key={JSON.stringify([selection.projectId,selection.snapshotId,model?.currentRound,model?.phase])} snapshotId={selection.snapshotId} selectionError={error?.message} projectId={selection.projectId} onReconnect={onReconnect}/>;
 }
-interface FileProjectWorkspaceProps { projectId: string; projects: WorkspaceProject[]; onSelect(id: string): void; onReconnect(): void; selectionError?: string }
+interface FileProjectWorkspaceProps { snapshotId:string|null; projectId: string; onReconnect(): void; selectionError?: string }
 interface ActionConfirmation { operation: Extract<FileOperation, { type: "remove" | "start-round" }>; revision: number; round: number; workspaceRevision?: number; label: string }
-function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, selectionError }: FileProjectWorkspaceProps): React.ReactElement {
-  const query = useFileWorkspace(projectId);
+function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionError }: FileProjectWorkspaceProps): React.ReactElement {
+  const currentQuery = useFileWorkspace(snapshotId?null:projectId);
+  const historyQuery = useWorkspaceFileHistory(projectId,snapshotId);
+  const query = snapshotId?historyQuery:currentQuery;
   const command = useFileCommand();
   const { reset } = command;
   const [dialog, setDialog] = useState<FileDialogState>(null);
@@ -49,21 +52,28 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const closeDraft = useCallback(() => { setDialog(null); setDirty(false); setLocalError(null); reset(); }, [reset]);
   const guard = useFileDraftGuard({ dirty, busy: command.isPending, onDiscard: closeDraft });
-  const {choose}=useWorkspaceSelection();
-  const roundFlow=useProjectRound(projectId,async()=>{closeDraft();setRemoval(null);setPreview(null);await choose({projectId,sectionId:null,slideId:null,snapshotId:null});});
   const expireUndo = useCallback(() => setRemoval(null), []);
   const data = query.data;
   const previewResource = !query.error && preview ? data?.rounds.find(round => round.number === preview.round)?.resources.find(resource => resource.version.id === preview.resource.version.id) : null;
   const busy = command.isPending;
   const error = localError ?? command.error;
-  function openAdd(category: FileCategory, files: File[] = [], view = data) {
-    if (!view || running.current || query.error) return;
+  const picker=useFilePicker(({scope,files})=>{
+    if(!data||snapshotId||selectionError||scope.projectId!==projectId||scope.round!==data.currentRound||!data.canAdd||busy||query.error)return;
+    guard.request(()=>openAdd(scope.category,files,data,scope.revision));
+  });
+  function add(category:FileCategory){
+    if(!data||snapshotId||selectionError||!data.canAdd||busy||query.error)return;
+    if(category==="web")guard.request(()=>openAdd(category));
+    else picker.open({projectId,round:data.currentRound,revision:data.revision,category});
+  }
+  function openAdd(category: FileCategory, files: File[] = [], view = data, baseRevision=view?.revision) {
+    if (snapshotId || selectionError || !view || !view.canAdd || running.current || query.error || (category!=="web"&&!files.length)) return;
     reset(); setLocalError(null); setDirty(files.length > 0);
-    const scope = { projectId, baseRevision: view.revision, baseRound: view.currentRound };
+    const scope = { projectId, baseRevision: baseRevision??view.revision, baseRound: view.currentRound };
     setDialog(category === "web" ? { ...scope, type: "web-new" } : { ...scope, type: "upload", category, files });
   }
   function openEdit(resource: FileResourceView, view = data) {
-    if (!view || running.current || query.error) return;
+    if (snapshotId || selectionError || !view || running.current || query.error) return;
     // 보관본에서 진입해도 현재 버전, 없으면 마지막으로 사용한 보관 버전을 편집한다.
     const latest = [...view.rounds].reverse().flatMap(round => round.resources).find(item => item.asset.id === resource.asset.id);
     if (!latest || !latest.canManage) { setLocalError(new WorkspaceFileError("FORBIDDEN", "이 자료를 변경할 권한이 없습니다.")); return; }
@@ -72,8 +82,9 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
       copyToCurrent: latest.version.createdInRound < view.currentRound || latest.currentVersionId === null });
   }
   async function execute(operation: FileOperation, base?: { revision: number; round: number; workspaceRevision?: number }): Promise<void> {
+    if (snapshotId) throw new WorkspaceFileError("FORBIDDEN", "보관본은 읽기 전용입니다.");
     if (running.current) return;
-    if (!data || query.error) {
+    if (!data || query.error || selectionError) {
       const failure = new WorkspaceFileError("CONFLICT", "최신 자료를 다시 불러온 뒤 저장해 주세요."); setLocalError(failure); throw failure;
     }
     running.current = true; setLocalError(null); setNotice("");
@@ -97,7 +108,7 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
       void query.refetch().then(result => {
         if (!mounted.current || !previous || !result.data || result.error) return;
         if (previous.type === "edit") openEdit(previous.source, result.data);
-        else openAdd(previous.type === "web-new" ? "web" : previous.category, [], result.data);
+        else openAdd(previous.type === "web-new" ? "web" : previous.category, previous.type === "upload" ? previous.files : [], result.data);
       });
     });
   }
@@ -107,27 +118,24 @@ function FileProjectWorkspace({ projectId, projects, onSelect, onReconnect, sele
       settings: { kind: "web", priority: "normal", instruction: value.instruction }, web: { type: "web", url: value.url, period: value.period } });
     return submit({ type: "add-web", ...value });
   }
-  const selector = <ProjectSelector projects={projects} value={projectId} disabled={busy} onChange={id => { if (id !== projectId) onSelect(id); }} />;
-  return <WorkspacePage title="파일 업로드" leading={selector} actions={data && <>
-    <span className="tw:text-xs tw:text-(--kpc-secondary)">현재 자료 <b>{data.currentCount}</b> / 30개 · 파일당 50MB</span>
-    <progress value={data.currentCount} max={30} aria-label="현재 회차 자료 사용량" className="tw:h-1.5 tw:w-20 tw:accent-(--dadam-accent)" />
-    {data.canStartRound && <DadamButton disabled={busy || query.isFetching || Boolean(query.error)} onClick={() => roundFlow.open("start-round")}>다음 회차 시작</DadamButton>}
+  return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드" actions={data && <>
+    <span className="tw:text-xs tw:text-(--kpc-secondary)">현재 자료 <b>{data.currentCount}</b> / {FILE_LIMITS.currentMaterials}개 · 파일당 {FILE_LIMITS.fileBytes / 1024 / 1024}MB · 이 브라우저에 저장</span>
+    <progress value={data.currentCount} max={FILE_LIMITS.currentMaterials} aria-label="현재 회차 자료 사용량" className="tw:h-1.5 tw:w-20 tw:accent-(--dadam-accent)" />
   </>}>
-    {roundFlow.dialog&&<ProjectRoundDialog key={roundFlow.dialog.view.state.revision} open mode={roundFlow.dialog.mode} view={roundFlow.dialog.view} busy={roundFlow.busy} error={roundFlow.error} onClose={roundFlow.close} onConfirm={input=>{void roundFlow.confirm(input).catch(()=>{});}}/>}
-    {!roundFlow.dialog&&roundFlow.error&&<p role="alert">{roundFlow.error}</p>}
+    <input ref={picker.inputRef} {...picker.inputProps}/>
     {selectionError && <p role="alert" className="tw:m-0 tw:text-red-700">{selectionError}</p>}
     {!dialog && !confirmation && error && <div role="alert" className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap) tw:text-red-700">{error.message}<DadamButton disabled={busy} onClick={() => { reset(); setLocalError(null); void query.refetch(); }}>최신 자료 다시 불러오기</DadamButton></div>}
     {notice && <p role="status" className="tw:m-0 tw:text-xs tw:text-(--dadam-accent-ink)">{notice}</p>}
-    {removal && removal.round === data?.currentRound && <FileUndoNotice key={removal.id} removal={removal} busy={busy} onExpire={expireUndo} onUndo={removalId => { void execute({ type: "undo-remove", removalId }).catch(() => {}); }} />}
+    {!snapshotId && removal && removal.round === data?.currentRound && <FileUndoNotice key={removal.id} removal={removal} busy={busy} onExpire={expireUndo} onUndo={removalId => { void execute({ type: "undo-remove", removalId }).catch(() => {}); }} />}
     {query.error ? <AdminAsyncState state="error" message={query.error.message} onRetry={() => guard.request(onReconnect)} /> : query.isPending ? <AdminAsyncState state="loading" /> : data && <>
       <p className="tw:m-0 tw:text-xs tw:text-(--kpc-secondary)">자료의 참조 순서는 왼쪽부터 적용됩니다. 문서당 300쪽 이내를 권장합니다.</p>
-      {[...data.rounds].reverse().map(round => <FileRoundSection key={data.currentRound + ":" + round.number} value={round} canAdd={data.canAdd} canReorder={data.canReorder} disabled={busy || query.isFetching}
-        onAdd={category => openAdd(category)} onDropFiles={(category, files) => openAdd(category, files)} onEdit={resource => openEdit(resource)}
+      {[...data.rounds].reverse().map(round => <FileRoundSection initialOpen={snapshotId?true:undefined} key={data.currentRound + ":" + round.number} value={round} canAdd={!selectionError&&data.canAdd} canReorder={!selectionError&&data.canReorder} disabled={busy || query.isFetching || !!selectionError}
+        onAdd={add} onDropFiles={(category, files) => {if(files.length)guard.request(()=>openAdd(category,files));}} onEdit={resource => openEdit(resource)}
         onOpen={(resource, round) => setPreview({ resource, round })}
         onRemove={resource => setConfirmation({ operation: { type: "remove", assetId: resource.asset.id, sourceVersionId: resource.version.id }, revision: data.revision, round: data.currentRound, label: resource.version.label })}
         onReorder={categoryOrder => { void execute({ type: "reorder", categoryOrder }).catch(() => {}); }} />)}
     </>}
-    {dialog?.type === "upload" && <FileUploadDialog {...dialogProps} category={dialog.category} initialFiles={dialog.files} availableSlots={Math.max(0, 30 - (data?.currentCount ?? 30))} onSubmit={files => submit({ type: "add-files", category: dialog.category, files })} />}
+    {dialog?.type === "upload" && <FileUploadDialog {...dialogProps} category={dialog.category} initialFiles={dialog.files} availableSlots={Math.max(0, FILE_LIMITS.currentMaterials - (data?.currentCount ?? FILE_LIMITS.currentMaterials))} onSubmit={files => submit({ type: "add-files", category: dialog.category, files })} />}
     {dialog?.type === "web-new" && <WebReferenceDialog {...dialogProps} initial={null} copyToCurrent={false} onSubmit={saveWeb} />}
     {dialog?.type === "edit" && (dialog.source.version.source.type === "file"
       ? <FileSettingsDialog {...dialogProps} resource={dialog.source} copyToCurrent={dialog.copyToCurrent} onSubmit={settings => submit({ type: "edit", assetId: dialog.source.asset.id, sourceVersionId: dialog.source.version.id, settings, web: null })} />

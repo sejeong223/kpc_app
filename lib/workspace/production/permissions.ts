@@ -1,5 +1,7 @@
+import { workspaceAssert as check } from "./errors";
 import type {
   ProjectPermission,
+  ProjectGrant,
   ProjectWorkspaceState,
   WorkspaceContext,
 } from "@/types/workspace-production";
@@ -50,4 +52,13 @@ export function canEditSection(
     isSectionAuthor(context, state, sectionId) &&
     state.body.sections.some((s) => s.id === sectionId && !s.locked)
   );
+}
+
+export function applyProjectGrants(context:WorkspaceContext,state:ProjectWorkspaceState,rows:readonly ProjectGrant[]):ProjectGrant[] {
+  check(canManageProject(context),"FORBIDDEN","PM과 슈퍼 관리자만 권한을 지정할 수 있습니다.");
+  for(const row of rows){
+    check(context.members.some(m=>m.id===row.userId),"VALIDATION","프로젝트 참여자만 지정할 수 있습니다.");
+    check(row.userId!==context.project.pmId&&!context.members.some(m=>m.id===row.userId&&m.role==="super_admin")&&!(row.userId===context.identity.actor.id&&context.identity.actor.role==="super_admin"),"VALIDATION","고정 전체 권한은 변경할 수 없습니다.");
+  }
+  return [...state.grants.filter(g=>!rows.some(r=>r.userId===g.userId)),...rows.filter(r=>r.permissions.length>0).map(r=>({userId:r.userId,permissions:[...r.permissions]}))];
 }

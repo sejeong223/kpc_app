@@ -2,6 +2,7 @@
 import { workspaceHref } from "@/lib/workspace/production/routing";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import ProjectHeader from "@/components/common/ProjectHeader";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import ModalFrame from "@/components/ui/ModalFrame";
 import {
@@ -35,7 +36,6 @@ import WorkspaceDeleteDialog from "../shared/WorkspaceDeleteDialog";
 import WorkspaceUndoNotice from "../shared/WorkspaceUndoNotice";
 import TocTable from "./TocTable";
 import AdministrativeChecklist from "./AdministrativeChecklist";
-import ProjectPermissionDialog from "./ProjectPermissionDialog";
 type FormDraft = {
   request: ProjectRequest;
   title: string;
@@ -60,7 +60,6 @@ export default function TocWorkspace({
     mutation = useWorkspaceCommand(),
     [draft, setDraft] = useState<FormDraft | null>(null),
     [collapsed, setCollapsed] = useState<string[]>([]),
-    [permissions, setPermissions] = useState(false),
     [instruction, setInstruction] = useState(""),
     [inline, setInline] = useState<{
       row: TocRow;
@@ -171,7 +170,7 @@ export default function TocWorkspace({
       : [];
   }
   return (
-    <WorkspacePage
+    <WorkspacePage headerComponent={ProjectHeader}
       title="목차"
       leading={selector}
       actions={<WorkspaceLinks selection={selection} current="toc" />}
@@ -187,9 +186,6 @@ export default function TocWorkspace({
           슬라이드 {view.state.body.slides.length} · 미처리 의견{" "}
           {chapterRows.reduce((n, r) => n + r.openComments, 0)}
         </span>
-        <DadamButton onClick={() => setPermissions(true)}>
-          관리 권한
-        </DadamButton>
         {actions}
       </div>
       <section className={workspaceCard}>
@@ -359,12 +355,6 @@ export default function TocWorkspace({
         }
       />
       <WorkspaceUndoNotice view={view} />
-      {permissions && (
-        <ProjectPermissionDialog
-          view={view}
-          onClose={() => setPermissions(false)}
-        />
-      )}
       {draft && draft.mode !== "delete" && (
         <ModalFrame
           open

@@ -18,6 +18,7 @@ export interface ProjectRoundDialogProps {
     acknowledged: true;
   }): void;
   onClose(): void;
+  onReload?(): void;
 }
 export function RoundSummary({
   view,
@@ -61,6 +62,7 @@ export default function ProjectRoundDialog({
   error,
   onConfirm,
   onClose,
+  onReload,
 }: ProjectRoundDialogProps) {
   const [baseline] = useState(() => ({
       revision: view.state.revision,
@@ -68,11 +70,7 @@ export default function ProjectRoundDialog({
       round: view.state.currentRound,
       view,
     })),
-    [agreed, setAgreed] = useState(false),
-    summary = getCompletionSummary(baseline.view.state),
-    warn =
-      summary.writingSections + summary.openComments + summary.uncheckedItems >
-      0;
+    [agreed, setAgreed] = useState(false);
   return (
     <ModalFrame
       open={open}
@@ -88,7 +86,7 @@ export default function ProjectRoundDialog({
           </DadamButton>
           <DadamButton
             appearance="primary"
-            disabled={busy || (warn && !agreed)}
+            disabled={busy || !agreed}
             onClick={() =>
               onConfirm({
                 revision: baseline.revision,
@@ -108,7 +106,7 @@ export default function ProjectRoundDialog({
       }
     >
       <RoundSummary view={baseline.view} mode={mode} />
-      {warn && (
+      {(
         <DadamCheckbox
           label="남아 있는 작업을 확인했으며 현재 상태 그대로 보관합니다."
           checked={agreed}
@@ -117,6 +115,7 @@ export default function ProjectRoundDialog({
         />
       )}
       <WorkspaceErrorText error={error} />
+      {error && onReload && <DadamButton disabled={busy} onClick={onReload}>최신 상태 다시 불러오기</DadamButton>}
     </ModalFrame>
   );
 }

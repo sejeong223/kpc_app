@@ -28,10 +28,11 @@ const useStyles = makeStyles({
   },
 });
 
-export default function CommentCreateButton(): React.ReactElement {
+export default function CommentCreateButton(): React.ReactElement | null {
   const styles = useStyles();
-  const { state, controller } = useComments();
+  const { state, controller, capabilities } = useComments();
 
+  if(!capabilities.canCreate)return null;
   return (
     <Button
       type="button"

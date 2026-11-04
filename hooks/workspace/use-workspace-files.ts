@@ -1,11 +1,24 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useWorkspaceRuntime } from "@/components/workspace/WorkspaceProjectProvider";
+import { workspaceQueryKeys } from "@/lib/workspace/production/query-keys";
+import { WorkspaceError } from "@/lib/workspace/production/errors";
+import { activeWorkspaceRead } from "./use-workspace-production";
 import { useFileRuntime } from "@/components/workspace/files/FileRuntimeProvider";
 import { WorkspaceFileError } from "@/lib/workspace/files/errors";
 import { fileQueryKeys } from "@/lib/workspace/files/query-keys";
 import type { FileMutation, FileOriginalRequest, FileReceipt, FileWorkspaceView, WorkspaceProject } from "@/types/workspace-files";
 
 const queryOptions = { retry: false, staleTime: 0, gcTime: 5 * 60_000, refetchOnWindowFocus: true } as const;
+export function useWorkspaceFileHistory(projectId:string|null,snapshotId:string|null){
+  const runtime=useWorkspaceRuntime();
+  return useQuery<FileWorkspaceView,WorkspaceFileError>({...queryOptions,queryKey:workspaceQueryKeys(runtime.queryScope).fileHistory(projectId,snapshotId),enabled:!!projectId&&!!snapshotId,
+    queryFn:async({signal})=>{try{
+      if(!projectId||!snapshotId)throw new WorkspaceFileError("VALIDATION","보관본을 선택해 주세요.");
+      return await activeWorkspaceRead(runtime,()=>runtime.service.loadFileSnapshot(projectId,snapshotId),signal);
+    }catch(error){if(error instanceof WorkspaceError)throw new WorkspaceFileError(error.code==="FORBIDDEN"||error.code==="READ_ONLY"?"FORBIDDEN":error.code==="CANCELLED"?"CANCELLED":error.code==="NOT_FOUND"?"NOT_FOUND":"STORAGE",error.message);throw error;}}
+  });
+}
 async function read<T>(signal: AbortSignal, operation: () => Promise<T>): Promise<T> {
   if (signal.aborted) throw new WorkspaceFileError("CANCELLED", "조회가 취소되었습니다.");
   const result = await operation();

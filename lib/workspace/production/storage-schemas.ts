@@ -1,3 +1,4 @@
+import { StoredWorkspaceStateSchema } from "./state-compatibility";
 import { z } from "zod";
 import { WorkspaceIdSchema, WorkspaceStateSchema } from "./schemas";
 import { FileProjectStateSchema } from "@/lib/workspace/files/schemas";
@@ -7,6 +8,7 @@ export const WorkspaceRecordSchema = z.strictObject({
   projectId: WorkspaceIdSchema,
   state: WorkspaceStateSchema,
 });
+export const StoredWorkspaceRecordSchema = WorkspaceRecordSchema.extend({ state: StoredWorkspaceStateSchema });
 export const FileProjectRecordSchema = z.strictObject({
   namespace: z.string().min(1),
   projectId: WorkspaceIdSchema,
