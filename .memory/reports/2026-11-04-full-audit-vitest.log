@@ -1,0 +1,17 @@
+
+> azure-app-template@0.1.0 test
+> vitest run --reporter=dot --maxWorkers=1
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Developer/Project/kpc_app
+
+·············································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  84 passed (84)
+      Tests  653 passed (653)
+   Start at  13:31:31
+   Duration  222.13s (transform 6.70s, setup 0ms, import 97.83s, tests 90.52s, environment 13.12s)
+

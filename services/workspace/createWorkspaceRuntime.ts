@@ -135,15 +135,19 @@ export function createWorkspaceRuntime(options: RuntimeOptions): {
   };
   const invalidateProject = async (id: string, revision?: number) => {
     await invalidate(id);
-    if (!active) return;
-    const current = revision ?? (await service.load(id)).state.revision;
-    if (active)
-      channel?.postMessage({
+    if (!active || !channel) return;
+    // 저장은 이미 확정됐다. 다른 창에 알리는 후속 조회·전송의 실패를
+    // 저장 실패로 반환하면 사용자가 같은 작업을 중복 제출할 수 있다.
+    // 화면 재조회 오류는 위 invalidate의 각 Query에서 표시한다.
+    try {
+      const current = revision ?? (await service.load(id)).state.revision;
+      if (active) channel.postMessage({
         namespace: identity.namespace,
         projectId: id,
         revision: current,
         instanceId,
       });
+    } catch { /* 다음 조회에서 동기화하며 저장 결과는 유지한다. */ }
   };
   const fileRuntime: FileRuntimeValue = {
     identity,

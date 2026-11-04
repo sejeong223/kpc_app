@@ -1,0 +1,470 @@
+
+> azure-app-template@0.1.0 test
+> vitest run --reporter=dot
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Developer/Project/kpc_app
+
+x·x·xxxxxxxx·x·································································································································x·x·x·x·····························································································xxxxxxxxxxxx···xxxxxxxx·x············································································································································x·······x·xxxx··························································································x··············································································x···································x····x···x·····x·x·x·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 50 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/app/authenticated-layout.test.ts > authenticated workspace integration > provides both runtimes while rendering the real sidebar and token dialogs
+Error: [vitest] No "useRouter" export is defined on the "next/navigation" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("next/navigation"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ ActiveSelection components/workspace/WorkspaceSelectionProvider.tsx:29:20
+     27|     children: React.ReactNode;
+     28| }) {
+     29|     const router = useRouter(), pathname = usePathname(), params = use…
+       |                    ^
+     30|     const keys = workspaceQueryKeys(runtime.queryScope), screen = path…
+     31|     const location = pathname + "?" + params.toString();
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:9808:18
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5062:19
+ ❯ renderElement node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5497:23
+ ❯ retryNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6428:21
+ ❯ renderNodeDestructive node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11
+ ❯ finishFunctionComponent node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5106:13
+ ❯ renderElement node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5552:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/50]⎯
+
+ FAIL  tests/config/sidebar.test.ts > sidebar catalog > preserves the final mock-up menu order and unique destinations
+AssertionError: expected [ 'RFP 등록', '검토 목록', 'AI 분석', …(13) ] to deeply equal [ 'RFP 등록', '검토 목록', 'AI 분석', …(11) ]
+
+- Expected
++ Received
+
+@@ -4,10 +4,12 @@
+    "AI 분석",
+    "파일 업로드",
+    "목차",
+    "제작 설정",
+    "제작",
++   "리뷰",
++   "완료한 제안",
+    "프롬프트 세트",
+    "Skill",
+    "Template",
+    "모델·토큰 관리",
+    "사용자 설정",
+
+ ❯ tests/config/sidebar.test.ts:19:45
+     17|     const items = sidebarGroups.flatMap((group) => group.items);
+     18|     expect(sidebarGroups.map((group) => group.id)).toEqual(["proposal"…
+     19|     expect(items.map((item) => item.label)).toEqual(expectedLabels);
+       |                                             ^
+     20|     expect(new Set(items.map((item) => item.id)).size).toBe(14);
+     21|     expect(new Set(items.map((item) => item.href)).size).toBe(14);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/50]⎯
+
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > shows the expected menus for 'auth-disabled preview'
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > shows the expected menus for 'Admin'
+AssertionError: expected [ 'RFP 등록', '검토 목록', 'AI 분석', …(12) ] to deeply equal [ 'RFP 등록', '검토 목록', 'AI 분석', …(11) ]
+
+- Expected
++ Received
+
+@@ -4,10 +4,11 @@
+    "AI 분석",
+    "파일 업로드",
+    "목차",
+    "제작 설정",
+    "제작",
++   "완료한 제안",
+    "프롬프트 세트",
+    "Skill",
+    "Template",
+    "모델·토큰 관리",
+    "사용자 설정",
+
+ ❯ tests/config/sidebar.test.ts:49:45
+     47|     const groups = getVisibleSidebarGroups(context);
+     48|     const items = groups.flatMap((group) => group.items);
+     49|     expect(items.map((item) => item.label)).toEqual(expectedLabels.sli…
+       |                                             ^
+     50|     expect(groups.every((group) => group.items.length > 0)).toBe(true);
+     51|     if (count === 7) expect(groups.map((group) => group.id)).toEqual([…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/50]⎯
+
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > shows the expected menus for 'User'
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > shows the expected menus for 'unrecognized role'
+AssertionError: expected [ 'RFP 등록', '검토 목록', 'AI 분석', …(5) ] to deeply equal [ 'RFP 등록', '검토 목록', 'AI 분석', …(4) ]
+
+- Expected
++ Received
+
+@@ -4,6 +4,7 @@
+    "AI 분석",
+    "파일 업로드",
+    "목차",
+    "제작 설정",
+    "제작",
++   "완료한 제안",
+  ]
+
+ ❯ tests/config/sidebar.test.ts:49:45
+     47|     const groups = getVisibleSidebarGroups(context);
+     48|     const items = groups.flatMap((group) => group.items);
+     49|     expect(items.map((item) => item.label)).toEqual(expectedLabels.sli…
+       |                                             ^
+     50|     expect(groups.every((group) => group.items.length > 0)).toBe(true);
+     51|     if (count === 7) expect(groups.map((group) => group.id)).toEqual([…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/50]⎯
+
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > does not mutate the source catalog while filtering roles
+AssertionError: expected [ { id: 'register', …(3) }, …(14) ] to have a length of 14 but got 15
+
+- Expected
++ Received
+
+- 14
++ 15
+
+ ❯ tests/config/sidebar.test.ts:58:115
+     56|     getVisibleSidebarGroups({ authEnabled: true, authenticated: true, …
+     57|     expect(JSON.stringify(sidebarGroups)).toBe(original);
+     58|     expect(getVisibleSidebarGroups({ authEnabled: false, authenticated…
+       |                                                                                                                   ^
+     59|   });
+     60|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/50]⎯
+
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > keeps preview 'user' separate from session roles []
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > keeps preview 'super_admin' separate from session roles [ 'User' ]
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > keeps preview 'super_admin' separate from session roles [ 'Owner' ]
+AssertionError: expected [ 'RFP 등록', '검토 목록', 'AI 분석', …(5) ] to deeply equal [ 'RFP 등록', '검토 목록', 'AI 분석', …(4) ]
+
+- Expected
++ Received
+
+@@ -4,6 +4,7 @@
+    "AI 분석",
+    "파일 업로드",
+    "목차",
+    "제작 설정",
+    "제작",
++   "완료한 제안",
+  ]
+
+ ❯ tests/config/sidebar.test.ts:71:45
+     69|     const before = JSON.stringify(sidebarGroups);
+     70|     const items = getVisibleSidebarGroups(context).flatMap((group) => …
+     71|     expect(items.map((item) => item.label)).toEqual(expectedLabels.sli…
+       |                                             ^
+     72|     expect(JSON.stringify(sidebarGroups)).toBe(before);
+     73|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/50]⎯
+
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > keeps preview 'super_admin' separate from session roles []
+ FAIL  tests/config/sidebar.test.ts > sidebar visibility > keeps preview 'user' separate from session roles [ 'Admin' ]
+AssertionError: expected [ 'RFP 등록', '검토 목록', 'AI 분석', …(12) ] to deeply equal [ 'RFP 등록', '검토 목록', 'AI 분석', …(11) ]
+
+- Expected
++ Received
+
+@@ -4,10 +4,11 @@
+    "AI 분석",
+    "파일 업로드",
+    "목차",
+    "제작 설정",
+    "제작",
++   "완료한 제안",
+    "프롬프트 세트",
+    "Skill",
+    "Template",
+    "모델·토큰 관리",
+    "사용자 설정",
+
+ ❯ tests/config/sidebar.test.ts:71:45
+     69|     const before = JSON.stringify(sidebarGroups);
+     70|     const items = getVisibleSidebarGroups(context).flatMap((group) => …
+     71|     expect(items.map((item) => item.label)).toEqual(expectedLabels.sli…
+       |                                             ^
+     72|     expect(JSON.stringify(sidebarGroups)).toBe(before);
+     73|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/50]⎯
+
+ FAIL  tests/app/workspace/screen.test.ts > workspace placeholder pages > previews register without authenticating or assigning a role
+Error: useAuthRuntime must be used within Providers
+ ❯ useAuthRuntime components/providers.tsx:46:11
+     44|   const runtime = useContext(AuthRuntimeContext);
+     45|   if (!runtime) {
+     46|     throw new Error("useAuthRuntime must be used within Providers");
+       |           ^
+     47|   }
+     48|   return runtime;
+ ❯ RfpRegisterPage components/rfp/RfpRegisterPage.tsx:58:36
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:9808:18
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5062:19
+ ❯ renderElement node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5497:23
+ ❯ retryNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6428:21
+ ❯ renderNodeDestructive node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11
+ ❯ finishFunctionComponent node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5106:13
+ ❯ renderElement node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5552:11
+ ❯ retryNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6428:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/50]⎯
+
+ FAIL  tests/app/workspace/screen.test.ts > workspace placeholder pages > previews analysis without authenticating or assigning a role
+Error: 프로젝트 상단바 공급자가 필요합니다.
+ ❯ useProjectHeader components/common/ProjectHeaderProvider.tsx:92:11
+
+ ❯ ProjectHeaderPage components/common/ProjectHeader.tsx:93:30
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:9808:18
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5062:19
+ ❯ renderElement node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5497:23
+ ❯ retryNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6428:21
+ ❯ renderNodeDestructive node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11
+ ❯ finishFunctionComponent node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5106:13
+ ❯ renderElement node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5552:11
+ ❯ retryNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6428:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/50]⎯
+
+ FAIL  tests/app/workspace/screen.test.ts > workspace placeholder pages > previews files without authenticating or assigning a role
+AssertionError: expected '<div class="fui-FluentProvider fui-Fl…' to match /<h1[^>]*id="workspace-screen-title…/h1>
+
+- Expected:
+/<h1[^>]*id="workspace-screen-title"[^>]*>파일 업로드<\/h1>/
+
++ Received:
+"<div class=\"fui-FluentProvider fui-FluentProvider_R_0_ ___1f7m8ph_et7oog0 f19n0e5 f3rmtva f1o700av fk6fouc fkhj508 f71fsbu f1i3iumi\" style=\"display:contents\" data-dadam-theme=\"basic\" dir=\"ltr\"><style id=\"fui-FluentProvider_R_0_\">.fui-FluentProvider_R_0_ { --borderRadiusNone: 0; --borderRadiusSmall: 2px; --borderRadiusMedium: var(--dadam-control-radius); --borderRadiusLarge: 6px; --borderRadiusXLarge: 8px; --borderRadius2XLarge: 12px; --borderRadius3XLarge: 16px; --borderRadius4XLarge: 24px; --borderRadius5XLarge: 32px; --borderRadius6XLarge: 40px; --borderRadiusCircular: 10000px; --fontSizeBase100: 10px; --fontSizeBase200: 12px; --fontSizeBase300: 14px; --fontSizeBase400: 16px; --fontSizeBase500: 20px; --fontSizeBase600: 24px; --fontSizeHero700: 28px; --fontSizeHero800: 32px; --fontSizeHero900: 40px; --fontSizeHero1000: 68px; --lineHeightBase100: 14px; --lineHeightBase200: 16px; --lineHeightBase300: 20px; --lineHeightBase400: 22px; --lineHeightBase500: 28px; --lineHeightBase600: 32px; --lineHeightHero700: 36px; --lineHeightHero800: 40px; --lineHeightHero900: 52px; --lineHeightHero1000: 92px; --fontFamilyBase: var(--dadam-font-family); --fontFamilyMonospace: Consolas, 'Courier New', Courier, monospace; --fontFamilyNumeric: var(--dadam-font-family); --fontWeightRegular: 400; --fontWeightMedium: 500; --fontWeightSemibold: 500; --fontWeightBold: 700; --strokeWidthThin: 1px; --strokeWidthThick: 2px; --strokeWidthThicker: 3px; --strokeWidthThickest: 4px; --spacingHorizontalNone: 0; --spacingHorizontalXXS: 2px; --spacingHorizontalXS: 4px; --spacingHorizontalSNudge: 6px; --spacingHorizontalS: 8px; --spacingHorizontalMNudge: 10px; --spacingHorizontalM: 12px; --spacingHorizontalL: 16px; --spacingHorizontalXL: 20px; --spacingHorizontalXXL: 24px; --spacingHorizontalXXXL: 32px; --spacingVerticalNone: 0; --spacingVerticalXXS: 2px; --spacingVerticalXS: 4px; --spacingVerticalSNudge: 6px; --spacingVerticalS: 8px; --spacingVerticalMNudge: 10px; --spacingVerticalM: 12px; --spacingVerticalL: 16px; --spacingVerticalXL: 20px; --spacingVerticalXXL: 24px; --spacingVerticalXXXL: 32px; --durationUltraFast: 50ms; --durationFaster: 100ms; --durationFast: 150ms; --durationNormal: 200ms; --durationGentle: 250ms; --durationSlow: 300ms; --durationSlower: 400ms; --durationUltraSlow: 500ms; --curveAccelerateMax: cubic-bezier(0.9,0.1,1,0.2); --curveAccelerateMid: cubic-bezier(1,0,1,1); --curveAccelerateMin: cubic-bezier(0.8,0,0.78,1); --curveDecelerateMax: cubic-bezier(0.1,0.9,0.2,1); --curveDecelerateMid: cubic-bezier(0,0,0,1); --curveDecelerateMin: cubic-bezier(0.33,0,0.1,1); --curveEasyEaseMax: cubic-bezier(0.8,0,0.2,1); --curveEasyEase: cubic-bezier(0.33,0,0.67,1); --curveLinear: cubic-bezier(0,0,1,1); --colorNeutralForeground1: #242424; --colorNeutralForeground1Hover: #242424; --colorNeutralForeground1Pressed: #242424; --colorNeutralForeground1Selected: #242424; --colorNeutralForeground2: #424242; --colorNeutralForeground2Hover: #242424; --colorNeutralForeground2Pressed: #242424; --colorNeutralForeground2Selected: #242424; --colorNeutralForeground2BrandHover: #0f6cbd; --colorNeutralForeground2BrandPressed: #115ea3; --colorNeutralForeground2BrandSelected: #0f6cbd; --colorNeutralForeground3: #616161; --colorNeutralForeground3Hover: #424242; --colorNeutralForeground3Pressed: #424242; --colorNeutralForeground3Selected: #424242; --colorNeutralForeground3BrandHover: #0f6cbd; --colorNeutralForeground3BrandPressed: #115ea3; --colorNeutralForeground3BrandSelected: #0f6cbd; --colorNeutralForeground4: #707070; --colorNeutralForeground5: #616161; --colorNeutralForeground5Hover: #242424; --colorNeutralForeground5Pressed: #242424; --colorNeutralForeground5Selected: #242424; --colorNeutralForegroundDisabled: #bdbdbd; --colorNeutralForegroundInvertedDisabled: rgba(255, 255, 255, 0.4); --colorBrandForegroundLink: #115ea3; --colorBrandForegroundLinkHover: #0f548c; --colorBrandForegroundLinkPressed: #0c3b5e; --colorBrandForegroundLinkSelected: #115ea3; --colorNeutralForeground2Link: #424242; --colorNeutralForeground2LinkHover: #242424; --colorNeutralForeground2LinkPressed: #242424; --colorNeutralForeground2LinkSelected: #242424; --colorCompoundBrandForeground1: var(--dadam-accent-ink); --colorCompoundBrandForeground1Hover: var(--dadam-accent-hover); --colorCompoundBrandForeground1Pressed: var(--dadam-accent-pressed); --colorBrandForeground1: var(--dadam-accent-ink); --colorBrandForeground2: var(--dadam-accent-ink); --colorBrandForeground2Hover: #0f548c; --colorBrandForeground2Pressed: #0a2e4a; --colorNeutralForeground1Static: #242424; --colorNeutralForegroundStaticInverted: #ffffff; --colorNeutralForegroundInverted: #ffffff; --colorNeutralForegroundInvertedHover: #ffffff; --colorNeutralForegroundInvertedPressed: #ffffff; --colorNeutralForegroundInvertedSelected: #ffffff; --colorNeutralForegroundInverted2: #ffffff; --colorNeutralForegroundOnBrand: #ffffff; --colorNeutralForegroundInvertedLink: #ffffff; --colorNeutralForegroundInvertedLinkHover: #ffffff; --colorNeutralForegroundInvertedLinkPressed: #ffffff; --colorNeutralForegroundInvertedLinkSelected: #ffffff; --colorBrandForegroundInverted: #479ef5; --colorBrandForegroundInvertedHover: #62abf5; --colorBrandForegroundInvertedPressed: #479ef5; --colorBrandForegroundOnLight: #0f6cbd; --colorBrandForegroundOnLightHover: #115ea3; --colorBrandForegroundOnLightPressed: #0e4775; --colorBrandForegroundOnLightSelected: #0f548c; --colorNeutralBackground1: #ffffff; --colorNeutralBackground1Hover: #f5f5f5; --colorNeutralBackground1Pressed: #e0e0e0; --colorNeutralBackground1Selected: #ebebeb; --colorNeutralBackground2: #fafafa; --colorNeutralBackground2Hover: #f0f0f0; --colorNeutralBackground2Pressed: #dbdbdb; --colorNeutralBackground2Selected: #e6e6e6; --colorNeutralBackground3: #f5f5f5; --colorNeutralBackground3Hover: #ebebeb; --colorNeutralBackground3Pressed: #d6d6d6; --colorNeutralBackground3Selected: #e0e0e0; --colorNeutralBackground4: #f0f0f0; --colorNeutralBackground4Hover: #fafafa; --colorNeutralBackground4Pressed: #f5f5f5; --colorNeutralBackground4Selected: #ffffff; --colorNeutralBackground5: #ebebeb; --colorNeutralBackground5Hover: #f5f5f5; --colorNeutralBackground5Pressed: #f0f0f0; --colorNeutralBackground5Selected: #fafafa; --colorNeutralBackground6: #e6e6e6; --colorNeutralBackground7: #00000000; --colorNeutralBackground7Hover: #ebebeb; --colorNeutralBackground7Pressed: #d6d6d6; --colorNeutralBackground7Selected: #00000000; --colorNeutralBackground8: #fcfcfc; --colorNeutralBackgroundInverted: #292929; --colorNeutralBackgroundInvertedHover: #3d3d3d; --colorNeutralBackgroundInvertedPressed: #1f1f1f; --colorNeutralBackgroundInvertedSelected: #383838; --colorNeutralBackgroundStatic: #333333; --colorNeutralBackgroundAlpha: rgba(255, 255, 255, 0.5); --colorNeutralBackgroundAlpha2: rgba(255, 255, 255, 0.8); --colorSubtleBackground: transparent; --colorSubtleBackgroundHover: #f5f5f5; --colorSubtleBackgroundPressed: #e0e0e0; --colorSubtleBackgroundSelected: #ebebeb; --colorSubtleBackgroundLightAlphaHover: rgba(255, 255, 255, 0.7); --colorSubtleBackgroundLightAlphaPressed: rgba(255, 255, 255, 0.5); --colorSubtleBackgroundLightAlphaSelected: transparent; --colorSubtleBackgroundInverted: transparent; --colorSubtleBackgroundInvertedHover: rgba(0, 0, 0, 0.1); --colorSubtleBackgroundInvertedPressed: rgba(0, 0, 0, 0.3); --colorSubtleBackgroundInvertedSelected: rgba(0, 0, 0, 0.2); --colorTransparentBackground: transparent; --colorTransparentBackgroundHover: transparent; --colorTransparentBackgroundPressed: transparent; --colorTransparentBackgroundSelected: transparent; --colorNeutralBackgroundDisabled: #f0f0f0; --colorNeutralBackgroundDisabled2: #ffffff; --colorNeutralBackgroundInvertedDisabled: rgba(255, 255, 255, 0.1); --colorNeutralStencil1: #e6e6e6; --colorNeutralStencil2: #fafafa; --colorNeutralStencil1Alpha: rgba(0, 0, 0, 0.1); --colorNeutralStencil2Alpha: rgba(0, 0, 0, 0.05); --colorBackgroundOverlay: rgba(0, 0, 0, 0.4); --colorScrollbarOverlay: rgba(0, 0, 0, 0.5); --colorBrandBackground: var(--dadam-accent); --colorBrandBackgroundHover: var(--dadam-accent-hover); --colorBrandBackgroundPressed: var(--dadam-accent-pressed); --colorBrandBackgroundSelected: #0f548c; --colorCompoundBrandBackground: var(--dadam-accent); --colorCompoundBrandBackgroundHover: var(--dadam-accent-hover); --colorCompoundBrandBackgroundPressed: var(--dadam-accent-pressed); --colorBrandBackgroundStatic: #0f6cbd; --colorBrandBackground2: var(--dadam-accent-soft); --colorBrandBackground2Hover: var(--dadam-accent-soft-hover); --colorBrandBackground2Pressed: #96c6fa; --colorBrandBackground3Static: #0f548c; --colorBrandBackground4Static: #0c3b5e; --colorBrandBackgroundInverted: #ffffff; --colorBrandBackgroundInvertedHover: #ebf3fc; --colorBrandBackgroundInvertedPressed: #b4d6fa; --colorBrandBackgroundInvertedSelected: #cfe4fa; --colorNeutralCardBackground: #fafafa; --colorNeutralCardBackgroundHover: #ffffff; --colorNeutralCardBackgroundPressed: #f5f5f5; --colorNeutralCardBackgroundSelected: #ebebeb; --colorNeutralCardBackgroundDisabled: #f0f0f0; --colorNeutralStrokeAccessible: var(--dadam-control-border-hover); --colorNeutralStrokeAccessibleHover: #575757; --colorNeutralStrokeAccessiblePressed: #4d4d4d; --colorNeutralStrokeAccessibleSelected: #0f6cbd; --colorNeutralStroke1: var(--dadam-control-border); --colorNeutralStroke1Hover: #c7c7c7; --colorNeutralStroke1Pressed: #b3b3b3; --colorNeutralStroke1Selected: #bdbdbd; --colorNeutralStroke2: #e0e0e0; --colorNeutralStroke3: #f0f0f0; --colorNeutralStroke4: #ebebeb; --colorNeutralStroke4Hover: #e0e0e0; --colorNeutralStroke4Pressed: #d6d6d6; --colorNeutralStroke4Selected: #ebebeb; --colorNeutralStrokeSubtle: #e0e0e0; --colorNeutralStrokeOnBrand: #ffffff; --colorNeutralStrokeOnBrand2: #ffffff; --colorNeutralStrokeOnBrand2Hover: #ffffff; --colorNeutralStrokeOnBrand2Pressed: #ffffff; --colorNeutralStrokeOnBrand2Selected: #ffffff; --colorBrandStroke1: var(--dadam-accent); --colorBrandStroke2: var(--dadam-accent); --colorBrandStroke2Hover: #77b7f7; --colorBrandStroke2Pressed: #0f6cbd; --colorBrandStroke2Contrast: #b4d6fa; --colorCompoundBrandStroke: var(--dadam-accent); --colorCompoundBrandStrokeHover: var(--dadam-accent-hover); --colorCompoundBrandStrokePressed: var(--dadam-accent-pressed); --colorNeutralStrokeDisabled: #e0e0e0; --colorNeutralStrokeDisabled2: #ebebeb; --colorNeutralStrokeInvertedDisabled: rgba(255, 255, 255, 0.4); --colorTransparentStroke: transparent; --colorTransparentStrokeInteractive: transparent; --colorTransparentStrokeDisabled: transparent; --colorNeutralStrokeAlpha: rgba(0, 0, 0, 0.05); --colorNeutralStrokeAlpha2: rgba(255, 255, 255, 0.2); --colorStrokeFocus1: #ffffff; --colorStrokeFocus2: #000000; --colorNeutralShadowAmbient: rgba(0,0,0,0.12); --colorNeutralShadowKey: rgba(0,0,0,0.14); --colorNeutralShadowAmbientLighter: rgba(0,0,0,0.06); --colorNeutralShadowKeyLighter: rgba(0,0,0,0.07); --colorNeutralShadowAmbientDarker: rgba(0,0,0,0.20); --colorNeutralShadowKeyDarker: rgba(0,0,0,0.24); --colorBrandShadowAmbient: rgba(0,0,0,0.30); --colorBrandShadowKey: rgba(0,0,0,0.25); --colorPaletteRedBackground1: #fdf6f6; --colorPaletteRedBackground2: #f1bbbc; --colorPaletteRedBackground3: #d13438; --colorPaletteRedForeground1: #bc2f32; --colorPaletteRedForeground2: #751d1f; --colorPaletteRedForeground3: #d13438; --colorPaletteRedBorderActive: #d13438; --colorPaletteRedBorder1: #f1bbbc; --colorPaletteRedBorder2: #d13438; --colorPaletteGreenBackground1: #f1faf1; --colorPaletteGreenBackground2: #9fd89f; --colorPaletteGreenBackground3: #107c10; --colorPaletteGreenForeground1: #0e700e; --colorPaletteGreenForeground2: #094509; --colorPaletteGreenForeground3: #107c10; --colorPaletteGreenBorderActive: #107c10; --colorPaletteGreenBorder1: #9fd89f; --colorPaletteGreenBorder2: #107c10; --colorPaletteDarkOrangeBackground1: #fdf6f3; --colorPaletteDarkOrangeBackground2: #f4bfab; --colorPaletteDarkOrangeBackground3: #da3b01; --colorPaletteDarkOrangeForeground1: #c43501; --colorPaletteDarkOrangeForeground2: #7a2101; --colorPaletteDarkOrangeForeground3: #da3b01; --colorPaletteDarkOrangeBorderActive: #da3b01; --colorPaletteDarkOrangeBorder1: #f4bfab; --colorPaletteDarkOrangeBorder2: #da3b01; --colorPaletteYellowBackground1: #fffef5; --colorPaletteYellowBackground2: #fef7b2; --colorPaletteYellowBackground3: #fde300; --colorPaletteYellowForeground1: #817400; --colorPaletteYellowForeground2: #817400; --colorPaletteYellowForeground3: #fde300; --colorPaletteYellowBorderActive: #fde300; --colorPaletteYellowBorder1: #fef7b2; --colorPaletteYellowBorder2: #fde300; --colorPaletteBerryBackground1: #fdf5fc; --colorPaletteBerryBackground2: #edbbe7; --colorPaletteBerryBackground3: #c239b3; --colorPaletteBerryForeground1: #af33a1; --colorPaletteBerryForeground2: #6d2064; --colorPaletteBerryForeground3: #c239b3; --colorPaletteBerryBorderActive: #c239b3; --colorPaletteBerryBorder1: #edbbe7; --colorPaletteBerryBorder2: #c239b3; --colorPaletteLightGreenBackground1: #f2fbf2; --colorPaletteLightGreenBackground2: #a7e3a5; --colorPaletteLightGreenBackground3: #13a10e; --colorPaletteLightGreenForeground1: #11910d; --colorPaletteLightGreenForeground2: #0b5a08; --colorPaletteLightGreenForeground3: #13a10e; --colorPaletteLightGreenBorderActive: #13a10e; --colorPaletteLightGreenBorder1: #a7e3a5; --colorPaletteLightGreenBorder2: #13a10e; --colorPaletteMarigoldBackground1: #fefbf4; --colorPaletteMarigoldBackground2: #f9e2ae; --colorPaletteMarigoldBackground3: #eaa300; --colorPaletteMarigoldForeground1: #d39300; --colorPaletteMarigoldForeground2: #835b00; --colorPaletteMarigoldForeground3: #eaa300; --colorPaletteMarigoldBorderActive: #eaa300; --colorPaletteMarigoldBorder1: #f9e2ae; --colorPaletteMarigoldBorder2: #eaa300; --colorPaletteRedForegroundInverted: #dc5e62; --colorPaletteGreenForegroundInverted: #359b35; --colorPaletteYellowForegroundInverted: #fef7b2; --colorPaletteDarkRedBackground2: #d69ca5; --colorPaletteDarkRedForeground2: #420610; --colorPaletteDarkRedBorderActive: #750b1c; --colorPaletteCranberryBackground2: #eeacb2; --colorPaletteCranberryForeground2: #6e0811; --colorPaletteCranberryBorderActive: #c50f1f; --colorPalettePumpkinBackground2: #efc4ad; --colorPalettePumpkinForeground2: #712d09; --colorPalettePumpkinBorderActive: #ca5010; --colorPalettePeachBackground2: #ffddb3; --colorPalettePeachForeground2: #8f4e00; --colorPalettePeachBorderActive: #ff8c00; --colorPaletteGoldBackground2: #ecdfa5; --colorPaletteGoldForeground2: #6c5700; --colorPaletteGoldBorderActive: #c19c00; --colorPaletteBrassBackground2: #e0cea2; --colorPaletteBrassForeground2: #553e06; --colorPaletteBrassBorderActive: #986f0b; --colorPaletteBrownBackground2: #ddc3b0; --colorPaletteBrownForeground2: #50301a; --colorPaletteBrownBorderActive: #8e562e; --colorPaletteForestBackground2: #bdd99b; --colorPaletteForestForeground2: #294903; --colorPaletteForestBorderActive: #498205; --colorPaletteSeafoamBackground2: #a8f0cd; --colorPaletteSeafoamForeground2: #00723b; --colorPaletteSeafoamBorderActive: #00cc6a; --colorPaletteDarkGreenBackground2: #9ad29a; --colorPaletteDarkGreenForeground2: #063b06; --colorPaletteDarkGreenBorderActive: #0b6a0b; --colorPaletteLightTealBackground2: #a6e9ed; --colorPaletteLightTealForeground2: #00666d; --colorPaletteLightTealBorderActive: #00b7c3; --colorPaletteTealBackground2: #9bd9db; --colorPaletteTealForeground2: #02494c; --colorPaletteTealBorderActive: #038387; --colorPaletteSteelBackground2: #94c8d4; --colorPaletteSteelForeground2: #00333f; --colorPaletteSteelBorderActive: #005b70; --colorPaletteBlueBackground2: #a9d3f2; --colorPaletteBlueForeground2: #004377; --colorPaletteBlueBorderActive: #0078d4; --colorPaletteRoyalBlueBackground2: #9abfdc; --colorPaletteRoyalBlueForeground2: #002c4e; --colorPaletteRoyalBlueBorderActive: #004e8c; --colorPaletteCornflowerBackground2: #c8d1fa; --colorPaletteCornflowerForeground2: #2c3c85; --colorPaletteCornflowerBorderActive: #4f6bed; --colorPaletteNavyBackground2: #a3b2e8; --colorPaletteNavyForeground2: #001665; --colorPaletteNavyBorderActive: #0027b4; --colorPaletteLavenderBackground2: #d2ccf8; --colorPaletteLavenderForeground2: #3f3682; --colorPaletteLavenderBorderActive: #7160e8; --colorPalettePurpleBackground2: #c6b1de; --colorPalettePurpleForeground2: #341a51; --colorPalettePurpleBorderActive: #5c2e91; --colorPaletteGrapeBackground2: #d9a7e0; --colorPaletteGrapeForeground2: #4c0d55; --colorPaletteGrapeBorderActive: #881798; --colorPaletteLilacBackground2: #e6bfed; --colorPaletteLilacForeground2: #63276d; --colorPaletteLilacBorderActive: #b146c2; --colorPalettePinkBackground2: #f7c0e3; --colorPalettePinkForeground2: #80215d; --colorPalettePinkBorderActive: #e43ba6; --colorPaletteMagentaBackground2: #eca5d1; --colorPaletteMagentaForeground2: #6b0043; --colorPaletteMagentaBorderActive: #bf0077; --colorPalettePlumBackground2: #d696c0; --colorPalettePlumForeground2: #43002b; --colorPalettePlumBorderActive: #77004d; --colorPaletteBeigeBackground2: #d7d4d4; --colorPaletteBeigeForeground2: #444241; --colorPaletteBeigeBorderActive: #7a7574; --colorPaletteMinkBackground2: #cecccb; --colorPaletteMinkForeground2: #343231; --colorPaletteMinkBorderActive: #5d5a58; --colorPalettePlatinumBackground2: #cdd6d8; --colorPalettePlatinumForeground2: #3b4447; --colorPalettePlatinumBorderActive: #69797e; --colorPaletteAnchorBackground2: #bcc3c7; --colorPaletteAnchorForeground2: #202427; --colorPaletteAnchorBorderActive: #394146; --colorStatusSuccessBackground1: #f1faf1; --colorStatusSuccessBackground2: #9fd89f; --colorStatusSuccessBackground3: #107c10; --colorStatusSuccessForeground1: #0e700e; --colorStatusSuccessForeground2: #094509; --colorStatusSuccessForeground3: #107c10; --colorStatusSuccessForegroundInverted: #54b054; --colorStatusSuccessBorderActive: #107c10; --colorStatusSuccessBorder1: #9fd89f; --colorStatusSuccessBorder2: #107c10; --colorStatusWarningBackground1: #fff9f5; --colorStatusWarningBackground2: #fdcfb4; --colorStatusWarningBackground3: #f7630c; --colorStatusWarningForeground1: #bc4b09; --colorStatusWarningForeground2: #8a3707; --colorStatusWarningForeground3: #bc4b09; --colorStatusWarningForegroundInverted: #faa06b; --colorStatusWarningBorderActive: #f7630c; --colorStatusWarningBorder1: #fdcfb4; --colorStatusWarningBorder2: #bc4b09; --colorStatusDangerBackground1: #fdf3f4; --colorStatusDangerBackground2: #eeacb2; --colorStatusDangerBackground3: #c50f1f; --colorStatusDangerForeground1: #b10e1c; --colorStatusDangerForeground2: #6e0811; --colorStatusDangerForeground3: #c50f1f; --colorStatusDangerForegroundInverted: #dc626d; --colorStatusDangerBorderActive: #c50f1f; --colorStatusDangerBorder1: #eeacb2; --colorStatusDangerBorder2: #c50f1f; --colorStatusDangerBackground3Hover: #b10e1c; --colorStatusDangerBackground3Pressed: #960b18; --shadow2: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14); --shadow4: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14); --shadow8: 0 0 2px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.14); --shadow16: 0 0 2px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.14); --shadow28: 0 0 8px rgba(0,0,0,0.12), 0 14px 28px rgba(0,0,0,0.14); --shadow64: 0 0 8px rgba(0,0,0,0.12), 0 32px 64px rgba(0,0,0,0.14); --shadow2Brand: 0 0 2px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.25); --shadow4Brand: 0 0 2px rgba(0,0,0,0.30), 0 2px 4px rgba(0,0,0,0.25); --shadow8Brand: 0 0 2px rgba(0,0,0,0.30), 0 4px 8px rgba(0,0,0,0.25); --shadow16Brand: 0 0 2px rgba(0,0,0,0.30), 0 8px 16px rgba(0,0,0,0.25); --shadow28Brand: 0 0 8px rgba(0,0,0,0.30), 0 14px 28px rgba(0,0,0,0.25); --shadow64Brand: 0 0 8px rgba(0,0,0,0.30), 0 32px 64px rgba(0,0,0,0.25);  }</style><div data-workspace-page=\"true\" class=\"tw:flex tw:min-w-0 tw:flex-col tw:gap-(--layout-section-gap) \"><h1 id=\"_R_d_-title\" class=\"tw:sr-only\">파일 업로드</h1><div class=\"tw:flex tw:min-h-(--layout-empty-min-height) tw:flex-col tw:items-center tw:justify-center tw:gap-(--layout-section-gap) tw:p-(--layout-card-inset) tw:text-(--kpc-secondary)\" role=\"status\"><p class=\"tw:m-0\">사용자 정보를 확인할 수 없습니다. 다시 로그인해 주세요.</p></div></div></div>"
+
+ ❯ tests/app/workspace/screen.test.ts:54:22
+     52|       expect(markup).not.toContain("data-admin-screen");
+     53|     } else {
+     54|       expect(markup).toMatch(new RegExp(`<h1[^>]*id="workspace-screen-…
+       |                      ^
+     55|       expect(markup).not.toContain("화면 안내");
+     56|       expect(markup).not.toContain(`<p>${label} 화면입니다.</p>`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/50]⎯
+
+ FAIL  tests/app/workspace/screen.test.ts > workspace placeholder pages > previews toc without authenticating or assigning a role
+ FAIL  tests/app/workspace/screen.test.ts > workspace placeholder pages > previews setup without authenticating or assigning a role
+Error: 프로젝트 상단바 공급자가 필요합니다.
+ ❯ useProjectHeader components/common/ProjectHeaderProvider.tsx:92:11
+
+ ❯ ProjectHeader components/common/ProjectHeader.tsx:46:34
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:9808:18
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5062:19
+ ❯ renderElement node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5497:23
+ ❯ retryNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6428:21
+ ❯ renderNodeDestructive node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6367:11
+ ❯ renderNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6905:18
+ ❯ renderChildrenArray node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6674:11
+ ❯ retryNode node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6441:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > RFP 목록을 요약 바로 아래에서 보여주고 통계·활동은 해당 보기에서 유지한다
+AssertionError: expected <button …(7)>…(1)</button>
+…(4) to have a length of 4 but got 5
+
+- Expected
++ Received
+
+- 4
++ 5
+
+ ❯ tests/components/admin/dashboard-ux.test.ts:63:49
+     61| it("RFP 목록을 요약 바로 아래에서 보여주고 통계·활동은 해당 보기에서 유지한다", async () => {
+     62|   await render();
+     63|   expect(host.querySelectorAll('[role="tab"]')).toHaveLength(4);
+       |                                                 ^
+     64|   expect(host.querySelectorAll('[aria-label="조회 기간 전체 RFP 요약"] button'…
+     65|   expect(host.querySelector('[aria-label="활동 요약"]')).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 다른 탭의 상태 카드 선택은 가까운 목록으로 연결하고 카드 초점을 유지한다
+TypeError: Cannot read properties of undefined (reading 'focus')
+ ❯ tests/components/admin/dashboard-ux.test.ts:98:43
+     96| it("다른 탭의 상태 카드 선택은 가까운 목록으로 연결하고 카드 초점을 유지한다", async () => {
+     97|   const getDashboard = vi.spyOn(harness.service, "getDashboard"); awai…
+     98|   const selected = metric("수주"); selected.focus(); await click(selecte…
+       |                                           ^
+     99|   expect(getDashboard).toHaveBeenLastCalledWith(actor, expect.objectCo…
+    100|   expect(dataRows("RFP 목록").length).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 등록 구간은 분포와 목록에만 적용되고 상태·구간을 각각 해제한다
+AssertionError: RFP 보기statistics: expected null not to be null
+ ❯ radio tests/components/admin/dashboard-ux.test.ts:34:36
+     32| function radio(group: string, value: string): HTMLInputElement {
+     33|   const found = host.querySelector<HTMLInputElement>('[role="radiogrou…
+     34|   expect(found, group + value).not.toBeNull(); return found!;
+       |                                    ^
+     35| }
+     36| function dataRows(label: string): HTMLTableRowElement[] { return [...h…
+ ❯ tests/components/admin/dashboard-ux.test.ts:123:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 상단 카드는 등록 구간을 해제하고 반복 선택해도 해당 상태의 첫 페이지를 보여준다
+AssertionError: RFP 보기statistics: expected null not to be null
+ ❯ radio tests/components/admin/dashboard-ux.test.ts:34:36
+     32| function radio(group: string, value: string): HTMLInputElement {
+     33|   const found = host.querySelector<HTMLInputElement>('[role="radiogrou…
+     34|   expect(found, group + value).not.toBeNull(); return found!;
+       |                                    ^
+     35| }
+     36| function dataRows(label: string): HTMLTableRowElement[] { return [...h…
+ ❯ tests/components/admin/dashboard-ux.test.ts:150:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 상태 조회 지연·실패 중에도 숫자와 조건을 보존하고 재시도·해제를 제공한다
+TypeError: Cannot read properties of undefined (reading 'focus')
+ ❯ tests/components/admin/dashboard-ux.test.ts:177:43
+    175|   const pending = new Promise<void>(resolve => { release = resolve; });
+    176|   read.mockImplementationOnce(async () => { await pending; throw new E…
+    177|   const selected = metric("수주"); selected.focus(); await click(selecte…
+       |                                           ^
+    178|   const region = host.querySelector('[aria-label="선택 조건 RFP 목록"]');
+    179|   expect(card("RFP 목록").querySelector('[role="status"]')?.textContent)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 분포 수량·비율·수주금액과 부서별 구성은 서비스 집계를 정확히 표시한다
+AssertionError: RFP 보기statistics: expected null not to be null
+ ❯ radio tests/components/admin/dashboard-ux.test.ts:34:36
+     32| function radio(group: string, value: string): HTMLInputElement {
+     33|   const found = host.querySelector<HTMLInputElement>('[role="radiogrou…
+     34|   expect(found, group + value).not.toBeNull(); return found!;
+       |                                    ^
+     35| }
+     36| function dataRows(label: string): HTMLTableRowElement[] { return [...h…
+ ❯ tests/components/admin/dashboard-ux.test.ts:202:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 사용량은3개 차트를 함께 제공하고 공통 막대·선과 정확한 수치를 보존한다
+AssertionError: expected null not to be null
+ ❯ tests/components/admin/dashboard-ux.test.ts:221:68
+    219|   await render(); await tab("사용량 트렌드");
+    220|   expect(host.querySelectorAll("figure")).toHaveLength(3);
+    221|   expect(host.querySelector('[aria-label="조회 기간 전체 RFP 요약"]')).not.toB…
+       |                                                                    ^
+    222|   await click(radio("차트 유형", "line"));
+    223|   expect(host.querySelectorAll('svg[role="img"]')).toHaveLength(3);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 사용자 행에 아바타·이메일을 표시하고 이메일 검색 시 첫 페이지와 입력 초점을 유지한다
+TypeError: Cannot read properties of undefined (reading 'textContent')
+ ❯ tests/components/admin/dashboard-ux.test.ts:269:27
+    267|   expect(dataRows("사용자별 활동 집계")[0].textContent).toContain(email);
+    268|   expect(host.querySelector('[aria-label="페이지 이동"]')?.textContent).toC…
+    269|   expect(metric("등록된 RFP").textContent).toContain(view.totalRfps + "건"…
+       |                           ^
+    270|   await input(field, "missing-user@example.invalid"); expect(host.text…
+    271|   await input(field, ""); expect(dataRows("사용자별 활동 집계")).toHaveLength(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 부서와 RFP 목록은 독립적으로10개씩 페이지 처리하고 기간 변경 시 초기화한다
+AssertionError: RFP 보기statistics: expected null not to be null
+ ❯ radio tests/components/admin/dashboard-ux.test.ts:34:36
+     32| function radio(group: string, value: string): HTMLInputElement {
+     33|   const found = host.querySelector<HTMLInputElement>('[role="radiogrou…
+     34|   expect(found, group + value).not.toBeNull(); return found!;
+       |                                    ^
+     35| }
+     36| function dataRows(label: string): HTMLTableRowElement[] { return [...h…
+ ❯ tests/components/admin/dashboard-ux.test.ts:286:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/50]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 기간 입력 오류는 조회를 막고 빈 분포의 비율은NaN없이 표시한다
+AssertionError: RFP 보기statistics: expected null not to be null
+ ❯ radio tests/components/admin/dashboard-ux.test.ts:34:36
+     32| function radio(group: string, value: string): HTMLInputElement {
+     33|   const found = host.querySelector<HTMLInputElement>('[role="radiogrou…
+     34|   expect(found, group + value).not.toBeNull(); return found!;
+       |                                    ^
+     35| }
+     36| function dataRows(label: string): HTMLTableRowElement[] { return [...h…
+ ❯ tests/components/admin/dashboard-ux.test.ts:315:95
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/50]⎯
+
+ FAIL  tests/lib/comments/shell-ui.test.ts > 공통 헤더의 메뉴와 모달 포커스 보존 > opens the mobile sidebar, suspends comment UI and restores focus on Escape
+ FAIL  tests/lib/comments/shell-ui.test.ts > 공통 헤더의 메뉴와 모달 포커스 보존 > restores the header menu button after the usage modal closes
+ FAIL  tests/lib/comments/shell-ui.test.ts > 공통 헤더의 메뉴와 모달 포커스 보존 > restores the header menu button after the request modal closes
+Error: 프로젝트 상단바 공급자가 필요합니다.
+ ❯ useProjectHeader components/common/ProjectHeaderProvider.tsx:92:11
+
+ ❯ NavSidebar components/layout/NavSidebar.tsx:301:20
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:874:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:41
+ ❯ renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/50]⎯
+
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > places and saves a pin from the creation mode and restores it from storage
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > never submits composition Enter, supports Shift+Enter, and commits ordinary Enter
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > uses Enter for mention selection before posting and persists structured mentions
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > dismisses only the mention list on Escape, then preserves a closed draft
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > supports keyboard placement and renders the latest root preview
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > resolves and reopens while preserving the reply draft
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > edits the owner's root only after a change and confirms thread deletion
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > offers no root edit menu on another author's thread but allows status changes
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > resizes without resetting input and exposes the completion label at 420px
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > commits only the final drag point and cancels a later drag on Escape
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > remeasures expanded/collapsed widths without resizing the window or writing stored pin coordinates
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > keeps the selected thread and reply draft inside the collapsed work area
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > uses zero sidebar width on mobile even with a saved collapsed sidebar
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > keeps input and shows an error after a failed write
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > requires explicit conflict review before overwriting a newer revision
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > edits and deletes only the current user's reply
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > keeps the popup inside the 1024 × 500 work area
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > keeps the popup inside the 390 × 844 work area
+ FAIL  tests/lib/comments/workspace-ui.test.ts > comment workspace interaction with the real controller and isolated IndexedDB adapter > keeps the popup inside the 320 × 568 work area
+ FAIL  tests/lib/comments/workspace-ui.test.ts > 중복 제목을 없앤 툴바를 클릭해도 핀이 생성되지 않는다
+TypeError: Cannot read properties of undefined (reading 'readOnly')
+ ❯ CommentsWorkspace components/comments/CommentsWorkspace.tsx:101:32
+
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:874:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:41
+ ❯ renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:11
+ ❯ performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/50]⎯
+
+
+ Test Files  6 failed | 78 passed (84)
+      Tests  50 failed | 598 passed (648)
+   Start at  12:42:55
+   Duration  25.94s (transform 32.28s, setup 0ms, import 248.25s, tests 109.12s, environment 28.00s)
+

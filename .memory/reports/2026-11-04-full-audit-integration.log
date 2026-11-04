@@ -1,0 +1,47 @@
+PROGRAM 1
+화면 의견 권한·검증·원본 불변·완성/미완성 회차 계승 통과
+헤더 실제 집계·권한·이력·권한 배치 원자성 검증 통과
+T08 exact snapshot, missing version: passed
+PROGRAM 2
+T10 repository: migration read/write, Blob preservation, batch rollback, scope isolation, canvas rounds, exact history, corrupt no seed passed
+PROGRAM 3
+PASS file draft survives background header error
+PROGRAM 4
+PASS failed selection preserves current project availability
+PASS navigation after failed selection recovers
+selection success: PASS
+PASS invalid/deleted/duplicate deep links denied and corrected URL recovers
+PROGRAM 5
+before: round change retains settings: false
+after: round change retains settings: true
+PROGRAM 6
+PASS StrictMode + real Query/IDB comment create
+PASS guarded cancel/discard + project isolation + reload
+PASS background error recovery preserves canvas draft
+PASS committed comment survives refresh failure without duplicate draft
+PASS complete/rework/snapshot read-only
+PROGRAM 7
+PASS actual Files UI + Header + Query + IDB: web save and error recovery
+PASS actual permission drawer: remote round preserves draft, conflict/reload/batch save
+PROGRAM 8
+PASS actual Comments UI + Header + Query + IDB: pin/IME/reply/status
+PASS completed comment UI exposes reading without write actions
+PROGRAM 9
+PASS picker synchronous/cancel/same-file + 10 extensions/empty/size/unsafe URL boundaries
+PROGRAM 10
+PASS actual permission drawer: remote round preserves draft, conflict/reload/batch save
+PROGRAM 11
+PASS remote round: old draft retained, stale submit rejected, explicit discard/cancel and new-round save
+PROGRAM 12
+PASS actual permission drawer: remote round preserves draft, conflict/reload/batch save
+PROGRAM 13
+PASS RFP: required fields, sample/edit, file boundary, calendar/leap day, author/PM and namespace isolation, duplicate rejection, reload
+ALL 13 PROGRAMS PASSED
+추가 프로그램 1
+PASS TOC: CRUD/order/assignment bounds/checklist author+time/undo, completion/rework/lock/snapshot
+추가 프로그램 2
+PASS Auth bridge: session refresh, logout, token error, preview separation
+PASS actual Comments UI + Header + Query + IDB: pin/IME/reply/status
+PASS completed comment UI exposes reading without write actions
+PASS remote round: old draft retained, stale submit rejected, explicit discard/cancel and new-round save
+PASS final inline recovery notice inside workspace

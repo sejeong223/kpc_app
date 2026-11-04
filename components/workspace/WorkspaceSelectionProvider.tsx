@@ -79,7 +79,9 @@ function ActiveSelection({ runtime, children }: {
             return canonical;
         }),
     });
-    const error = parsed.error ?? denied ?? projects.error ?? saved.error ?? resolutionError ?? view.error ?? mutation.error;
+    // 이동 실패는 요청한 버튼의 catch에서 알린다. 현재 프로젝트의 조회 상태를
+    // 실패한 이동 요청으로 덮으면 다른 메뉴로 이동해도 편집이 계속 차단된다.
+    const error = parsed.error ?? denied ?? projects.error ?? saved.error ?? resolutionError ?? view.error;
     const serialized = JSON.stringify(selection), memoryValue = JSON.stringify(memory);
     useEffect(() => {
         if (ready && !error && view.isSuccess && selection.projectId && serialized !== memoryValue && !committing.current)

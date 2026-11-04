@@ -122,6 +122,8 @@ export class IndexedDbRfpRepository implements RfpRepository {
     if (record.namespace !== identity.namespace) throw new RfpError("forbidden", "다른 사용자의 저장 공간에는 등록할 수 없습니다.");
     const parsed = RfpRecordSchema.safeParse(record);
     if (!parsed.success) throw new RfpError("invalid", "필수 항목을 확인해 주세요.", { cause: parsed.error });
+    if (parsed.data.registeredBy.id !== identity.actor.id || parsed.data.pmId !== identity.actor.id)
+      throw new RfpError("forbidden", "등록자와 최초 PM은 현재 사용자여야 합니다.");
     const transaction = await this.transaction("readwrite");
     return new Promise<RfpRecord>((resolve, reject) => {
       let failure: RfpError | null = null;

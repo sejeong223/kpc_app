@@ -1,0 +1,226 @@
+
+> azure-app-template@0.1.0 test
+> vitest run --reporter=dot --maxWorkers=2
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Developer/Project/kpc_app
+
+stderr | tests/components/admin/dashboard-ux.test.ts > 개요의 수주율은 가까운 목록으로 연결하고 결과 영역에 초점을 준다
+You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+stderr | tests/components/admin/dashboard-ux.test.ts > 개요의 수주율은 가까운 목록으로 연결하고 결과 영역에 초점을 준다
+You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+stderr | tests/components/token-dialog-ui.test.ts > profile to token dialog and toast > submits once, retains the toast theme after closing and resets only the next request draft
+You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+stderr | tests/components/token-dialog-ui.test.ts > profile to token dialog and toast > submits once, retains the toast theme after closing and resets only the next request draft
+You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. 
+
+xxxx··xxxxxxxxxxx····························································································································································································································································································································································································································································································································································································································································
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/components/token-dialog-ui.test.ts > profile to token dialog and toast > keeps the portal theme through usage/request navigation and restores the profile trigger
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/components/token-dialog-ui.test.ts:86:3
+     84|
+     85| describe("profile to token dialog and toast", () => {
+     86|   it("keeps the portal theme through usage/request navigation and rest…
+       |   ^
+     87|     const trigger = await enter("usage");
+     88|     expect(modal().textContent).toContain("내 AI Token 사용량");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+
+ FAIL  tests/components/token-dialog-ui.test.ts > profile to token dialog and toast > submits once, retains the toast theme after closing and resets only the next request draft
+TypeError: Cannot read properties of null (reading 'click')
+ ❯ tests/components/token-dialog-ui.test.ts:38:76
+     36| }
+     37| async function flush() { await act(async () => { await new Promise(res…
+     38| async function click(element: HTMLElement) { await act(async () => ele…
+       |                                                                            ^
+     39| async function enter(view: "usage" | "request"): Promise<HTMLButtonEle…
+     40|   const trigger = host.querySelector<HTMLButtonElement>("[data-sidebar…
+ ❯ Proxy.process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:814:22
+ ❯ click tests/components/token-dialog-ui.test.ts:38:52
+ ❯ enter tests/components/token-dialog-ui.test.ts:41:9
+ ❯ tests/components/token-dialog-ui.test.ts:104:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 개요의 요약에서 RFP 목록·추이·분포·부서별 화면으로 연결한다
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/components/admin/dashboard-ux.test.ts:61:1
+     59| afterEach(async () => { await act(async () => root.unmount()); client.…
+     60|
+     61| it("개요의 요약에서 RFP 목록·추이·분포·부서별 화면으로 연결한다", async () => {
+       | ^
+     62|   await render();
+     63|   expect(host.querySelectorAll('[role="tab"]')).toHaveLength(5);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 개요의 수주율은 가까운 목록으로 연결하고 결과 영역에 초점을 준다
+TypeError: Cannot read properties of undefined (reading 'focus')
+ ❯ tests/components/admin/dashboard-ux.test.ts:100:12
+     98|   const getDashboard = vi.spyOn(harness.service, "getDashboard"); awai…
+     99|   const selected = [...host.querySelectorAll<HTMLButtonElement>('[aria…
+    100|   selected.focus(); await click(selected);
+       |            ^
+    101|   expect(getDashboard).toHaveBeenLastCalledWith(actor, expect.objectCo…
+    102|   expect(dataRows("RFP 목록").length).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 상단 카드는 등록 구간을 해제하고 반복 선택해도 해당 상태의 첫 페이지를 보여준다
+AssertionError: RFP 현황: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:156:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 상태 조회 지연·실패 중에도 숫자와 조건을 보존하고 재시도·해제를 제공한다
+AssertionError: RFP 현황: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:179:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 분포 수량·비율·수주금액과 부서별 구성은 서비스 집계를 정확히 표시한다
+AssertionError: RFP 현황: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:208:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 사용량은3개 차트를 함께 제공하고 공통 막대·선과 정확한 수치를 보존한다
+AssertionError: 사용량 트렌드: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:227:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 사용자 표는10개씩 표시하며 검색 중에도 입력과 초점을 유지한다
+AssertionError: 사용자별 현황: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:239:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 사용자 행에 아바타·이메일을 표시하고 이메일 검색 시 첫 페이지와 입력 초점을 유지한다
+AssertionError: 사용자별 현황: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:256:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 이메일 이력이 없는 사용자도 집계를 유지하고 정보 없음과 이름 아바타를 표시한다
+TypeError: Cannot read properties of undefined (reading 'firstElementChild')
+ ❯ tests/components/admin/dashboard-ux.test.ts:287:14
+    285|   await render(h(UserActivityPanel, { view: { ...view, users: [user] }…
+    286|   const row = dataRows("사용자별 활동 집계")[0];
+    287|   expect(row.firstElementChild?.textContent).toContain(user.name);
+       |              ^
+    288|   expect(row.firstElementChild?.textContent).toContain("이메일 정보 없음");
+    289|   expect(row.firstElementChild?.querySelector('[aria-hidden="true"]')?…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 부서와 RFP 목록은 독립적으로10개씩 페이지 처리하고 기간 변경 시 초기화한다
+AssertionError: RFP 현황: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:294:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 액션·리소스·업무집계를 함께 표시하고 상세 다음 페이지도 전체척도를 유지한다
+AssertionError: expected null not to be null
+ ❯ tests/components/admin/dashboard-ux.test.ts:315:30
+    313|   await render(h(BreakdownHarness, { view: { ...view, details } }));
+    314|   const chart = () => card("업무 기준 상세").querySelector('[aria-label="업무 …
+    315|   expect(card("액션별 활동")).not.toBeNull(); expect(card("리소스별 활동")).not.t…
+       |                              ^
+    316|   expect(chart().children).toHaveLength(10); await click(button("다음", …
+    317|   expect(chart().children).toHaveLength(10); expect(chart().firstEleme…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 기간 입력 오류는 조회를 막고 빈 분포의 비율은NaN없이 표시한다
+AssertionError: RFP 현황: expected undefined to be defined
+ ❯ tab tests/components/admin/dashboard-ux.test.ts:30:24
+     28|   // Fluent 탭은 비선택 상태에서 폭 측정용 텍스트를 한 번 더 렌더한다.
+     29|   const found = [...host.querySelectorAll<HTMLElement>('[role="tab"]')…
+     30|   expect(found, label).toBeDefined(); await click(found!);
+       |                        ^
+     31| }
+     32| function radio(group: string, value: string): HTMLInputElement {
+ ❯ tests/components/admin/dashboard-ux.test.ts:323:89
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+
+ FAIL  tests/components/admin/dashboard-ux.test.ts > 조회 실패 시 재시도하고 권한 범위 밖의 관리자 데이터를 노출하지 않는다
+AssertionError: expected null not to be null
+ ❯ tests/components/admin/dashboard-ux.test.ts:339:68
+    337| it("조회 실패 시 재시도하고 권한 범위 밖의 관리자 데이터를 노출하지 않는다", async () => {
+    338|   const read = vi.spyOn(harness.service, "getDashboard").mockRejectedV…
+    339|   await render(); expect(host.querySelector('[role="alert"]')).not.toB…
+       |                                                                    ^
+    340|   await click(button("다시 시도")); expect(read).toHaveBeenCalledTimes(2);
+    341|   actor = harness.departmentActor; await render(); await tab("사용자별 현황"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+
+
+ Test Files  2 failed | 82 passed (84)
+      Tests  15 failed | 638 passed (653)
+   Start at  13:26:50
+   Duration  157.50s (transform 14.36s, setup 0ms, import 156.32s, tests 110.13s, environment 24.57s)
+

@@ -18,19 +18,18 @@ import WebReferenceDialog from "./WebReferenceDialog";
 import FileDiscardDialog from "./FileDiscardDialog";
 import FileUndoNotice from "./FileUndoNotice";
 import FilePreviewDialog from "./FilePreviewDialog";
-import { useProjectHeader } from "@/components/common/ProjectHeaderProvider";
 import ProjectHeader from "@/components/common/ProjectHeader";
 import FileRoundSection from "./FileRoundSection";
 
 export default function FilesWorkspace({ onReconnect }: { onReconnect(): void }): React.ReactElement {
   const {selection,projects,pending,error}=useWorkspaceSelection();
-  const header=useProjectHeader();
-  const model=header.state.status==="ready"?header.state.model:null;
   if(error&&!selection.projectId)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="error" message={error.message} onRetry={onReconnect}/></WorkspacePage>;
   if(pending)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="loading"/></WorkspacePage>;
   if(!projects.length)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="empty" message="참여 중인 프로젝트가 없습니다."/></WorkspacePage>;
   if(!selection.projectId)return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드"><AdminAsyncState state="empty" message="프로젝트를 선택해 주세요."/></WorkspacePage>;
-  return <FileProjectWorkspace key={JSON.stringify([selection.projectId,selection.snapshotId,model?.currentRound,model?.phase])} snapshotId={selection.snapshotId} selectionError={error?.message} projectId={selection.projectId} onReconnect={onReconnect}/>;
+  // 재조회 오류나 다른 창의 회차 변경으로 입력 중인 초안을 버리지 않는다.
+  // 저장 시에는 편집을 시작한 회차와 revision으로 충돌을 검사한다.
+  return <FileProjectWorkspace key={JSON.stringify([selection.projectId,selection.snapshotId])} snapshotId={selection.snapshotId} selectionError={error?.message} projectId={selection.projectId} onReconnect={onReconnect}/>;
 }
 interface FileProjectWorkspaceProps { snapshotId:string|null; projectId: string; onReconnect(): void; selectionError?: string }
 interface ActionConfirmation { operation: Extract<FileOperation, { type: "remove" | "start-round" }>; revision: number; round: number; workspaceRevision?: number; label: string }

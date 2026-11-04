@@ -209,13 +209,7 @@ export default function WorkspaceScreen({
           <SetupWorkspace key={scene.view.project.id} {...scene} />
         ) : (
           <WorkspaceFlow
-            key={
-              scene.view.project.id +
-              ":" +
-              scene.liveView.state.currentRound +
-              ":" +
-              scene.liveView.state.phase
-            }
+            key={JSON.stringify([scene.view.project.id, scene.selection.snapshotId, screen])}
             screen={screen}
             {...scene}
           />

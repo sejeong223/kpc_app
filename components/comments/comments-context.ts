@@ -9,6 +9,7 @@ export interface CommentsContextValue {
     controller: CommentController | null;
     capabilities: CanvasCommentCapabilities;
     mentionUsers: CommentUser[];
+    roundConflict?: { from: number; to: number; reload(): void };
 }
 export const inactiveComments: CommentsContextValue = {
     identity: null, controller: null, state: createCommentControllerState(), mentionUsers: [],

@@ -34,7 +34,7 @@ const viewportBounds = (): CommentBounds => {
 };
 
 export default function CommentsWorkspace(): React.ReactElement {
-  const styles = useStyles(), { state, controller, capabilities } = useComments();
+  const styles = useStyles(), { state, controller, capabilities, roundConflict } = useComments();
   const surface = useRef<HTMLElement>(null), gesture = useRef<PinGesture | null>(null), suppressClick = useRef<string | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [measurement, setMeasurement] = useState<Measurement | null>(null), [hovered, setHovered] = useState<string | null>(null);
@@ -145,6 +145,11 @@ export default function CommentsWorkspace(): React.ReactElement {
     <div className={styles.intro} data-comment-control>
       <ProjectHeader title="제작" headingId="workspace-screen-title" />
       <div className={styles.canvasTools}><CommentCreateButton /><LegacyCommentsArchive /></div>
+      {roundConflict && <section role="alert" className="tw:rounded-lg tw:border tw:border-solid tw:border-amber-300 tw:bg-amber-50 tw:p-(--layout-card-inset)">
+        <p>{roundConflict.from}차에서 작성하던 의견을 보관하고 있습니다. 현재 작업은 {roundConflict.to}차로 변경되어 이 초안을 저장할 수 없습니다. 필요한 내용을 복사한 뒤 최신 회차를 불러와 주세요.</p>
+        {Object.entries(state.drafts).filter(([, draft]) => draft.text.trim()).map(([key, draft]) => <pre key={key} className="tw:my-2 tw:whitespace-pre-wrap tw:break-words tw:font-sans">{draft.text}</pre>)}
+        <Button disabled={state.busy} onClick={roundConflict.reload}>최신 회차 불러오기</Button>
+      </section>}
       {state.pinMode && <p className={styles.text} role="status">의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
       {(state.status === "idle" || state.status === "loading") && <p className={styles.text} role="status">코멘트를 불러오는 중입니다.</p>}
     </div>

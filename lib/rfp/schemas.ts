@@ -7,7 +7,7 @@ import {
 
 // 사용자 id는 Entra 식별자(entra:oid:...)까지 담아야 해서 관리자 IdSchema(120자)보다 길게 둔다.
 const UserIdSchema = z.string().trim().min(1).max(200);
-const DateOnlySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const DateOnlySchema = z.iso.date();
 
 export const RfpPersonSchema = z.strictObject({ id: UserIdSchema, name: z.string().trim().min(1).max(80) });
 export const RfpFileMetaSchema = z.strictObject({

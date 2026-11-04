@@ -50,7 +50,7 @@ export default function ProjectHeader(props: ProjectHeaderProps) {
     if (state.status === "ready" && state !== last)
         setLast(state);
     const ready = state.status === "ready" ? state : last?.view.project.id === selection.projectId && last.model.snapshotId === selection.snapshotId ? last : null;
-    return ready ? <ProjectHeaderContent key={JSON.stringify([selection.projectId, ready.model.currentRound, selection.snapshotId])} {...props} header={ready} unavailable={state.status !== "ready"}/> : <HeaderLoading {...props}/>;
+    return ready ? <ProjectHeaderContent key={JSON.stringify([selection.projectId, selection.snapshotId])} {...props} header={ready} unavailable={state.status !== "ready"}/> : <HeaderLoading {...props}/>;
 }
 function ProjectPicker() {
     const { state, projects, selection, pending, selectProject } = useProjectHeader(), styles = useStyles();
