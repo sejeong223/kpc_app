@@ -1,6 +1,6 @@
 # Task: T06 중앙 상단 편집 입력과 상태별 노출
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -85,11 +85,11 @@
 
 ## Acceptance Criteria
 
-- [ ] 단일 선택의 중앙 상단에 `편집` 제목·문서 입력·반영 동작이 기본 표시된다.
-- [ ] 직접 입력이 AI/Template보다 먼저이고, 구조 도구를 펼치지 않아도 편집할 수 있다.
-- [ ] 입력은 기존 제목·lead·목록·표·이미지/ID를 보존하고 반영 후 저장본과 일치한다.
-- [ ] 다중 선택, 명시적 선택 해제, 빈 섹션, 목차 없음, 읽기 전용, 접근 오류, dirty 충돌 각각의 표시가 명시되어 있다.
-- [ ] 패널 전환/도구 펼침/readonly 갱신으로 초안 DOM을 재생성하지 않고 IME/저장/이동 보호를 유지한다.
+- [x] 단일 선택의 중앙 상단에 `편집` 제목·문서 입력·반영 동작이 기본 표시된다.
+- [x] 직접 입력이 AI/Template보다 먼저이고, 구조 도구를 펼치지 않아도 편집할 수 있다.
+- [x] 입력은 기존 제목·lead·목록·표·이미지/ID를 보존하고 반영 후 저장본과 일치한다.
+- [x] 다중 선택, 명시적 선택 해제, 빈 섹션, 목차 없음, 읽기 전용, 접근 오류, dirty 충돌 각각의 표시가 명시되어 있다.
+- [x] 패널 전환/도구 펼침/readonly 갱신으로 초안 DOM을 재생성하지 않고 IME/저장/이동 보호를 유지한다.
 
 ## Validation
 
@@ -115,8 +115,30 @@ Task: T06-editor-visibility
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 문서를 포함한 Task: T06-editor-visibility 커밋
 
 검증 후 관련 파일만 한국어 커밋한다. phase 진행률6/7, 로컬 ignored current는 T07로 갱신한다. 이전 완료 Task 재실행·force stage·push/배포 금지.
+
+## Execution Record
+
+- SlideContentEditor: 편집 제목·입력·반영 버튼·접힌 문서 도구 순서. 실제 contenteditable 문서 엔진과 저장 모델 유지. 입력 최소48/최대180px 및 내부 스크롤.
+- ProductionWorkspace: 직접 편집 다음 AI/피드백/Template/저장본 순서. aiControls/aiFeedback 슬롯을 통해 기존 ActiveSlide의 초안 소유권 유지. 다중 선택의 한 장씩 편집은 기존 chooseSlide guard 사용.
+- typecheck·변경2개 파일 lint·diff 통과. 실제 SlideContentEditor/document-editor와 UI 스타일 대역으로 stdin React/jsdom16개 검증 통과: 제목 연결/기본 노출/순서, 전체 블록 보존, dirty·외부 변경·readonly·busy·오류·명시 reset·도구 펼침 시 DOM 유지.
+
+| 상태 | 직접 입력 | AI/미리보기 | 쓰기 |
+| --- | --- | --- | --- |
+| 단일 clean/dirty | 편집 제목과 문서, dirty 안내 | 입력 다음 AI, 저장본 미리보기 | 기존 권한과 canSave |
+| 다중 clean | 숨긴 편집 세션 보존, 한 장씩 편집 경로 | 일괄 요청 및 선택 미리보기 | 모든 대상 기존 검증 |
+| 다중 dirty | 보관 입력 안내와 문서 유지 | 일괄 요청/이동은 guard | 기존 충돌/초안 조건 |
+| 선택 해제 | 기존 활성 문서 유지 | 대상 없는 AI 요청 없음, 활성 미리보기 | 활성 문서 권한 |
+| 빈 section, 다른 slide 있음/없음 | 빈 상태와 추가 안내 | 초안 생성, 다른 slide 있으면 목록 선택 안내 | 자동 생성/자동 이동 없음 |
+| 목차 없음 | 목차 추가 안내 | 입력/미리보기 없음 | 추가할 section 없음 |
+| snapshot/completed/locked/권한 없음 | 저장 내용·읽기 전용 이유 | 저장본 유지 | 기존 권한 차단 |
+| accessDenied + dirty | 기존 입력 보관·복사/폐기 | 저장본 목록/출처/미리보기 비공개 | 저장 불가 |
+| 회차 변경/삭제/외부 충돌 | lastSlide와 초안 보존 | 오래된 저장본 미리보기 숨김 | 저장 차단, 명시 폐기 경로 |
+
+- 학습: `aiControls`/`aiFeedback`은 ReactNode 슬롯으로, 배치를 바꾸면서 AI 명령과 초안의 상태 소유자는 유지한다.
+- 주의: ActiveSlide key에 round/revision/권한을 추가하면 재마운트로 입력을 잃을 수 있다. 실제 IME/화면 레이아웃 검증은 미실시.
+- 요청 밖 발견: 특이사항 없음.

@@ -30,9 +30,10 @@ export interface ProductionWorkspaceProps extends WorkspaceSceneProps {
 }
 interface EditingSession { slideId: string; round: number; snapshotId: string | null; lastSlide: ProposalSlide; dirty: boolean }
 const cleanDocument: DocumentEditorState = { dirty: false, composing: false, error: null };
-function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange }: {
+function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange, aiControls, aiFeedback }: {
   view: ProjectView; slide: ProposalSlide; snapshotId: string | null; externalConflict: string | null; busy: boolean; accessDenied: boolean;
   onDirtyChange(dirty: boolean): void; onBusyChange(busy: boolean): void;
+  aiControls?: React.ReactNode; aiFeedback?: React.ReactNode;
 }) {
   const runtime = useWorkspaceRuntime(), editor = useSlideDraft(view, slide), clipboard = useSlideClipboard();
   const [documentState, setDocumentState] = useState(cleanDocument), [resetKey, setResetKey] = useState(0), [error, setError] = useState<string | null>(null);
@@ -41,6 +42,8 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
   const can = !snapshotId && !externalConflict && !accessDenied && view.state.phase === "writing" && view.capabilities.editableSectionIds.includes(slide.sectionId);
   const conflict = externalConflict ?? (editor.conflict ? "다른 변경이 저장되었습니다. 입력을 보존했으니 필요한 내용을 복사한 뒤 최신 내용을 불러와 주세요." : null);
   const canSave = can && !conflict && !documentState.error && !documentState.composing && !busy;
+  const readOnlyReason = snapshotId ? "보관본은 읽기 전용입니다." : view.state.phase !== "writing" ? "현재 작업 단계에서는 내용을 수정할 수 없습니다." :
+    view.state.body.sections.find(section => section.id === slide.sectionId)?.locked ? "작성 완료로 고정된 소목차입니다. 수정하려면 권한에 따라 고정을 해제해 주세요." : "이 소목차의 편집 권한이 없습니다.";
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   useEffect(() => onBusyChange(localBusy), [localBusy, onBusyChange]);
   const latestEditor = useRef(editor);
@@ -72,9 +75,13 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
   }}>
     {conflict && <div data-comment-control role="alert" className="tw:rounded-lg tw:border tw:border-amber-300 tw:bg-amber-50 tw:p-3 tw:text-sm"><p>{conflict}</p>{dirty && <DadamButton size="small" disabled={busy} onClick={discard}>내 입력을 버리고 최신 내용 불러오기</DadamButton>}</div>}
     {dirty && !conflict && <div data-comment-control className="tw:flex tw:items-center tw:gap-2 tw:text-xs"><span role="status">미반영 변경</span><DadamButton size="small" disabled={busy} onClick={discard}>변경 취소</DadamButton></div>}
+    {!can && !conflict && !accessDenied && <p className="tw:text-xs tw:text-(--kpc-muted)">{readOnlyReason}</p>}
+    {accessDenied && dirty && <p role="status" className="tw:text-xs">접근 권한 변경 전 작성하던 입력을 보관하고 있습니다. 필요한 내용을 복사할 수 있습니다.</p>}
     {(!accessDenied || dirty) && <SlideContentEditor value={editor.draft.content} resetKey={resetKey} readOnly={!can || !!conflict} busy={busy}
       error={editor.error ?? error ?? clipboard.image.error?.message ?? null} onChange={editor.setContent} onEditorStateChange={onDocumentState}
       onSave={() => { void save().catch(() => { /* Error is shown above. */ }); }} onImage={can ? image : undefined} />}
+    {aiControls}
+    {aiFeedback}
     {!accessDenied && <details data-comment-control><summary className="tw:cursor-pointer tw:text-xs">Template 연결 설정</summary><SlideTemplatePicker view={view} content={editor.draft.content} value={editor.draft.template} readOnly={!can || !!conflict || busy} onChange={editor.setTemplate} /></details>}
     {!accessDenied && !externalConflict && <section aria-label="저장된 슬라이드"><h3 className="tw:mb-2 tw:text-sm">슬라이드</h3><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} /></section>}
     <DraftProtection dirty={dirty} busy={busy} onSave={canSave ? save : undefined} onDiscard={discard} />
@@ -162,17 +169,30 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   const sessionConflict = readOnlyError ?? (session?.dirty && (session.round !== view.state.currentRound || !savedSessionSlide) ? "편집 중인 슬라이드의 회차가 변경되었거나 삭제되었습니다. 입력을 복사한 뒤 최신 내용으로 이동해 주세요." : null);
   const editingSlide = session ? (session.round === view.state.currentRound ? savedSessionSlide ?? session.lastSlide : session.lastSlide) : null;
   const safeView = readOnly ? { ...view, capabilities: { ...view.capabilities, editableSectionIds: [], unlockableSectionIds: [] } } : view;
+  const multiple = ids.length > 1, singleTarget = current && ids.includes(current.id) ? current.id : ids[0];
+  const aiControls = !accessDenied && !readOnly && onPropose && (ids.length > 0 || (!!section && !view.state.body.slides.some(s => s.sectionId === section.id))) ?
+    <div className="tw:mb-(--layout-section-gap)"><ProductionAiPanel key={JSON.stringify([ids, section?.id, view.state.currentRound])} view={view} slideIds={ids} sectionId={section?.id ?? null} busy={busy} onPropose={onPropose} /></div> : null;
   const center = <>
     {!accessDenied && <><ProductionToolbar view={safeView} sectionId={section?.id ?? null} busy={busy} onSection={id => guarded(async () => { await commitSelection({ ...selection, sectionId: id, slideId: null }); if (stillHere()) { setSelected(null); setContextId(null); } })}
       onState={state => { if (section) execute({ type: "set-section-state", id: section.id, state }); }} onUnlock={() => { if (section) execute({ type: "unlock-section", id: section.id }); }} />
       {section && !readOnly && view.capabilities.editableSectionIds.includes(section.id) && <div data-comment-control className="tw:mb-3 tw:flex tw:gap-2"><DadamButton size="small" disabled={busy} onClick={() => execute({ type: "add-slide", sectionId: section.id, afterId: current?.id ?? null, template: null })}>슬라이드 추가</DadamButton><DadamButton size="small" disabled={busy || !clipboard.getToken()} onClick={() => paste(section.id, current?.id ?? null)}>붙여넣기</DadamButton></div>}
     </>}
-    {ids.length > 1 && !accessDenied && <h2 className="tw:text-sm">선택한 슬라이드 {ids.length}장</h2>}
-    {!accessDenied && !readOnly && onPropose && (ids.length > 0 || (!!section && !view.state.body.slides.some(s => s.sectionId === section.id))) && <div className="tw:mb-(--layout-section-gap)"><ProductionAiPanel key={JSON.stringify([ids, section?.id, view.state.currentRound])} view={view} slideIds={ids} sectionId={section?.id ?? null} busy={busy} onPropose={onPropose} /></div>}
+    {multiple && !accessDenied && <section data-comment-control className="tw:mb-(--layout-section-gap)">
+      <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap)"><h2 className="tw:m-0 tw:flex-1 tw:text-sm">여러 슬라이드 편집 · {ids.length}장</h2><DadamButton size="small" disabled={busy || !singleTarget} onClick={() => { if (singleTarget) chooseSlide(singleTarget, "single"); }}>한 장씩 편집</DadamButton></div>
+      <p className="tw:text-xs tw:text-(--kpc-muted)">선택한 슬라이드는 아래에서 함께 확인할 수 있습니다. 본문을 직접 수정하려면 한 장씩 편집하세요.</p>
+    </section>}
+    {multiple && aiControls}
     <div hidden={ids.length > 1 && !session?.dirty}>
-      {editingSlide ? <ActiveSlide key={`${view.project.id}:${selection.snapshotId ?? "current"}:${editingSlide.id}`} view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy} onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy} /> : !accessDenied && <p className="tw:text-sm">{section ? "슬라이드를 추가해 작성을 시작하세요." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>}
+      {multiple && session?.dirty && <p role="status" className="tw:text-xs">아래에 아직 반영하지 않은 단일 슬라이드 입력을 보관하고 있습니다.</p>}
+      {editingSlide ? <ActiveSlide key={`${view.project.id}:${selection.snapshotId ?? "current"}:${editingSlide.id}`} view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy} onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy}
+        aiControls={!multiple ? aiControls : null} aiFeedback={!multiple ? aiFeedback : null} /> : !accessDenied && <section aria-label="편집" className="tw:mb-(--layout-section-gap) tw:rounded-lg tw:border tw:border-(--kpc-line) tw:p-(--layout-card-inset)">
+        <h2 className="tw:mt-0 tw:text-sm">편집</h2><p className="tw:text-sm">{section ? "이 소목차에는 슬라이드가 없습니다." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>
+        {section && <p className="tw:text-xs tw:text-(--kpc-muted)">{!readOnly && view.capabilities.editableSectionIds.includes(section.id) ? "슬라이드 추가 또는 아래의 초안 생성으로 작성을 시작하세요." : "슬라이드 추가는 편집 권한이 있는 작성 단계에서 가능합니다."}</p>}
+        {rows.length > 0 && <p className="tw:text-xs tw:text-(--kpc-muted)">왼쪽 목록에서 다른 슬라이드를 선택할 수 있습니다.</p>}
+      </section>}
     </div>
-    {aiFeedback}
+    {!editingSlide && !multiple && aiControls}
+    {(multiple || !editingSlide) && aiFeedback}
     {ids.length > 1 && !accessDenied && <div className="tw:mt-(--layout-section-gap) tw:space-y-(--layout-section-gap)">{rows.filter(row => ids.includes(row.slide.id)).map(row => <section key={row.slide.id} aria-label={`${row.number}번 선택 슬라이드`}><h3 className="tw:text-sm">{row.number}. {row.slide.content.title || "제목 없음"} <small>{row.section.title}</small></h3><ProductionPreview view={view} slide={row.slide} snapshotId={selection.snapshotId} number={row.number} lazy priority={row.slide.id === current?.id} /></section>)}</div>}
   </>;
   return <div className="tw:min-w-0">

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { DadamButton } from "@/components/ui/DadamControls";
 import { dadamUi } from "@/lib/ui/dadam-theme";
@@ -16,8 +16,13 @@ export interface SlideContentEditorProps {
 const clean: DocumentEditorState = { dirty: false, composing: false, error: null };
 const useStyles = makeStyles({
   shell: { minWidth: 0, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1 },
-  tools: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--layout-inline-gap)", padding: "var(--layout-control-gap)", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
-  paper: { padding: "var(--layout-card-inset)", maxHeight: "360px", overflow: "auto", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: "1.65",
+  heading: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--layout-control-gap)", padding: "var(--layout-control-gap) var(--layout-card-inset)", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
+  title: { margin: 0, flex: 1, fontSize: dadamUi.bodySize, fontWeight: 600 },
+  details: { borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
+  summary: { cursor: "pointer", padding: "var(--layout-control-gap) var(--layout-card-inset)", fontSize: dadamUi.metaSize },
+  tools: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--layout-inline-gap)", padding: "var(--layout-control-gap)" },
+  paper: { padding: "var(--layout-card-inset)", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: "1.65",
+    ":focus-within": { boxShadow: `inset 0 0 0 1px ${tokens.colorBrandStroke1}` },
     "& h2": { margin: "0 0 8px", fontSize: tokens.fontSizeBase500, fontWeight: 600 },
     "& [data-document-field='lead']": { margin: "0 0 16px", color: tokens.colorNeutralForeground2 },
     "& [data-block-id]": { marginTop: "12px", marginBottom: "12px" },
@@ -36,7 +41,7 @@ const useStyles = makeStyles({
 });
 interface Cursor { blockId: string | null; row: number; col: number; item: number }
 export default function SlideContentEditor({ value, readOnly, error, onChange, onSave, busy = false, onImage, resetKey = 0, onEditorStateChange }: SlideContentEditorProps): React.ReactElement {
-  const styles = useStyles(), root = useRef<HTMLDivElement>(null), content = useRef(value), baseline = useRef(JSON.stringify(value));
+  const styles = useStyles(), headingId = useId(), hintId = useId(), root = useRef<HTMLDivElement>(null), content = useRef(value), baseline = useRef(JSON.stringify(value));
   const initialized = useRef(false), appliedReset = useRef(resetKey), stateRef = useRef(clean);
   const [state, setState] = useState(clean), [cursor, setCursor] = useState<Cursor>({ blockId: null, row: 0, col: 0, item: 0 });
   const [notice, setNotice] = useState<string | null>(null), [plainPaste, setPlainPaste] = useState<string | null>(null);
@@ -100,8 +105,9 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
   };
   const block = value.blocks.find(b => b.id === cursor.blockId);
   const operationButton = (label: string, operation: DocumentCommand, disabled = false) => <DadamButton size="small" disabled={blocked || !!state.error || disabled} onClick={() => command(operation)}>{label}</DadamButton>;
-  return <section className={styles.shell} aria-label="슬라이드 문서 편집" data-comment-control>
-    {!readOnly && <div className={styles.tools} role="toolbar" aria-label="문서 구조 편집">
+  const tools = !readOnly && <details className={styles.details}>
+    <summary className={styles.summary}>문서 도구</summary>
+    <div className={styles.tools} role="toolbar" aria-label="문서 구조 편집">
       {(["text", "list", "table"] as const).map((kind, i) => <span key={kind}>{operationButton(["문단", "목록", "표"][i] + " 추가", { type: "insert-block", kind, afterId: block?.id ?? null })}</span>)}
       {block && <>
         {operationButton("위로", { type: "move-block", blockId: block.id, delta: -1 }, value.blocks[0]?.id === block.id)}
@@ -116,8 +122,11 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
         </>}
       </>}
       {onImage && <label className={styles.meta}>이미지 <input type="file" accept="image/png,image/jpeg" disabled={blocked} onChange={e => { const file = e.target.files?.[0]; if (file) onImage(file); e.target.value = ""; }} /></label>}
-    </div>}
-    <div ref={root} className={styles.paper} role="group" aria-label="제목·리딩 메시지·본문" onFocusCapture={e => rememberTarget(e.target)} onPointerUp={e => rememberTarget(e.target)} onKeyUp={e => rememberTarget(e.target)}
+    </div>
+  </details>;
+  return <section className={styles.shell} aria-label="슬라이드 문서 편집" data-comment-control>
+    <header className={styles.heading}><h2 id={headingId} className={styles.title}>편집</h2><span className={styles.meta}>{readOnly ? "읽기 전용" : state.dirty ? "미반영 변경" : "직접 편집"}</span></header>
+    <div ref={root} className={styles.paper} role="group" aria-labelledby={headingId} aria-describedby={hintId} onFocusCapture={e => rememberTarget(e.target)} onPointerUp={e => rememberTarget(e.target)} onKeyUp={e => rememberTarget(e.target)}
       onCompositionStart={() => updateState({ ...stateRef.current, dirty: true, composing: true })}
       onCompositionEnd={() => { if (!locked) publish(); else updateState({ ...stateRef.current, composing: false }); }}
       onInput={() => { if (locked) return; if (stateRef.current.composing) updateState({ ...stateRef.current, dirty: true }); else publish(); }}
@@ -157,8 +166,9 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
       }} />
     {(state.error || error) && <p role="alert" className={styles.error}>{state.error ?? error}</p>}
     {notice && <p role="status" className={styles.error}>{notice} {plainPaste !== null && <DadamButton size="small" disabled={blocked} onClick={() => { insertText(plainPaste); setPlainPaste(null); setNotice(null); }}>일반 텍스트로 붙여넣기</DadamButton>}</p>}
-    <div className={styles.footer}><span className={styles.meta}>{readOnly ? "읽기 전용" : state.dirty ? "아직 슬라이드에 반영하지 않은 내용입니다." : "본문·목록·표를 문서에서 편집하세요."}</span>
+    <div className={styles.footer}><span id={hintId} className={styles.meta}>{readOnly ? "저장된 내용을 확인할 수 있습니다." : state.dirty ? "아직 슬라이드에 반영하지 않은 내용입니다." : "제목·리딩 메시지·본문을 입력한 뒤 슬라이드에 반영하세요."}</span>
       {!readOnly && <DadamButton appearance="primary" disabled={blocked || !!state.error || !!error} onClick={onSave}>슬라이드에 반영</DadamButton>}
     </div>
+    {tools}
   </section>;
 }
