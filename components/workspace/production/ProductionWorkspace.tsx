@@ -178,11 +178,11 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   return <div className="tw:min-w-0">
     <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}
     {<ProductionPanels namespace={runtime.identity.namespace}
-      left={accessDenied ? null : <SlideNavigator view={safeView} rows={rows.map(row => ({ ...row, editable: !readOnly && row.editable }))} activeId={current?.id ?? null} selectedIds={ids} snapshotId={selection.snapshotId} busy={busy}
+      left={toggle => accessDenied ? null : <SlideNavigator panelToggle={toggle} view={safeView} rows={rows.map(row => ({ ...row, editable: !readOnly && row.editable }))} activeId={current?.id ?? null} selectedIds={ids} snapshotId={selection.snapshotId} busy={busy}
         onSelect={chooseSlide} onSelectMany={values => guarded(() => selectIds(values, values[0] ?? null))} contextId={contextId}
         onContext={id => guarded(async () => { if (id && !ids.includes(id)) await selectIds([id], id); if (stillHere()) setContextId(id); })}
         onCommand={execute} onCopy={copy} canCopy={canCopy} onPaste={paste} canPaste={!readOnly && !!clipboard.getToken()} onRemove={values => openBatch("remove", values, null)} onMove={(values, id) => openBatch("move", values, id)} />}
-      center={center} right={accessDenied ? null : <SourcePanel view={view} slide={current} snapshotId={selection.snapshotId} number={active?.number} />} />}
+      center={center} right={toggle => accessDenied ? null : <SourcePanel panelToggle={toggle} view={view} slide={current} snapshotId={selection.snapshotId} number={active?.number} />} />}
     {!accessDenied && <fieldset disabled={busy || !!session?.dirty || readOnly} data-comment-control className="tw:m-0 tw:mt-2 tw:min-w-0 tw:border-0 tw:p-0"><WorkspaceUndoNotice view={view} /></fieldset>}
     {dialog && !accessDenied && <ModalFrame open title={dialog.operation === "remove" ? "선택 슬라이드 삭제" : "선택 슬라이드 이동"} contentKey={dialog.operation} onClose={() => { if (!busy) setDialog(null); }}
       footer={<><DadamButton disabled={busy} onClick={() => setDialog(null)}>취소</DadamButton><DadamButton appearance="primary" disabled={busy || readOnly} onClick={applyBatch}>확인</DadamButton></>}>

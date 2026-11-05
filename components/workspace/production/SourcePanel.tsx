@@ -8,8 +8,8 @@ import type { FileResourceView } from "@/types/workspace-files";
 import FilePreviewDialog from "../files/FilePreviewDialog";
 import { WorkspaceErrorText } from "../shared/WorkspaceUi";
 
-export default function SourcePanel({ view, slide, snapshotId, number }: {
-  view: ProjectView; slide: ProposalSlide | null; snapshotId: string | null; number?: number;
+export default function SourcePanel({ view, slide, snapshotId, number, panelToggle }: {
+  view: ProjectView; slide: ProposalSlide | null; snapshotId: string | null; number?: number; panelToggle?: React.ReactNode;
 }): React.ReactElement {
   const live = useFileWorkspace(snapshotId ? null : view.project.id), history = useWorkspaceFileHistory(view.project.id, snapshotId), query = snapshotId ? history : live;
   const scope = JSON.stringify([view.project.id, view.state.currentRound, snapshotId, slide?.id]);
@@ -17,8 +17,11 @@ export default function SourcePanel({ view, slide, snapshotId, number }: {
   // A new scope unmounts the old dialog immediately, including while its file is loading.
   if (preview && preview.scope !== scope) setPreview(null);
   const cards = selectProductionSources(view, slide, query.data ?? null), section = view.state.body.sections.find(s => s.id === slide?.sectionId);
-  return <section aria-label="슬라이드 출처" className="tw:min-w-0 tw:p-4">
-    <header><h2 className="tw:m-0 tw:text-sm tw:font-bold">출처</h2>{slide && <p className="tw:mt-1 tw:text-xs tw:text-(--kpc-muted)">{number ? `${number}번 슬라이드 · ` : ""}{section?.title}</p>}</header>
+  return <section aria-label="슬라이드 출처" className="tw:flex tw:h-full tw:min-h-0 tw:min-w-0 tw:flex-col">
+    <header className="tw:flex tw:shrink-0 tw:items-center tw:gap-(--layout-control-gap) tw:border-b tw:border-(--kpc-line) tw:p-(--layout-card-inset)">
+      <div className="tw:min-w-0 tw:flex-1"><h2 className="tw:m-0 tw:text-sm tw:font-bold">출처</h2>{slide && <p className="tw:mb-0 tw:mt-1 tw:truncate tw:text-xs tw:text-(--kpc-muted)" title={section?.title}>{number ? `${number}번 슬라이드 · ` : ""}{section?.title}</p>}</div>{panelToggle}
+    </header>
+    <div className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-(--layout-card-inset)">
     {!slide ? <p className="tw:text-sm">슬라이드를 선택하면 출처를 볼 수 있습니다.</p> : <>
       {query.isPending && <p role="status" className="tw:text-sm">자료 정보를 불러오는 중입니다.</p>}
       <WorkspaceErrorText error={query.error} />
@@ -37,6 +40,7 @@ export default function SourcePanel({ view, slide, snapshotId, number }: {
         </section>;
       })}
     </>}
+    </div>
     {preview && preview.scope === scope && <FilePreviewDialog key={`${scope}:${preview.resource.version.id}`} open projectId={view.project.id} resource={preview.resource} round={preview.round} onClose={() => setPreview(null)} />}
   </section>;
 }

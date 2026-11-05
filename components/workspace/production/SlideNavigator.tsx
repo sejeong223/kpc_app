@@ -8,6 +8,7 @@ import ProductionPreview from "./ProductionPreview";
 export interface SlideNavigatorProps {
   view: ProjectView; rows: readonly ProductionSlideRow[]; activeId: string | null; selectedIds: readonly string[];
   snapshotId: string | null; busy: boolean;
+  panelToggle?: React.ReactNode;
   onSelect(id: string, mode: "single" | "toggle" | "range"): void;
   onSelectMany(ids: string[]): void; contextId: string | null; onContext(id: string | null): void;
   onCommand(operation: WorkspaceOperation): void; onCopy(ids: string[]): void;
@@ -19,7 +20,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   const [target, setTarget] = useState("");
   const editable = (ids: readonly string[]) => ids.length > 0 && ids.every(id => rows.find(r => r.slide.id === id)?.editable);
   const active = rows.find(r => r.slide.id === activeId), sectionIds = view.capabilities.editableSectionIds;
-  return <section data-comment-control aria-label="슬라이드 탐색" tabIndex={0} className="tw:p-(--layout-card-inset)"
+  return <section data-comment-control aria-label="슬라이드 탐색" tabIndex={0} className="tw:flex tw:h-full tw:min-h-0 tw:min-w-0 tw:flex-col"
     onKeyDown={e => {
       if (busy || isTypingTarget(e.target) || e.nativeEvent.isComposing || document.querySelector("[data-modal-frame]") || !(e.target instanceof Element)) return;
       if (e.target !== e.currentTarget && !e.target.closest("[data-slide-select]")) return;
@@ -30,7 +31,10 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       else if (modifier && key === "d" && active?.editable) { e.preventDefault(); onCommand({ type: "duplicate-slide", id: active.slide.id, targetSectionId: active.section.id, afterId: active.slide.id }); }
       else if (key === "delete" && editable(selectedIds)) { e.preventDefault(); onRemove([...selectedIds]); }
     }}>
-    <h2 className="tw:mt-0 tw:text-sm">슬라이드 <span className="tw:font-normal tw:text-(--kpc-muted)">{rows.length}장</span></h2>
+    <header className="tw:flex tw:shrink-0 tw:items-center tw:gap-(--layout-control-gap) tw:border-b tw:border-(--kpc-line) tw:p-(--layout-card-inset)">
+      <h2 className="tw:m-0 tw:min-w-0 tw:flex-1 tw:text-sm">슬라이드 <span className="tw:font-normal tw:text-(--kpc-muted)">{rows.length}장</span></h2>{props.panelToggle}
+    </header>
+    <div className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-(--layout-card-inset)">
     <div className="tw:mb-3 tw:flex tw:flex-wrap tw:gap-1"><DadamButton size="small" disabled={busy || !rows.length} onClick={() => props.onSelectMany(rows.map(r => r.slide.id))}>모두 선택</DadamButton><DadamButton size="small" disabled={busy || !selectedIds.length} onClick={() => props.onSelectMany([])}>선택 해제</DadamButton><span className="tw:text-xs">{selectedIds.length}장 선택</span></div>
     {selectedIds.length > 0 && <div className="tw:mb-3 tw:flex tw:flex-wrap tw:gap-1">
       <DadamButton size="small" disabled={busy || !canCopy(selectedIds)} onClick={() => onCopy([...selectedIds])}>복사</DadamButton>
@@ -62,5 +66,6 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       </li>;
     })}</ol>
     {!rows.length && <p className="tw:text-sm">등록된 슬라이드가 없습니다. 소목차를 선택해 슬라이드를 추가해 주세요.</p>}
+    </div>
   </section>;
 }
