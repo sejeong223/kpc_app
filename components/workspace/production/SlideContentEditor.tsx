@@ -1,419 +1,165 @@
 "use client";
-import {
-  DadamButton,
-  DadamInput,
-  DadamTextarea,
-} from "@/components/ui/DadamControls";
-import type { ContentBlock, SlideContent } from "@/types/workspace-production";
-import { WORKSPACE_LIMITS as L } from "@/config/workspace-production";
-import { WorkspaceErrorText, workspaceCard } from "../shared/WorkspaceUi";
+import { useLayoutEffect, useRef, useState } from "react";
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { DadamButton } from "@/components/ui/DadamControls";
+import { dadamUi } from "@/lib/ui/dadam-theme";
+import { createSlideDocument, readSlideDocument, applyDocumentCommand, parseSlidePaste, type DocumentCommand } from "@/lib/workspace/production/document-editor";
+import type { SlideContent } from "@/types/workspace-production";
+
+export interface DocumentEditorState { dirty: boolean; composing: boolean; error: string | null }
 export interface SlideContentEditorProps {
-  value: SlideContent;
-  readOnly: boolean;
-  error: string | null;
-  onChange(value: SlideContent): void;
-  onSave(): void;
-  busy?: boolean;
-  onImage?(file: File): void;
+  value: SlideContent; readOnly: boolean; error: string | null;
+  onChange(value: SlideContent): void; onSave(): void;
+  busy?: boolean; onImage?(file: File): void;
+  resetKey?: number; onEditorStateChange?(state: DocumentEditorState): void;
 }
-export default function SlideContentEditor({
-  value,
-  readOnly,
-  error,
-  onChange,
-  onSave,
-  busy = false,
-  onImage,
-}: SlideContentEditorProps) {
-  const setBlock = (block: ContentBlock) =>
-      onChange({
-        ...value,
-        blocks: value.blocks.map((b) => (b.id === block.id ? block : b)),
-      }),
-    move = (index: number, delta: number) => {
-      const blocks = [...value.blocks];
-      [blocks[index], blocks[index + delta]] = [
-        blocks[index + delta],
-        blocks[index],
-      ];
-      onChange({ ...value, blocks });
-    };
-  const add = (kind: "text" | "list" | "table") => {
-    const id = crypto.randomUUID(),
-      block: ContentBlock =
-        kind === "text"
-          ? { id, kind, text: "" }
-          : kind === "list"
-            ? { id, kind, items: [""] }
-            : { id, kind, columns: ["항목", "내용"], rows: [["", ""]] };
-    onChange({ ...value, blocks: [...value.blocks, block] });
+const clean: DocumentEditorState = { dirty: false, composing: false, error: null };
+const useStyles = makeStyles({
+  shell: { minWidth: 0, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1 },
+  tools: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--layout-inline-gap)", padding: "var(--layout-control-gap)", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
+  paper: { padding: "var(--layout-card-inset)", maxHeight: "360px", overflow: "auto", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: "1.65",
+    "& h2": { margin: "0 0 8px", fontSize: tokens.fontSizeBase500, fontWeight: 600 },
+    "& [data-document-field='lead']": { margin: "0 0 16px", color: tokens.colorNeutralForeground2 },
+    "& [data-block-id]": { marginTop: "12px", marginBottom: "12px" },
+    "& [data-document-editable]": { minHeight: "24px", whiteSpace: "pre-wrap", overflowWrap: "anywhere", outline: "none", borderRadius: "3px" },
+    "& [contenteditable='true']:focus": { boxShadow: `0 0 0 1px ${tokens.colorBrandStroke1}` },
+    "& [data-document-editable]:empty::before": { content: "attr(data-placeholder)", color: tokens.colorNeutralForeground4, pointerEvents: "none" },
+    "& table": { borderCollapse: "collapse", width: "100%", tableLayout: "fixed" },
+    "& td, & th": { border: `1px solid ${tokens.colorNeutralStroke2}`, padding: "8px", verticalAlign: "top", textAlign: "left" },
+    "& th": { backgroundColor: tokens.colorNeutralBackground2 },
+    "& ul": { paddingLeft: "24px" },
+    "& figure": { marginLeft: 0, marginRight: 0, padding: "12px", backgroundColor: tokens.colorNeutralBackground2, color: tokens.colorNeutralForeground2 },
+  },
+  footer: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "8px", padding: "var(--layout-control-gap)", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
+  error: { color: tokens.colorStatusDangerForeground1, margin: "8px 12px", fontSize: dadamUi.metaSize },
+  meta: { color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize },
+});
+interface Cursor { blockId: string | null; row: number; col: number; item: number }
+export default function SlideContentEditor({ value, readOnly, error, onChange, onSave, busy = false, onImage, resetKey = 0, onEditorStateChange }: SlideContentEditorProps): React.ReactElement {
+  const styles = useStyles(), root = useRef<HTMLDivElement>(null), content = useRef(value), baseline = useRef(JSON.stringify(value));
+  const initialized = useRef(false), appliedReset = useRef(resetKey), stateRef = useRef(clean);
+  const [state, setState] = useState(clean), [cursor, setCursor] = useState<Cursor>({ blockId: null, row: 0, col: 0, item: 0 });
+  const [notice, setNotice] = useState<string | null>(null), [plainPaste, setPlainPaste] = useState<string | null>(null);
+  const selection = useRef<Range | null>(null);
+  const locked = readOnly || busy, blocked = locked || state.composing;
+  const updateState = (next: DocumentEditorState) => { stateRef.current = next; setState(next); onEditorStateChange?.(next); };
+  useLayoutEffect(() => {
+    const node = root.current; if (!node) return;
+    let frame = 0;
+    if (!initialized.current || appliedReset.current !== resetKey || (!stateRef.current.dirty && !stateRef.current.composing && JSON.stringify(content.current) !== JSON.stringify(value))) {
+      if (stateRef.current.composing) return;
+      node.replaceChildren(createSlideDocument(value, node.ownerDocument));
+      content.current = value; baseline.current = JSON.stringify(value); appliedReset.current = resetKey; initialized.current = true; stateRef.current = clean; selection.current = null;
+      frame = requestAnimationFrame(() => { setState(clean); setPlainPaste(null); setNotice(null); onEditorStateChange?.(clean); });
+    }
+    node.querySelectorAll<HTMLElement>("[data-document-editable]").forEach(el => { el.contentEditable = String(!readOnly && !busy); el.setAttribute("aria-readonly", String(readOnly || busy)); });
+    return () => cancelAnimationFrame(frame);
+  }, [value, resetKey, readOnly, busy, onEditorStateChange]);
+  const publish = (): SlideContent | null => {
+    if (!root.current) return null;
+    const result = readSlideDocument(root.current, content.current);
+    if (!result.ok) { updateState({ ...stateRef.current, dirty: true, error: result.message }); return null; }
+    content.current = result.content;
+    updateState({ dirty: JSON.stringify(result.content) !== baseline.current, composing: false, error: null });
+    onChange(result.content); return result.content;
   };
-  return (
-    <section className={workspaceCard}>
-      <fieldset
-        disabled={readOnly || busy}
-        className="tw:m-0 tw:min-w-0 tw:space-y-3 tw:border-0 tw:p-0"
-      >
-        <label className="tw:block">
-          제목
-          <DadamInput
-            className="tw:w-full"
-            value={value.title}
-            maxLength={L.title}
-            readOnly={readOnly}
-            onChange={(_, d) => onChange({ ...value, title: d.value })}
-          />
-        </label>
-        <label className="tw:block">
-          리딩 메시지
-          <DadamTextarea
-            className="tw:w-full"
-            value={value.lead}
-            maxLength={L.lead}
-            readOnly={readOnly}
-            onChange={(_, d) => onChange({ ...value, lead: d.value })}
-          />
-        </label>
-        {value.blocks.map((block, index) => (
-          <article
-            key={block.id}
-            className="tw:rounded-lg tw:border tw:border-solid tw:border-(--kpc-line) tw:p-3"
-          >
-            <header className="tw:mb-2 tw:flex tw:flex-wrap tw:items-center tw:gap-1">
-              <strong className="tw:mr-auto tw:text-xs">
-                {index + 1}.{" "}
-                {
-                  { text: "본문", list: "목록", table: "표", image: "이미지" }[
-                    block.kind
-                  ]
-                }
-              </strong>
-              {!readOnly && (
-                <>
-                  <DadamButton
-                    size="small"
-                    aria-label={"블록 " + (index + 1) + " 위로"}
-                    disabled={index === 0 || busy}
-                    onClick={() => move(index, -1)}
-                  >
-                    ↑
-                  </DadamButton>
-                  <DadamButton
-                    size="small"
-                    aria-label={"블록 " + (index + 1) + " 아래로"}
-                    disabled={index === value.blocks.length - 1 || busy}
-                    onClick={() => move(index, 1)}
-                  >
-                    ↓
-                  </DadamButton>
-                  <DadamButton
-                    size="small"
-                    onClick={() =>
-                      onChange({
-                        ...value,
-                        blocks: value.blocks.filter((b) => b.id !== block.id),
-                      })
-                    }
-                  >
-                    블록 삭제
-                  </DadamButton>
-                </>
-              )}
-            </header>
-            {block.kind === "text" && (
-              <DadamTextarea
-                aria-label={"본문 " + (index + 1)}
-                className="tw:min-h-28 tw:w-full"
-                value={block.text}
-                maxLength={L.text}
-                readOnly={readOnly}
-                onChange={(_, d) => setBlock({ ...block, text: d.value })}
-              />
-            )}
-            {block.kind === "list" && (
-              <>
-                <ol className="tw:space-y-2 tw:pl-5">
-                  {block.items.map((text, i) => (
-                    <li key={i}>
-                      <div className="tw:flex tw:gap-1">
-                        <DadamInput
-                          aria-label={
-                            "목록 " + (index + 1) + " 항목 " + (i + 1)
-                          }
-                          value={text}
-                          maxLength={L.itemText}
-                          readOnly={readOnly}
-                          onChange={(_, d) =>
-                            setBlock({
-                              ...block,
-                              items: block.items.map((t, j) =>
-                                j === i ? d.value : t,
-                              ),
-                            })
-                          }
-                        />
-                        {!readOnly && (
-                          <>
-                            <DadamButton
-                              size="small"
-                              disabled={i === 0}
-                              aria-label={"목록 항목 " + (i + 1) + " 위로"}
-                              onClick={() => {
-                                const items = [...block.items];
-                                [items[i - 1], items[i]] = [
-                                  items[i],
-                                  items[i - 1],
-                                ];
-                                setBlock({ ...block, items });
-                              }}
-                            >
-                              ↑
-                            </DadamButton>
-                            <DadamButton
-                              size="small"
-                              disabled={i === block.items.length - 1}
-                              aria-label={"목록 항목 " + (i + 1) + " 아래로"}
-                              onClick={() => {
-                                const items = [...block.items];
-                                [items[i + 1], items[i]] = [
-                                  items[i],
-                                  items[i + 1],
-                                ];
-                                setBlock({ ...block, items });
-                              }}
-                            >
-                              ↓
-                            </DadamButton>
-                            <DadamButton
-                              size="small"
-                              disabled={block.items.length <= 1}
-                              aria-label={"목록 항목 " + (i + 1) + " 삭제"}
-                              onClick={() =>
-                                setBlock({
-                                  ...block,
-                                  items: block.items.filter((_, j) => j !== i),
-                                })
-                              }
-                            >
-                              ×
-                            </DadamButton>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-                {!readOnly && (
-                  <DadamButton
-                    size="small"
-                    disabled={block.items.length >= L.listItems}
-                    onClick={() =>
-                      setBlock({ ...block, items: [...block.items, ""] })
-                    }
-                  >
-                    항목 추가
-                  </DadamButton>
-                )}
-              </>
-            )}
-            {block.kind === "table" && (
-              <>
-                <div className="tw:overflow-x-auto">
-                  <table className="tw:w-full tw:border-collapse">
-                    <thead>
-                      <tr>
-                        {block.columns.map((name, col) => (
-                          <th key={col}>
-                            <DadamInput
-                              aria-label={
-                                "표 " +
-                                (index + 1) +
-                                " 열 " +
-                                (col + 1) +
-                                " 이름"
-                              }
-                              value={name}
-                              maxLength={L.itemText}
-                              readOnly={readOnly}
-                              onChange={(_, d) =>
-                                setBlock({
-                                  ...block,
-                                  columns: block.columns.map((v, j) =>
-                                    j === col ? d.value : v,
-                                  ),
-                                })
-                              }
-                            />
-                            {!readOnly && (
-                              <DadamButton
-                                size="small"
-                                disabled={block.columns.length === 1}
-                                aria-label={"열 " + (col + 1) + " 삭제"}
-                                onClick={() =>
-                                  setBlock({
-                                    ...block,
-                                    columns: block.columns.filter(
-                                      (_, j) => j !== col,
-                                    ),
-                                    rows: block.rows.map((row) =>
-                                      row.filter((_, j) => j !== col),
-                                    ),
-                                  })
-                                }
-                              >
-                                열 삭제
-                              </DadamButton>
-                            )}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {block.rows.map((row, r) => (
-                        <tr key={r}>
-                          {row.map((cell, c) => (
-                            <td key={c}>
-                              <DadamTextarea
-                                aria-label={
-                                  "표 " +
-                                  (index + 1) +
-                                  " " +
-                                  (r + 1) +
-                                  "행 " +
-                                  (c + 1) +
-                                  "열"
-                                }
-                                value={cell}
-                                maxLength={L.itemText}
-                                readOnly={readOnly}
-                                onChange={(_, d) =>
-                                  setBlock({
-                                    ...block,
-                                    rows: block.rows.map((a, i) =>
-                                      i === r
-                                        ? a.map((v, j) =>
-                                            j === c ? d.value : v,
-                                          )
-                                        : a,
-                                    ),
-                                  })
-                                }
-                              />
-                            </td>
-                          ))}
-                          {!readOnly && (
-                            <td>
-                              <DadamButton
-                                size="small"
-                                disabled={block.rows.length === 1}
-                                aria-label={r + 1 + "행 삭제"}
-                                onClick={() =>
-                                  setBlock({
-                                    ...block,
-                                    rows: block.rows.filter((_, j) => j !== r),
-                                  })
-                                }
-                              >
-                                ×
-                              </DadamButton>
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {!readOnly && (
-                  <div className="tw:mt-2 tw:flex tw:gap-1">
-                    <DadamButton
-                      disabled={block.columns.length >= L.columns}
-                      onClick={() =>
-                        setBlock({
-                          ...block,
-                          columns: [...block.columns, "새 열"],
-                          rows: block.rows.map((r) => [...r, ""]),
-                        })
-                      }
-                    >
-                      열 추가
-                    </DadamButton>
-                    <DadamButton
-                      disabled={block.rows.length >= L.rows}
-                      onClick={() =>
-                        setBlock({
-                          ...block,
-                          rows: [...block.rows, block.columns.map(() => "")],
-                        })
-                      }
-                    >
-                      행 추가
-                    </DadamButton>
-                  </div>
-                )}
-              </>
-            )}
-            {block.kind === "image" && (
-              <>
-                <p>
-                  {block.mime} · {block.width} × {block.height}px
-                </p>
-                <label>
-                  대체 설명
-                  <DadamInput
-                    value={block.alt}
-                    readOnly={readOnly}
-                    onChange={(_, d) => setBlock({ ...block, alt: d.value })}
-                  />
-                </label>
-                <p className="tw:text-xs">
-                  Template 이미지 칸에 연결한 뒤 구조 미리보기에서 확인하세요.
-                </p>
-              </>
-            )}
-          </article>
-        ))}
-        {!readOnly && (
-          <div className="tw:flex tw:flex-wrap tw:gap-2">
-            <DadamButton
-              disabled={value.blocks.length >= L.blocks}
-              onClick={() => add("text")}
-            >
-              본문 추가
-            </DadamButton>
-            <DadamButton
-              disabled={value.blocks.length >= L.blocks}
-              onClick={() => add("list")}
-            >
-              목록 추가
-            </DadamButton>
-            <DadamButton
-              disabled={value.blocks.length >= L.blocks}
-              onClick={() => add("table")}
-            >
-              표 추가
-            </DadamButton>
-            {onImage && (
-              <label className="tw:text-sm">
-                이미지 업로드
-                <input
-                  type="file"
-                  aria-label="PNG 또는 JPEG 이미지"
-                  accept="image/png,image/jpeg"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) onImage(file);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-            )}
-            <DadamButton appearance="primary" disabled={busy} onClick={onSave}>
-              내용 저장
-            </DadamButton>
-          </div>
-        )}
-      </fieldset>
-      <WorkspaceErrorText error={error} />
-    </section>
-  );
+  const remember = () => {
+    const selected = root.current?.ownerDocument.getSelection();
+    if (!selected?.rangeCount || !root.current?.contains(selected.anchorNode) || !root.current.contains(selected.focusNode)) return;
+    selection.current = selected.getRangeAt(0).cloneRange();
+    const element = selected.anchorNode?.nodeType === 1 ? selected.anchorNode as Element : selected.anchorNode?.parentElement;
+    const block = element?.closest<HTMLElement>("[data-block-id]"), cell = element?.closest("td,th"), row = cell?.parentElement, listItem = element?.closest("li");
+    setCursor({ blockId: block?.dataset.blockId ?? null, row: row?.parentElement ? Array.from(row.parentElement.children).indexOf(row) : 0,
+      col: cell && row ? Array.from(row.children).indexOf(cell) : 0, item: listItem?.parentElement ? Array.from(listItem.parentElement.children).indexOf(listItem) : 0 });
+  };
+  const replace = (next: SlideContent) => {
+    if (!root.current) return;
+    content.current = next; root.current.replaceChildren(createSlideDocument(next, root.current.ownerDocument));
+    selection.current = null; onChange(next); updateState({ dirty: JSON.stringify(next) !== baseline.current, composing: false, error: null });
+  };
+  const command = (operation: DocumentCommand) => {
+    if (blocked) return;
+    const current = publish(); if (!current) return;
+    const result = applyDocumentCommand(current, operation, () => crypto.randomUUID());
+    if (result.ok) { replace(result.content); setNotice(null); } else setNotice(result.message);
+  };
+  const insertText = (text: string) => {
+    const node = root.current, range = selection.current;
+    if (!node || !range || !node.contains(range.startContainer) || !node.contains(range.endContainer)) { setNotice("붙여넣을 문서 위치를 다시 선택해 주세요."); return; }
+    const start = range.startContainer.nodeType === 1 ? range.startContainer as Element : range.startContainer.parentElement;
+    const end = range.endContainer.nodeType === 1 ? range.endContainer as Element : range.endContainer.parentElement;
+    const host = start?.closest("[data-document-editable]");
+    if (!host || host !== end?.closest("[data-document-editable]")) { setNotice("한 문단이나 표 셀 안에 붙여넣어 주세요."); return; }
+    range.deleteContents(); const inserted = node.ownerDocument.createTextNode(text); range.insertNode(inserted); range.setStartAfter(inserted); range.collapse(true);
+    const selected = node.ownerDocument.getSelection(); selected?.removeAllRanges(); selected?.addRange(range); publish();
+  };
+  const block = value.blocks.find(b => b.id === cursor.blockId);
+  const operationButton = (label: string, operation: DocumentCommand, disabled = false) => <DadamButton size="small" disabled={blocked || !!state.error || disabled} onClick={() => command(operation)}>{label}</DadamButton>;
+  return <section className={styles.shell} aria-label="슬라이드 문서 편집" data-comment-control>
+    {!readOnly && <div className={styles.tools} role="toolbar" aria-label="문서 구조 편집">
+      {(["text", "list", "table"] as const).map((kind, i) => <span key={kind}>{operationButton(["문단", "목록", "표"][i] + " 추가", { type: "insert-block", kind, afterId: block?.id ?? null })}</span>)}
+      {block && <>
+        {operationButton("위로", { type: "move-block", blockId: block.id, delta: -1 }, value.blocks[0]?.id === block.id)}
+        {operationButton("아래로", { type: "move-block", blockId: block.id, delta: 1 }, value.blocks.at(-1)?.id === block.id)}
+        {operationButton("본문 삭제", { type: "remove-block", blockId: block.id })}
+        {block.kind === "list" && <>{operationButton("항목 추가", { type: "insert-list-item", blockId: block.id, afterIndex: cursor.item })}{operationButton("항목 삭제", { type: "remove-list-item", blockId: block.id, index: cursor.item })}</>}
+        {block.kind === "table" && <>
+          {operationButton("행 추가", { type: "insert-table-row", blockId: block.id, afterIndex: Math.min(cursor.row, block.rows.length - 1) })}
+          {operationButton("행 삭제", { type: "remove-table-row", blockId: block.id, index: Math.min(cursor.row, block.rows.length - 1) }, block.rows.length === 1)}
+          {operationButton("열 추가", { type: "insert-table-column", blockId: block.id, afterIndex: cursor.col })}
+          {operationButton("열 삭제", { type: "remove-table-column", blockId: block.id, index: cursor.col }, block.columns.length === 1)}
+        </>}
+      </>}
+      {onImage && <label className={styles.meta}>이미지 <input type="file" accept="image/png,image/jpeg" disabled={blocked} onChange={e => { const file = e.target.files?.[0]; if (file) onImage(file); e.target.value = ""; }} /></label>}
+    </div>}
+    <div ref={root} className={styles.paper} role="group" aria-label="제목·리딩 메시지·본문" onFocusCapture={e => {
+      const target = (e.target as Element).closest<HTMLElement>("figure[data-block-id],ul[data-block-id][tabindex]");
+      if (target) setCursor({ blockId: target.dataset.blockId ?? null, row: 0, col: 0, item: 0 }); else remember();
+    }} onPointerUp={e => {
+      const target = (e.target as Element).closest<HTMLElement>("figure[data-block-id],ul[data-block-id][tabindex]");
+      if (target) setCursor({ blockId: target.dataset.blockId ?? null, row: 0, col: 0, item: 0 }); else remember();
+    }} onKeyUp={remember}
+      onCompositionStart={() => updateState({ ...stateRef.current, dirty: true, composing: true })}
+      onCompositionEnd={() => { if (!locked) publish(); else updateState({ ...stateRef.current, composing: false }); }}
+      onInput={() => { if (locked) return; if (stateRef.current.composing) updateState({ ...stateRef.current, dirty: true }); else publish(); }}
+      onBeforeInput={e => {
+        if (locked) { e.preventDefault(); return; }
+        const range = root.current?.ownerDocument.getSelection();
+        const start = range?.anchorNode?.nodeType === 1 ? range.anchorNode as Element : range?.anchorNode?.parentElement;
+        const end = range?.focusNode?.nodeType === 1 ? range.focusNode as Element : range?.focusNode?.parentElement;
+        if (start?.closest("[data-document-editable]") !== end?.closest("[data-document-editable]")) e.preventDefault();
+      }}
+      onKeyDown={e => {
+        if (e.nativeEvent.isComposing || stateRef.current.composing) { e.stopPropagation(); return; }
+        const target = e.target as HTMLElement;
+        if (e.key === "Enter" && target.dataset.documentField && !e.shiftKey) {
+          e.preventDefault(); const hosts = Array.from(root.current?.querySelectorAll<HTMLElement>("[data-document-editable]") ?? []); hosts[hosts.indexOf(target) + 1]?.focus();
+        }
+        if (e.key === "Tab" && target.matches("td,th")) {
+          const hosts = Array.from(root.current?.querySelectorAll<HTMLElement>("[data-document-editable]") ?? []), next = hosts[hosts.indexOf(target) + (e.shiftKey ? -1 : 1)];
+          if (next) { e.preventDefault(); next.focus(); }
+        }
+        if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "s") e.stopPropagation();
+      }}
+      onPaste={e => {
+        e.preventDefault(); e.stopPropagation(); if (blocked || !root.current) return; remember();
+        const text = e.clipboardData.getData("text/plain"), html = e.clipboardData.getData("text/html");
+        if (!html) { insertText(text); return; }
+        const result = parseSlidePaste(html, text, root.current.ownerDocument, () => crypto.randomUUID());
+        if (!result.ok) { setNotice(result.message); setPlainPaste(text || null); return; }
+        const target = (e.target as Element).closest<HTMLElement>("[data-block-id]");
+        if (!target || (e.target as Element).closest("td,th")) { setNotice("이 위치에는 일반 텍스트로 붙여넣을 수 있습니다."); setPlainPaste(text || result.blocks.map(b => b.kind === "text" ? b.text : b.kind === "list" ? b.items.join("\n") : b.kind === "table" ? [b.columns, ...b.rows].map(r => r.join("\t")).join("\n") : b.alt).join("\n")); return; }
+        const current = publish(); if (!current) return;
+        const index = current.blocks.findIndex(b => b.id === target.dataset.blockId), next = { ...current, blocks: [...current.blocks.slice(0, index + 1), ...result.blocks, ...current.blocks.slice(index + 1)] };
+        const resultRoot = root.current.ownerDocument.createElement("div"); resultRoot.append(createSlideDocument(next, root.current.ownerDocument));
+        const validated = readSlideDocument(resultRoot, next);
+        if (!validated.ok) { setNotice(validated.message); return; }
+        replace(validated.content); setNotice(result.notices.join(" ") || null); setPlainPaste(null);
+      }} />
+    {(state.error || error) && <p role="alert" className={styles.error}>{state.error ?? error}</p>}
+    {notice && <p role="status" className={styles.error}>{notice} {plainPaste !== null && <DadamButton size="small" disabled={blocked} onClick={() => { insertText(plainPaste); setPlainPaste(null); setNotice(null); }}>일반 텍스트로 붙여넣기</DadamButton>}</p>}
+    <div className={styles.footer}><span className={styles.meta}>{readOnly ? "읽기 전용" : state.dirty ? "아직 슬라이드에 반영하지 않은 내용입니다." : "본문·목록·표를 문서에서 편집하세요."}</span>
+      {!readOnly && <DadamButton appearance="primary" disabled={blocked || !!state.error || !!error} onClick={onSave}>슬라이드에 반영</DadamButton>}
+    </div>
+  </section>;
 }

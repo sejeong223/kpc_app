@@ -34,14 +34,14 @@ export function refreshSlideDraft(
   view: ProjectView,
   slide: ProposalSlide,
 ): { draft: SlideDraft; conflict: boolean } {
+  if (draft.dirty)
+    return { draft, conflict: draft.projectId !== view.project.id || draft.round !== view.state.currentRound || draft.slideId !== slide.id || draft.baseRevision !== view.state.revision };
   if (
     draft.projectId !== view.project.id ||
     draft.round !== view.state.currentRound ||
     draft.slideId !== slide.id
   )
     return { draft: createSlideDraft(view, slide), conflict: false };
-  if (draft.dirty)
-    return { draft, conflict: draft.baseRevision !== view.state.revision };
   return { draft: createSlideDraft(view, slide), conflict: false };
 }
 export function validateSlideDraft(draft: SlideDraft): string | null {

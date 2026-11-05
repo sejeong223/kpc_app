@@ -45,7 +45,14 @@ export function useSlideDraft(view: ProjectView, slide: ProposalSlide) {
     error: validateSlideDraft(draft) ?? mutation.error?.message ?? null,
     busy: mutation.isPending,
     save,
-    setContent: (content: SlideContent) => update({ content }),
+    setContent: (content: SlideContent) => update({
+      content,
+      template: draft.template ? { ...draft.template, bindings: draft.template.bindings.filter(binding =>
+        binding.key === "title" || binding.key === "lead" || content.blocks.some(block =>
+          block.id === binding.key && draft.content.blocks.find(old => old.id === block.id)?.kind === block.kind,
+        ),
+      ) } : null,
+    }),
     setTemplate: (template: SlideTemplateRef | null) => update({ template }),
     discard: () => {
       setLocal(createSlideDraft(view, slide));
