@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CommentPoint } from "@/config/comments";
 import { clientPointToRatio, getPopupLimits, keepPinInsideSurface, placeCommentPopup, ratioToClientPoint, type CommentBounds, type PixelPoint } from "@/lib/comments/geometry";
 import LegacyCommentsArchive from "@/components/workspace/production/comments/LegacyCommentsArchive";
+import ProductionScreen from "@/components/workspace/production/ProductionScreen";
 import CommentCreateButton from "./CommentCreateButton";
 import CommentPin from "./CommentPin";
 import CommentPopover from "./CommentPopover";
@@ -138,11 +139,11 @@ export default function CommentsWorkspace(): React.ReactElement {
 
   return <DadamThemeScope><section ref={surface} data-comment-surface className={mergeClasses(styles.surface, state.pinMode && styles.creating)} aria-labelledby="workspace-screen-title" tabIndex={0}
     onClick={e => {
-      if (!capabilities.canCreate || !ready || state.busy || !state.pinMode || (e.target instanceof Element && e.target.closest("[data-comment-control], [data-comment-pin], button, a, input, textarea, select"))) return;
+      if (!capabilities.canCreate || !ready || state.busy || !state.pinMode || (e.target instanceof Element && e.target.closest("[data-comment-control], [data-comment-pin], button, a, input, textarea, select, [contenteditable='true'], [role='separator']"))) return;
       const point = clientPointToRatio({ x: e.clientX, y: e.clientY }, boundsOf(e.currentTarget)); if (point) controller?.placePin(point);
     }}
     onKeyDown={e => { if (e.target === e.currentTarget && capabilities.canCreate && state.pinMode && ["Enter", " "].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); controller?.placePin({ xRatio: .5, yRatio: .5 }); } }}>
-    <div className={styles.intro} data-comment-control>
+    <div className={styles.intro} data-comment-control data-production-header>
       <ProjectHeader title="제작" headingId="workspace-screen-title" />
       <div className={styles.canvasTools}><CommentCreateButton /><LegacyCommentsArchive /></div>
       {roundConflict && <section role="alert" className="tw:rounded-lg tw:border tw:border-solid tw:border-amber-300 tw:bg-amber-50 tw:p-(--layout-card-inset)">
@@ -155,6 +156,7 @@ export default function CommentsWorkspace(): React.ReactElement {
     </div>
     <p className={styles.hidden} id="comment-pin-help">{capabilities.readOnly ? "핀을 선택하면 의견을 읽을 수 있습니다." : "핀은 드래그하거나 Alt와 방향키로 이동할 수 있습니다. Shift를 함께 누르면 더 크게 이동합니다."}</p>
     {state.error && !state.view && <div className={styles.alert} role="alert" data-comment-control>{state.error.message} {controller && <Button size="small" disabled={state.busy || state.status === "loading"} onClick={() => void controller.load()}>다시 불러오기</Button>}</div>}
+    <ProductionScreen />
     {measurement && pins.map(pin => {
       const tip = tipFor(pin.id)!;
       const movable = pin.id === DRAFT_ID ? capabilities.canCreate : capabilities.moveThreadIds.includes(pin.id);

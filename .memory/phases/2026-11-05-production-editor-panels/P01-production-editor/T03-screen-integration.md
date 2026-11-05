@@ -1,6 +1,6 @@
 # Task: T03 현재 제작 화면과 전체 슬라이드 조작 통합
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -177,14 +177,14 @@ interface ActiveSlideProps {
 
 ## Acceptance Criteria
 
-- [ ] 현재 제작 경로에 헤더1개·코멘트 시스템1개와 세 본문 영역이 연결된다.
-- [ ] 전체 장/소목차의 순서·번호가 일치하고 섹션을 넘는 단일/다중/범위 선택을 지원한다.
-- [ ] 추가/복제/붙여넣기 후 실제 응답의 slide/section을 선택하고 삭제/이동은 전체 권한·undo를 사용한다.
-- [ ] navigate 취소 후 선택·mutation이 실행되지 않고 문서·IME·코멘트 입력에 목록 단축키가 개입하지 않는다.
-- [ ] 외부 회차·삭제·권한 변경으로 dirty 입력을 버리지 않고 저장 불가를 안내한다.
-- [ ] 반영 성공 후 중앙은 저장본을 표시하고 출처도 동일 활성 slide에 연결된다.
-- [ ] 실제 제어만 핀 생성에서 제외하며 정적 미리보기의 작업 영역 핀은 유지한다.
-- [ ] 반응형·사용자별 설정을 구현하고 이전 사용자 값을 새 key에 쓰지 않는다.
+- [x] 현재 제작 경로에 헤더1개·코멘트 시스템1개와 세 본문 영역이 연결된다.
+- [x] 전체 장/소목차의 순서·번호가 일치하고 섹션을 넘는 단일/다중/범위 선택을 지원한다.
+- [x] 추가/복제/붙여넣기 후 실제 응답의 slide/section을 선택하고 삭제/이동은 전체 권한·undo를 사용한다.
+- [x] navigate 취소 후 선택·mutation이 실행되지 않고 문서·IME·코멘트 입력에 목록 단축키가 개입하지 않는다.
+- [x] 외부 회차·삭제·권한 변경으로 dirty 입력을 버리지 않고 저장 불가를 안내한다.
+- [x] 반영 성공 후 중앙은 저장본을 표시하고 출처도 동일 활성 slide에 연결된다.
+- [x] 실제 제어만 핀 생성에서 제외하며 정적 미리보기의 작업 영역 핀은 유지한다.
+- [x] 반응형·사용자별 설정을 구현하고 이전 사용자 값을 새 key에 쓰지 않는다.
 
 ## Validation
 
@@ -209,8 +209,18 @@ Task: T03-screen-integration
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 파일과 함께 커밋한 Task: T03-screen-integration 구현 커밋
 
 완료 후 Task/phase와 한국어 커밋을 기록하고 local ignored current를 T04로 전진한다. 현재 포인터 강제 stage, 기존 의견 파일 삭제, push는 하지 않는다.
+
+## Execution Record
+
+- CommentsWorkspace의 헤더/핀을 유지하고 ProductionScreen → WorkspaceFlow → 본문 전용 ProductionWorkspace 연결.
+- 전체 슬라이드 목록·다중/범위 선택·메뉴·추가/복제/복사/붙여넣기/이동/삭제와 기존 undo 연결.
+- 선택 및 명령 후처리는 navigate callback 안에서만 수행. 회차/삭제/권한 변화 중 dirty 편집 세션 유지. 원시 입력·IME 시작 시 초안 revision도 고정.
+- 접근 오류 시 저장본 목록/미리보기/출처를 숨기되 이미 작성 중인 입력과 guard는 같은 컴포넌트에서 보존.
+- 반응형 내부 스크롤·분리 핸들·사용자 namespace별 패널 저장 복원 구현. 재연결도 초안 guard 적용.
+- 검증: typecheck, 변경 10개 파일 ESLint 및 후속 변경 파일 재검사, git diff --check 통과. 슬라이드 명령/권한/회차/불변성/정적 통합 인라인 27개 assertion 통과.
+- 실제 핀/IME/드래그/반응형 실측은 수행하지 않음. tests/ 생성 없음. 범위 밖 발견: 특이사항 없음.

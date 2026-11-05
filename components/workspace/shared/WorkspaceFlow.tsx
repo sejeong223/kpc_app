@@ -13,8 +13,10 @@ import PptControls from "../production/PptControls";
 import { WorkspaceErrorText } from "./WorkspaceUi";
 export default function WorkspaceFlow({
   screen,
+  readOnlyError = null,
+  accessDenied = false,
   ...scene
-}: WorkspaceSceneProps & { screen: "toc" | "write" }) {
+}: WorkspaceSceneProps & { screen: "toc" | "write"; readOnlyError?: string | null; accessDenied?: boolean }) {
   const [requestError, setRequestError] = useState<string | null>(null);
   const runtime = useWorkspaceRuntime(),
     proposals = useWorkspaceProposals(),
@@ -50,7 +52,7 @@ export default function WorkspaceFlow({
       {screen === "toc" ? (
         <TocWorkspace {...scene} actions={actions} onPropose={start} />
       ) : (
-        <ProductionWorkspace {...scene} actions={actions} onPropose={start} />
+        <ProductionWorkspace {...scene} readOnlyError={readOnlyError} accessDenied={accessDenied} />
       )}
       <WorkspaceErrorText
         error={

@@ -10,7 +10,6 @@ import { WorkspaceErrorText } from "../shared/WorkspaceUi";
 
 export default function SourcePanel({ view, slide, snapshotId, number }: {
   view: ProjectView; slide: ProposalSlide | null; snapshotId: string | null; number?: number;
-  onSlide?(id: string): void; comments?: React.ReactNode;
 }): React.ReactElement {
   const live = useFileWorkspace(snapshotId ? null : view.project.id), history = useWorkspaceFileHistory(view.project.id, snapshotId), query = snapshotId ? history : live;
   const scope = JSON.stringify([view.project.id, view.state.currentRound, snapshotId, slide?.id]);

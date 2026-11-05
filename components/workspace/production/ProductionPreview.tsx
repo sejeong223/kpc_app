@@ -3,13 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { DadamButton } from "@/components/ui/DadamControls";
 import TemplateSlidePreview from "@/components/admin/templates/workbench/TemplateSlidePreview";
 import { useProductionPreview } from "@/hooks/workspace/use-production-preview";
-import type { ProjectView, ProposalSlide, SlideContent, SlideTemplateRef } from "@/types/workspace-production";
+import type { ProjectView, ProposalSlide } from "@/types/workspace-production";
 import BasicSlidePreview from "./BasicSlidePreview";
 
 export interface ProductionPreviewProps {
   view: ProjectView; slide: ProposalSlide; snapshotId: string | null;
   mode?: "full" | "thumbnail"; number?: number; priority?: boolean;
-  content?: SlideContent; template?: SlideTemplateRef | null; dirty?: boolean; overlay?: React.ReactNode;
 }
 export default function ProductionPreview({ view, slide, snapshotId, mode = "full", number, priority = false }: ProductionPreviewProps): React.ReactElement {
   const root = useRef<HTMLDivElement>(null), [near, setNear] = useState(false);
