@@ -62,13 +62,6 @@ export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number
         <footer className={styles.footer}><span>{HTML_DEMO_PROPOSAL_NAME}</span><span>행정안전부 제안서</span></footer>
       </div>
     </div>
-    {overflow && (mode === "thumbnail" ? <p className={styles.notice}>본문 초과</p> : <details className={styles.expanded} data-comment-control>
-      <summary>본문이 슬라이드 영역을 넘습니다 · 전체 내용 보기</summary>
-      <h3>{slide.content.title}</h3><p>{slide.content.lead}</p>
-      {slide.content.blocks.map(block => block.kind === "text" ? <p key={block.id}>{block.text}</p> : block.kind === "table" ?
-        <table key={block.id}><thead><tr>{block.columns.map((text, index) => <th key={index}>{text}</th>)}</tr></thead>
-          <tbody>{block.rows.map((row, index) => <tr key={index}>{row.map((text, cell) => <td key={cell}>{text}</td>)}</tr>)}</tbody>
-        </table> : null)}
-    </details>)}
+    {overflow && <p className={styles.notice}>{mode === "thumbnail" ? "본문 초과" : "본문이 슬라이드 영역을 넘습니다. 편집 영역에서 내용을 나누거나 줄여 주세요."}</p>}
   </>;
 }

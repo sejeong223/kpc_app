@@ -54,7 +54,7 @@ export default function WorkspaceFlow({ screen, readOnlyError = null, accessDeni
   const blockedReason = screen === "write" ? readOnlyError ?? (accessDenied ? "프로젝트 접근 권한을 확인해 주세요." : proposals.request ? proposalRequestBlocked(live, proposals.request, scene.selection.snapshotId) : null) : null;
   const feedback = <div data-comment-control>
     <WorkspaceErrorText error={requestError ?? proposals.error} />
-    <ProductionJobStatus busy={starting || proposals.propose.isPending} progress={null} error={proposals.propose.error?.message ?? null} onCancel={close} onRetry={regenerate} />
+    <ProductionJobStatus busy={starting || proposals.propose.isPending} progress={null} error={proposals.propose.error?.message ?? null} onCancel={screen === "toc" ? close : undefined} onRetry={screen === "toc" ? regenerate : undefined} />
     {proposals.apply.isPending && <p role="status" className="tw:text-sm">선택한 변경을 반영하고 있습니다.</p>}
   </div>;
   const busy = starting || proposals.propose.isPending || proposals.apply.isPending;

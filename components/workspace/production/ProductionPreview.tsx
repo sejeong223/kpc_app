@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { DadamButton } from "@/components/ui/DadamControls";
 import TemplateSlidePreview from "@/components/admin/templates/workbench/TemplateSlidePreview";
 import { useProductionPreview } from "@/hooks/workspace/use-production-preview";
 import type { ProjectView, ProposalSlide } from "@/types/workspace-production";
@@ -28,7 +27,7 @@ export default function ProductionPreview({ view, slide, snapshotId, mode = "ful
   return <div ref={root} aria-label={`${number ? `${number}번 ` : ""}슬라이드 저장본`}>
     {demoLayout ? <HtmlDemoSlidePreview view={view} slide={slide} layout={demoLayout} mode={mode} number={number} /> : !slide.template ? <BasicSlidePreview view={view} slide={slide} snapshotId={snapshotId} mode={mode} enabled={enabled} /> : inaccessible ?
       <p role="status">Template 또는 적용 자산의 원본·권한을 확인할 수 없습니다. 제작 설정에서 재선택해 주세요.</p> : query.error ?
-      <div role="status"><p>{query.error.message}</p>{mode === "full" && <DadamButton size="small" data-comment-control disabled={query.isFetching} onClick={() => void query.refetch()}>다시 불러오기</DadamButton>}</div> : query.data && templateSlide ? <>
+      <p role="status">{query.error.message}</p> : query.data && templateSlide ? <>
         <div role="img" aria-label={`${slide.content.title || "제목 없음"} · Template 미리보기`}>
           <div inert style={{ pointerEvents: "none" }}><TemplateSlidePreview document={query.data.preview} slideIndex={templateSlide.index} selectedObjectId={null} onSelect={() => {}} /></div>
         </div>

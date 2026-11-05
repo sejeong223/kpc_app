@@ -169,9 +169,4 @@
   color: #a0a2a9;
 }
 
-.notice, .expanded { margin-top: 8px; font-size: 12px; color: var(--kpc-muted); }
-.expanded { padding: 12px; border: 1px solid var(--kpc-line); color: inherit; overflow-wrap: anywhere; }
-.expanded summary { cursor: pointer; }
-.expanded p { white-space: pre-wrap; }
-.expanded table { width: 100%; table-layout: fixed; border-collapse: collapse; }
-.expanded th, .expanded td { padding: 6px; border: 1px solid var(--kpc-line); text-align: left; white-space: pre-wrap; }
+.notice { margin-top: 8px; font-size: 12px; color: var(--kpc-muted); }

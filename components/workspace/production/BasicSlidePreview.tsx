@@ -1,7 +1,6 @@
 "use client";
 import { useLayoutEffect, useRef, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { DadamButton } from "@/components/ui/DadamControls";
 import { useSlideImageUrl } from "@/hooks/workspace/use-production-preview";
 import type { ContentBlock, ProjectView, ProposalSlide } from "@/types/workspace-production";
 
@@ -21,7 +20,6 @@ const useStyles = makeStyles({
   },
   image: { display: "block", maxWidth: "100%", maxHeight: "280px", objectFit: "contain" },
   notice: { color: tokens.colorNeutralForeground3, fontSize: "12px", marginTop: "8px" },
-  expanded: { padding: "16px", border: `1px solid ${tokens.colorNeutralStroke2}`, marginTop: "8px", fontSize: "14px" },
 });
 function SavedImage({ block, ...props }: Omit<BasicSlidePreviewProps, "mode" | "onOverflow"> & { block: Extract<ContentBlock, { kind: "image" }> }) {
   const styles = useStyles(), image = useSlideImageUrl(props.view, props.slide, block.id, props.snapshotId, props.enabled);
@@ -41,7 +39,7 @@ function SlideBody(props: BasicSlidePreviewProps) {
 }
 export default function BasicSlidePreview(props: BasicSlidePreviewProps): React.ReactElement {
   const styles = useStyles(), frame = useRef<HTMLDivElement>(null), canvas = useRef<HTMLDivElement>(null), body = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0), [overflow, setOverflow] = useState(false), [expanded, setExpanded] = useState(false);
+  const [scale, setScale] = useState(0), [overflow, setOverflow] = useState(false);
   const { slide, onOverflow } = props;
   useLayoutEffect(() => {
     let pending = 0;
@@ -66,10 +64,6 @@ export default function BasicSlidePreview(props: BasicSlidePreviewProps): React.
         </div>
       </div>
     </div>
-    {overflow && <div className={styles.notice}>{props.mode === "thumbnail" ? "본문 초과" : <>
-      본문이 슬라이드 영역을 넘습니다. 내용을 나누거나 줄여 주세요.{" "}
-      <DadamButton size="small" data-comment-control aria-expanded={expanded} onClick={() => setExpanded(v => !v)}>{expanded ? "전체 본문 접기" : "전체 본문 보기"}</DadamButton>
-    </>}</div>}
-    {props.mode === "full" && expanded && <div className={`${styles.body} ${styles.expanded}`}><h3>{slide.content.title}</h3><p>{slide.content.lead}</p><SlideBody {...props} /></div>}
+    {overflow && <p className={styles.notice}>{props.mode === "thumbnail" ? "본문 초과" : "본문이 슬라이드 영역을 넘습니다. 편집 영역에서 내용을 나누거나 줄여 주세요."}</p>}
   </>;
 }
