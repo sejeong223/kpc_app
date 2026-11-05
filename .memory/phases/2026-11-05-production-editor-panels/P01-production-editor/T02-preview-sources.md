@@ -1,6 +1,6 @@
 # Task: T02 기본·Template 미리보기와 읽기 전용 출처
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -171,13 +171,13 @@ export default function ProductionPreview(props: ProductionPreviewProps): React.
 
 ## Acceptance Criteria
 
-- [ ] Template 없이 실제 본문·표·기존 이미지를 기본 16:9로 표시한다.
-- [ ] 중앙/썸네일이 같은 저장본과 디자인을 자동 표시하고 현재 접근 권한을 확인한다.
-- [ ] Template 연결 실패를 기본 표시로 숨기지 않고 다른 대상의 캐시를 보여주지 않는다.
-- [ ] 이미지 조회가 대상 slide의 참조로 제한되며 객체 URL을 적절히 해제한다.
-- [ ] 출처는 두 그룹의 읽기 전용 목록이고 실제 회차/asset/version만 원문으로 연다.
-- [ ] 보관본에 현재 자료를 섞지 않고 빈 상태/조회 실패/원본 불명을 구분한다.
-- [ ] T03 전에도 기존 호출자와 서비스의 타입 호환이 유지된다.
+- [x] Template 없이 실제 본문·표·기존 이미지를 기본 16:9로 표시한다.
+- [x] 중앙/썸네일이 같은 저장본과 디자인을 자동 표시하고 현재 접근 권한을 확인한다.
+- [x] Template 연결 실패를 기본 표시로 숨기지 않고 다른 대상의 캐시를 보여주지 않는다.
+- [x] 이미지 조회가 대상 slide의 참조로 제한되며 객체 URL을 적절히 해제한다.
+- [x] 출처는 두 그룹의 읽기 전용 목록이고 실제 회차/asset/version만 원문으로 연다.
+- [x] 보관본에 현재 자료를 섞지 않고 빈 상태/조회 실패/원본 불명을 구분한다.
+- [x] T03 전에도 기존 호출자와 서비스의 타입 호환이 유지된다.
 
 ## Validation
 
@@ -202,8 +202,15 @@ Task: T02-preview-sources
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 파일과 함께 커밋한 Task: T02-preview-sources 구현 커밋
 
 완료 시 Task/phase를 갱신하고 지정 한국어 커밋 후 local ignored current를 T03로 전진한다. 무관한 파일·현재 포인터 강제 stage와 push는 하지 않는다.
+
+## Execution Record
+
+- 저장본용 기본 16:9/Template 미리보기·공유 Query 캐시·가시 영역 썸네일·이미지 Blob URL 수명 구현.
+- 읽기 전용 출처와 정확한 회차/자료/버전 연결. RFP 파일 식별자 미존재는 추측하지 않고 안내.
+- 검증: typecheck, 변경 6개 파일 ESLint, git diff --check 통과. 읽기 모델/출처/fingerprint/서비스 이미지 경계 인라인 34개 assertion 통과, 저장소 쓰기 0회.
+- 실제 렌더링·PDF·이미지 배치는 지속 정책에 따라 브라우저 검증하지 않음. 범위 밖 발견: 특이사항 없음.

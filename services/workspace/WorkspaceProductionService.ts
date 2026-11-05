@@ -371,14 +371,17 @@ export class WorkspaceProductionService {
       snapshotId: string | null;
       content?: SlideContent;
       template?: SlideTemplateRef;
+      expected?: { round: number; slideRevision: number };
     },
     signal?: AbortSignal,
   ) {
+    this.validatePreviewTarget(input);
     const combined = this.signal(signal),
       { state } = await this.load(input.projectId),
       target = this.target(state, input.snapshotId),
       stored = target.body.slides.find((s) => s.id === input.slideId);
     check(!!stored, "NOT_FOUND", "슬라이드가 없습니다.");
+    if (input.expected) this.checkPreviewVersion(target.round, stored, input.expected);
     if (input.content !== undefined || input.template !== undefined) {
       check(
         input.snapshotId === null,
@@ -405,6 +408,33 @@ export class WorkspaceProductionService {
       expectedRound: state.currentRound,
     });
     return { preview: result.preview, warnings: result.warnings };
+  }
+  private validatePreviewTarget(input: { slideId: string; snapshotId: string | null; expected?: { round: number; slideRevision: number } }) {
+    check(z.object({ slideId: WorkspaceIdSchema, snapshotId: WorkspaceIdSchema.nullable(), expected: z.object({ round: z.number().int().positive(), slideRevision: z.number().int().positive() }).optional() }).safeParse(input).success,
+      "VALIDATION", "미리보기 대상을 확인해 주세요.");
+  }
+  private checkPreviewVersion(round: number, slide: ProposalSlide, expected: { round: number; slideRevision: number }) {
+    check(round === expected.round && slide.revision === expected.slideRevision, "CONFLICT", "슬라이드가 변경되었습니다. 최신 내용을 불러온 뒤 다시 시도해 주세요.");
+  }
+  async loadSlideImage(input: {
+    projectId: string; slideId: string; blockId: string; snapshotId: string | null;
+    expected: { round: number; slideRevision: number };
+  }, signal?: AbortSignal): Promise<{ blob: Blob; alt: string; width: number; height: number }> {
+    this.validatePreviewTarget(input);
+    check(WorkspaceIdSchema.safeParse(input.blockId).success && !!input.expected, "VALIDATION", "이미지 대상을 확인해 주세요.");
+    this.alive(signal);
+    const { state } = await this.load(input.projectId), target = this.target(state, input.snapshotId);
+    const slide = target.body.slides.find(s => s.id === input.slideId);
+    check(!!slide, "NOT_FOUND", "슬라이드가 없습니다.");
+    this.checkPreviewVersion(target.round, slide, input.expected);
+    const block = slide.content.blocks.find(b => b.id === input.blockId);
+    check(!!block && block.kind === "image", "NOT_FOUND", "슬라이드의 이미지를 찾을 수 없습니다.");
+    const stored = await this.options.repository.readBlob(input.projectId, block.blobId);
+    check(stored.projectId === input.projectId && stored.kind === "image" && stored.blob.type === block.mime && stored.blob.size > 0,
+      "ORIGINAL_MISSING", "이미지 원본을 확인할 수 없습니다.");
+    await this.requested({ projectId: input.projectId, expectedRevision: state.revision, expectedRound: state.currentRound });
+    this.context(input.projectId); this.alive(signal);
+    return { blob: stored.blob, alt: block.alt, width: block.width, height: block.height };
   }
   async propose(input: MockRequest, signal?: AbortSignal) {
     const parsed = MockRequestSchema.safeParse(input);

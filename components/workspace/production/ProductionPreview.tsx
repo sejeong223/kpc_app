@@ -1,145 +1,38 @@
-"use client";
-import { useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+﻿"use client";
+import { useEffect, useRef, useState } from "react";
 import { DadamButton } from "@/components/ui/DadamControls";
 import TemplateSlidePreview from "@/components/admin/templates/workbench/TemplateSlidePreview";
-import { useWorkspaceRuntime } from "../WorkspaceProjectProvider";
-import { activeWorkspaceRead } from "@/hooks/workspace/use-workspace-production";
-import { workspaceQueryKeys } from "@/lib/workspace/production/query-keys";
-import type {
-  ProjectView,
-  ProposalSlide,
-  SlideContent,
-  SlideTemplateRef,
-} from "@/types/workspace-production";
-import type { WorkspaceError } from "@/lib/workspace/production/errors";
-import type { TemplatePreviewData } from "@/types/template-work";
-import { workspaceCard, WorkspaceErrorText } from "../shared/WorkspaceUi";
-export default function ProductionPreview({
-  view,
-  slide,
-  snapshotId,
-  content,
-  template,
-  dirty,
-  overlay,
-}: {
-  view: ProjectView;
-  slide: ProposalSlide;
-  snapshotId: string | null;
-  content: SlideContent;
-  template: SlideTemplateRef | null;
-  dirty: boolean;
-  overlay?: React.ReactNode;
-}) {
-  const runtime = useWorkspaceRuntime(),
-    abort = useRef<AbortController | null>(null),
-    signature = JSON.stringify([
-      view.state.revision,
-      slide.id,
-      content,
-      template,
-      snapshotId,
-      view.assetAccess,
-    ]);
-  const mutation = useMutation<
-    { preview: TemplatePreviewData; warnings: string[]; signature: string },
-    WorkspaceError,
-    void
-  >({
-    mutationKey: workspaceQueryKeys(runtime.queryScope).mutation,
-    retry: false,
-    gcTime: 0,
-    mutationFn: async () => {
-      abort.current?.abort();
-      const controller = new AbortController();
-      abort.current = controller;
-      const result = await activeWorkspaceRead(
-        runtime,
-        () =>
-          runtime.service.previewSlide(
-            {
-              projectId: view.project.id,
-              slideId: slide.id,
-              snapshotId,
-              ...(dirty ? { content, template: template ?? undefined } : {}),
-            },
-            controller.signal,
-          ),
-        controller.signal,
-      );
-      return { ...result, signature };
-    },
-  });
-  useEffect(() => () => abort.current?.abort(), [signature]);
-  const unavailable = [
-      template?.pinId,
-      slide.usedSettings.skillPinId,
-      slide.usedSettings.promptPinId,
-    ]
-      .filter(Boolean)
-      .some(
-        (id) =>
-          view.assetAccess.find((a) => a.pinId === id)?.access.status !==
-          "available",
-      ),
-    data =
-      mutation.data?.signature === signature && !mutation.error
-        ? mutation.data
-        : null;
-  return (
-    <section className={workspaceCard}>
-      <header className="tw:mb-2 tw:flex tw:items-center tw:gap-2">
-        <strong className="tw:mr-auto tw:text-sm">구조 미리보기</strong>
-        {!unavailable && template && (
-          <DadamButton
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate()}
-          >
-            미리보기 갱신
-          </DadamButton>
-        )}
-        {mutation.isPending && (
-          <DadamButton onClick={() => abort.current?.abort()}>취소</DadamButton>
-        )}
-      </header>
-      {unavailable ? (
-        <p>
-          사용 중인 자산의 원본 또는 현재 권한을 확인할 수 없습니다. 제작
-          설정에서 재선택해 주세요.
-        </p>
-      ) : !template ? (
-        <p>Template 슬라이드와 내용 칸을 연결해 주세요.</p>
-      ) : data ? (
-        <>
-          <div className="tw:relative">
-            <TemplateSlidePreview
-              document={data.preview}
-              slideIndex={
-                data.preview.slides.find(
-                  (s) => s.path === template.sourceSlidePath,
-                )?.index ?? 0
-              }
-              selectedObjectId={null}
-              onSelect={() => {}}
-            />
-            {overlay}
-          </div>
-          <ul>
-            {data.warnings.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <p>
-          {mutation.isPending
-            ? "미리보기를 생성하고 있습니다."
-            : "현재 내용의 미리보기를 갱신해 주세요."}
-        </p>
-      )}
-      <WorkspaceErrorText error={mutation.error} />
-      <small>PowerPoint 렌더링과 다를 수 있는 구조 미리보기입니다.</small>
-    </section>
-  );
+import { useProductionPreview } from "@/hooks/workspace/use-production-preview";
+import type { ProjectView, ProposalSlide, SlideContent, SlideTemplateRef } from "@/types/workspace-production";
+import BasicSlidePreview from "./BasicSlidePreview";
+
+export interface ProductionPreviewProps {
+  view: ProjectView; slide: ProposalSlide; snapshotId: string | null;
+  mode?: "full" | "thumbnail"; number?: number; priority?: boolean;
+  content?: SlideContent; template?: SlideTemplateRef | null; dirty?: boolean; overlay?: React.ReactNode;
+}
+export default function ProductionPreview({ view, slide, snapshotId, mode = "full", number, priority = false }: ProductionPreviewProps): React.ReactElement {
+  const root = useRef<HTMLDivElement>(null), [near, setNear] = useState(false);
+  const enabled = mode === "full" || priority || near;
+  useEffect(() => {
+    if (mode === "full" || !root.current || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { setNear(true); observer.disconnect(); } }, { rootMargin: "200px" });
+    observer.observe(root.current); return () => observer.disconnect();
+  }, [mode]);
+  const query = useProductionPreview(view, slide, snapshotId, enabled);
+  const inaccessible = !!slide.template && [slide.template.pinId, slide.usedSettings.skillPinId, slide.usedSettings.promptPinId].filter(Boolean).some(id => view.assetAccess.find(a => a.pinId === id)?.access.status !== "available");
+  const templateSlide = query.data?.preview.slides.find(s => s.path === slide.template?.sourceSlidePath);
+  return <div ref={root} aria-label={`${number ? `${number}번 ` : ""}슬라이드 저장본`}>
+    {!slide.template ? <BasicSlidePreview view={view} slide={slide} snapshotId={snapshotId} mode={mode} enabled={enabled} /> : inaccessible ?
+      <p role="status">Template 또는 적용 자산의 원본·권한을 확인할 수 없습니다. 제작 설정에서 재선택해 주세요.</p> : query.error ?
+      <div role="status"><p>{query.error.message}</p>{mode === "full" && <DadamButton size="small" data-comment-control disabled={query.isFetching} onClick={() => void query.refetch()}>다시 불러오기</DadamButton>}</div> : query.data && templateSlide ? <>
+        <div role="img" aria-label={`${slide.content.title || "제목 없음"} · Template 미리보기`}>
+          <div inert style={{ pointerEvents: "none" }}><TemplateSlidePreview document={query.data.preview} slideIndex={templateSlide.index} selectedObjectId={null} onSelect={() => {}} /></div>
+        </div>
+        {mode === "full" && query.data.warnings.length > 0 && <ul className="tw:text-xs tw:text-(--kpc-text-muted)">{query.data.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>}
+      </> : <div className="tw:flex tw:aspect-video tw:items-center tw:justify-center tw:border tw:border-(--kpc-line) tw:text-xs">
+        {query.data ? "연결한 Template 슬라이드를 찾을 수 없습니다. 제작 설정을 확인해 주세요." : enabled ? "슬라이드를 불러오는 중입니다." : "미리보기 대기"}
+      </div>}
+    {mode === "full" && <p className="tw:mt-2 tw:text-xs tw:text-(--kpc-text-muted)">{slide.template ? "PowerPoint와 다를 수 있는 구조 미리보기입니다." : "기본 16:9 미리보기 · PPT 출력에는 Template 연결이 필요합니다."}</p>}
+  </div>;
 }
