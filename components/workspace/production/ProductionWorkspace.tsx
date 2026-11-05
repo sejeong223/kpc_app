@@ -173,6 +173,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   const aiControls = !accessDenied && !readOnly && onPropose && (ids.length > 0 || (!!section && !view.state.body.slides.some(s => s.sectionId === section.id))) ?
     <div className="tw:mb-(--layout-section-gap)"><ProductionAiPanel key={JSON.stringify([ids, section?.id, view.state.currentRound])} view={view} slideIds={ids} sectionId={section?.id ?? null} busy={busy} onPropose={onPropose} /></div> : null;
   const center = <>
+    <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}
     {!accessDenied && <><ProductionToolbar view={safeView} sectionId={section?.id ?? null} busy={busy} onSection={id => guarded(async () => { await commitSelection({ ...selection, sectionId: id, slideId: null }); if (stillHere()) { setSelected(null); setContextId(null); } })}
       onState={state => { if (section) execute({ type: "set-section-state", id: section.id, state }); }} onUnlock={() => { if (section) execute({ type: "unlock-section", id: section.id }); }} />
       {section && !readOnly && view.capabilities.editableSectionIds.includes(section.id) && <div data-comment-control className="tw:mb-3 tw:flex tw:gap-2"><DadamButton size="small" disabled={busy} onClick={() => execute({ type: "add-slide", sectionId: section.id, afterId: current?.id ?? null, template: null })}>슬라이드 추가</DadamButton><DadamButton size="small" disabled={busy || !clipboard.getToken()} onClick={() => paste(section.id, current?.id ?? null)}>붙여넣기</DadamButton></div>}
@@ -194,16 +195,15 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
     {!editingSlide && !multiple && aiControls}
     {(multiple || !editingSlide) && aiFeedback}
     {ids.length > 1 && !accessDenied && <div className="tw:mt-(--layout-section-gap) tw:space-y-(--layout-section-gap)">{rows.filter(row => ids.includes(row.slide.id)).map(row => <section key={row.slide.id} aria-label={`${row.number}번 선택 슬라이드`}><h3 className="tw:text-sm">{row.number}. {row.slide.content.title || "제목 없음"} <small>{row.section.title}</small></h3><ProductionPreview view={view} slide={row.slide} snapshotId={selection.snapshotId} number={row.number} lazy priority={row.slide.id === current?.id} /></section>)}</div>}
+    {!accessDenied && <fieldset disabled={busy || !!session?.dirty || readOnly} data-comment-control className="tw:m-0 tw:min-w-0 tw:border-0 tw:p-0 tw:[&:not(:empty)]:pt-(--layout-control-gap)"><WorkspaceUndoNotice view={view} /></fieldset>}
   </>;
-  return <div className="tw:min-w-0">
-    <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}
+  return <div className="tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col">
     {<ProductionPanels namespace={runtime.identity.namespace}
       left={toggle => accessDenied ? null : <SlideNavigator panelToggle={toggle} view={safeView} rows={rows.map(row => ({ ...row, editable: !readOnly && row.editable }))} activeId={current?.id ?? null} selectedIds={ids} snapshotId={selection.snapshotId} busy={busy}
         onSelect={chooseSlide} onSelectMany={values => guarded(() => selectIds(values, values[0] ?? null))} contextId={contextId}
         onContext={id => guarded(async () => { if (id && !ids.includes(id)) await selectIds([id], id); if (stillHere()) setContextId(id); })}
         onCommand={execute} onCopy={copy} canCopy={canCopy} onPaste={paste} canPaste={!readOnly && !!clipboard.getToken()} onRemove={values => openBatch("remove", values, null)} onMove={(values, id) => openBatch("move", values, id)} />}
       center={center} right={toggle => accessDenied ? null : <SourcePanel panelToggle={toggle} view={view} slide={current} snapshotId={selection.snapshotId} number={active?.number} />} />}
-    {!accessDenied && <fieldset disabled={busy || !!session?.dirty || readOnly} data-comment-control className="tw:m-0 tw:mt-2 tw:min-w-0 tw:border-0 tw:p-0"><WorkspaceUndoNotice view={view} /></fieldset>}
     {dialog && !accessDenied && <ModalFrame open title={dialog.operation === "remove" ? "선택 슬라이드 삭제" : "선택 슬라이드 이동"} contentKey={dialog.operation} onClose={() => { if (!busy) setDialog(null); }}
       footer={<><DadamButton disabled={busy} onClick={() => setDialog(null)}>취소</DadamButton><DadamButton appearance="primary" disabled={busy || readOnly} onClick={applyBatch}>확인</DadamButton></>}>
       <p>{dialog.slideIds.length}장을 {dialog.operation === "remove" ? "삭제" : "이동"}합니다. 슬라이드에 연결된 미처리 의견 {dialog.slideIds.reduce((n, id) => n + selectDeletionImpact(view, id).openComments, 0)}개에 영향을 줍니다.</p>

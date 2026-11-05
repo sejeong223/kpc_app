@@ -1,6 +1,6 @@
 # Task: T07 제작 화면 높이 제한과 패널 내부 스크롤
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -62,12 +62,12 @@
 
 ## Acceptance Criteria
 
-- [ ] 제작 경로만 root→main→surface→screen→workspace→panels의 높이 제한/min-height0 연결이 완성되어 있다.
-- [ ] 최소420px과 viewport 높이 측정 effect가 제거되고 오류/undo/여백을 패널 밖에 누적하지 않는다.
-- [ ] 목록·출처 헤더는 스크롤 밖, 세 영역의 긴 본문은 각각 내부 스크롤로 접근 가능하다.
-- [ ] 작은 높이·긴 헤더 안내·오류/undo 표시·좁은 폭에도 내용을 단순 clipping하는 처리가 없다.
-- [ ] 기존 헤더 기능·코멘트 좌표/이벤트·dirty 입력 보호·선택/출처 기능은 보존된다.
-- [ ] 다른 메뉴의 스크롤 정책, 영속 데이터, shared/공용 컴포넌트, DB/서비스는 변경하지 않는다.
+- [x] 제작 경로만 root→main→surface→screen→workspace→panels의 높이 제한/min-height0 연결이 완성되어 있다.
+- [x] 최소420px과 viewport 높이 측정 effect가 제거되고 오류/undo/여백을 패널 밖에 누적하지 않는다.
+- [x] 목록·출처 헤더는 스크롤 밖, 세 영역의 긴 본문은 각각 내부 스크롤로 접근 가능하다.
+- [x] 작은 높이·긴 헤더 안내·오류/undo 표시·좁은 폭에도 내용을 단순 clipping하는 처리가 없다.
+- [x] 기존 헤더 기능·코멘트 좌표/이벤트·dirty 입력 보호·선택/출처 기능은 보존된다.
+- [x] 다른 메뉴의 스크롤 정책, 영속 데이터, shared/공용 컴포넌트, DB/서비스는 변경하지 않는다.
 
 ## Validation
 
@@ -95,8 +95,35 @@ Task: T07-viewport-scroll
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 문서를 포함한 Task: T07-viewport-scroll 커밋
 
 최종 검증 후 관련 파일과 Task/phase/plan 기록을 한국어 커밋한다. phase7/7, plan done, 로컬 ignored current의 Active Task 없음으로 갱신한다. 기존 완료 보고서에 `T05~T07 UI 수정` 절을 추가해 변경·검증·실측 한계를 구분한다. 이전147개 검증을 새 수정의 실행 결과로 계산하지 않는다. force stage·push/배포·DB 초기화 금지.
+
+## Execution Record
+
+- AppShell의 제작 전용 root/column/content variant에 viewport 높이와 min-height0 연결. 다른 경로의 스타일은 유지.
+- CommentsWorkspace는 flex column/min-height0, intro는 최대50%와 내부 스크롤. 오류를 intro에 포함하며 기존 핀/팝업/좌표계는 그대로 유지.
+- ProductionScreen의 정상/알림/로딩/empty/error 분기도 남은 높이 안에 배치. ProductionWorkspace의 오류/undo는 중앙 스크롤 안으로 이동. 빈 fieldset 여백 제거, 기존 undo guard 유지.
+- ProductionPanels의 최소420px·height620·viewport/header 측정 effect 제거. 너비·접기 상태와 separator는 유지.
+- 전체 typecheck/lint/build·diff 검사 통과. 실제 AppShell/ProductionScreen 및 context/query/UI 대역을 사용하는 stdin React/jsdom10개 검증 통과: 제작 경로 전용 스타일, notice/error/denied 시 Flow DOM 보존, 읽기 전용/접근 거부 전달, 다른 메뉴에서 제작 variant 해제, body lock 추가 없음.
+
+| 높이 연결 지점 | 높이/축소 계약 | 넘치는 내용의 처리 |
+| --- | --- | --- |
+| AppShell production root | 100dvh, min-height0 | 전역 clipping 없음 |
+| mainColumn → main | 100% → flex1, min-height0 | 제작 경로에만 적용 |
+| CommentsWorkspace surface | flex1/min-height0/overflow visible | 핀·팝업은 패널 밖 기존 좌표 유지 |
+| intro | 내용 높이, 최대50%, shrink0 | 긴 회차/오류 안내 자체 스크롤 |
+| ProductionScreen → ActiveScreen | flex1/min-height0, 여백은 border-box 내부 | 안내 최대30% 자체 스크롤, 빈/오류 상태 별도 스크롤 |
+| Workspace → Panels → row | flex1/min-height0/min-width0 | 부모 남은 높이를 그대로 사용 |
+| 좌우 panel | 제목 shrink0, 본문 flex1/min-height0 | 본문만 스크롤, 접힌 상태 rail |
+| 중앙 panel | flex1/min-height0/overflow-y:auto | 직접 편집·AI·미리보기·오류·undo 내부 스크롤 |
+| 문서 입력 | 최소48/최대180px | 문서 자체 내부 스크롤 |
+
+- 정적 경계 검토: 760px까지 한 패널, 761~1179px 출처 overlay, 1180px부터3열; 닫힌 좌우는40px rail. 최대 열 너비320+420px과 separator/gap을 제외한 중앙은 min-width0으로 축소 가능. 브라우저 폭과 container 폭은 구분한다.
+- 일반 높이에서는 intro가 내용 크기만 사용하고, 작은 높이/긴 안내에는 max-height와 내부 스크롤이 적용된다. 오류/undo는 panel 밖 추가 높이를 만들지 않는다. 목록/다중 슬라이드/출처 원문이 길어져도 해당 panel이 스크롤을 소유한다.
+- 정적 기능 검토: ProjectHeader/route/runtime/서비스/schema 변경 없음. 코멘트 capture scroll/ResizeObserver·ratio 계산/핀 동작 유지. ModalFrame/원문/AI 비교와 코멘트 팝업은 기존 portal 또는 panel 밖 위치 유지. 편집기 key와 쓰기/undo 비활성 조건 유지.
+- 학습: `flex: "1 1 0%", minHeight: 0`은 남은 높이를 배분하고 자식이 내용보다 작아질 수 있게 한다. 자식에 overflow만 추가하면 상위 min-height가 전체 페이지를 계속 늘릴 수 있다.
+- 제한: 실제 scrollbar/반응형/핀 위치/IME·포인터 실측은 사용자 지속 정책에 따라 미실시. jsdom 수치를 실제 레이아웃 측정으로 사용하지 않았다.
+- 요청 밖 발견: 기존 baseline-browser-mapping 데이터 경고가 build에서 반복됨. 빌드는 성공했고 이번 범위에서 패키지를 갱신하지 않음. 별도 의존성 유지보수 시 검토 권장. 그 외 특이사항 없음.

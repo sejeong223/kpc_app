@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useId, useLayoutEffect, useRef, type CSSProperties } from "react";
 import { ChevronLeftRegular, ChevronRightRegular, SlideMultipleRegular, EditRegular, DocumentSearchRegular } from "@fluentui/react-icons";
 import { DadamButton } from "@/components/ui/DadamControls";
 import { useProductionPanels } from "@/hooks/workspace/use-production-panels";
@@ -11,7 +11,7 @@ interface ProductionPanelsProps {
 }
 type FocusTarget = "leftClose" | "leftOpen" | "rightClose" | "rightOpen" | "editor";
 export default function ProductionPanels({ namespace, left, center, right }: ProductionPanelsProps) {
-  const { state: s, update, resize } = useProductionPanels(namespace), root = useRef<HTMLDivElement>(null);
+  const { state: s, update, resize } = useProductionPanels(namespace);
   const id = useId(), leftId = `${id}-slides`, rightId = `${id}-sources`, editorId = `${id}-editor`;
   const buttons = useRef<Partial<Record<FocusTarget, HTMLButtonElement | HTMLAnchorElement | null>>>({});
   const pendingFocus = useRef<{ namespace: string; target: FocusTarget } | null>(null);
@@ -46,21 +46,7 @@ export default function ProductionPanels({ namespace, left, center, right }: Pro
       <span aria-hidden="true" className="tw:text-xs tw:text-(--kpc-muted)" style={{ writingMode: "vertical-rl" }}>{label}</span>
     </div>;
   };
-  const pointer = useRef<{ id: number; x: number } | null>(null), [height, setHeight] = useState(620);
-  useEffect(() => {
-    let frame = 0;
-    const measure = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => {
-      if (!root.current) return;
-      const viewport = window.visualViewport, bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
-      const next = Math.max(420, Math.floor(bottom - root.current.getBoundingClientRect().top - 12));
-      setHeight(previous => previous === next ? previous : next);
-    }); };
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
-    const header = root.current?.closest("[data-comment-surface]")?.querySelector("[data-production-header]");
-    if (header) observer?.observe(header);
-    window.addEventListener("resize", measure); window.visualViewport?.addEventListener("resize", measure); measure();
-    return () => { cancelAnimationFrame(frame); observer?.disconnect(); window.removeEventListener("resize", measure); window.visualViewport?.removeEventListener("resize", measure); };
-  }, []);
+  const pointer = useRef<{ id: number; x: number } | null>(null);
   const splitter = (side: "left" | "right") => <div data-comment-control role="separator" tabIndex={0} aria-orientation="vertical" aria-label={`${side === "left" ? "슬라이드" : "출처"} 패널 크기`}
     title="드래그 또는 좌우 방향키로 너비 조절 · Home으로 기본 너비 복원"
     aria-valuenow={side === "left" ? s.leftWidth : s.rightWidth} aria-valuemin={side === "left" ? 200 : 280} aria-valuemax={side === "left" ? 320 : 420}
@@ -70,8 +56,8 @@ export default function ProductionPanels({ namespace, left, center, right }: Pro
     onPointerMove={e => { const p = pointer.current; if (p?.id !== e.pointerId) return; resize(side, (e.clientX - p.x) * (side === "left" ? 1 : -1)); p.x = e.clientX; }}
     onPointerUp={e => { pointer.current = null; if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); }}
     onPointerCancel={() => { pointer.current = null; }} onLostPointerCapture={() => { pointer.current = null; }} />;
-  const panel = " tw:min-h-0 tw:rounded-xl tw:border tw:border-(--kpc-line) tw:bg-(--kpc-card)";
-  return <div className="tw:@container tw:min-w-0">
+  const panel = " tw:box-border tw:min-h-0 tw:rounded-xl tw:border tw:border-(--kpc-line) tw:bg-(--kpc-card)";
+  return <div className="tw:@container tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col">
     <div data-comment-control role="group" aria-label="제작 패널 선택" className="tw:mb-(--layout-control-gap) tw:flex tw:shrink-0 tw:gap-1 tw:@min-[761px]:hidden">
       {(["slides", "editor", "sources"] as const).map((name, i) => <DadamButton key={name} type="button" size="small" appearance="subtle"
         ref={name === "editor" ? node => { buttons.current.editor = node; } : undefined}
@@ -80,7 +66,7 @@ export default function ProductionPanels({ namespace, left, center, right }: Pro
         icon={[<SlideMultipleRegular key="slides" />, <EditRegular key="editor" />, <DocumentSearchRegular key="sources" />][i]}
         onClick={() => update({ mobilePanel: name })} />)}
     </div>
-    <div ref={root} className="tw:relative tw:flex tw:min-w-0 tw:items-stretch tw:gap-(--layout-control-gap)" style={{ height, "--production-left": `${s.leftWidth}px`, "--production-right": `${s.rightWidth}px` } as CSSProperties}>
+    <div className="tw:relative tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:items-stretch tw:gap-(--layout-control-gap)" style={{ "--production-left": `${s.leftWidth}px`, "--production-right": `${s.rightWidth}px` } as CSSProperties}>
       {rail("left")}
       <aside id={leftId} aria-label="슬라이드 목록" className={(s.mobilePanel === "slides" ? "tw:block" : "tw:hidden") + " " + (s.leftOpen ? "tw:@min-[761px]:block" : "tw:@min-[761px]:hidden") + " tw:w-full tw:min-w-0 tw:shrink-0 tw:overflow-hidden tw:@min-[761px]:w-(--production-left)" + panel}>{left(collapseButton("left"))}</aside>
       {s.leftOpen && splitter("left")}

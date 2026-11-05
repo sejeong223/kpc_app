@@ -1,10 +1,10 @@
 # Plan: 제작 화면 슬라이드 목록·문서 편집·출처 패널
 
 - Date: 2026-11-05
-- Status: in_progress — T01~T06 완료, UI 수정 T07 진행
+- Status: done — T01~T07 완료
 - Decision: [확정 인터뷰](../decisions/2026-11-05-production-editor-panels.md)
 - Baseline: `8158744`; 계획 시 생산 코드 변경 없음. 이번 대화에서 만든 결정 문서만 미추적 상태였다.
-- Revision: 2026-11-05 사용자 피드백 반영. 수정 기준 HEAD `fc246ca`; 이번 수정은 `.memory/` 문서만 변경하며 구현하지 않는다.
+- Revision: 2026-11-05 사용자 피드백 반영. 계획 수정 기준 HEAD `fc246ca`. 계획 수정 당시에는 `.memory/`만 변경했고, 이후 mea로 T05~T07 구현을 완료했다.
 
 ## Goal
 
@@ -16,7 +16,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | T01~T06 완료, T07 높이/스크롤 수정 진행 | [P01](../phases/2026-11-05-production-editor-panels/P01-production-editor/phase.md) |
+| P01 | `done` | T01~T07 완료 | [P01](../phases/2026-11-05-production-editor-panels/P01-production-editor/phase.md) |
 
 ## Tasks and Dependencies
 
@@ -155,7 +155,14 @@ services/workspace/
 
 ## Initial Execution Complete — T01~T04 이력
 
-- 2026-11-05: T01~T04 순차 구현·각 한국어 커밋 완료. 당시 계획 4/4 완료. 사용자 피드백 수정 중 T05~T06 완료, T07 진행.
+- 2026-11-05: T01~T04 순차 구현·각 한국어 커밋 완료. 당시 계획 4/4 완료. 사용자 피드백 수정 T05~T07도 후속 완료.
 - 전체 typecheck/lint/build, diff, 인라인 검증 집계 147개 통과.
 - [완료 보고서](../reports/2026-11-05-production-editor-panels.md)에 구현 파일·검증·학습 노트·미실시 범위 기록.
 - 브라우저 검증·실제 AI·RFP 파일 연결 모델·Template 없는 PPT 출력은 추가하지 않았다.
+
+## UI Correction Complete — T05~T07
+
+- 2026-11-05: T05(53555be), T06(15c2aaa), T07(이 문서를 포함한 Task: T07-viewport-scroll 커밋) 완료. done7/7, 남은 Task 없음.
+- 기존 구현 파일8개 수정. 패널 아이콘/rail, 편집 입력 우선 배치, 기본 배치 버튼 제거, 제작 전용 높이와 내부 스크롤 적용.
+- 전체 typecheck/lint/build/diff 통과. UI 수정 인라인 검증45개(19+16+10), 최초147개와 구분. 실제 브라우저 레이아웃 실측은 미실시.
+- current는 Active Task 없음으로 갱신. 상세 실행/학습/제한은 완료 보고서의 T05~T07 UI 수정 절에 기록한다.

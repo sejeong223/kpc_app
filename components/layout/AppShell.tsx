@@ -15,6 +15,7 @@ const SIDEBAR_ID = "workspace-sidebar";
 
 const useStyles = makeStyles({
   root: { "--nav-sidebar-width": "200px", minHeight: "100svh" },
+  productionRoot: { height: "100dvh", minHeight: 0 },
   collapsed: { "@media (min-width: 761px)": { "--nav-sidebar-width": "64px" } },
   mainColumn: {
     display: "flex",
@@ -32,9 +33,10 @@ const useStyles = makeStyles({
     padding: "var(--layout-page-inset)",
     ":focus": { outlineStyle: "none" },
   },
+  productionColumn: { height: "100%", minHeight: 0 },
   productionContent: {
     maxWidth: "none", margin: 0, padding: 0, width: "100%", display: "flex",
-    flexDirection: "column", minHeight: "100svh",
+    flexDirection: "column", flex: "1 1 0%", minHeight: 0,
     "@media (max-width: 760px)": { padding: 0 },
   },
   adminContent: { backgroundColor: "var(--kpc-bg)" },
@@ -75,6 +77,7 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
+  const isProduction = pathname === "/workspace/write";
   const previousPathname = useRef(pathname);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -143,7 +146,7 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
 
   return (
     <WorkspaceNavigationProvider value={{ sidebarId: SIDEBAR_ID, triggerId: `${SIDEBAR_ID}-trigger`, menuOpen, toggleMenu: () => { controller?.suspendUi(); setMenuOpen(open => !open); } }}>
-    <div className={mergeClasses(styles.root, sidebarCollapsed && styles.collapsed)}>
+    <div className={mergeClasses(styles.root, sidebarCollapsed && styles.collapsed, isProduction && styles.productionRoot)}>
       <DadamThemeScope>
         <a className={styles.skipLink} href="#main-content">본문으로 이동</a>
         {menuOpen && (
@@ -158,11 +161,11 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
           onClose={closeMenu}
         />
       </DadamThemeScope>
-      <div className={styles.mainColumn} inert={menuOpen}>
+      <div className={mergeClasses(styles.mainColumn, isProduction && styles.productionColumn)} inert={menuOpen}>
         <main id="main-content" ref={mainRef} className={mergeClasses(
           styles.content,
           ["/workspace/users", "/workspace/policy", "/workspace/audit", "/workspace/dashboard"].includes(pathname) && styles.adminContent,
-          pathname === "/workspace/write" && styles.productionContent,
+          isProduction && styles.productionContent,
         )} tabIndex={-1}>{children}</main>
         <ProjectHeaderToaster />
       </div>

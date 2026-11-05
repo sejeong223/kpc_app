@@ -1,10 +1,10 @@
 # Phase: P01 제작 화면 본문 통합
 
 - Date: 2026-11-05
-- Status: in_progress
+- Status: done
 - Plan: [제작 편집 패널](../../../plans/2026-11-05-production-editor-panels.md)
 - Decision: [확정 인터뷰](../../../decisions/2026-11-05-production-editor-panels.md)
-- 상태 의미: T01~T04 구현·검증 완료 이력 보존. 사용자 피드백 반영 T05~T06 완료, T07 진행.
+- 상태 의미: T01~T04 구현·검증 완료 이력 보존. 사용자 피드백 반영 T05~T07 구현·검증 완료.
 
 ## Tasks
 
@@ -16,13 +16,13 @@
 | T04 | `done` | 단일·다중 AI 비교 적용 및 통합 검증 | [T04](./T04-ai-integration.md) |
 | T05 | `done` | 패널 헤더 아이콘·접힌 세로 영역·기본 배치 버튼 제거 | [T05](./T05-panel-collapse-controls.md) |
 | T06 | `done` | 중앙 상단 편집 입력과 상태별 노출 정리 | [T06](./T06-editor-visibility.md) |
-| T07 | `in_progress` | 제작 화면 높이 제한·패널 내부 스크롤·통합 검증 | [T07](./T07-viewport-scroll.md) |
+| T07 | `done` | 제작 화면 높이 제한·패널 내부 스크롤·통합 검증 | [T07](./T07-viewport-scroll.md) |
 
 ## Progress
 
-- done: 6/7 (active: T07)
-- 남은 순서: T05 → T06 → T07. T01~T04는 다시 실행하지 않는다. 각 Task의 지정 검증과 한국어 커밋 후 다음으로 이동한다.
-- 최초 T01~T04에서 전체 typecheck/lint/build·diff와 인라인 검증147개 통과. T05 타입/lint/diff 및 인라인19개 검증 통과. T06 타입/lint/diff 및 인라인16개 검증 통과. T07 검증 대기. 실제 브라우저 검증 미실시.
+- done: 7/7 (active: 없음)
+- T01~T07 완료. 남은 Task 없음. 완료 작업을 다시 실행하지 않는다.
+- 최초 T01~T04에서 전체 typecheck/lint/build·diff와 인라인 검증147개 통과. T05 타입/lint/diff 및 인라인19개 검증 통과. T06 타입/lint/diff 및 인라인16개 검증 통과. T07 전체 typecheck/lint/build/diff 및 인라인10개 검증 통과. UI 수정 검증 합계45개. 실제 브라우저 검증 미실시.
 - D11~D13과 T05~T07이 최초 청사진의 상단 토글·기본 배치 버튼·최소420px 높이 계산 및 편집기 배치 규칙을 대체한다.
 
 ## Persistent Rules

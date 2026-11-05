@@ -17,9 +17,9 @@ import { useComments } from "./CommentsProvider";
 
 const DRAFT_ID = "pending-comment";
 const useStyles = makeStyles({
-  surface: { position: "relative", flex: 1, width: "100%", minHeight: "100svh", overflow: "visible", backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1, ":focus": { outline: "none" } },
+  surface: { position: "relative", display: "flex", flexDirection: "column", flex: "1 1 0%", width: "100%", minHeight: 0, minWidth: 0, overflow: "visible", backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1, ":focus": { outline: "none" } },
   creating: { cursor: "crosshair" },
-  intro: { padding: "var(--layout-canvas-tools-inset)", display: "flex", flexDirection: "column", gap: "var(--layout-control-gap)" },
+  intro: { padding: "var(--layout-canvas-tools-inset)", display: "flex", flexDirection: "column", flexShrink: 0, minHeight: 0, maxHeight: "50%", overflowY: "auto", overscrollBehavior: "contain", gap: "var(--layout-control-gap)" },
   canvasTools: { display: "flex", alignItems: "center", justifyContent: "flex-start", gap: "var(--layout-control-gap)" },
   text: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, margin: 0 },
   alert: { position: "relative", zIndex: 3, margin: "var(--layout-canvas-tools-inset)", padding: "var(--layout-card-inset)", border: `1px solid ${tokens.colorStatusDangerBorder1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
@@ -153,9 +153,9 @@ export default function CommentsWorkspace(): React.ReactElement {
       </section>}
       {state.pinMode && <p className={styles.text} role="status">의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
       {(state.status === "idle" || state.status === "loading") && <p className={styles.text} role="status">코멘트를 불러오는 중입니다.</p>}
+      {state.error && !state.view && <div className={styles.alert} role="alert" data-comment-control>{state.error.message} {controller && <Button size="small" disabled={state.busy || state.status === "loading"} onClick={() => void controller.load()}>다시 불러오기</Button>}</div>}
     </div>
     <p className={styles.hidden} id="comment-pin-help">{capabilities.readOnly ? "핀을 선택하면 의견을 읽을 수 있습니다." : "핀은 드래그하거나 Alt와 방향키로 이동할 수 있습니다. Shift를 함께 누르면 더 크게 이동합니다."}</p>
-    {state.error && !state.view && <div className={styles.alert} role="alert" data-comment-control>{state.error.message} {controller && <Button size="small" disabled={state.busy || state.status === "loading"} onClick={() => void controller.load()}>다시 불러오기</Button>}</div>}
     <ProductionScreen />
     {measurement && pins.map(pin => {
       const tip = tipFor(pin.id)!;

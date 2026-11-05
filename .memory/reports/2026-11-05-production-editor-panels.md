@@ -86,3 +86,37 @@
 - 브라우저·CUA·E2E·스크린샷·검증용 dev server를 실행하지 않았다. 실제 반응형 배치·핀 위치·한글 IME·드래그·PDF/이미지 렌더링을 검증했다고 주장하지 않는다. jsdom 검사는 실제 브라우저 검증과 다르다.
 - 빌드에서 기존 `baseline-browser-mapping` 데이터가 오래되었다는 경고가 나왔다. 빌드 차단 오류는 아니며, 이 작업에서 패키지는 변경하지 않았다. 필요하면 의존성 유지보수 작업에서 갱신할 수 있다.
 - 그 외 범위 밖 결함 발견: 특이사항 없음. 저장 데이터 초기화·기존 파일 일괄 삭제·push·배포는 하지 않았다.
+
+## T05~T07 UI 수정 — 2026-11-05
+
+사용자가 지적한 상단 텍스트 토글, 편집 입력의 식별성, 기본 배치 버튼, 페이지 전체 스크롤 문제를 기존 계획에 추가하여 순차 구현했다. 최초 T01~T04 기록은 이력으로 보존한다.
+
+| Task | 커밋 | 결과 |
+| --- | --- | --- |
+| T05 | 53555be | 패널 헤더 접기 아이콘·접힌 rail·모바일 아이콘 전환, 상단 토글/기본 배치 버튼 제거 |
+| T06 | 15c2aaa | 편집 입력→반영→문서 도구, AI/Template보다 직접 편집 우선, 상태별 안내 |
+| T07 | 이 보고서를 포함한 Task: T07-viewport-scroll 커밋 | 제작 셸부터 높이 연결, 패널 내부 스크롤, 오류/undo 내부 배치 |
+
+새 공용 컴포넌트·구현 파일·의존성·DB/서비스 변경 없음. 기존 구현8개 파일을 수정했다.
+
+### 검증
+
+- Task별 typecheck/변경 파일 lint/diff, 최종 전체 `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build` 통과.
+- T05 실제 ProductionPanels/useProductionPanels + UI 대역:19개. 토글/포커스/aria 연결/DOM 유지/모바일과 데스크톱 상태 독립/너비와 namespace 복원.
+- T06 실제 SlideContentEditor/document-editor + UI 스타일 대역:16개. 입력 순서·구조와 ID 보존·dirty/readonly/busy/error/reset/도구 펼침 중 DOM 유지.
+- T07 실제 AppShell/ProductionScreen + context/query/UI 대역:10개. 경로 한정 variant, 안내/오류/접근 거부 중 Flow 유지 및 권한 전달.
+- 합계45개. stdin으로만 실행, 새 테스트 파일/폴더 없음. CSS 수치 복제 테스트나 jsdom 레이아웃 측정 없음.
+- 각 Task Execution Record에 반응형/선택 상태/높이 경계 정적 검토표 기록. 실제 브라우저 배치·scrollbar·핀·IME·드래그 실측은 미실시.
+
+### 핵심 변경과 알아야 할 점
+
+- `ProductionPanels.tsx`는 `left(toggleButton)`/`right(toggleButton)`으로 상태와 제목 행을 연결한다. `SlideNavigator.tsx`와 `SourcePanel.tsx`는 전달받은 아이콘을 고정 헤더에 배치하고 본문만 스크롤한다. 접기 때 JSX 트리를 제거하지 않아 중앙 초안과 좌우 DOM을 보존한다.
+- `SlideContentEditor.tsx`는 입력을 항상 펼치고 `<details><summary>문서 도구</summary>…</details>`만 기본으로 접는다. title/lead/blocks 변환과 원시 DOM 수명은 그대로다.
+- `ProductionWorkspace.tsx`는 기존 ActiveSlide에 `aiControls`/`aiFeedback`을 전달해 직접 편집 다음에 보이게 한다. 편집 세션 key와 dirty guard를 유지했고 다중 선택에서 한 장씩 편집하는 버튼도 기존 chooseSlide를 거친다.
+- `AppShell.tsx`는 `isProduction`일 때만 root/column/main의 높이를 제한한다. `CommentsWorkspace.tsx`, `ProductionScreen.tsx`, `ProductionWorkspace.tsx`, `ProductionPanels.tsx`까지 `flex: 1; min-height: 0`을 연결한다. 자식 overflow만 지정하면 상위의 기본 최소 크기 때문에 페이지가 계속 늘어날 수 있어 부모도 함께 수정했다.
+- 코멘트 surface의 `overflow: visible`, 비율 좌표·핀 측정·팝업 위치는 유지한다. scrollbar를 없애려고 전역 body나 코멘트 surface를 잘라내면 팝업/핀을 가릴 수 있다.
+- 헤더 기능·선택 provider·서비스 권한·저장 모델·원문 버전·AI 검토/적용 계약은 변경하지 않았다. 새 데이터나 예시 슬라이드를 자동 생성하지 않는다.
+
+### 범위 밖 발견
+
+기존 baseline-browser-mapping의 데이터 갱신 경고는 빌드 성공과 함께 남아 있다. 이번 UI 범위에서 패키지를 변경하지 않았으며 필요 시 의존성 유지보수에서 다룬다. 그 외 특이사항 없음. push/배포·DB 초기화·브라우저 검증·tests/ 생성/복원은 수행하지 않았다.
