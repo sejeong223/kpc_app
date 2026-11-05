@@ -13,6 +13,7 @@ import {
 } from "@/lib/workspace/production/storage-schemas";
 import { workspaceAssert as check } from "@/lib/workspace/production/errors";
 import type { WatchRequest } from "./WorkspaceDatabase";
+import { createHtmlDemoBundle } from "./workspace-demo";
 
 export function readWorkspaceBundle(
   tx: IDBTransaction,
@@ -38,13 +39,15 @@ export function readWorkspaceBundle(
       "NOT_FOUND",
       "저장된 프로젝트 작업이 없습니다.",
     );
-    const fileState = files ?? createEmptyFileProject(context),
-      workspace = state ?? createWorkspaceState(context, fileState);
+    const demo = !files && !state ? createHtmlDemoBundle(context) : null;
+    const fileState = files ?? demo?.files ?? createEmptyFileProject(context),
+      workspace = state ?? demo?.state ?? createWorkspaceState(context, fileState);
     check(
       fileState.currentRound === workspace.currentRound,
       "STORAGE",
       "파일과 제작 회차가 일치하지 않습니다.",
     );
+    if (demo) watch(tx.objectStore("blobs").add(demo.original), () => {});
     if (!files)
       watch(
         tx

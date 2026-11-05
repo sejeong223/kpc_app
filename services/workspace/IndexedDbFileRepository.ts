@@ -166,7 +166,7 @@ export class IndexedDbFileRepository implements FileRepository {
   loadViewContext(projectId: string): Promise<FileViewContext> {
     const context = this.context(this.project(projectId));
     return this.transact(
-      ["projects", "workspaces"],
+      ["projects", "workspaces", "blobs"],
       "readwrite",
       (tx, done, watch) => {
         readWorkspaceBundle(tx, context, watch, (bundle) => {

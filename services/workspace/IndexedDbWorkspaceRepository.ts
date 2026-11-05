@@ -81,7 +81,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
   load(projectId: string): Promise<WorkspaceBundle> {
     const context = this.context(projectId);
     return this.database.transact(
-      ["projects", "workspaces"],
+      ["projects", "workspaces", "blobs"],
       "readwrite",
       (tx, done, watch) =>
         readWorkspaceBundle(tx, context, watch, (value) => {
@@ -131,7 +131,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
     this.context(projectId);
     assertAccess();
     return this.database.transact(
-      ["projects", "workspaces", "workspaceBlobs"],
+      ["projects", "workspaces", "workspaceBlobs", "blobs"],
       "readwrite",
       (tx, done, watch) => {
         readWorkspaceBundle(tx, context, watch, (bundle) => {

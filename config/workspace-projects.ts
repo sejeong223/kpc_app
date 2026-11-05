@@ -1,4 +1,5 @@
 import { createAdminSeed } from "@/config/admin-seed";
+import { HTML_DEMO_PROJECT_ID, HTML_DEMO_PROJECT_NAME } from "@/config/production-html-demo";
 import { WorkspaceFileError } from "@/lib/workspace/files/errors";
 import { canAccessFileProject } from "@/lib/workspace/files/permissions";
 import {
@@ -60,10 +61,23 @@ export function createWorkspaceProjectCatalog(
     })
     .filter((project) => canAccessFileProject(scope, project));
 
+  const self = seed.users.find(user => user.id === "u-self");
+  projects.push(WorkspaceProjectSchema.parse({
+    id: HTML_DEMO_PROJECT_ID, number: "HTML-DEMO", name: HTML_DEMO_PROJECT_NAME,
+    departmentId: self?.departmentId ?? null, pmId: scope.actor.id, pmName: scope.actor.name,
+    memberIds: [scope.actor.id],
+  }));
+
   return {
     members: (projectId) => {
       const project = projects.find((p) => p.id === projectId);
       if (!project) return [];
+      if (projectId === HTML_DEMO_PROJECT_ID) return [{
+        id: scope.actor.id, adminUserId: "u-self", name: scope.actor.name, role: scope.actor.role,
+        departmentId: project.departmentId,
+        departmentName: seed.departments.find(d => d.id === project.departmentId)?.name ?? "",
+        email: self?.email ?? null,
+      }];
       return seed.users
         .filter(
           (u) =>
