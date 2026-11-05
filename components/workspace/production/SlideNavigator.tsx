@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { DadamButton, DadamCheckbox, DadamSelect } from "@/components/ui/DadamControls";
 import type { ProjectView, WorkspaceOperation } from "@/types/workspace-production";
@@ -30,7 +30,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       else if (modifier && key === "d" && active?.editable) { e.preventDefault(); onCommand({ type: "duplicate-slide", id: active.slide.id, targetSectionId: active.section.id, afterId: active.slide.id }); }
       else if (key === "delete" && editable(selectedIds)) { e.preventDefault(); onRemove([...selectedIds]); }
     }}>
-    <h2 className="tw:mt-0 tw:text-sm">슬라이드 <span className="tw:font-normal tw:text-(--kpc-text-muted)">{rows.length}장</span></h2>
+    <h2 className="tw:mt-0 tw:text-sm">슬라이드 <span className="tw:font-normal tw:text-(--kpc-muted)">{rows.length}장</span></h2>
     <div className="tw:mb-3 tw:flex tw:flex-wrap tw:gap-1"><DadamButton size="small" disabled={busy || !rows.length} onClick={() => props.onSelectMany(rows.map(r => r.slide.id))}>모두 선택</DadamButton><DadamButton size="small" disabled={busy || !selectedIds.length} onClick={() => props.onSelectMany([])}>선택 해제</DadamButton><span className="tw:text-xs">{selectedIds.length}장 선택</span></div>
     {selectedIds.length > 0 && <div className="tw:mb-3 tw:flex tw:flex-wrap tw:gap-1">
       <DadamButton size="small" disabled={busy || !canCopy(selectedIds)} onClick={() => onCopy([...selectedIds])}>복사</DadamButton>
@@ -47,7 +47,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
           <ProductionPreview view={view} slide={slide} snapshotId={snapshotId} mode="thumbnail" number={number} priority={slide.id === activeId} />
           <span className="tw:mt-1 tw:block tw:truncate tw:text-xs tw:font-semibold">{slide.content.title || "제목 없음"}</span>
         </button>
-        <p className="tw:mb-0 tw:mt-1 tw:text-xs tw:text-(--kpc-text-muted)">{row.mine ? "내 담당 · " : ""}{section.locked ? "작성 완료 · 고정" : section.state === "done" ? "작성 완료" : "작성 중"}{!row.editable && " · 읽기 전용"}</p>
+        <p className="tw:mb-0 tw:mt-1 tw:text-xs tw:text-(--kpc-muted)">{row.mine ? "내 담당 · " : ""}{section.locked ? "작성 완료 · 고정" : section.state === "done" ? "작성 완료" : "작성 중"}{!row.editable && " · 읽기 전용"}</p>
         {props.contextId === slide.id && <div role="group" aria-label={`${number}번 슬라이드 작업`} className="tw:mt-2 tw:flex tw:flex-wrap tw:gap-1">
           <DadamButton size="small" disabled={busy || !canCopy(menuIds)} onClick={() => onCopy(menuIds)}>복사</DadamButton>
           {row.editable && <>

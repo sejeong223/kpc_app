@@ -17,6 +17,7 @@ export default function ProposalReview({
   onApply,
   onKeep,
   onRegenerate,
+  blockedReason = null,
 }: {
   view: ProjectView;
   proposal: WorkspaceProposal;
@@ -25,6 +26,7 @@ export default function ProposalReview({
   onApply(ids: string[]): void;
   onKeep(): void;
   onRegenerate(): void;
+  blockedReason?: string | null;
 }) {
   const [selected, setSelected] = useState(() =>
       proposal.items
@@ -35,11 +37,11 @@ export default function ProposalReview({
       proposalItemAllowed(view, proposal, i),
     ),
     ids = selected.filter((id) => eligible.some((i) => i.id === id)),
-    stale = proposal.baseRevision !== view.state.revision;
+    stale = proposal.projectId !== view.project.id || proposal.round !== view.state.currentRound || proposal.baseRevision !== view.state.revision;
   return (
     <ModalFrame
       open
-      title="제안 비교 · Mock"
+      title="제안 비교 · 시연용 AI"
       subtitle="실제 AI·파일 분석 결과가 아닙니다. 선택한 항목만 검토 후 적용합니다."
       contentKey={proposal.id}
       width={1040}
@@ -57,7 +59,7 @@ export default function ProposalReview({
           {eligible.length > 0 && (
             <DadamButton
               appearance="primary"
-              disabled={busy || !ids.length || stale}
+              disabled={busy || !ids.length || stale || !!blockedReason}
               onClick={() => onApply(ids)}
             >
               선택 {ids.length}개 적용
@@ -72,6 +74,7 @@ export default function ProposalReview({
         </p>
       )}
       <WorkspaceErrorText error={error} />
+      {blockedReason && <p role="alert">{blockedReason} 대상을 다시 선택한 뒤 요청하거나 현재 내용으로 다시 생성해 주세요.</p>}
       {proposal.items.map((item) => {
         const allowed = proposalItemAllowed(view, proposal, item);
         return (
@@ -84,7 +87,7 @@ export default function ProposalReview({
                 <DadamCheckbox
                   label={item.title + " 적용"}
                   checked={ids.includes(item.id)}
-                  disabled={busy || stale}
+                  disabled={busy || stale || !!blockedReason}
                   onChange={(_, d) =>
                     setSelected((v) =>
                       d.checked

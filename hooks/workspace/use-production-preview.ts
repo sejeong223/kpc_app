@@ -32,7 +32,7 @@ export function useSlideImageUrl(view: ProjectView, slide: ProposalSlide, blockI
     if (!enabled || !query.data || query.error) return;
     const blob = query.data.blob, url = URL.createObjectURL(blob);
     const frame = requestAnimationFrame(() => setObject({ key, blob, url }));
-    return () => { cancelAnimationFrame(frame); URL.revokeObjectURL(url); };
+    return () => { cancelAnimationFrame(frame); URL.revokeObjectURL(url); setObject(previous => previous?.url === url ? null : previous); };
   }, [enabled, query.data, query.error, key]);
   return { url: enabled && !query.error && object?.key === key && object.blob === query.data?.blob ? object.url : null,
     loading: enabled && query.isPending, error: query.error };

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { DadamButton } from "@/components/ui/DadamControls";
 import { useFileWorkspace, useWorkspaceFileHistory } from "@/hooks/workspace/use-workspace-files";
@@ -18,7 +18,7 @@ export default function SourcePanel({ view, slide, snapshotId, number }: {
   if (preview && preview.scope !== scope) setPreview(null);
   const cards = selectProductionSources(view, slide, query.data ?? null), section = view.state.body.sections.find(s => s.id === slide?.sectionId);
   return <section aria-label="슬라이드 출처" className="tw:min-w-0 tw:p-4">
-    <header><h2 className="tw:m-0 tw:text-sm tw:font-bold">출처</h2>{slide && <p className="tw:mt-1 tw:text-xs tw:text-(--kpc-text-muted)">{number ? `${number}번 슬라이드 · ` : ""}{section?.title}</p>}</header>
+    <header><h2 className="tw:m-0 tw:text-sm tw:font-bold">출처</h2>{slide && <p className="tw:mt-1 tw:text-xs tw:text-(--kpc-muted)">{number ? `${number}번 슬라이드 · ` : ""}{section?.title}</p>}</header>
     {!slide ? <p className="tw:text-sm">슬라이드를 선택하면 출처를 볼 수 있습니다.</p> : <>
       {query.isPending && <p role="status" className="tw:text-sm">자료 정보를 불러오는 중입니다.</p>}
       <WorkspaceErrorText error={query.error} />
@@ -28,12 +28,12 @@ export default function SourcePanel({ view, slide, snapshotId, number }: {
         return <section key={group} className="tw:mt-5"><h3 className="tw:text-xs tw:font-semibold">{group === "rfp" ? "RFP 근거" : "참조 자료"} · {items.length}</h3>
           {items.map(card => <article key={card.id} className="tw:mb-3 tw:rounded-lg tw:border tw:border-(--kpc-line) tw:bg-(--kpc-bg) tw:p-3">
             <strong className="tw:break-words tw:text-sm">{card.title}</strong>
-            <p className="tw:my-1 tw:text-xs tw:text-(--kpc-text-muted)">{card.provenance === "mock" && "시연 자료"}{card.provenance === "mock" && card.page !== null && " · "}{card.page !== null && `${card.page}쪽`}</p>
+            <p className="tw:my-1 tw:text-xs tw:text-(--kpc-muted)">{card.provenance === "mock" && "시연 자료"}{card.provenance === "mock" && card.page !== null && " · "}{card.page !== null && `${card.page}쪽`}</p>
             {card.quote !== null && <blockquote className="tw:mx-0 tw:my-2 tw:whitespace-pre-wrap tw:break-words tw:text-sm">{card.quote}</blockquote>}
             {card.resource && card.round !== null ? <DadamButton data-comment-control size="small" onClick={() => setPreview({ scope, resource: card.resource!, round: card.round! })}>원문 열기</DadamButton> :
-              card.missingReason && <p className="tw:mb-0 tw:text-xs tw:text-(--kpc-text-muted)">{card.missingReason}</p>}
+              card.missingReason && <p className="tw:mb-0 tw:text-xs tw:text-(--kpc-muted)">{card.missingReason}</p>}
           </article>)}
-          {!items.length && (group === "rfp" || (!query.isPending && !query.error)) && <p className="tw:text-xs tw:text-(--kpc-text-muted)">연결된 {group === "rfp" ? "RFP 근거가" : "참조 자료가"} 없습니다.</p>}
+          {!items.length && (group === "rfp" || (!query.isPending && !query.error)) && <p className="tw:text-xs tw:text-(--kpc-muted)">연결된 {group === "rfp" ? "RFP 근거가" : "참조 자료가"} 없습니다.</p>}
         </section>;
       })}
     </>}

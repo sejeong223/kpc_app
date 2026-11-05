@@ -27,7 +27,8 @@ function textOf(node: Node): string {
   return children.reduce((text, child, index) => {
     const block = /^(DIV|P)$/.test(child.nodeName);
     const priorBlock = index > 0 && /^(DIV|P)$/.test(children[index - 1].nodeName);
-    return text + (index > 0 && (block || priorBlock) && !text.endsWith("\n") ? "\n" : "") + textOf(child);
+    const emptyLine = priorBlock && textOf(children[index - 1]) === "";
+    return text + (index > 0 && (block || priorBlock) && (!text.endsWith("\n") || emptyLine) ? "\n" : "") + textOf(child);
   }, "");
 }
 export function createSlideDocument(content: SlideContent, document: Document): DocumentFragment {

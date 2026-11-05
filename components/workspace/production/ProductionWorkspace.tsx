@@ -22,6 +22,7 @@ import SlideContentEditor, { type DocumentEditorState } from "./SlideContentEdit
 import SlideTemplatePicker from "./SlideTemplatePicker";
 import ProductionPreview from "./ProductionPreview";
 import SourcePanel from "./SourcePanel";
+import ProductionAiPanel from "./ProductionAiPanel";
 
 export interface ProductionWorkspaceProps extends WorkspaceSceneProps {
   onPropose?(request: MockRequest): void; aiFeedback?: React.ReactNode; aiBusy?: boolean;
@@ -79,7 +80,7 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
     <DraftProtection dirty={dirty} busy={busy} onSave={canSave ? save : undefined} onDiscard={discard} />
   </div>;
 }
-export default function ProductionWorkspace({ view, selection, readOnlyError = null, accessDenied = false, aiBusy = false, aiFeedback }: ProductionWorkspaceProps): React.ReactElement {
+export default function ProductionWorkspace({ view, selection, readOnlyError = null, accessDenied = false, aiBusy = false, aiFeedback, onPropose }: ProductionWorkspaceProps): React.ReactElement {
   const runtime = useWorkspaceRuntime(), { commitSelection } = useWorkspaceSelection(), command = useWorkspaceCommand();
   const batch = useWorkspaceAction<WorkspaceReceipt, SlideBatchRequest>((r, input) => r.service.editSlides(input)), clipboard = useSlideClipboard();
   const rows = selectProductionSlides(view), active = rows.find(r => r.slide.id === selection.slideId) ?? rows.find(r => r.section.id === selection.sectionId) ?? null;
@@ -166,8 +167,13 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
       onState={state => { if (section) execute({ type: "set-section-state", id: section.id, state }); }} onUnlock={() => { if (section) execute({ type: "unlock-section", id: section.id }); }} />
       {section && !readOnly && view.capabilities.editableSectionIds.includes(section.id) && <div data-comment-control className="tw:mb-3 tw:flex tw:gap-2"><DadamButton size="small" disabled={busy} onClick={() => execute({ type: "add-slide", sectionId: section.id, afterId: current?.id ?? null, template: null })}>슬라이드 추가</DadamButton><DadamButton size="small" disabled={busy || !clipboard.getToken()} onClick={() => paste(section.id, current?.id ?? null)}>붙여넣기</DadamButton></div>}
     </>}
-    {editingSlide ? <ActiveSlide key={`${view.project.id}:${selection.snapshotId ?? "current"}:${editingSlide.id}`} view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy} onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy} /> : !accessDenied && <p className="tw:text-sm">{section ? "슬라이드를 추가해 작성을 시작하세요." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>}
+    {ids.length > 1 && !accessDenied && <h2 className="tw:text-sm">선택한 슬라이드 {ids.length}장</h2>}
+    {!accessDenied && !readOnly && onPropose && (ids.length > 0 || (!!section && !view.state.body.slides.some(s => s.sectionId === section.id))) && <div className="tw:mb-(--layout-section-gap)"><ProductionAiPanel key={JSON.stringify([ids, section?.id, view.state.currentRound])} view={view} slideIds={ids} sectionId={section?.id ?? null} busy={busy} onPropose={onPropose} /></div>}
+    <div hidden={ids.length > 1 && !session?.dirty}>
+      {editingSlide ? <ActiveSlide key={`${view.project.id}:${selection.snapshotId ?? "current"}:${editingSlide.id}`} view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy} onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy} /> : !accessDenied && <p className="tw:text-sm">{section ? "슬라이드를 추가해 작성을 시작하세요." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>}
+    </div>
     {aiFeedback}
+    {ids.length > 1 && !accessDenied && <div className="tw:mt-(--layout-section-gap) tw:space-y-(--layout-section-gap)">{rows.filter(row => ids.includes(row.slide.id)).map(row => <section key={row.slide.id} aria-label={`${row.number}번 선택 슬라이드`}><h3 className="tw:text-sm">{row.number}. {row.slide.content.title || "제목 없음"} <small>{row.section.title}</small></h3><ProductionPreview view={view} slide={row.slide} snapshotId={selection.snapshotId} number={row.number} lazy priority={row.slide.id === current?.id} /></section>)}</div>}
   </>;
   return <div className="tw:min-w-0">
     <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}

@@ -33,7 +33,7 @@ export function selectProductionSources(view: ProjectView, slide: ProposalSlide 
   });
   return cards.concat(slide.sources.filter(s => s.kind === "file").map(ref => {
     const resource = files?.project.id === view.project.id ? files.rounds.find(r => r.number === ref.fileRound)?.resources.find(r => r.asset.id === ref.targetId && r.version.assetId === ref.targetId && r.version.id === ref.versionId) ?? null : null;
-    return { id: `file:${ref.id}`, group: "reference", title: resource?.version.label ?? "원본 확인 필요", page: ref.page, quote: ref.quote,
+    return { id: `file:${ref.id}`, group: "reference", title: resource?.version.label ?? (files === null ? "참조 자료" : "원본 확인 필요"), page: ref.page, quote: ref.quote,
       provenance: ref.provenance, resource, round: resource ? ref.fileRound : null,
       missingReason: resource || files === null ? null : "연결된 회차·자료 버전을 찾을 수 없습니다." };
   }));

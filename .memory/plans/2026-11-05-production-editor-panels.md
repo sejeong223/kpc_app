@@ -1,7 +1,7 @@
 # Plan: 제작 화면 슬라이드 목록·문서 편집·출처 패널
 
 - Date: 2026-11-05
-- Status: in_progress
+- Status: done
 - Decision: [확정 인터뷰](../decisions/2026-11-05-production-editor-panels.md)
 - Baseline: `8158744`; 계획 시 생산 코드 변경 없음. 이번 대화에서 만든 결정 문서만 미추적 상태였다.
 
@@ -15,7 +15,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 제작 본문 통합 — T01 완료, T02 진행 | [P01](../phases/2026-11-05-production-editor-panels/P01-production-editor/phase.md) |
+| P01 | `done` | 제작 본문 통합 — T01~T04 완료 | [P01](../phases/2026-11-05-production-editor-panels/P01-production-editor/phase.md) |
 
 ## Tasks and Dependencies
 
@@ -118,3 +118,10 @@ services/workspace/
 - Plan 1개, Phase 1개, 상세 Task 4개, 이전 current 원문 보관 1개를 작성하고 현재 포인터를 P01-T01로 전환한다.
 - 이전 current 원문은 `.memory/history/2026-11-05-before-production-editor-panels.md`에 그대로 보존한다. 원문 안의 상대 링크는 이전 `.memory/current.md` 위치 기준이다.
 - 계획 단계에서는 생산 코드·패키지·DB·테스트를 변경/실행하지 않는다. 문서 경로·필수 섹션·포인터·생산 코드 무변경만 확인한다.
+
+## Execution Complete
+
+- 2026-11-05: T01~T04 순차 구현·각 한국어 커밋 완료. 남은 작업 없음.
+- 전체 typecheck/lint/build, diff, 인라인 검증 집계 147개 통과.
+- [완료 보고서](../reports/2026-11-05-production-editor-panels.md)에 구현 파일·검증·학습 노트·미실시 범위 기록.
+- 브라우저 검증·실제 AI·RFP 파일 연결 모델·Template 없는 PPT 출력은 추가하지 않았다.

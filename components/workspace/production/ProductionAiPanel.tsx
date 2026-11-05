@@ -6,6 +6,7 @@ import {
   DadamSelect,
 } from "@/components/ui/DadamControls";
 import type { MockRequest, ProjectView } from "@/types/workspace-production";
+import { selectProductionSlides } from "@/lib/workspace/production/presentation";
 import { requestFor, workspaceCard } from "../shared/WorkspaceUi";
 const requests: readonly {
   label: string;
@@ -71,36 +72,42 @@ export default function ProductionAiPanel({
   slideIds,
   sectionId,
   onPropose,
+  busy = false,
 }: {
   view: ProjectView;
   slideIds: string[];
   sectionId: string | null;
   onPropose(request: MockRequest): void;
+  busy?: boolean;
 }) {
   const [instruction, setInstruction] = useState(""),
     [kind, setKind] = useState<"draft" | "polish" | "check">("polish"),
-    slides = view.state.body.slides.filter((s) => slideIds.includes(s.id)),
+    rows = selectProductionSlides(view).filter(row => slideIds.includes(row.slide.id)),
+    slides = rows.map(row => row.slide),
+    emptySection = !!sectionId && !view.state.body.slides.some(s => s.sectionId === sectionId),
     editable = slideIds.length
       ? slides.length === slideIds.length &&
         slides.every((s) =>
           view.capabilities.editableSectionIds.includes(s.sectionId),
         )
-      : !!sectionId && view.capabilities.editableSectionIds.includes(sectionId),
-    canCheck = view.capabilities.actions.outline;
+      : emptySection && !!sectionId && view.capabilities.editableSectionIds.includes(sectionId),
+    canCheck = view.capabilities.actions.outline && (slides.length > 0 || emptySection) && rows.every(row => !row.section.locked);
   const effectiveKind = !editable && canCheck ? "check" : kind;
   const send = (request: Pick<MockRequest, "kind" | "instruction">) => {
+    if (busy || !request.instruction.trim() || view.state.phase !== "writing" || (request.kind === "check" ? !canCheck : !editable) || (!slideIds.length && request.kind !== "draft")) return;
     onPropose({
       ...requestFor(view),
       ...request,
       slideIds,
-      sectionIds: slideIds.length ? [] : sectionId ? [sectionId] : [],
+      sectionIds: slideIds.length ? [] : emptySection && sectionId ? [sectionId] : [],
     });
   };
+  if (view.state.phase !== "writing") return null;
   return (
-    <details className={workspaceCard}>
-      <summary>작성 요청 · 선택 {slideIds.length}장</summary>
+    <details className={workspaceCard} data-comment-control open={slideIds.length > 1}>
+      <summary>시연용 AI 작성 요청 · {slideIds.length ? `선택 ${slideIds.length}장` : "빈 소목차 초안"}</summary>
       <p className="tw:text-xs">
-        {slides.map((s) => s.content.title || "제목 없음").join(" · ") ||
+        {rows.map(row => `${row.number}번 ${row.slide.content.title || "제목 없음"}`).join(" · ") ||
           view.state.body.sections.find((s) => s.id === sectionId)?.title}
       </p>
       {slides.map((slide) => (
@@ -121,9 +128,9 @@ export default function ProductionAiPanel({
       ))}
       <div className="tw:my-2 tw:flex tw:flex-wrap tw:gap-1">
         {requests
-          .filter((r) => (r.kind === "check" ? canCheck : editable))
+          .filter((r) => (slideIds.length > 0 || r.kind === "draft") && (r.kind === "check" ? canCheck : editable))
           .map((r) => (
-            <DadamButton key={r.label} size="small" onClick={() => send(r)}>
+            <DadamButton key={r.label} size="small" disabled={busy} onClick={() => send(r)}>
               {r.label}
             </DadamButton>
           ))}
@@ -132,7 +139,8 @@ export default function ProductionAiPanel({
         <>
           <DadamSelect
             aria-label="작성 요청 종류"
-            value={effectiveKind}
+            value={slideIds.length ? effectiveKind : "draft"}
+            disabled={busy}
             onChange={(_, d) =>
               setKind(
                 d.value === "draft"
@@ -146,33 +154,33 @@ export default function ProductionAiPanel({
             {editable && (
               <>
                 <option value="draft">초안</option>
-                <option value="polish">다듬기</option>
+                {slideIds.length > 0 && <option value="polish">다듬기</option>}
               </>
             )}
-            {canCheck && <option value="check">점검</option>}
+            {canCheck && slideIds.length > 0 && <option value="check">점검</option>}
           </DadamSelect>
           <label>
             추가 요청
             <DadamTextarea
               maxLength={4000}
               value={instruction}
+              disabled={busy}
               onChange={(_, d) => setInstruction(d.value)}
             />
           </label>
           <DadamButton
             disabled={
-              !instruction.trim() ||
-              (effectiveKind === "check" ? !canCheck : !editable)
+              busy || !instruction.trim() ||
+              (slideIds.length > 0 && effectiveKind === "check" ? !canCheck : !editable)
             }
-            onClick={() => send({ kind: effectiveKind, instruction })}
+            onClick={() => send({ kind: slideIds.length ? effectiveKind : "draft", instruction })}
           >
             비교 제안 만들기
           </DadamButton>
         </>
       )}
       <p className="tw:text-xs tw:text-(--kpc-muted)">
-        Mock 요청입니다. 파일 분석·자동 배치·토큰 차감은 실행하지 않으며 결과를
-        비교한 뒤 적용합니다.
+        시연용 AI입니다. 결과를 비교한 뒤 선택한 변경만 적용합니다.
       </p>
     </details>
   );

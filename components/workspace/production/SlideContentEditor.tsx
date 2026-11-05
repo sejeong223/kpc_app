@@ -1,5 +1,5 @@
 "use client";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { DadamButton } from "@/components/ui/DadamControls";
 import { dadamUi } from "@/lib/ui/dadam-theme";
@@ -41,19 +41,20 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
   const [state, setState] = useState(clean), [cursor, setCursor] = useState<Cursor>({ blockId: null, row: 0, col: 0, item: 0 });
   const [notice, setNotice] = useState<string | null>(null), [plainPaste, setPlainPaste] = useState<string | null>(null);
   const selection = useRef<Range | null>(null);
+  const resetFrame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(resetFrame.current), []);
   const locked = readOnly || busy, blocked = locked || state.composing;
   const updateState = (next: DocumentEditorState) => { stateRef.current = next; setState(next); onEditorStateChange?.(next); };
   useLayoutEffect(() => {
     const node = root.current; if (!node) return;
-    let frame = 0;
     if (!initialized.current || appliedReset.current !== resetKey || (!stateRef.current.dirty && !stateRef.current.composing && JSON.stringify(content.current) !== JSON.stringify(value))) {
       if (stateRef.current.composing) return;
       node.replaceChildren(createSlideDocument(value, node.ownerDocument));
       content.current = value; baseline.current = JSON.stringify(value); appliedReset.current = resetKey; initialized.current = true; stateRef.current = clean; selection.current = null;
-      frame = requestAnimationFrame(() => { setState(clean); setPlainPaste(null); setNotice(null); onEditorStateChange?.(clean); });
+      cancelAnimationFrame(resetFrame.current);
+      resetFrame.current = requestAnimationFrame(() => { setState(clean); setPlainPaste(null); setNotice(null); onEditorStateChange?.(clean); });
     }
-    node.querySelectorAll<HTMLElement>("[data-document-editable]").forEach(el => { el.contentEditable = String(!readOnly && !busy); el.setAttribute("aria-readonly", String(readOnly || busy)); });
-    return () => cancelAnimationFrame(frame);
+    node.querySelectorAll<HTMLElement>("[data-document-editable]").forEach(el => { el.setAttribute("contenteditable", String(!readOnly && !busy)); el.setAttribute("aria-readonly", String(readOnly || busy)); });
   }, [value, resetKey, readOnly, busy, onEditorStateChange]);
   const publish = (): SlideContent | null => {
     if (!root.current) return null;
@@ -71,6 +72,10 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
     const block = element?.closest<HTMLElement>("[data-block-id]"), cell = element?.closest("td,th"), row = cell?.parentElement, listItem = element?.closest("li");
     setCursor({ blockId: block?.dataset.blockId ?? null, row: row?.parentElement ? Array.from(row.parentElement.children).indexOf(row) : 0,
       col: cell && row ? Array.from(row.children).indexOf(cell) : 0, item: listItem?.parentElement ? Array.from(listItem.parentElement.children).indexOf(listItem) : 0 });
+  };
+  const rememberTarget = (target: EventTarget) => {
+    const block = (target as Element).closest<HTMLElement>("figure[data-block-id],ul[data-block-id][tabindex]");
+    if (block) setCursor({ blockId: block.dataset.blockId ?? null, row: 0, col: 0, item: 0 }); else remember();
   };
   const replace = (next: SlideContent) => {
     if (!root.current) return;
@@ -112,13 +117,7 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
       </>}
       {onImage && <label className={styles.meta}>이미지 <input type="file" accept="image/png,image/jpeg" disabled={blocked} onChange={e => { const file = e.target.files?.[0]; if (file) onImage(file); e.target.value = ""; }} /></label>}
     </div>}
-    <div ref={root} className={styles.paper} role="group" aria-label="제목·리딩 메시지·본문" onFocusCapture={e => {
-      const target = (e.target as Element).closest<HTMLElement>("figure[data-block-id],ul[data-block-id][tabindex]");
-      if (target) setCursor({ blockId: target.dataset.blockId ?? null, row: 0, col: 0, item: 0 }); else remember();
-    }} onPointerUp={e => {
-      const target = (e.target as Element).closest<HTMLElement>("figure[data-block-id],ul[data-block-id][tabindex]");
-      if (target) setCursor({ blockId: target.dataset.blockId ?? null, row: 0, col: 0, item: 0 }); else remember();
-    }} onKeyUp={remember}
+    <div ref={root} className={styles.paper} role="group" aria-label="제목·리딩 메시지·본문" onFocusCapture={e => rememberTarget(e.target)} onPointerUp={e => rememberTarget(e.target)} onKeyUp={e => rememberTarget(e.target)}
       onCompositionStart={() => updateState({ ...stateRef.current, dirty: true, composing: true })}
       onCompositionEnd={() => { if (!locked) publish(); else updateState({ ...stateRef.current, composing: false }); }}
       onInput={() => { if (locked) return; if (stateRef.current.composing) updateState({ ...stateRef.current, dirty: true }); else publish(); }}

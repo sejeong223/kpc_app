@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { DadamButton } from "@/components/ui/DadamControls";
 import TemplateSlidePreview from "@/components/admin/templates/workbench/TemplateSlidePreview";
@@ -9,15 +9,16 @@ import BasicSlidePreview from "./BasicSlidePreview";
 export interface ProductionPreviewProps {
   view: ProjectView; slide: ProposalSlide; snapshotId: string | null;
   mode?: "full" | "thumbnail"; number?: number; priority?: boolean;
+  lazy?: boolean;
 }
-export default function ProductionPreview({ view, slide, snapshotId, mode = "full", number, priority = false }: ProductionPreviewProps): React.ReactElement {
+export default function ProductionPreview({ view, slide, snapshotId, mode = "full", number, priority = false, lazy = false }: ProductionPreviewProps): React.ReactElement {
   const root = useRef<HTMLDivElement>(null), [near, setNear] = useState(false);
-  const enabled = mode === "full" || priority || near;
+  const enabled = (mode === "full" && !lazy) || priority || near;
   useEffect(() => {
-    if (mode === "full" || !root.current || typeof IntersectionObserver === "undefined") return;
+    if ((mode === "full" && !lazy) || !root.current || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { setNear(true); observer.disconnect(); } }, { rootMargin: "200px" });
     observer.observe(root.current); return () => observer.disconnect();
-  }, [mode]);
+  }, [mode, lazy]);
   const query = useProductionPreview(view, slide, snapshotId, enabled);
   const inaccessible = !!slide.template && [slide.template.pinId, slide.usedSettings.skillPinId, slide.usedSettings.promptPinId].filter(Boolean).some(id => view.assetAccess.find(a => a.pinId === id)?.access.status !== "available");
   const templateSlide = query.data?.preview.slides.find(s => s.path === slide.template?.sourceSlidePath);
@@ -28,10 +29,10 @@ export default function ProductionPreview({ view, slide, snapshotId, mode = "ful
         <div role="img" aria-label={`${slide.content.title || "제목 없음"} · Template 미리보기`}>
           <div inert style={{ pointerEvents: "none" }}><TemplateSlidePreview document={query.data.preview} slideIndex={templateSlide.index} selectedObjectId={null} onSelect={() => {}} /></div>
         </div>
-        {mode === "full" && query.data.warnings.length > 0 && <ul className="tw:text-xs tw:text-(--kpc-text-muted)">{query.data.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>}
+        {mode === "full" && query.data.warnings.length > 0 && <ul className="tw:text-xs tw:text-(--kpc-muted)">{query.data.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>}
       </> : <div className="tw:flex tw:aspect-video tw:items-center tw:justify-center tw:border tw:border-(--kpc-line) tw:text-xs">
         {query.data ? "연결한 Template 슬라이드를 찾을 수 없습니다. 제작 설정을 확인해 주세요." : enabled ? "슬라이드를 불러오는 중입니다." : "미리보기 대기"}
       </div>}
-    {mode === "full" && <p className="tw:mt-2 tw:text-xs tw:text-(--kpc-text-muted)">{slide.template ? "PowerPoint와 다를 수 있는 구조 미리보기입니다." : "기본 16:9 미리보기 · PPT 출력에는 Template 연결이 필요합니다."}</p>}
+    {mode === "full" && <p className="tw:mt-2 tw:text-xs tw:text-(--kpc-muted)">{slide.template ? "PowerPoint와 다를 수 있는 구조 미리보기입니다." : "기본 16:9 미리보기 · PPT 출력에는 Template 연결이 필요합니다."}</p>}
   </div>;
 }
