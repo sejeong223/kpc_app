@@ -43,7 +43,7 @@ export function createHtmlDemoBundle(context: WorkspaceContext): (WorkspaceBundl
   state.body.slides = HTML_DEMO_SLIDES.map((slide, index) => {
     const id = htmlDemoSlideId(index);
     return {
-      id, sectionId: HTML_DEMO_SECTION_ID, revision: 1,
+      id, sectionId: HTML_DEMO_SECTION_ID, revision: 1, state: "writing",
       content: {
         title: slide.title, lead: slide.lead,
         blocks: slide.layout === "table"
@@ -72,6 +72,7 @@ export function addHtmlDemoCompletion(source: WorkspaceBundle, context: Workspac
   const state = structuredClone(source.state), files = advanceFileRound(source.files, context);
   const body = createHtmlDemoBundle(context)!.state.body;
   body.sections.forEach(section => { section.state = "done"; section.locked = true; });
+  body.slides.forEach(slide => { slide.state = "done"; });
   // 보관본은 독립된 시연 자료다. 사용자가 삭제/변경했을 수 있는 현재 파일 버전을 가리키지 않는다.
   body.slides.forEach(slide => { slide.sources = slide.sources.filter(source => source.kind === "requirement"); });
   const snapshotId = context.newId(), versionId = context.newId(), blobId = context.newId();

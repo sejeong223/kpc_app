@@ -39,6 +39,7 @@ export function cloneClipboardSlide(
   slide.id = newId();
   slide.sectionId = sectionId;
   slide.revision = 1;
+  slide.state = "writing";
   for (const block of slide.content.blocks) {
     const old = block.id;
     block.id = newId();

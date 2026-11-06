@@ -3,6 +3,7 @@ import { advanceFileRound, createEmptyFileProject } from "@/lib/workspace/files/
 import { FileProjectStateSchema } from "@/lib/workspace/files/schemas";
 import { createWorkspaceState } from "@/lib/workspace/production/domain";
 import { WorkspaceStateSchema } from "@/lib/workspace/production/schemas";
+import { syncSectionCompletion } from "@/lib/workspace/production/section-locks";
 import { carryCanvasComments } from "@/lib/workspace/production/canvas-comments";
 import { workspaceAssert as check } from "@/lib/workspace/production/errors";
 import { manufacturingPptFilename } from "./manufacturing-demo-ppt";
@@ -17,13 +18,14 @@ export function createManufacturingDemoBundle(context: WorkspaceContext): Worksp
   state.body.chapters = MFG_DEMO_CHAPTERS.map(chapter => ({ ...chapter }));
   state.body.sections = MFG_DEMO_SECTIONS.map(section => ({
     id: section.id, chapterId: section.chapterId, title: section.title, state: section.state,
-    assigneeIds: [authors[section.assignee]], reviewerIds: [], locked: false,
+    assigneeIds: [authors[section.assignee]], reviewerIds: [], locked: section.state === "done",
     demoPrompt: manufacturingSectionPrompt(section.id),
   }));
   state.body.requirements = MFG_DEMO_REQUIREMENTS.map(requirement => ({ ...requirement, provenance: "mock",
     excerpt: `${requirement.title}을(를) 위한 구체적인 구현 방안과 검증 방법을 제안서에 제시하여야 한다. 제안사는 관련 근거와 수행 일정을 함께 기술한다.`,
   }));
   state.body.slides = MFG_DEMO_SLIDES.map(slide => ({
+    state: state.body.sections.find(section => section.id === slide.sectionId)!.state,
     id: slide.id, sectionId: slide.sectionId, demoSourceKey: slide.id, revision: 1, template: null,
     content: { title: slide.title, lead: slide.lead, blocks: slide.layout === "table"
       ? [{ id: `${slide.id}-table`, kind: "table", columns: ["구분", "내용"], rows: slide.items.map(item => [...item]) }]
@@ -71,7 +73,7 @@ export function addManufacturingDemoCompletion(source: WorkspaceBundle, context:
   state.currentRound = files.currentRound;
   state.revision++; state.inputRevision++;
   const carry = (current: RoundBody) => {
-    current.sections.forEach(section => { section.locked = section.state === "done"; });
+    current.sections = syncSectionCompletion(current).sections;
     current.threads.forEach(thread => { thread.round = state.currentRound; });
     current.canvasComments = carryCanvasComments(current.canvasComments, source.state.currentRound, context.newId);
   };

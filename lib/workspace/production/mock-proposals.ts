@@ -182,6 +182,7 @@ export function createMockProposal(
             id: context.newId(),
             sectionId: section.id,
             revision: 0,
+            state: "writing",
             content: { title: section.title, lead: "", blocks: [] },
             template: null,
             usedSettings: currentSlideSettings(state, section.id),

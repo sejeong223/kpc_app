@@ -1,7 +1,7 @@
 import { CommentCommandSchema } from "@/lib/comments/domain";
 import { z } from "zod";
 import { WORKSPACE_LIMITS } from "@/config/workspace-production";
-import type { CanvasCommentState, ProjectWorkspaceState } from "@/types/workspace-production";
+import type { CanvasCommentState, ProjectWorkspaceState, V2ProjectWorkspaceState } from "@/types/workspace-production";
 const id = z.string().min(1).max(400).regex(/^\S+$/);
 const count = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const time = z.iso.datetime();
@@ -46,7 +46,7 @@ export const CanvasCommentStateSchema = z.strictObject({
     }
 }) satisfies z.ZodType<CanvasCommentState>;
 export function emptyCanvasComments(): CanvasCommentState { return { nextNumber: 1, threads: [], messages: [] }; }
-export function canvasReferenceErrors(state: ProjectWorkspaceState): string[] {
+export function canvasReferenceErrors(state: ProjectWorkspaceState | V2ProjectWorkspaceState): string[] {
     const errors: string[] = [];
     const bodies = [{ round: state.currentRound, body: state.body }, ...state.snapshots,
         ...(state.undo ? [{ round: state.undo.round, body: state.undo.previousBody }] : [])];

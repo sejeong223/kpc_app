@@ -16,6 +16,7 @@ import { FileRoundEntrySchema } from "@/lib/workspace/files/schemas";
 import type {
   ProjectWorkspaceState,
   LegacyProjectWorkspaceState,
+  V2ProjectWorkspaceState,
   LegacyRoundBody,
   WorkspaceMutation,
   PreparedWorkspaceMutation,
@@ -143,7 +144,7 @@ export const UsedSettingsSchema = z.strictObject({
   prompt: z.string().max(10000),
   sources,
 });
-export const ProposalSlideSchema = z
+const PreSlideStateSchema = z
   .strictObject({
     demoSourceKey: id.optional(),
     id,
@@ -165,6 +166,9 @@ export const ProposalSlideSchema = z
       ),
     "내용과 요소 연결이 다릅니다.",
   );
+export const ProposalSlideSchema = PreSlideStateSchema.safeExtend({
+  state: z.enum(["writing", "done"]),
+});
 export const RequirementSchema = z.strictObject({
   id,
   sectionId: nullableId,
@@ -261,13 +265,14 @@ export const ProjectThreadSchema = z
 const LegacyRoundBodySchema = z.strictObject({
   chapters: z.array(ChapterSchema).max(L.chapters),
   sections: z.array(SectionSchema).max(L.sections),
-  slides: z.array(ProposalSlideSchema).max(L.slides),
+  slides: z.array(PreSlideStateSchema).max(L.slides),
   requirements: z.array(RequirementSchema).max(1000),
   checklist: z.array(ChecklistSchema).max(1000),
   settings: ProjectSettingsSchema,
   threads: z.array(ProjectThreadSchema).max(5000),
 });
-export const RoundBodySchema = LegacyRoundBodySchema.extend({ canvasComments: CanvasCommentStateSchema });
+const V2RoundBodySchema = LegacyRoundBodySchema.extend({ canvasComments: CanvasCommentStateSchema });
+export const RoundBodySchema = V2RoundBodySchema.extend({ slides: z.array(ProposalSlideSchema).max(L.slides) });
 const pinBase = {
   id,
   assetId: id,
@@ -459,7 +464,7 @@ export function bodyReferenceErrors(
 const WorkspaceStateBase = z
   .strictObject({
     nextCommentNumber: count,
-    schemaVersion: z.literal(2),
+    schemaVersion: z.literal(3),
     projectId: id,
     revision: count,
     inputRevision: count,
@@ -554,6 +559,16 @@ export const LegacyWorkspaceStateSchema = z.strictObject({
   undo: undo.extend({previousBody: LegacyRoundBodySchema}).nullable(),
 }).superRefine(validateStateReferences) satisfies z.ZodType<LegacyProjectWorkspaceState>;
 
+export const V2WorkspaceStateSchema = z.strictObject({
+  ...WorkspaceStateBase.shape,
+  schemaVersion: z.literal(2),
+  body: V2RoundBodySchema,
+  snapshots: z.array(snapshot.extend({ body: V2RoundBodySchema })),
+  undo: undo.extend({ previousBody: V2RoundBodySchema }).nullable(),
+}).superRefine(validateStateReferences).superRefine((state, ctx) => {
+  canvasReferenceErrors(state).forEach(message => ctx.addIssue({ code: "custom", message }));
+}) satisfies z.ZodType<V2ProjectWorkspaceState>;
+
 const op = <T extends string, S extends z.ZodRawShape>(type: T, fields: S) =>
   z.strictObject({ type: z.literal(type), ...fields });
 const publicOperations = [
@@ -586,6 +601,8 @@ const publicOperations = [
   op("set-section-state", { id, state: z.enum(["writing", "done"]) }),
   op("apply-manufacturing-prompt", { sectionId: id, slideId: id, prompt: ManufacturingPromptSchema }),
   op("unlock-section", { id }),
+  op("set-slide-state", { id, state: z.enum(["writing", "done"]) }),
+  op("unlock-slide", { id }),
   op("add-check", { title, source: z.string().max(2000) }),
   op("edit-check", { id, title, source: z.string().max(2000) }),
   op("assign-check", { id, assigneeIds: ids }),

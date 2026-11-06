@@ -6,6 +6,7 @@ import type {
   WorkspaceContext,
 } from "@/types/workspace-production";
 import { canAccessFileProject } from "@/lib/workspace/files/permissions";
+import { hasLockedSlides, isSectionLocked, isSlideLocked } from "./section-locks";
 export function canManageProject(context: WorkspaceContext): boolean {
   return (
     canAccessFileProject(context.identity, context.project) &&
@@ -50,8 +51,20 @@ export function canEditSection(
   return (
     state.phase === "writing" &&
     isSectionAuthor(context, state, sectionId) &&
-    state.body.sections.some((s) => s.id === sectionId && !s.locked)
+    state.body.sections.some((s) => s.id === sectionId && !isSectionLocked(s)) &&
+    !hasLockedSlides(state.body, sectionId)
   );
+}
+
+export function canEditSlide(context: WorkspaceContext, state: ProjectWorkspaceState, slideId: string): boolean {
+  const slide = state.body.slides.find(item => item.id === slideId);
+  return !!slide && state.phase === "writing" &&
+    isSectionAuthor(context, state, slide.sectionId) && !isSlideLocked(slide);
+}
+
+export function canInsertSlide(context: WorkspaceContext, state: ProjectWorkspaceState, sectionId: string): boolean {
+  return state.phase === "writing" && isSectionAuthor(context, state, sectionId) &&
+    state.body.sections.some(section => section.id === sectionId && !isSectionLocked(section));
 }
 
 export function applyProjectGrants(context:WorkspaceContext,state:ProjectWorkspaceState,rows:readonly ProjectGrant[]):ProjectGrant[] {

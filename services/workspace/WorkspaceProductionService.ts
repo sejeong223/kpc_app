@@ -36,6 +36,8 @@ import {
 } from "@/lib/workspace/production/schemas";
 import {
   canEditSection,
+  canEditSlide,
+  canInsertSlide,
   canProjectAction,
 } from "@/lib/workspace/production/permissions";
 import {
@@ -169,12 +171,32 @@ export class WorkspaceProductionService {
     for (const id of sectionIds) {
       const section = state.body.sections.find((s) => s.id === id);
       check(!!section, "NOT_FOUND", "섹션이 없습니다.");
-      check(!section.locked, "LOCKED", "고정된 섹션을 먼저 해제해 주세요.");
+      check(!section.locked && !state.body.slides.some(s => s.sectionId === id && s.state === "done"), "LOCKED", "완료된 슬라이드를 먼저 해제해 주세요.");
       check(
         canEditSection(context, state, id),
         "FORBIDDEN",
         "담당 섹션만 변경할 수 있습니다.",
       );
+    }
+  }
+  private editSlidesById(state: ProjectWorkspaceState, ids: readonly string[]): void {
+    const context = this.context(state.projectId);
+    check(state.phase === "writing", "READ_ONLY", "완성본은 수정할 수 없습니다.");
+    for (const id of ids) {
+      const slide = state.body.slides.find(s => s.id === id);
+      check(!!slide, "NOT_FOUND", "슬라이드가 없습니다.");
+      check(slide.state !== "done", "LOCKED", "완료된 슬라이드를 먼저 해제해 주세요.");
+      check(canEditSlide(context, state, id), "FORBIDDEN", "담당 슬라이드만 변경할 수 있습니다.");
+    }
+  }
+  private insertIntoSections(state: ProjectWorkspaceState, ids: readonly string[]): void {
+    const context = this.context(state.projectId);
+    check(state.phase === "writing", "READ_ONLY", "완성본은 수정할 수 없습니다.");
+    for (const id of ids) {
+      const section = state.body.sections.find(s => s.id === id);
+      check(!!section, "NOT_FOUND", "소목차가 없습니다.");
+      check(!section.locked, "LOCKED", "완료된 소목차를 먼저 해제해 주세요.");
+      check(canInsertSlide(context, state, id), "FORBIDDEN", "담당 소목차에만 추가할 수 있습니다.");
     }
   }
   private guard(
@@ -275,14 +297,8 @@ export class WorkspaceProductionService {
         check(!!slide, "NOT_FOUND", "선택한 슬라이드가 없습니다.");
         return slide;
       });
-    this.edit(state, [
-      ...new Set([
-        ...slides.map((s) => s.sectionId),
-        ...(request.operation === "move" && request.sectionId
-          ? [request.sectionId]
-          : []),
-      ]),
-    ]);
+    this.editSlidesById(state, slides.map(s => s.id));
+    if (request.operation === "move" && request.sectionId) this.insertIntoSections(state, [request.sectionId]);
     return this.options.repository.commitPrepared(
       {
         projectId: request.projectId,
@@ -388,7 +404,7 @@ export class WorkspaceProductionService {
         "READ_ONLY",
         "보관본은 임시 수정할 수 없습니다.",
       );
-      this.edit(state, [stored.sectionId]);
+      this.editSlidesById(state, [stored.id]);
     }
     const parsed = ProposalSlideSchema.safeParse({
       ...stored,
@@ -473,7 +489,8 @@ export class WorkspaceProductionService {
         "VALIDATION",
         "작성할 섹션 또는 슬라이드를 선택해 주세요.",
       );
-      this.edit(state, ids);
+      this.edit(state, request.sectionIds);
+      this.editSlidesById(state, request.slideIds);
     }
     const pins = pinsForSlides(
       state,
@@ -708,7 +725,8 @@ export class WorkspaceProductionService {
           .map((s) => s.sectionId)
       : state.body.sections.map((s) => s.id);
     check(
-      sections.some((id) => canEditSection(context, state, id)),
+      state.body.slides.some(s => (!matchedIds.length || matchedIds.includes(s.id)) && canEditSlide(context, state, s.id)) ||
+        sections.some(id => !state.body.slides.some(s => s.sectionId === id) && canInsertSlide(context, state, id)),
       "FORBIDDEN",
       "수정본을 등록할 수 있는 담당 섹션이 없습니다.",
     );
@@ -978,7 +996,7 @@ export class WorkspaceProductionService {
         slides.filter((s) => changed.has(s.id)).map((s) => s.sectionId),
       ),
     ];
-    this.edit(state, sectionIds);
+    this.editSlidesById(state, [...changed]);
     const version = state.pptVersions.find((v) => v.id === session.versionId);
     check(!!version, "NOT_FOUND", "수정본 원본이 없습니다.");
     const pins = this.usedPins(state, [
@@ -1074,7 +1092,7 @@ export class WorkspaceProductionService {
     );
     this.context(source.projectId);
     const { state, files } = await this.requested(input);
-    this.edit(state, [input.sectionId]);
+    this.insertIntoSections(state, [input.sectionId]);
     const same = source.projectId === input.projectId,
       pinMap = new Map<string, string>(),
       imageMap = new Map<string, string>(),
@@ -1210,7 +1228,7 @@ export class WorkspaceProductionService {
     const { state } = await this.requested(input),
       slide = state.body.slides.find((s) => s.id === input.slideId);
     check(!!slide, "NOT_FOUND", "슬라이드가 없습니다.");
-    this.edit(state, [slide.sectionId]);
+    this.editSlidesById(state, [slide.id]);
     check(
       input.file instanceof File &&
         ["image/png", "image/jpeg"].includes(input.file.type),

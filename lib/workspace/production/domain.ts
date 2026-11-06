@@ -29,6 +29,8 @@ import {
 } from "./schemas";
 import {
   canEditSection,
+  canEditSlide,
+  canInsertSlide,
   canManageProject,
   applyProjectGrants,
   canProjectAction,
@@ -37,6 +39,7 @@ import {
 import { applyProjectComment } from "./comment-domain";
 import { moveSlideSelection } from "./editor";
 import { resolveProjectPrompt } from "./prompt-resolution";
+import { hasLockedSlides, isSlideLocked, normalizeWorkspaceCompletion } from "./section-locks";
 
 function validateContext(context: WorkspaceContext): void {
   try {
@@ -92,7 +95,7 @@ export function createWorkspaceState(
   );
   return {
     nextCommentNumber: 1,
-    schemaVersion: 2,
+    schemaVersion: 3,
     projectId: context.project.id,
     revision: 1,
     inputRevision: 1,
@@ -165,7 +168,7 @@ export function applyWorkspaceMutation(
         : "VALIDATION",
       "입력값과 허용 범위를 확인해 주세요.",
     );
-  const state: ProjectWorkspaceState = structuredClone(stored.data),
+  const state: ProjectWorkspaceState = structuredClone(normalizeWorkspaceCompletion(stored.data)),
     operation = parsed.data.operation;
   let files = structuredClone(sourceFiles);
   check(
@@ -250,7 +253,7 @@ export function applyWorkspaceMutation(
   };
   const unlocked = (id: string) => {
     writing();
-    check(!section(id).locked, "LOCKED", "고정된 섹션을 먼저 해제해 주세요.");
+    check(!section(id).locked && !hasLockedSlides(body, id), "LOCKED", "완료된 슬라이드를 먼저 해제해 주세요.");
   };
   const edit = (id: string) => {
     unlocked(id);
@@ -279,6 +282,48 @@ export function applyWorkspaceMutation(
     changesInput = true;
     undoPermission = "content";
     undoSections = [...new Set(ids)];
+  };
+  const editSlide = (id: string) => {
+    writing();
+    const item = slide(id);
+    check(!isSlideLocked(item), "LOCKED", "완료된 슬라이드를 먼저 해제해 주세요.");
+    check(canEditSlide(context, state, id), "FORBIDDEN", "담당 슬라이드만 변경할 수 있습니다.");
+  };
+  const insertInto = (id: string) => {
+    writing();
+    check(!section(id).locked, "LOCKED", "완료된 소목차를 먼저 해제해 주세요.");
+    check(canInsertSlide(context, state, id), "FORBIDDEN", "담당 소목차에만 추가할 수 있습니다.");
+  };
+  const contentSlidesChanged = (ids: string[], destinations: string[] = []) => {
+    [...new Set(ids)].forEach(editSlide);
+    [...new Set(destinations)].forEach(insertInto);
+    changesInput = true;
+    undoPermission = "content";
+    undoSections = [...new Set([...ids.map(id => slide(id).sectionId), ...destinations])];
+  };
+  const validateSlideReplacement = (next: ProposalSlide[], nextSections = body.sections) => {
+    const changedIds: string[] = [], destinations = new Set<string>();
+    for (const old of body.slides) {
+      const item = next.find(value => value.id === old.id);
+      check(!item || item.state === old.state, "FORBIDDEN", "내용 반영으로 완료 상태를 변경할 수 없습니다.");
+      if (JSON.stringify(item) !== JSON.stringify(old)) {
+        changedIds.push(old.id);
+        if (item && item.sectionId !== old.sectionId) destinations.add(item.sectionId);
+      }
+    }
+    for (const item of next) if (!body.slides.some(old => old.id === item.id)) {
+      check(item.state === "writing", "FORBIDDEN", "새 슬라이드는 작성 중으로 시작합니다.");
+      destinations.add(item.sectionId);
+    }
+    const existing = [...destinations].filter(id => body.sections.some(s => s.id === id));
+    for (const id of destinations) if (!existing.includes(id)) {
+      action("outline");
+      const owner = nextSections.find(s => s.id === id);
+      check(!!owner, "NOT_FOUND", "대상 소목차가 없습니다.");
+      check(canManageProject(context) || owner.assigneeIds.includes(actorId), "FORBIDDEN", "담당 소목차에만 추가할 수 있습니다.");
+    }
+    contentSlidesChanged(changedIds, existing);
+    undoSections = [...new Set([...undoSections, ...destinations])];
   };
   const structure = (ids: string[]) => {
     action("outline");
@@ -504,33 +549,41 @@ export function applyWorkspaceMutation(
         check(owner.assigneeIds.includes(actorId), "FORBIDDEN", "담당자만 본문을 수정할 수 있습니다.");
         check(!!operation.prompt.intro.trim() || operation.prompt.bullets.some(item => item.trim()), "VALIDATION", "본문 내용을 입력해 주세요.");
         check(!target.template, "LAYOUT", "Template 슬라이드는 문서 편집기를 사용해 주세요.");
-        contentChanged([owner.id]);
+        contentSlidesChanged([target.id]);
         target.content = applyManufacturingPromptContent(target.content, operation.prompt, manufacturingLayout(state.projectId, target), newId);
         target.revision++;
         owner.demoPrompt = structuredClone(operation.prompt);
         break;
       }
-      case "set-section-state":
-        edit(operation.id);
-        section(operation.id).state = operation.state;
+      case "set-slide-state":
+      case "unlock-slide": {
+        writing();
+        const item = slide(operation.id);
+        check(isSectionAuthor(context, state, item.sectionId), "FORBIDDEN", "담당자만 상태를 변경할 수 있습니다.");
+        if (operation.type === "unlock-slide")
+          check(isSlideLocked(item), "VALIDATION", "고정된 슬라이드가 아닙니다.");
+        const next = operation.type === "unlock-slide" ? "writing" : operation.state;
+        if (item.state !== next) { item.state = next; item.revision++; }
         break;
-      case "unlock-section":
+      }
+      case "set-section-state":
+      case "unlock-section": {
         writing();
         check(
           isSectionAuthor(context, state, operation.id),
           "FORBIDDEN",
           "담당자만 고정을 해제할 수 있습니다.",
         );
-        check(
-          section(operation.id).locked,
-          "VALIDATION",
-          "고정된 섹션이 아닙니다.",
-        );
-        Object.assign(section(operation.id), {
-          locked: false,
-          state: "writing",
-        });
+        const owner = section(operation.id);
+        if (operation.type === "unlock-section")
+          check(owner.locked || hasLockedSlides(body, owner.id), "VALIDATION", "고정된 슬라이드가 없습니다.");
+        const next = operation.type === "unlock-section" ? "writing" : operation.state;
+        for (const item of body.slides.filter(s => s.sectionId === owner.id)) {
+          if (item.state !== next) { item.state = next; item.revision++; }
+        }
+        Object.assign(owner, { state: next, locked: next === "done" });
         break;
+      }
       case "add-check": {
         action("outline");
         const id = newId();
@@ -581,7 +634,7 @@ export function applyWorkspaceMutation(
         break;
       }
       case "add-slide": {
-        contentChanged([operation.sectionId]);
+        contentSlidesChanged([], [operation.sectionId]);
         check(
           operation.afterId === null ||
             slide(operation.afterId).sectionId === operation.sectionId,
@@ -594,6 +647,7 @@ export function applyWorkspaceMutation(
           {
             id,
             sectionId: operation.sectionId,
+            state: "writing",
             revision: 1,
             content: { title: "새 슬라이드", lead: "", blocks: [] },
             template: operation.template,
@@ -609,7 +663,7 @@ export function applyWorkspaceMutation(
       case "edit-slide":
       case "save-slide": {
         const item = slide(operation.id);
-        contentChanged([item.sectionId]);
+        contentSlidesChanged([item.id]);
         item.content = operation.content;
         if (operation.type === "save-slide") item.template = operation.template;
         if (item.template)
@@ -624,14 +678,14 @@ export function applyWorkspaceMutation(
       }
       case "bind-slide": {
         const item = slide(operation.id);
-        contentChanged([item.sectionId]);
+        contentSlidesChanged([item.id]);
         item.template = operation.template;
         item.revision++;
         break;
       }
       case "duplicate-slide": {
         const item = structuredClone(slide(operation.id));
-        contentChanged([operation.targetSectionId]);
+        contentSlidesChanged([], [operation.targetSectionId]);
         check(
           operation.afterId === null ||
             slide(operation.afterId).sectionId === operation.targetSectionId,
@@ -641,6 +695,7 @@ export function applyWorkspaceMutation(
         item.id = newId();
         item.sectionId = operation.targetSectionId;
         item.revision = 1;
+        item.state = "writing";
         const mapping = new Map<string, string>();
         item.content.blocks.forEach((b) => {
           const old = b.id;
@@ -657,7 +712,7 @@ export function applyWorkspaceMutation(
       case "move-slide": {
         const item = slide(operation.id),
           oldSection = item.sectionId;
-        contentChanged([oldSection, operation.sectionId]);
+        contentSlidesChanged([item.id], oldSection === operation.sectionId ? [] : [operation.sectionId]);
         check(
           operation.beforeId === null ||
             slide(operation.beforeId).sectionId === operation.sectionId,
@@ -676,23 +731,20 @@ export function applyWorkspaceMutation(
       }
       case "remove-slide": {
         const item = slide(operation.id);
-        contentChanged([item.sectionId]);
+        contentSlidesChanged([item.id]);
         body.slides = body.slides.filter((s) => s.id !== item.id);
         body.threads = body.threads.filter((t) => t.slideId !== item.id);
         break;
       }
       case "batch-slides": {
-        const selected = operation.slideIds.map(slide),
-          sectionIds = [...new Set(selected.map((s) => s.sectionId))];
         if (operation.operation === "move") {
           check(
             !!operation.sectionId,
             "VALIDATION",
             "대상 소목차가 필요합니다.",
           );
-          sectionIds.push(operation.sectionId);
         }
-        contentChanged(sectionIds);
+        contentSlidesChanged(operation.slideIds, operation.operation === "move" && operation.sectionId ? [operation.sectionId] : []);
         if (operation.operation === "remove") {
           check(
             operation.sectionId === null && operation.beforeId === null,
@@ -721,7 +773,7 @@ export function applyWorkspaceMutation(
       }
       case "set-sources": {
         const item = slide(operation.id);
-        contentChanged([item.sectionId]);
+        contentSlidesChanged([item.id]);
         for (const ref of operation.sources)
           if (ref.kind === "file")
             check(
@@ -792,6 +844,7 @@ export function applyWorkspaceMutation(
         );
         for (const item of operation.slides) {
           const old = slide(item.id);
+          check(item.state === old.state, "FORBIDDEN", "자산 적용으로 완료 상태를 변경할 수 없습니다.");
           check(
             item.sectionId === old.sectionId &&
               JSON.stringify(item.content) === JSON.stringify(old.content) &&
@@ -799,7 +852,7 @@ export function applyWorkspaceMutation(
             "VALIDATION",
             "자산 적용으로 본문이나 소속을 변경할 수 없습니다.",
           );
-          if (JSON.stringify(item) !== JSON.stringify(old)) edit(old.sectionId);
+          if (JSON.stringify(item) !== JSON.stringify(old)) editSlide(old.id);
         }
         body.settings = operation.settings;
         body.slides = operation.slides;
@@ -879,16 +932,7 @@ export function applyWorkspaceMutation(
             }
         }
         if (operation.slides !== null) {
-          const affected = new Set(
-            [...body.slides, ...operation.slides]
-              .filter(
-                (s) =>
-                  JSON.stringify(body.slides.find((v) => v.id === s.id)) !==
-                  JSON.stringify(operation.slides?.find((v) => v.id === s.id)),
-              )
-              .map((s) => s.sectionId),
-          );
-          contentChanged([...affected]);
+          validateSlideReplacement(operation.slides, operation.sections ?? body.sections);
         }
         if (operation.requirements !== null || operation.checklist !== null) {
           action("outline");
@@ -996,7 +1040,7 @@ export function applyWorkspaceMutation(
           "VALIDATION",
           "내용 적용으로 기존 슬라이드 순서를 바꿀 수 없습니다.",
         );
-        contentChanged(changed);
+        validateSlideReplacement(operation.slides);
         mergePins(operation.pins);
         createdIds.push(
           ...operation.slides
@@ -1038,7 +1082,8 @@ export function applyWorkspaceMutation(
       case "protect-ppt": {
         writing();
         check(
-          body.sections.some((s) => canEditSection(context, state, s.id)),
+          (body.slides.some(s => canEditSlide(context, state, s.id)) ||
+            body.sections.some(s => !body.slides.some(slide => slide.sectionId === s.id) && canInsertSlide(context, state, s.id))),
           "FORBIDDEN",
           "수정본을 연결할 수 있는 담당 섹션이 없습니다.",
         );
@@ -1112,9 +1157,6 @@ export function applyWorkspaceMutation(
         state.currentRound = files.currentRound;
         state.phase = "writing";
         state.nextCommentNumber = open.length + 1;
-        body.sections.forEach((s) => {
-          s.locked = s.state === "done";
-        });
         body.threads = open.map((old, index) => {
           const t = structuredClone(old);
           t.carriedFromId = t.id;
@@ -1153,9 +1195,13 @@ export function applyWorkspaceMutation(
           "CONFLICT",
           "다른 작업 이후에는 되돌릴 수 없습니다.",
         );
-        if (undo.permission === "content")
-          for (const id of undo.sectionIds) edit(id);
-        else {
+        if (undo.permission === "content") {
+          validateSlideReplacement(undo.previousBody.slides, undo.previousBody.sections);
+          // 요구사항 반영도 등 슬라이드 외 소목차 변경은 기존 전체 권한을 확인한다.
+          if (JSON.stringify(body.requirements) !== JSON.stringify(undo.previousBody.requirements))
+            for (const id of undo.sectionIds) edit(id);
+          undoPermission = null;
+        } else {
           action(undo.permission);
           for (const id of undo.sectionIds)
             if (body.sections.some((s) => s.id === id)) unlocked(id);
@@ -1182,7 +1228,7 @@ export function applyWorkspaceMutation(
         permission: undoPermission,
       }
     : null;
-  const result = WorkspaceStateSchema.safeParse(state);
+  const result = WorkspaceStateSchema.safeParse(normalizeWorkspaceCompletion(state));
   if (!result.success)
     throw new WorkspaceError(
       result.error.issues.some((i) => i.code === "too_big")

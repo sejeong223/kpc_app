@@ -1,5 +1,6 @@
 import { PROJECT_PERMISSIONS } from "@/config/workspace-production";
 import { visibleCanvasThreads } from "./canvas-comments";
+import { hasLockedSlides, isSectionLocked, isSlideLocked, normalizeWorkspaceCompletion } from "./section-locks";
 import type {
   ProjectPermission,
   ProjectWorkspaceState,
@@ -7,6 +8,8 @@ import type {
 } from "@/types/workspace-production";
 import {
   canEditSection,
+  canEditSlide,
+  canInsertSlide,
   canManageProject,
   canProjectAction,
   isSectionAuthor,
@@ -51,6 +54,7 @@ export function selectTocRows(view: ProjectView): TocRow[] {
     ): TocRow => {
       const sub = sections.filter((s) => ids.includes(s.id)),
         locked = sub.some((s) => s.locked),
+        protectedContent = sub.some(s => isSectionLocked(s) || hasLockedSlides(body, s.id)),
         requirements = body.requirements.filter(
           (r) => r.sectionId && ids.includes(r.sectionId),
         );
@@ -77,9 +81,9 @@ export function selectTocRows(view: ProjectView): TocRow[] {
           partial: requirements.filter((r) => r.coverage === "partial").length,
           none: requirements.filter((r) => r.coverage === "none").length,
         },
-        canStructure: c.actions.outline && !locked,
-        canAssign: kind === "section" && c.actions.assign && !locked,
-        canEdit: kind === "section" && c.editableSectionIds.includes(item.id),
+        canStructure: c.actions.outline && !protectedContent,
+        canAssign: kind === "section" && c.actions.assign && !protectedContent,
+        canEdit: kind === "section" && c.insertableSectionIds.includes(item.id),
         canUnlock:
           kind === "section" && c.unlockableSectionIds.includes(item.id),
       };
@@ -111,7 +115,7 @@ export function selectDeletionImpact(view: ProjectView, id: string) {
           .filter((s) => sectionIds.includes(s.sectionId))
           .map((s) => s.id),
     blocked = slide
-      ? !view.capabilities.editableSectionIds.includes(slide.sectionId)
+      ? !view.capabilities.editableSlideIds.includes(slide.id)
       : !row?.canStructure;
   return {
     sectionIds,
@@ -173,10 +177,14 @@ export function getWorkspaceCapabilities(
       .filter(
         (s) =>
           state.phase === "writing" &&
-          s.locked &&
+          (isSectionLocked(s) || hasLockedSlides(state.body, s.id)) &&
           isSectionAuthor(context, state, s.id),
       )
       .map((s) => s.id),
+    editableSlideIds: state.body.slides.filter(s => canEditSlide(context, state, s.id)).map(s => s.id),
+    unlockableSlideIds: state.body.slides.filter(s => state.phase === "writing" &&
+      isSlideLocked(s) && isSectionAuthor(context, state, s.sectionId)).map(s => s.id),
+    insertableSectionIds: state.body.sections.filter(s => canInsertSlide(context, state, s.id)).map(s => s.id),
   };
 }
 export function outlineNumbers(
@@ -205,14 +213,15 @@ export function selectProjectView(
   );
   const round=bundle.files.rounds.find(r=>r.number===bundle.state.currentRound);
   check(!!round,"STORAGE","현재 자료 회차를 찾을 수 없습니다.");
+  const state = normalizeWorkspaceCompletion(bundle.state);
   return {
     roundCreatedAt:round.createdAt,
     actor: { id: context.identity.actor.id, role: context.identity.actor.role },
     project: structuredClone(context.project),
     members: structuredClone([...context.members]),
-    state: structuredClone(bundle.state),
+    state: structuredClone(state),
     fileRevision: bundle.files.revision,
-    capabilities: getWorkspaceCapabilities(context, bundle.state),
+    capabilities: getWorkspaceCapabilities(context, state),
     assetAccess: structuredClone(access),
   };
 }
@@ -245,6 +254,9 @@ export function selectSnapshotView(
       },
       editableSectionIds: [],
       unlockableSectionIds: [],
+      editableSlideIds: [],
+      unlockableSlideIds: [],
+      insertableSectionIds: [],
     },
   };
 }

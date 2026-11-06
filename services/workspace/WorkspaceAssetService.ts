@@ -19,7 +19,7 @@ import {
   WorkspaceIdSchema,
 } from "@/lib/workspace/production/schemas";
 import {
-  canEditSection,
+  canEditSlide,
   canProjectAction,
 } from "@/lib/workspace/production/permissions";
 import { currentSlideSettings } from "@/lib/workspace/production/domain";
@@ -177,8 +177,9 @@ export class WorkspaceAssetService {
     for (const id of request.replaceSlideIds) {
       const slide = state.body.slides.find((s) => s.id === id);
       check(!!slide, "NOT_FOUND", "슬라이드가 없습니다.");
+      check(slide.state !== "done", "LOCKED", "완료된 슬라이드를 먼저 해제해 주세요.");
       check(
-        canEditSection(context, state, slide.sectionId),
+        canEditSlide(context, state, slide.id),
         "FORBIDDEN",
         "고정되었거나 담당자가 아닌 슬라이드는 재적용할 수 없습니다.",
       );

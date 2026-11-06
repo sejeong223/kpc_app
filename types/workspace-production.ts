@@ -100,7 +100,9 @@ export interface SlideUsedSettings {
   prompt: string;
   sources: PromptSource[];
 }
+export type SlideWritingState = "writing" | "done";
 export interface ProposalSlide {
+  state: SlideWritingState;
   demoSourceKey?: string;
   id: string;
   sectionId: string;
@@ -293,7 +295,7 @@ export interface WorkspaceUndo {
 }
 export interface ProjectWorkspaceState {
   nextCommentNumber: number;
-  schemaVersion: 2;
+  schemaVersion: 3;
   projectId: string;
   revision: number;
   inputRevision: number;
@@ -307,7 +309,17 @@ export interface ProjectWorkspaceState {
   reviews: ProjectCommentThread[];
   undo: WorkspaceUndo | null;
 }
-export type LegacyRoundBody = Omit<RoundBody, "canvasComments">;
+export type PreSlideStateProposalSlide = Omit<ProposalSlide, "state">;
+export type V2RoundBody = Omit<RoundBody, "slides"> & { slides: PreSlideStateProposalSlide[] };
+export interface V2RoundSnapshot extends Omit<RoundSnapshot, "body"> { body: V2RoundBody }
+export interface V2WorkspaceUndo extends Omit<WorkspaceUndo, "previousBody"> { previousBody: V2RoundBody }
+export interface V2ProjectWorkspaceState extends Omit<ProjectWorkspaceState, "schemaVersion" | "body" | "snapshots" | "undo"> {
+  schemaVersion: 2;
+  body: V2RoundBody;
+  snapshots: V2RoundSnapshot[];
+  undo: V2WorkspaceUndo | null;
+}
+export type LegacyRoundBody = Omit<V2RoundBody, "canvasComments">;
 export interface LegacyRoundSnapshot extends Omit<RoundSnapshot, "body"> { body: LegacyRoundBody }
 export interface LegacyWorkspaceUndo extends Omit<WorkspaceUndo, "previousBody"> { previousBody: LegacyRoundBody }
 export interface LegacyProjectWorkspaceState extends Omit<ProjectWorkspaceState, "schemaVersion" | "body" | "snapshots" | "undo"> {
@@ -391,6 +403,8 @@ export type WorkspaceOperation =
   | { type: "set-grants"; userId: string; permissions: ProjectPermission[] }
   | { type: "set-section-state"; id: string; state: "writing" | "done" }
   | { type: "unlock-section"; id: string }
+  | { type: "set-slide-state"; id: string; state: SlideWritingState }
+  | { type: "unlock-slide"; id: string }
   | { type: "add-check"; title: string; source: string }
   | { type: "edit-check"; id: string; title: string; source: string }
   | { type: "assign-check"; id: string; assigneeIds: string[] }
