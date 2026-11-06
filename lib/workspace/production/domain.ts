@@ -1054,6 +1054,27 @@ export function applyWorkspaceMutation(
         version.pinIds = [...new Set([...version.pinIds, ...operation.pinIds])];
         break;
       }
+      case "complete-manufacturing-demo": {
+        check(state.projectId === MFG_DEMO_PROJECT_ID, "VALIDATION", "제조업 예시의 완성 요청이 아닙니다.");
+        action("complete");
+        check(operation.acknowledged, "VALIDATION", "완성 내용을 확인해 주세요.");
+        check(operation.expectedFileRevision === files.revision, "CONFLICT", "자료가 변경되었습니다.");
+        const version = structuredClone(operation.version);
+        check(version.round === state.currentRound && version.inputRevision === state.inputRevision &&
+          version.index === Math.max(0, ...state.pptVersions.map(v => v.index)) + 1, "CONFLICT", "출력 기준 또는 PPT 버전이 변경되었습니다.");
+        check(version.kind === "generated" && version.snapshotId === null && version.manifest === null &&
+          version.baseVersionId === null && version.pinIds.length === 0 && version.filename === `제조업_PoC_${state.currentRound}차_완성본.pptx`, "VALIDATION", "완성본 PPT 정보를 확인해 주세요.");
+        check(version.createdBy === actorId, "FORBIDDEN", "버전 작성자가 다릅니다.");
+        check(version.id !== version.blobId && !used.has(version.id) && !used.has(version.blobId), "CONFLICT", "완성본 식별자가 중복되었습니다.");
+        used.add(version.id); used.add(version.blobId);
+        state.pptVersions.push(version);
+        snapshot("complete");
+        const saved = state.snapshots.at(-1)!;
+        version.snapshotId = saved.id;
+        createdIds.push(version.id, saved.id);
+        state.phase = "completed";
+        break;
+      }
       case "complete":
         action("complete");
         check(

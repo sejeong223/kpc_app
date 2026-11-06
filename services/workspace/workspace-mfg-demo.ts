@@ -1,9 +1,12 @@
 import { MFG_DEMO_PROJECT_ID, MFG_DEMO_CHAPTERS, MFG_DEMO_SECTIONS, MFG_DEMO_SLIDES, MFG_DEMO_REQUIREMENTS, manufacturingSectionPrompt } from "@/config/production-mfg-demo";
-import { createEmptyFileProject } from "@/lib/workspace/files/domain";
+import { advanceFileRound, createEmptyFileProject } from "@/lib/workspace/files/domain";
 import { FileProjectStateSchema } from "@/lib/workspace/files/schemas";
 import { createWorkspaceState } from "@/lib/workspace/production/domain";
 import { WorkspaceStateSchema } from "@/lib/workspace/production/schemas";
-import type { WorkspaceBundle, WorkspaceContext } from "@/types/workspace-production";
+import { carryCanvasComments } from "@/lib/workspace/production/canvas-comments";
+import { workspaceAssert as check } from "@/lib/workspace/production/errors";
+import { manufacturingPptFilename } from "./manufacturing-demo-ppt";
+import type { RoundBody, StoredWorkspaceBlob, WorkspaceBundle, WorkspaceContext } from "@/types/workspace-production";
 
 /** 두 레코드가 없는 최초 접근에서만 호출한다. 실제 원본 파일을 가장하지 않는다. */
 export function createManufacturingDemoBundle(context: WorkspaceContext): WorkspaceBundle | null {
@@ -45,4 +48,44 @@ export function createManufacturingDemoBundle(context: WorkspaceContext): Worksp
   }));
   state.nextCommentNumber = 3;
   return { state: WorkspaceStateSchema.parse(state), files: FileProjectStateSchema.parse(files) };
+}
+
+export function needsManufacturingDemoCompletion(bundle: WorkspaceBundle): boolean {
+  return bundle.state.projectId === MFG_DEMO_PROJECT_ID && bundle.state.currentRound === 1 &&
+    bundle.state.phase === "writing" && bundle.state.snapshots.length === 0;
+}
+
+/** 원본 예시 보관본을 추가하되 사용자의 현재 수정 내용은 다음 회차에 유지한다. */
+export function addManufacturingDemoCompletion(source: WorkspaceBundle, context: WorkspaceContext, ppt: { blob: Blob; sha256: string }): { bundle: WorkspaceBundle; original: StoredWorkspaceBlob } {
+  check(needsManufacturingDemoCompletion(source) && context.project.id === MFG_DEMO_PROJECT_ID, "VALIDATION", "제조업 완성본 예시를 추가할 수 없습니다.");
+  const state = structuredClone(source.state), files = advanceFileRound(source.files, context);
+  const body = createManufacturingDemoBundle(context)!.state.body;
+  const snapshotId = context.newId(), versionId = context.newId(), blobId = context.newId();
+  const filename = manufacturingPptFilename(1), createdBy = context.project.pmId;
+  state.snapshots.push({ id: snapshotId, round: 1, kind: "complete", createdAt: context.now, createdBy,
+    inputRevision: 1, body, fileEntries: [], fileRevision: source.files.revision, pptVersionId: versionId });
+  state.pptVersions.push({ id: versionId, index: Math.max(0, ...state.pptVersions.map(v => v.index)) + 1,
+    round: 1, snapshotId, kind: "generated", pinIds: [], blobId, filename,
+    byteLength: ppt.blob.size, sha256: ppt.sha256, createdAt: context.now, createdBy,
+    inputRevision: 1, baseVersionId: null, manifest: null });
+  state.currentRound = files.currentRound;
+  state.revision++; state.inputRevision++;
+  const carry = (current: RoundBody) => {
+    current.sections.forEach(section => { section.locked = section.state === "done"; });
+    current.threads.forEach(thread => { thread.round = state.currentRound; });
+    current.canvasComments = carryCanvasComments(current.canvasComments, source.state.currentRound, context.newId);
+  };
+  carry(state.body);
+  if (state.undo) {
+    carry(state.undo.previousBody);
+    if (state.undo.round === source.state.currentRound && state.undo.afterRevision === source.state.revision) {
+      state.undo.round = state.currentRound; state.undo.afterRevision = state.revision;
+    }
+  }
+  files.removals = source.files.removals.map(removal => ({ ...structuredClone(removal), round: files.currentRound }));
+  return {
+    bundle: { state: WorkspaceStateSchema.parse(state), files: FileProjectStateSchema.parse(files) },
+    original: { namespace: context.identity.namespace, projectId: context.project.id, id: blobId, kind: "ppt", ...ppt,
+      filename, byteLength: ppt.blob.size, createdAt: context.now },
+  };
 }

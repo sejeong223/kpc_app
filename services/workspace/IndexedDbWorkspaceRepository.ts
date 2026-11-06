@@ -8,6 +8,7 @@ import type {
   WorkspaceBlobInput,
   StoredWorkspaceBlob,
   WorkspaceReceipt,
+  PptVersion,
 } from "@/types/workspace-production";
 import { FileIdentitySchema } from "@/lib/workspace/files/schemas";
 import { requireFileProjectAccess } from "@/lib/workspace/files/permissions";
@@ -32,6 +33,10 @@ import {
 } from "./workspace-records";
 import { addHtmlDemoCompletion, needsHtmlDemoCompletion } from "./workspace-demo";
 import { createHtmlDemoPpt } from "./html-demo-ppt";
+import { addManufacturingDemoCompletion, createManufacturingDemoBundle, needsManufacturingDemoCompletion } from "./workspace-mfg-demo";
+import { createManufacturingDemoPpt, manufacturingPptFilename } from "./manufacturing-demo-ppt";
+import { MFG_DEMO_PROJECT_ID, MFG_DEMO_ORGANIZATION } from "@/config/production-mfg-demo";
+import { canProjectAction } from "@/lib/workspace/production/permissions";
 
 export async function hashWorkspaceBlob(blob: Blob): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -46,7 +51,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
   private readonly database: WorkspaceDatabase;
   private readonly signal = new AbortController();
   private readonly identity;
-  private demoPpt: Promise<{ blob: Blob; sha256: string }> | null = null;
+  private readonly demoPpts = new Map<string, Promise<{ blob: Blob; sha256: string }>>();
   constructor(private readonly options: WorkspaceRepositoryOptions) {
     const identity = FileIdentitySchema.safeParse(options.identity);
     check(identity.success, "FORBIDDEN", "사용자 정보를 확인해 주세요.");
@@ -93,18 +98,24 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
         }),
       this.signal.signal,
     );
-    if (!needsHtmlDemoCompletion(bundle)) return bundle;
-    this.demoPpt ??= createHtmlDemoPpt().then(async blob => ({ blob, sha256: await hashWorkspaceBlob(blob) })).catch(error => {
-      this.demoPpt = null; throw error;
-    });
+    const manufacturing = projectId === MFG_DEMO_PROJECT_ID;
+    const needsCompletion = manufacturing ? needsManufacturingDemoCompletion : needsHtmlDemoCompletion;
+    if (!needsCompletion(bundle)) return bundle;
+    if (!this.demoPpts.has(projectId)) {
+      const generated = manufacturing ? createManufacturingDemoPpt({ projectName: context.project.name, organization: MFG_DEMO_ORGANIZATION,
+        round: 1, body: createManufacturingDemoBundle(context)!.state.body }) : createHtmlDemoPpt();
+      this.demoPpts.set(projectId, generated.then(async blob => ({ blob, sha256: await hashWorkspaceBlob(blob) })).catch(error => {
+        this.demoPpts.delete(projectId); throw error;
+      }));
+    }
     // ZIP 생성과 해시는 IDB 트랜잭션 밖에서 끝내야 트랜잭션이 중간에 종료되지 않는다.
-    const ppt = await this.demoPpt;
+    const ppt = await this.demoPpts.get(projectId)!;
     this.context(projectId);
     return this.database.transact<WorkspaceBundle>(["projects", "workspaces", "workspaceBlobs"], "readwrite", (tx, done, watch) => {
       readWorkspaceBundle(tx, context, watch, latest => {
         const current = this.context(projectId);
-        if (!needsHtmlDemoCompletion(latest)) { done(latest); return; }
-        const next = addHtmlDemoCompletion(latest, current, ppt);
+        if (!needsCompletion(latest)) { done(latest); return; }
+        const next = manufacturing ? addManufacturingDemoCompletion(latest, current, ppt) : addHtmlDemoCompletion(latest, current, ppt);
         const original = WorkspaceBlobRecordSchema.parse(next.original);
         watch(tx.objectStore("workspaceBlobs").add(original), () => {});
         watch(tx.objectStore("projects").put({ namespace: this.identity.namespace, projectId, state: next.bundle.files }), () => {});
@@ -113,10 +124,33 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
       }, false);
     }, this.signal.signal);
   }
-  execute(input: WorkspaceMutation): Promise<WorkspaceReceipt> {
+  async execute(input: WorkspaceMutation): Promise<WorkspaceReceipt> {
     const parsed = WorkspaceMutationSchema.safeParse(input);
     check(parsed.success, "VALIDATION", "작업 요청을 확인해 주세요.");
     return this.commitPrepared(parsed.data, [], () => {});
+  }
+  private async completeManufacturing(input: WorkspaceMutation, assertAccess: () => void): Promise<WorkspaceReceipt> {
+    const parsed = WorkspaceMutationSchema.safeParse(input);
+    check(parsed.success, "VALIDATION", "작업 요청을 확인해 주세요.");
+    assertAccess();
+    if (parsed.data.projectId === MFG_DEMO_PROJECT_ID && parsed.data.operation.type === "complete") {
+      const request = parsed.data, operation = parsed.data.operation;
+      const bundle = await this.load(request.projectId), context = this.context(request.projectId);
+      check(bundle.state.revision === request.expectedRevision && bundle.state.currentRound === request.expectedRound &&
+        bundle.files.revision === operation.expectedFileRevision, "CONFLICT", "확인한 본문 또는 자료가 변경되었습니다. 다시 불러와 주세요.");
+      check(canProjectAction(context, bundle.state, "complete"), "FORBIDDEN", "완성 처리 권한이 없습니다.");
+      check(operation.acknowledged, "VALIDATION", "완성 내용을 확인해 주세요.");
+      const blob = await createManufacturingDemoPpt({ projectName: context.project.name, organization: MFG_DEMO_ORGANIZATION,
+        round: bundle.state.currentRound, body: structuredClone(bundle.state.body) });
+      const sha256 = await hashWorkspaceBlob(blob), filename = manufacturingPptFilename(bundle.state.currentRound);
+      const version: PptVersion = { id: context.newId(), index: Math.max(0, ...bundle.state.pptVersions.map(v => v.index)) + 1,
+        round: bundle.state.currentRound, snapshotId: null, kind: "generated", pinIds: [], blobId: context.newId(), filename,
+        byteLength: blob.size, sha256, createdAt: context.now, createdBy: context.identity.actor.id,
+        inputRevision: bundle.state.inputRevision, baseVersionId: null, manifest: null };
+      return this.commitPrepared({ ...request, operation: { ...operation, type: "complete-manufacturing-demo", version } },
+        [{ id: version.blobId, kind: "ppt", blob, filename, sha256 }], assertAccess);
+    }
+    throw new WorkspaceError("VALIDATION", "제조업 완성 요청을 확인해 주세요.");
   }
   async commitPrepared(
     input: PreparedWorkspaceMutation,
@@ -125,10 +159,20 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
   ): Promise<WorkspaceReceipt> {
     const parsed = PreparedWorkspaceMutationSchema.safeParse(input);
     check(parsed.success, "VALIDATION", "저장 요청을 확인해 주세요.");
+    // 서비스는 공개 명령도 commitPrepared로 전달하므로 두 진입 경로에서 같은 준비를 거친다.
+    if (parsed.data.projectId === MFG_DEMO_PROJECT_ID && parsed.data.operation.type === "complete") {
+      check(blobs.length === 0, "VALIDATION", "완성 요청에는 준비된 원본을 직접 전달할 수 없습니다.");
+      return this.completeManufacturing({ ...parsed.data, operation: parsed.data.operation }, assertAccess);
+    }
     const context = this.context(parsed.data.projectId),
       namespace = this.identity.namespace,
       projectId = context.project.id;
     const originals: StoredWorkspaceBlob[] = [];
+    if (parsed.data.operation.type === "complete-manufacturing-demo") {
+      const version = parsed.data.operation.version, blob = blobs.find(b => b.id === version.blobId);
+      check(!!blob && blob.kind === "ppt" && blob.filename === version.filename && blob.sha256 === version.sha256 &&
+        blob.blob.size === version.byteLength, "VALIDATION", "완성본과 PPT 원본 정보가 다릅니다.");
+    }
     check(
       new Set(blobs.map((b) => b.id)).size === blobs.length,
       "VALIDATION",

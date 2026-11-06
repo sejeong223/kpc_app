@@ -26,7 +26,7 @@ export function getHeaderDeadline(dueDate: string | null, nowMs: number): Header
 export function getHeaderRoundLabel(model: WorkspaceHeaderModel): string {
     if (model.snapshotId) return `${model.displayedRound}차 ${model.snapshotKind === "unfinished" ? "미완성 이력" : "보관본"} · 읽기 전용`;
     if (model.phase === "completed") return `${model.currentRound}차 완성`;
-    return `${model.currentRound}차 작업 중`;
+    return model.currentRound === 1 ? "1차 작성 중" : `${model.currentRound}차 재작업 중`;
 }
 export function getWorkspaceHeaderMetadata(projectId: string, rfps: readonly Pick<AdminRfp, "id" | "budgetKrw">[]): WorkspaceHeaderMetadata {
     // 표시 보조 정보만 같은 ID에서 가져온다. 고정 역할·회차·권한은 사용하지 않는다.

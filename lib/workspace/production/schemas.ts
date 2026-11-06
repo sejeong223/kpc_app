@@ -687,6 +687,7 @@ export const PreparedWorkspaceMutationSchema = z.strictObject({
       pins: z.array(AssetPinSchema),
     }),
     op("register-ppt", { version: PptVersionSchema }),
+    op("complete-manufacturing-demo", { expectedFileRevision: count, acknowledged: z.boolean(), version: PptVersionSchema }),
     op("protect-ppt", { versionId: id, pinIds: ids }),
   ]),
 }) satisfies z.ZodType<PreparedWorkspaceMutation>;

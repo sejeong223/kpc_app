@@ -1,6 +1,6 @@
 # Plan: HTML v13 헤더 전체 동작·제조업 제작 예시 적용
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -20,7 +20,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 데이터·제작·헤더·설정·완성본 연결 | [P01](../phases/2026-11-06-workspace-mfg-html-parity/P01-header-production/phase.md) |
+| P01 | `done` | 데이터·제작·헤더·설정·완성본 연결 | [P01](../phases/2026-11-06-workspace-mfg-html-parity/P01-header-production/phase.md) |
 
 ## Task 구조와 순서
 

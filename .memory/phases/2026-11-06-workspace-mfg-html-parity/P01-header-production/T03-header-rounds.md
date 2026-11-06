@@ -39,7 +39,7 @@ export interface HeaderHistoryItem {
 - 헤더 min-height58/padding8px12/leading·actions gap8. selector width560/max100%/min-height40/padding4px10/gap10. 제목14/20/500, 보조12/16, 역할 badge selector 안, round badge selector 밖. action height34/padding0 12/gap6, 재작업 icon only34x34. 순서 재작업→완성본 N→완성→설정. 임의 작업 단계 칩을 더하지 않는다.
 - 보조문구는 원본 기관·마감 순서를 따르되 사용자가 이전에 추가 요청한 부서 표시도 유지한다. 모든 기존 목 프로젝트의 부서/마감 데이터 유지. 날짜 KST D-day 로직 유지.
 - picker width640/max viewport-32, 제목 `내가 참여 중`, 각 행 이름·역할/기관/부서와 체크·D-day. 미선택 제조업 항목도 초기 역할 작성자로 표시하며 다른 프로젝트의 roles를 임의로 부풀리지 않는다. 선택은 choice.choose의 초안 보호가 승인된 뒤에만 닫고 반영한다.
-- round 문구: live writing=`N차 작업 중`, completed=`N차 완성`, snapshot=`N차 보관본 · 읽기 전용`. 미완성 snapshot의 기존 직접 URL은 `N차 미완성 이력 · 읽기 전용`으로 지원한다.
+- round 문구: live writing=1차 `1차 작성 중` / 이후 `N차 재작업 중`, completed=`N차 완성`, snapshot=`N차 보관본 · 읽기 전용`. 미완성 snapshot의 기존 직접 URL은 `N차 미완성 이력 · 읽기 전용`으로 지원한다.
 - snapshot 선택 시 헤더 아래 배너 `N차 보관본을 보고 있습니다. 내용을 바꾸려면 현재 작업으로 돌아가세요.` + `현재 작업으로`. 헤더 actions나 history popup에 중복 복귀 버튼을 두지 않는다. 현재 작업이 completed일 때도 별도 읽기 전용 안내와 실제 완료 시간/작성자/통계를 표시한다.
 - canComplete는 PM/super_admin/complete grant에서 계산하고 live phase와 분리한다. 완료 후 완성 버튼은 사라지지 않고 disabled/title `완성됨 · 왼쪽 재작업 버튼으로 다시 진행`. snapshot에서는 complete/rework 숨김. 실제 실행 가능성은 기존 capability로 다시 검사한다.
 - 760px 이하 lead 폭100%/actions wrap. 버튼을 display:none으로 숨기지 않는다. 긴 이름 ellipsis/title, focus-visible 유지.

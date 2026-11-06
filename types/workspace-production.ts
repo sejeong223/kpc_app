@@ -503,6 +503,12 @@ export interface PreparedVersionChange {
   type: "register-ppt";
   version: PptVersion;
 }
+export interface PreparedManufacturingCompletion {
+  type: "complete-manufacturing-demo";
+  expectedFileRevision: number;
+  acknowledged: boolean;
+  version: PptVersion;
+}
 export interface PreparedVersionPinsChange {
   type: "protect-ppt";
   versionId: string;
@@ -525,6 +531,7 @@ export type PreparedWorkspaceOperation =
   | PreparedAssetChange
   | PreparedProposalChange
   | PreparedVersionChange
+  | PreparedManufacturingCompletion
   | PreparedContentChange
   | PreparedVersionPinsChange
   | PreparedSlideBatch;
