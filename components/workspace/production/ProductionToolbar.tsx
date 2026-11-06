@@ -12,8 +12,8 @@ export interface ProductionToolbarProps {
   onManageToc(): void; commentActionSlot: React.ReactNode;
 }
 const useStyles = makeStyles({
-  title: { minWidth: 0, height: "auto", padding: "2px 0", fontSize: "16px", fontWeight: 700, lineHeight: "24px", textAlign: "left", justifyContent: "flex-start" },
-  state: { width: "auto", minHeight: "30px", height: "30px", fontSize: "12px", "& select": { minHeight: "28px", paddingTop: 0, paddingBottom: 0 } },
+  title: { minWidth: 0, minHeight: 0, height: "auto", padding: "2px 6px", marginLeft: "-6px", columnGap: "6px", border: 0, borderRadius: "7px", fontSize: "16px", fontWeight: 700, letterSpacing: "-.01em", lineHeight: "24px", color: "var(--kpc-ink)", textAlign: "left", justifyContent: "flex-start" },
+  state: { "--dadam-current-control-height": "30px", width: "auto", minHeight: "30px", height: "30px", fontSize: "12px", "& select": { minHeight: "28px", paddingTop: 0, paddingBottom: 0 } },
   popup: { width: "380px", maxWidth: "calc(100vw - 32px)", maxHeight: "min(480px, calc(100svh - 100px))", overflowY: "auto", boxSizing: "border-box", padding: "8px", fontFamily: tokens.fontFamilyBase },
   option: { width: "100%", height: "auto", padding: "8px", justifyContent: "flex-start", textAlign: "left", fontSize: "12px", columnGap: "6px" },
 });
@@ -27,7 +27,7 @@ export default function ProductionToolbar({ view, sectionId, onSection, onState,
   const close = () => { setOpenedSection(undefined); requestAnimationFrame(() => trigger.current?.focus()); };
   return <div data-comment-control>
     <div className="tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-1.5">
-      {chapter && <span className="tw:shrink-0 tw:text-[11px] tw:font-bold tw:text-(--kpc-secondary)">{chapterNumber(chapterIndex)}. {chapter.title} ›</span>}
+      {chapter && <span className="tw:shrink-0 tw:text-[11px] tw:font-bold tw:text-(--dadam-accent)">{chapterNumber(chapterIndex)}. {chapter.title} ›</span>}
       <Popover open={open} onOpenChange={(_, data) => data.open ? setOpenedSection(sectionId) : close()} positioning={{ position: "below", align: "start" }}>
         <PopoverTrigger disableButtonEnhancement><DadamButton ref={trigger} data-production-section-picker appearance="transparent" className={styles.title}
           disabled={busy || !current} aria-haspopup="dialog" aria-expanded={open} aria-controls={id} aria-label="제작할 장과 소목차 선택">

@@ -7,10 +7,11 @@
 | T01 | `done` | 공통 헤더·프로젝트 선택·호출부 적용 | [T01](./T01-shared-header.md) |
 | T02 | `done` | 제작 3열 패널·슬라이드 목록·출처 적용 | [T02](./T02-production-panels.md) |
 | T03 | `done` | 중앙 편집·코멘트 위치·다중 선택 통합 | [T03](./T03-production-editor.md) |
+| T04 | `done` | 사용자 스크린샷 대조·폭/글꼴/입력 보완·전체 프로젝트 목 정보 | [T04](./T04-parity-corrections.md) |
 
 ## Progress
 
-- done: 3/3 (active: 없음)
+- done: 4/4 (active: 없음)
 
 ## Constraints
 

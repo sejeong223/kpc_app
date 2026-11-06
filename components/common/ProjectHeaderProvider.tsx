@@ -81,7 +81,7 @@ function ActiveHeader({ children }: {
     }
     const pickerItems: WorkspaceProjectPickerItem[] = choice.projects.map(project => {
         const metadata = getWorkspaceHeaderMetadata(project.id, rfps);
-        return { id: project.id, name: project.name, number: project.number, organization: metadata.organization, dueDate: metadata.dueDate,
+        return { id: project.id, name: project.name, number: project.number, organization: metadata.organization, departmentName: metadata.departmentName, dueDate: metadata.dueDate,
             roleLabels: state.status === "ready" && state.view.project.id === project.id ? selectProjectRoleLabels(state.view)
                 : [project.pmId === runtime.identity.actor.id ? "PM" : "참여자"] };
     });

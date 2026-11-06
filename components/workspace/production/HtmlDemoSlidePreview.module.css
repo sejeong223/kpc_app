@@ -2,7 +2,7 @@
 .frame {
   container-type: inline-size;
   width: 100%;
-  max-width: 860px;
+  max-width: none;
   margin-inline: auto;
 }
 

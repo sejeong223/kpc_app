@@ -6,6 +6,7 @@ export interface WorkspaceProjectPickerItem {
     name: string;
     number: string;
     organization: string | null;
+    departmentName: string | null;
     dueDate: string | null;
     roleLabels: HeaderProjectRole[];
 }
@@ -23,6 +24,7 @@ export interface ProjectPermissionDraft {
 }
 export interface WorkspaceHeaderMetadata {
     organization: string | null;
+    departmentName: string | null;
     dueDate: string | null;
     budgetKrw: number | null;
 }

@@ -53,3 +53,5 @@ T01 → T02 → T03 순서로 실행한다. 각 Task는 정확한 파일·타입
 - [T01 헤더 결과](../reports/2026-11-06-workspace-html-v13-parity-T01.md)
 - [T02 패널·목록·출처 결과](../reports/2026-11-06-workspace-html-v13-parity-T02.md)
 - [T03 편집·코멘트 결과](../reports/2026-11-06-workspace-html-v13-parity-T03.md)
+
+2026-11-06 사용자 스크린샷 보완 요청으로 T04를 추가 완료했다. 내부 슬라이드860px 제한·글꼴 reset 우선순위·문서형 입력 여백을 수정하고 전체37개 목 프로젝트의 마감일/부서를 채웠다. 총4/4 완료. [T04 결과](../reports/2026-11-06-workspace-html-v13-parity-T04.md).

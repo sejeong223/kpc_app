@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     header: {
         fontFamily: tokens.fontFamilyBase, fontWeight: tokens.fontWeightRegular,
         backgroundColor: tokens.colorNeutralBackground1, borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-        boxSizing: "border-box", minHeight: "58px", justifyContent: "center", padding: "8px var(--layout-page-inset)",
+        boxSizing: "border-box", minHeight: "58px", justifyContent: "center", padding: "8px 12px", "--layout-control-gap": "8px",
         marginTop: "calc(-1 * var(--layout-page-inset))", marginLeft: "calc(-1 * var(--layout-page-inset))", marginRight: "calc(-1 * var(--layout-page-inset))",
     },
     leading: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", minWidth: 0, maxWidth: "100%", "@media (max-width: 760px)": { width: "100%" } },
@@ -30,7 +30,7 @@ const useStyles = makeStyles({
     name: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "14px", lineHeight: "20px", fontWeight: 500 },
     meta: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", lineHeight: "16px", color: tokens.colorNeutralForeground3, fontWeight: 400 },
     badge: { display: "inline-flex", flexShrink: 0, alignItems: "center", borderRadius: "999px", padding: "2px 8px", backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontSize: "12px", lineHeight: "16px", whiteSpace: "nowrap" },
-    roundBadge: { padding: "3px 9px" },
+    roundBadge: { padding: "2px 8px" },
     action: { boxSizing: "border-box", height: "34px", minHeight: "34px", paddingLeft: "12px", paddingRight: "12px", columnGap: "6px" },
     iconAction: { width: "34px", minWidth: "34px", padding: 0 },
     popup: { width: "360px", maxWidth: "calc(100vw - 32px)", maxHeight: "min(480px, calc(100svh - 100px))", boxSizing: "border-box", overflowY: "auto", padding: "8px", borderRadius: "8px", boxShadow: dadamUi.popoverShadow, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
@@ -84,13 +84,13 @@ function ProjectPicker() {
         <PopoverTrigger disableButtonEnhancement><Button ref={trigger} data-project-picker className={styles.selector} disabled={pending || selecting || !pickerItems.length}
             aria-label={selected ? `프로젝트 선택: ${selected.name}` : "프로젝트 선택"} aria-haspopup="dialog" aria-expanded={picker.open} aria-controls={id}>
             <span className={styles.summary}><span className={styles.name} title={selected?.name}>{selected?.name ?? (state.status === "loading" ? "프로젝트 조회 중…" : "프로젝트 선택")}</span>
-                <span className={styles.meta}>{selected ? `${selected.organization ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : "참여 중인 프로젝트"}</span></span>
+                <span className={styles.meta} title={selected ? `${selected.organization ?? "—"} · ${selected.departmentName ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : undefined}>{selected ? `${selected.organization ?? "—"} · ${selected.departmentName ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : "참여 중인 프로젝트"}</span></span>
             {selected && <span className={styles.badge} title={selected.roleLabels.join(" · ")}>{selected.roleLabels.join(" · ")}</span>}<ChevronDown16Regular />
         </Button></PopoverTrigger>
         <PopoverSurface id={id} role="dialog" aria-labelledby={id + "-title"} className={mergeClasses(styles.popup, styles.picker)}>
             <h2 id={id + "-title"} className={styles.popupTitle}>내가 참여 중</h2>
             {pickerItems.map(project => {
-                const deadline = getHeaderDeadline(project.dueDate, picker.openedAt), summary = `${project.roleLabels.join(" · ")} · ${project.organization ?? "—"}`;
+                const deadline = getHeaderDeadline(project.dueDate, picker.openedAt), summary = `${project.roleLabels.join(" · ")} · ${project.organization ?? "—"} · ${project.departmentName ?? "—"}`;
                 return <Button key={project.id} className={styles.option} aria-pressed={project.id === selection.projectId} disabled={pending || selecting} onClick={() => { void choose(project.id); }}>
                     <span className={mergeClasses(styles.summary, styles.optionBody)}><span className={mergeClasses(styles.name, styles.optionName)} title={project.name}>{project.name}</span><span className={styles.meta} title={summary}>{summary}</span></span>
                     <span className={styles.optionStatus}><span className={styles.check} aria-hidden="true">{project.id === selection.projectId && <Checkmark16Regular />}</span>

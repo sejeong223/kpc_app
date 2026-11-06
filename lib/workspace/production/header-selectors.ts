@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { PROJECT_HEADER_PROJECTS } from "@/config/project-header";
+import { WORKSPACE_PROJECT_METADATA } from "@/config/workspace-project-metadata";
 import type { AdminRfp } from "@/types/admin";
 import type { HeaderDeadline, HeaderProjectRole, WorkspaceHeaderMetadata, WorkspaceHeaderModel } from "@/types/workspace-header";
 import type { ProjectView, WorkspaceSelection } from "@/types/workspace-production";
 import { workspaceAssert as check } from "./errors";
 import { selectSnapshotView, getCompletionSummary } from "./selectors";
-const MetadataSchema = z.strictObject({ organization: z.string().nullable(), dueDate: z.iso.date().nullable(), budgetKrw: z.number().finite().nonnegative().nullable() });
+const MetadataSchema = z.strictObject({ organization: z.string().nullable(), departmentName: z.string().nullable(), dueDate: z.iso.date().nullable(), budgetKrw: z.number().finite().nonnegative().nullable() });
 export function selectProjectRoleLabels(view: ProjectView): HeaderProjectRole[] {
     const roles: HeaderProjectRole[] = [];
     if (view.actor.id === view.project.pmId) roles.push("PM");
@@ -30,8 +30,8 @@ export function getHeaderRoundLabel(model: WorkspaceHeaderModel): string {
 }
 export function getWorkspaceHeaderMetadata(projectId: string, rfps: readonly Pick<AdminRfp, "id" | "budgetKrw">[]): WorkspaceHeaderMetadata {
     // 표시 보조 정보만 같은 ID에서 가져온다. 고정 역할·회차·권한은 사용하지 않는다.
-    const display = PROJECT_HEADER_PROJECTS.find(p => p.id === projectId);
-    return MetadataSchema.parse({ organization: display?.organization ?? null, dueDate: display?.dueDate ?? null, budgetKrw: rfps.find(p => p.id === projectId)?.budgetKrw ?? null });
+    const display = WORKSPACE_PROJECT_METADATA[projectId];
+    return MetadataSchema.parse({ organization: display?.organization ?? null, departmentName: display?.departmentName ?? null, dueDate: display?.dueDate ?? null, budgetKrw: rfps.find(p => p.id === projectId)?.budgetKrw ?? display?.budgetKrw ?? null });
 }
 export function canReviewProject(view: Pick<ProjectView, "actor" | "project">): boolean {
     return view.actor.role === "super_admin" || view.actor.id === view.project.pmId;

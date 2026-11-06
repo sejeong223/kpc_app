@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, shorthands, tokens } from "@fluentui/react-components";
 import { DadamButton } from "@/components/ui/DadamControls";
 import { ArrowUp20Regular } from "@fluentui/react-icons";
 import { dadamUi } from "@/lib/ui/dadam-theme";
@@ -16,20 +16,21 @@ export interface SlideContentEditorProps {
 }
 const clean: DocumentEditorState = { dirty: false, composing: false, error: null };
 const useStyles = makeStyles({
-  shell: { minWidth: 0, marginTop: "10px", border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, boxShadow: tokens.shadow2 },
+  shell: { minWidth: 0, marginTop: "10px", border: "1px solid var(--kpc-line)", borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, boxShadow: "0 1px 3px rgba(0,0,0,.05)", ":focus-within": { ...shorthands.borderColor("#b9bcc4"), boxShadow: "0 2px 10px rgba(0,0,0,.08)" } },
   inputFrame: { position: "relative" },
   paper: { boxSizing: "border-box", padding: "12px 52px 12px 16px", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", fontFamily: tokens.fontFamilyBase, fontSize: "13px", lineHeight: "1.7",
-    ":focus-within": { boxShadow: `inset 0 0 0 1px ${tokens.colorBrandStroke1}` },
-    "& h2": { margin: "0 0 8px", fontSize: tokens.fontSizeBase500, fontWeight: 600 },
-    "& [data-document-field='lead']": { margin: "0 0 16px", color: tokens.colorNeutralForeground2 },
-    "& [data-block-id]": { marginTop: "12px", marginBottom: "12px" },
-    "& [data-document-editable]": { minHeight: "24px", whiteSpace: "pre-wrap", overflowWrap: "anywhere", outline: "none", borderRadius: "3px" },
-    "& [contenteditable='true']:focus": { boxShadow: `0 0 0 1px ${tokens.colorBrandStroke1}` },
+    color: "#26282d",
+    "& h2": { margin: "0 0 4px", fontSize: "inherit", fontWeight: 400, lineHeight: "inherit" },
+    "& [data-document-field='lead']": { margin: "0 0 4px", color: "inherit" },
+    "& [data-block-id]": { marginTop: 0, marginBottom: "4px" },
+    "& [data-document-editable]": { minHeight: "1.7em", whiteSpace: "pre-wrap", overflowWrap: "anywhere", outline: "none", borderRadius: "3px" },
     "& [data-document-editable]:empty::before": { content: "attr(data-placeholder)", color: tokens.colorNeutralForeground4, pointerEvents: "none" },
     "& table": { borderCollapse: "collapse", width: "100%", tableLayout: "fixed" },
     "& td, & th": { border: `1px solid ${tokens.colorNeutralStroke2}`, padding: "8px", verticalAlign: "top", textAlign: "left" },
     "& th": { backgroundColor: tokens.colorNeutralBackground2 },
-    "& ul": { paddingLeft: "24px" },
+    "& ul[data-block-id]": { margin: "2px 0", paddingLeft: "18px", listStyleType: "disc" },
+    "& p": { margin: "0 0 4px" },
+    "& li": { margin: 0 },
     "& figure": { marginLeft: 0, marginRight: 0, padding: "12px", backgroundColor: tokens.colorNeutralBackground2, color: tokens.colorNeutralForeground2 },
   },
   save: { position: "absolute", right: "10px", bottom: "10px", width: "30px", height: "30px", minWidth: "30px", minHeight: "30px", padding: 0, borderRadius: "50%" },
