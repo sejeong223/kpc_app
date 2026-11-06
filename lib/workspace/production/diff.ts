@@ -7,6 +7,7 @@ import type {
   WorkspaceProposal,
 } from "@/types/workspace-production";
 import { slidePinIds } from "./clipboard";
+import { hasLockedSlides } from "./section-locks";
 export function pinsAvailable(
   view: ProjectView,
   ids: readonly string[],
@@ -53,7 +54,7 @@ export function proposalItemAllowed(
   )
     return false;
   const affected = view.state.body.slides.filter((s) =>
-    item.affectedSectionIds.includes(s.sectionId),
+    item.slideId ? s.id === item.slideId : item.affectedSectionIds.includes(s.sectionId),
   );
   if (!pinsAvailable(view, slidePinIds(affected))) return false;
   if (
@@ -64,9 +65,14 @@ export function proposalItemAllowed(
     return (
       view.capabilities.actions.outline &&
       item.affectedSectionIds.every(
-        (id) => !view.state.body.sections.find((s) => s.id === id)?.locked,
+        (id) => !view.state.body.sections.find((s) => s.id === id)?.locked && !hasLockedSlides(view.state.body, id),
       )
     );
+  if (item.slideId) {
+    const existing = view.state.body.slides.some(s => s.id === item.slideId);
+    return existing ? view.capabilities.editableSlideIds.includes(item.slideId)
+      : proposal.kind === "draft" && !!item.sectionId && view.capabilities.insertableSectionIds.includes(item.sectionId);
+  }
   return (
     item.affectedSectionIds.every((id) =>
       view.capabilities.editableSectionIds.includes(id),

@@ -24,7 +24,7 @@ export function selectProductionSlides(view: ProjectView): ProductionSlideRow[] 
   return body.chapters.flatMap(chapter => body.sections.filter(s => s.chapterId === chapter.id).flatMap(section =>
     body.slides.filter(s => s.sectionId === section.id).map(slide => ({
       slide, section, chapter, sectionNumber: numbers[section.id],
-      mine: section.assigneeIds.includes(view.actor.id), editable: view.capabilities.editableSectionIds.includes(section.id),
+      mine: section.assigneeIds.includes(view.actor.id), editable: view.capabilities.editableSlideIds.includes(slide.id),
       openComments: counts.get(slide.id) ?? 0,
     })),
   )).map((row, index) => ({ ...row, number: index + (view.project.id === MFG_DEMO_PROJECT_ID ? 2 : 1) }));

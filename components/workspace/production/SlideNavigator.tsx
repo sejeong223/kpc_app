@@ -27,7 +27,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   const editable = (ids: readonly string[]) => ids.length > 0 && ids.every(id => rows.find(r => r.slide.id === id)?.editable);
   const active = rows.find(r => r.slide.id === activeId), menuRow = rows.find(r => r.slide.id === menu?.id);
   const menuSection = view.state.body.sections.find(section => section.id === menu?.sectionId);
-  const canEditMenu = !!menuSection && view.capabilities.editableSectionIds.includes(menuSection.id);
+  const canEditMenu = !!menuSection && view.capabilities.insertableSectionIds.includes(menuSection.id);
   const menuIds = menuRow ? selectedIds.includes(menuRow.slide.id) ? [...selectedIds] : [menuRow.slide.id] : [];
   const closeMenu = (restoreFocus = true) => { setMenu(null); if (restoreFocus) trigger.current?.focus(); };
   const openEmptyMenu = (element: HTMLElement, x: number, y: number) => {
@@ -67,7 +67,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       }
       else if (key === "escape" && active) { e.preventDefault(); e.stopPropagation(); onSelect(active.slide.id, "single"); }
       else if (modifier && key === "c" && canCopy(selectedIds)) { e.preventDefault(); onCopy([...selectedIds]); }
-      else if (modifier && key === "v" && active?.editable && canPaste) { e.preventDefault(); onPaste(active.section.id, active.slide.id); }
+      else if (modifier && key === "v" && active && view.capabilities.insertableSectionIds.includes(active.section.id) && canPaste) { e.preventDefault(); onPaste(active.section.id, active.slide.id); }
       else if ((key === "delete" || key === "backspace") && editable(selectedIds)) { e.preventDefault(); onRemove([...selectedIds]); }
     }}>
     <header className="tw:flex tw:min-h-11 tw:shrink-0 tw:items-center tw:gap-2 tw:border-b tw:border-(--kpc-line) tw:px-3">
@@ -98,7 +98,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
             }}
             onClick={e => { closeMenu(false); onSelect(slide.id, e.shiftKey ? "range" : e.ctrlKey || e.metaKey ? "toggle" : "single"); }}>
             <ProductionPreview view={view} slide={slide} snapshotId={snapshotId} mode="thumbnail" number={number} priority={slide.id === activeId} />
-            <span className={"tw:flex tw:min-w-0 tw:items-center tw:gap-1.5 tw:border-t tw:border-(--kpc-line) tw:px-2 tw:py-[5px] tw:text-[10.5px] tw:font-bold " + caption}><span className="tw:shrink-0">{number}</span>{section.locked && <LockClosed16Regular className="tw:shrink-0" aria-label="고정됨" />}
+            <span className={"tw:flex tw:min-w-0 tw:items-center tw:gap-1.5 tw:border-t tw:border-(--kpc-line) tw:px-2 tw:py-[5px] tw:text-[10.5px] tw:font-bold " + caption}><span className="tw:shrink-0">{number}</span>{slide.state === "done" && <LockClosed16Regular className="tw:shrink-0" aria-label="고정됨" />}
               <span className="tw:truncate">{row.sectionNumber} {section.title}{siblings.length > 1 && " · " + (siblings.findIndex(item => item.slide.id === slide.id) + 1) + "/" + siblings.length}</span>
               {row.openComments > 0 && <span aria-label={`미처리 의견 ${row.openComments}개`} className="tw:ml-auto tw:shrink-0 tw:rounded-full tw:bg-(--dadam-accent-soft) tw:px-1.5 tw:text-(--dadam-accent-ink)">{row.openComments}</span>}
             </span>

@@ -34,7 +34,7 @@ export default function PptMappingEditor({
     targets = view.state.body.slides
       .filter(
         (s) =>
-          view.capabilities.editableSectionIds.includes(s.sectionId) &&
+          view.capabilities.editableSlideIds.includes(s.id) &&
           pinsAvailable(view, slidePinIds([s])),
       )
       .flatMap((s) => [

@@ -48,11 +48,11 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
   const [documentState, setDocumentState] = useState(cleanDocument), [resetKey, setResetKey] = useState(0), [error, setError] = useState<string | null>(null);
   const dirty = editor.draft.dirty || documentState.dirty, localBusy = editor.busy || documentState.composing;
   const busy = externalBusy || localBusy;
-  const can = !snapshotId && !externalConflict && !accessDenied && view.state.phase === "writing" && view.capabilities.editableSectionIds.includes(slide.sectionId);
+  const can = !snapshotId && !externalConflict && !accessDenied && view.state.phase === "writing" && view.capabilities.editableSlideIds.includes(slide.id);
   const conflict = externalConflict ?? (editor.conflict ? "다른 변경이 저장되었습니다. 입력을 보존했으니 필요한 내용을 복사한 뒤 최신 내용을 불러와 주세요." : null);
   const canSave = can && !conflict && !documentState.error && !documentState.composing && !busy;
   const readOnlyReason = snapshotId ? "보관본은 읽기 전용입니다." : view.state.phase !== "writing" ? "현재 작업 단계에서는 내용을 수정할 수 없습니다." :
-    view.state.body.sections.find(section => section.id === slide.sectionId)?.locked ? "작성 완료로 고정된 소목차입니다. 수정하려면 권한에 따라 고정을 해제해 주세요." : "이 소목차의 편집 권한이 없습니다.";
+    slide.state === "done" ? "작성 완료로 고정된 슬라이드입니다. 수정하려면 고정을 해제해 주세요." : "이 슬라이드의 편집 권한이 없습니다.";
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   useEffect(() => onBusyChange(localBusy), [localBusy, onBusyChange]);
   const latestEditor = useRef(editor);
@@ -94,7 +94,7 @@ function ActiveManufacturingSlide({ view, slide, snapshotId, externalConflict, b
   const dirty = editor.draft.dirty || documentState.dirty, busy = externalBusy || editor.busy || documentState.composing;
   const section = view.state.body.sections.find(s => s.id === slide.sectionId);
   const conflict = externalConflict ?? (editor.conflict ? "다른 변경이 저장되었습니다. 입력을 보관했으니 필요한 내용을 복사한 뒤 최신 내용을 불러와 주세요." : null);
-  const can = !snapshotId && !accessDenied && !conflict && view.state.phase === "writing" && !!section?.assigneeIds.includes(view.actor.id) && !section.locked;
+  const can = !snapshotId && !accessDenied && !conflict && view.state.phase === "writing" && !!section?.assigneeIds.includes(view.actor.id) && view.capabilities.editableSlideIds.includes(slide.id);
   const canSave = can && !busy && !documentState.error;
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   useEffect(() => onBusyChange(editor.busy || documentState.composing), [editor.busy, documentState.composing, onBusyChange]);
@@ -156,7 +156,8 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   const assertEditable = (fresh: ProjectView, slideIds: readonly string[], sectionIds: readonly string[] = []) => {
     const slides = slideIds.map(id => fresh.state.body.slides.find(s => s.id === id));
     check(slides.every(Boolean), "NOT_FOUND", "선택한 슬라이드가 변경되었습니다.");
-    check([...sectionIds, ...slides.map(s => s!.sectionId)].every(id => fresh.capabilities.editableSectionIds.includes(id)), "FORBIDDEN", "선택에 고정되었거나 수정 권한이 없는 소목차가 있습니다.");
+    check(slideIds.every(id => fresh.capabilities.editableSlideIds.includes(id)) &&
+      sectionIds.every(id => fresh.capabilities.insertableSectionIds.includes(id)), "FORBIDDEN", "고정되었거나 수정 권한이 없는 슬라이드 또는 대상 소목차가 있습니다.");
   };
   const selectIds = async (slideIds: string[], focusId: string | null, after?: () => void) => {
     const row = rows.find(r => r.slide.id === focusId);
@@ -177,9 +178,11 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
     if (stillHere()) { setSelected(nextIds.length ? nextIds : null); setNotice(options?.silent ? null : receipt.notices?.join(" ") || "변경을 반영했습니다."); }
   };
   const execute = (operation: WorkspaceOperation) => guarded(async () => {
+    const silent = operation.type === "set-slide-state" || operation.type === "unlock-slide";
+    if (silent) setNotice(null);
     const fresh = await freshView();
     const receipt = await command.mutateAsync({ ...requestFor(fresh), operation });
-    await applyReceipt(receipt, "id" in operation && rows.some(r => r.slide.id === operation.id) ? [operation.id] : [], { silent: operation.type === "set-section-state" });
+    await applyReceipt(receipt, "id" in operation && rows.some(r => r.slide.id === operation.id) ? [operation.id] : [], { silent });
   });
   const canCopy = (slideIds: readonly string[]) => !readOnlyError && !accessDenied && !selection.snapshotId && slideIds.length > 0 && slideIds.every(id => rows.some(r => r.slide.id === id)) && slidePinIds(rows.filter(r => slideIds.includes(r.slide.id)).map(r => r.slide)).every(id => view.assetAccess.find(a => a.pinId === id)?.access.status === "available");
   const copy = (slideIds: string[]) => { if (!canCopy(slideIds)) return; guarded(async () => { await freshView(false); const result = await clipboard.copy.mutateAsync({ projectId: view.project.id, slideIds }); if (stillHere()) setNotice(`${result.count}장 복사했습니다. 10분 안에 붙여넣을 수 있습니다.`); }); };
@@ -201,7 +204,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   const savedSessionSlide = session ? rows.find(r => r.slide.id === session.slideId)?.slide : null;
   const sessionConflict = readOnlyError ?? (session?.dirty && (session.round !== view.state.currentRound || !savedSessionSlide) ? "편집 중인 슬라이드의 회차가 변경되었거나 삭제되었습니다. 입력을 복사한 뒤 최신 내용으로 이동해 주세요." : null);
   const editingSlide = session ? (session.round === view.state.currentRound ? savedSessionSlide ?? session.lastSlide : session.lastSlide) : null;
-  const safeView = readOnly ? { ...view, capabilities: { ...view.capabilities, editableSectionIds: [], unlockableSectionIds: [] } } : view;
+  const safeView = readOnly ? { ...view, capabilities: { ...view.capabilities, editableSectionIds: [], unlockableSectionIds: [], editableSlideIds: [], unlockableSlideIds: [], insertableSectionIds: [] } } : view;
   const multiple = ids.length > 1;
   const aiControls = multiple && !accessDenied && !readOnly && onPropose ?
     <ProductionAiPanel key={JSON.stringify([ids, view.state.currentRound])} view={view} slideIds={ids} busy={busy} onPropose={onPropose} /> : null;
@@ -220,7 +223,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   const renderCenter = ({ editor, preview, dirty }: ProductionEditorParts) => <>
     <div data-production-editor-header className="tw:max-h-[55%] tw:min-h-0 tw:shrink-0 tw:overflow-y-auto tw:overscroll-contain tw:border-b tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:px-3 tw:pt-3.5 tw:pb-2.5 tw:@min-[761px]:px-[22px]">
       <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}
-      {!accessDenied && <ProductionToolbar key={section?.id ?? "empty"} view={safeView} sectionId={section?.id ?? null} busy={busy}
+      {!accessDenied && <ProductionToolbar key={current?.id ?? section?.id ?? "empty"} view={safeView} sectionId={section?.id ?? null} slideId={current?.id ?? null} busy={busy}
         commentActionSlot={<div ref={setCommentCreateTarget} data-comment-control />}
         onManageToc={() => guarded(async () => { if (stillHere()) router.push(workspaceHref("toc", selection)); })}
         onSection={id => guarded(async () => {
@@ -230,8 +233,8 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
             requestAnimationFrame(() => document.querySelector<HTMLButtonElement>("[data-production-section-picker]")?.focus());
           }
         })}
-        onState={state => { if (section) execute({ type: "set-section-state", id: section.id, state }); }}
-        onUnlock={() => { if (section) execute({ type: "unlock-section", id: section.id }); }} />}
+        onState={state => { if (current) execute(state === "writing" ? { type: "unlock-slide", id: current.id } : { type: "set-slide-state", id: current.id, state }); }}
+        onUnlock={() => { if (current) execute({ type: "unlock-slide", id: current.id }); }} />}
       {aiControls}
       <div hidden={multiple && !dirty}>
         {multiple && dirty && <p role="status" className="tw:text-xs">아직 반영하지 않은 단일 슬라이드 입력을 보관하고 있습니다.</p>}

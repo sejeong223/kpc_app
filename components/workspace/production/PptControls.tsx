@@ -52,7 +52,8 @@ export default function PptControls({
   const canImport =
     !snapshotId &&
     liveView.state.phase === "writing" &&
-    liveView.capabilities.editableSectionIds.length > 0;
+    (liveView.capabilities.editableSlideIds.length > 0 ||
+      liveView.capabilities.insertableSectionIds.some(id => !liveView.state.body.slides.some(s => s.sectionId === id)));
   const missing = !pinsAvailable(view, slidePinIds(view.state.body.slides)),
     canGenerate = view.state.body.slides.length > 0 && !missing;
   const unmapped = view.state.body.slides.filter(

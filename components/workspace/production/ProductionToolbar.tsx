@@ -7,7 +7,7 @@ import { outlineNumbers } from "@/lib/workspace/production/selectors";
 import { selectProductionSlides } from "@/lib/workspace/production/presentation";
 import type { ProjectView } from "@/types/workspace-production";
 export interface ProductionToolbarProps {
-  view: ProjectView; sectionId: string | null; busy?: boolean;
+  view: ProjectView; sectionId: string | null; slideId: string | null; busy?: boolean;
   onSection(id: string): void; onState?(state: "writing" | "done"): void; onUnlock?(): void;
   onManageToc(): void; commentActionSlot: React.ReactNode;
 }
@@ -18,11 +18,15 @@ const useStyles = makeStyles({
   option: { width: "100%", height: "auto", padding: "8px", justifyContent: "flex-start", textAlign: "left", fontSize: "12px", columnGap: "6px" },
 });
 const chapterNumber = (index: number) => ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][index] ?? String(index + 1);
-export default function ProductionToolbar({ view, sectionId, onSection, onState, onUnlock, onManageToc, commentActionSlot, busy = false }: ProductionToolbarProps) {
+export default function ProductionToolbar({ view, sectionId, slideId, onSection, onState, onUnlock, onManageToc, commentActionSlot, busy = false }: ProductionToolbarProps) {
   const styles = useStyles(), id = useId(), trigger = useRef<HTMLButtonElement>(null);
   const [openedSection, setOpenedSection] = useState<string | null | undefined>(undefined);
   const open = openedSection !== undefined && openedSection === sectionId;
   const current = view.state.body.sections.find(s => s.id === sectionId), numbers = outlineNumbers(view.state), rows = selectProductionSlides(view);
+  const activeSlide = view.state.body.slides.find(s => s.id === slideId && s.sectionId === sectionId);
+  const canChangeState = !!activeSlide && (activeSlide.state === "done"
+    ? view.capabilities.unlockableSlideIds.includes(activeSlide.id)
+    : view.capabilities.editableSlideIds.includes(activeSlide.id));
   const chapterIndex = view.state.body.chapters.findIndex(c => c.id === current?.chapterId), chapter = view.state.body.chapters[chapterIndex];
   const close = () => { setOpenedSection(undefined); requestAnimationFrame(() => trigger.current?.focus()); };
   return <div data-comment-control>
@@ -53,12 +57,12 @@ export default function ProductionToolbar({ view, sectionId, onSection, onState,
         </PopoverSurface>
       </Popover>
       <span className="tw:flex-1" />{commentActionSlot}
-      {current && <DadamSelect className={styles.state} aria-label="소목차 작성 상태" value={current.state} disabled={busy || !onState || !view.capabilities.editableSectionIds.includes(current.id)}
-        onChange={(_, data) => { const next = data.value === "done" ? "done" : "writing"; if (next !== current.state) onState?.(next); }}><option value="writing">작성 중</option><option value="done">작성 완료</option></DadamSelect>}
+      {activeSlide && <DadamSelect className={styles.state} aria-label="슬라이드 작성 상태" value={activeSlide.state} disabled={busy || !onState || !canChangeState}
+        onChange={(_, data) => { const next = data.value === "done" ? "done" : "writing"; if (canChangeState && next !== activeSlide.state) onState?.(next); }}><option value="writing">작성 중</option><option value="done">작성 완료</option></DadamSelect>}
     </div>
-    {current?.locked && <div className="tw:mt-2.5 tw:flex tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-lg tw:bg-(--dadam-accent-soft) tw:px-3 tw:py-2 tw:text-xs tw:text-(--dadam-accent-ink)">
+    {activeSlide?.state === "done" && <div className="tw:mt-2.5 tw:flex tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-lg tw:bg-(--dadam-accent-soft) tw:px-3 tw:py-2 tw:text-xs tw:text-(--dadam-accent-ink)">
       <strong>작성 완료 · 고정됨</strong>
-      {onUnlock && view.capabilities.unlockableSectionIds.includes(current.id) && <DadamButton className="tw:ml-auto" size="small" disabled={busy} onClick={onUnlock}>고정 해제</DadamButton>}
+      {onUnlock && view.capabilities.unlockableSlideIds.includes(activeSlide.id) && <DadamButton className="tw:ml-auto" size="small" disabled={busy} onClick={onUnlock}>고정 해제</DadamButton>}
     </div>}
   </div>;
 }

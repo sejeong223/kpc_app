@@ -6,6 +6,7 @@ import { workspaceQueryKeys } from "@/lib/workspace/production/query-keys";
 import { activeWorkspaceRead, loadProjectView, useWorkspaceAction } from "./use-workspace-production";
 import type { MockRequest, ProjectRequest, ProjectView, WorkspaceProposal, WorkspaceReceipt } from "@/types/workspace-production";
 import { WorkspaceError } from "@/lib/workspace/production/errors";
+import { hasLockedSlides } from "@/lib/workspace/production/section-locks";
 
 export function proposalRequestBlocked(view: ProjectView, request: MockRequest, snapshotId: string | null): string | null {
   if (snapshotId || view.state.phase !== "writing") return "보관본·완성 회차에서는 요청을 적용할 수 없습니다.";
@@ -13,10 +14,13 @@ export function proposalRequestBlocked(view: ProjectView, request: MockRequest, 
   const slides = request.slideIds.map(id => view.state.body.slides.find(s => s.id === id));
   if (slides.some(s => !s) || request.sectionIds.some(id => !view.state.body.sections.some(s => s.id === id))) return "요청 대상이 삭제되었습니다. 슬라이드를 다시 선택해 주세요.";
   const sections = [...new Set([...request.sectionIds, ...slides.map(s => s!.sectionId)])];
-  if (sections.some(id => view.state.body.sections.find(s => s.id === id)?.locked)) return "요청 대상에 고정된 소목차가 있습니다. 선택을 바꾸거나 고정을 해제해 주세요.";
-  if (["check", "recommend-toc", "edit-toc"].includes(request.kind)) return view.capabilities.actions.outline ? null : "점검·목차 요청 권한이 없습니다.";
+  if (["check", "recommend-toc", "edit-toc"].includes(request.kind)) {
+    if (sections.some(id => view.state.body.sections.find(s => s.id === id)?.locked || hasLockedSlides(view.state.body, id))) return "요청 대상에 완료된 슬라이드가 있습니다. 고정을 먼저 해제해 주세요.";
+    return view.capabilities.actions.outline ? null : "점검·목차 요청 권한이 없습니다.";
+  }
   if (!sections.length) return "요청할 슬라이드 또는 빈 소목차를 선택해 주세요.";
-  return sections.every(id => view.capabilities.editableSectionIds.includes(id)) ? null : "선택한 모든 슬라이드의 수정 권한이 필요합니다. 대상을 다시 선택해 주세요.";
+  return request.sectionIds.every(id => view.capabilities.editableSectionIds.includes(id)) &&
+    request.slideIds.every(id => view.capabilities.editableSlideIds.includes(id)) ? null : "선택한 모든 슬라이드의 수정 권한이 필요합니다. 대상을 다시 선택해 주세요.";
 }
 export function useWorkspaceProposals() {
   const runtime = useWorkspaceRuntime(), abort = useRef<AbortController | null>(null), proposalId = useRef<string | null>(null), generationRef = useRef(0);

@@ -41,7 +41,7 @@ export default function PptImportReview({
         sourceAllowed &&
         view.state.phase === "writing" &&
         !!s &&
-        view.capabilities.editableSectionIds.includes(s.sectionId) &&
+        view.capabilities.editableSlideIds.includes(s.id) &&
         pinsAvailable(view, slidePinIds([s]))
       );
     },
@@ -148,7 +148,7 @@ export default function PptImportReview({
       )}
       {sourceAllowed &&
         view.state.phase === "writing" &&
-        view.capabilities.editableSectionIds.length > 0 && (
+        view.capabilities.editableSlideIds.length > 0 && (
           <PptMappingEditor
             comparison={value.comparison}
             view={view}

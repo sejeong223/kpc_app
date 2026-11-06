@@ -1,6 +1,6 @@
 # Task: T02 활성 슬라이드 상태 UI·완료 및 해제 안내 제거
 
-## Status: pending
+## Status: done
 
 ## Goal
 제작 화면의 상태 드롭다운/잠금 안내/편집 가능 여부를 활성 슬라이드에 연결한다. A 완료 후 B가 그대로 편집되고, A 해제 시 일반 성공 텍스트가 나오지 않는다.
@@ -134,9 +134,10 @@ Task: T02-slide-state-ui
 ~~~
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 본 Task 완료 커밋의 Plan/Phase/Task 식별자로 조회
+- 검증 기록: [T02 결과](../../../reports/2026-11-06-production-slide-status-responsive-T02.md)
 
 ## Execution Constraints
 현재 ProductionToolbar/SlideNavigator/관련 폰트·배지 파일의 미커밋 수정은 기존 사용자 요청 결과다. 보존하고 이 Task 변경만 덧붙인다. 무관한 변경 일괄 stage/reset/restore 금지, current.md 강제 stage 금지. tests/ 및 브라우저/CUA/E2E/dev server/스크린샷 금지. 원본 HTML은 읽기 전용이며 패키지/DB/배포 작업은 없다.

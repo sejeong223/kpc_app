@@ -141,7 +141,7 @@ export default function AssetReapplyDialog({
         <fieldset className="tw:rounded-lg tw:border tw:border-solid tw:border-(--kpc-line) tw:p-3">
           <legend>기존 슬라이드에도 적용 (선택)</legend>
           {view.state.body.slides.map((slide) =>
-            view.capabilities.editableSectionIds.includes(slide.sectionId) ? (
+            view.capabilities.editableSlideIds.includes(slide.id) ? (
               <DadamCheckbox
                 key={slide.id}
                 label={slide.content.title || "제목 없음"}
