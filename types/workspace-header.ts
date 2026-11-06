@@ -56,3 +56,15 @@ export interface HeaderHistoryItem {
     createdAt: string; createdBy: string; createdByName: string; inputRevision: number;
     doneSections: number; writingSections: number; slides: number; pptVersionId: string | null;
 }
+export type HeaderSettingsTab = "info" | "perm" | "noti" | "log";
+export type HeaderPermissionKey = "done" | "redo" | "setup" | "assign" | "grant";
+export type HeaderNotificationKey = "deadline" | "complete" | "rework" | "comment" | "inApp" | "email";
+export interface HeaderSettingsDraft {
+    projectId: string;
+    name: string; organization: string; budgetEok: string; dueDate: string;
+    permissionsByMember: Record<string, HeaderPermissionKey[]>;
+    notifications: Record<HeaderNotificationKey, boolean>;
+}
+export interface HeaderSettingsLogRow {
+    id: string; name: string; department: string; role: string; detail: string; at: string;
+}
