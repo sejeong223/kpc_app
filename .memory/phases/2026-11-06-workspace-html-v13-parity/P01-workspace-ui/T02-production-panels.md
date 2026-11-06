@@ -1,6 +1,6 @@
 # Task: T02 제작 패널·슬라이드 목록·출처 적용
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -130,12 +130,12 @@
 
 ## Acceptance Criteria
 
-- [ ] 헤더 아래 제작 외곽 여백과 독립 카드 모양이 사라지고 3열 패널·6px 조절선·40px 접힘 레일이 적용된다.
-- [ ] 저장값 없는 새 layout은 240/360px; 기존 정상 폭은 유지되고 새 범위/keyboard/Home/double-click 값이 일치한다.
-- [ ] 좁은 컨테이너에서 중앙320px 기준과 대체 패널 접근이 유지되며 내용이 가려진 채 접근 불가능하지 않다.
-- [ ] 목록에 실제 번호·장수·담당·고정·다중 선택·미처리 의견이 표시되며 기존 context menu와 guard가 유지된다.
-- [ ] 출처의 문구·위계·인용문이 HTML 구조이며 실제 원문이 있는 카드만 열린다.
-- [ ] 중앙 편집과 미리보기·draft·저장 서비스는 이 Task 완료 시에도 동작 계약을 유지한다.
+- [x] 헤더 아래 제작 외곽 여백과 독립 카드 모양이 사라지고 3열 패널·6px 조절선·40px 접힘 레일이 적용된다.
+- [x] 저장값 없는 새 layout은 240/360px; 기존 정상 폭은 유지되고 새 범위/keyboard/Home/double-click 값이 일치한다.
+- [x] 좁은 컨테이너에서 중앙320px 기준과 대체 패널 접근이 유지되며 내용이 가려진 채 접근 불가능하지 않다.
+- [x] 목록에 실제 번호·장수·담당·고정·다중 선택·미처리 의견이 표시되며 기존 context menu와 guard가 유지된다.
+- [x] 출처의 문구·위계·인용문이 HTML 구조이며 실제 원문이 있는 카드만 열린다.
+- [x] 중앙 편집과 미리보기·draft·저장 서비스는 이 Task 완료 시에도 동작 계약을 유지한다.
 
 ## Validation
 
@@ -161,8 +161,8 @@ Task: T02-production-panels
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 Task를 포함한 feat(production) 패널 커밋 (git log -- 이 파일로 조회)
 
 완료 후 `.memory/current.md`를 `T03-production-editor.md`로 전진하고 phase를 2/3으로 갱신한다. 지정 파일과 이 Task 기록만 stage하며 기존 다른 계획의 변경은 보존한다.

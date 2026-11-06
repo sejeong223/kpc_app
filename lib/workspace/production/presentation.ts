@@ -1,10 +1,11 @@
 import type { Chapter, ProjectView, ProposalSlide, Section } from "@/types/workspace-production";
 import type { FileResourceView, FileWorkspaceView } from "@/types/workspace-files";
 import { outlineNumbers } from "./selectors";
+import { visibleCanvasThreads } from "./canvas-comments";
 
 export interface ProductionSlideRow {
   slide: ProposalSlide; section: Section; chapter: Chapter;
-  number: number; sectionNumber: string; mine: boolean; editable: boolean;
+  number: number; sectionNumber: string; mine: boolean; editable: boolean; openComments: number;
 }
 export interface ProductionSourceCard {
   id: string; group: "rfp" | "reference"; title: string;
@@ -13,10 +14,15 @@ export interface ProductionSourceCard {
 }
 export function selectProductionSlides(view: ProjectView): ProductionSlideRow[] {
   const { body } = view.state, numbers = outlineNumbers(view.state);
+  const counts = new Map<string, number>();
+  for (const thread of [...body.threads, ...visibleCanvasThreads(body)]) {
+    if (thread.status === "open") counts.set(thread.slideId, (counts.get(thread.slideId) ?? 0) + 1);
+  }
   return body.chapters.flatMap(chapter => body.sections.filter(s => s.chapterId === chapter.id).flatMap(section =>
     body.slides.filter(s => s.sectionId === section.id).map(slide => ({
       slide, section, chapter, sectionNumber: numbers[section.id],
       mine: section.assigneeIds.includes(view.actor.id), editable: view.capabilities.editableSectionIds.includes(section.id),
+      openComments: counts.get(slide.id) ?? 0,
     })),
   )).map((row, index) => ({ ...row, number: index + 1 }));
 }

@@ -19,6 +19,11 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   const { view, rows, activeId, selectedIds, snapshotId, busy, onSelect, onCommand, onCopy, onPaste, onRemove, canCopy, canPaste } = props;
   const [menu, setMenu] = useState<{ id: string | null; sectionId: string; x: number; y: number } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null), trigger = useRef<HTMLElement | null>(null);
+  const list = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    const node = list.current?.querySelector<HTMLElement>("[aria-current='true']");
+    if (node?.getClientRects().length) node.scrollIntoView({ block: "nearest" });
+  }, [activeId]);
   const editable = (ids: readonly string[]) => ids.length > 0 && ids.every(id => rows.find(r => r.slide.id === id)?.editable);
   const active = rows.find(r => r.slide.id === activeId), menuRow = rows.find(r => r.slide.id === menu?.id);
   const menuSection = view.state.body.sections.find(section => section.id === menu?.sectionId);
@@ -52,31 +57,39 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   }, [menu]);
   return <section data-comment-control aria-label="슬라이드 탐색" tabIndex={0} className="tw:flex tw:h-full tw:min-h-0 tw:min-w-0 tw:flex-col"
     onKeyDown={e => {
-      if (busy || isTypingTarget(e.target) || e.nativeEvent.isComposing || document.querySelector("[data-modal-frame]") || !(e.target instanceof Element)) return;
+      if (busy || menu || e.defaultPrevented || isTypingTarget(e.target) || e.nativeEvent.isComposing || document.querySelector("[data-modal-frame], [data-comment-popup]") || !(e.target instanceof Element)) return;
       if (e.target !== e.currentTarget && !e.target.closest("[data-slide-select]")) return;
       const modifier = e.ctrlKey || e.metaKey, key = e.key.toLowerCase();
-      if (key === "escape" && active) { e.preventDefault(); onSelect(active.slide.id, "single"); }
+      if (["arrowup", "arrowright", "arrowdown", "arrowleft"].includes(key) && !modifier && !e.altKey && !e.shiftKey && active) {
+        const index = rows.findIndex(row => row.slide.id === active.slide.id);
+        const next = rows[index + (key === "arrowup" || key === "arrowright" ? 1 : -1)];
+        if (next) { e.preventDefault(); e.stopPropagation(); onSelect(next.slide.id, "single"); }
+      }
+      else if (key === "escape" && active) { e.preventDefault(); e.stopPropagation(); onSelect(active.slide.id, "single"); }
       else if (modifier && key === "c" && canCopy(selectedIds)) { e.preventDefault(); onCopy([...selectedIds]); }
       else if (modifier && key === "v" && active?.editable && canPaste) { e.preventDefault(); onPaste(active.section.id, active.slide.id); }
       else if ((key === "delete" || key === "backspace") && editable(selectedIds)) { e.preventDefault(); onRemove([...selectedIds]); }
     }}>
-    <header className="tw:flex tw:shrink-0 tw:items-center tw:gap-(--layout-control-gap) tw:border-b tw:border-(--kpc-line) tw:p-(--layout-card-inset)">
+    <header className="tw:flex tw:min-h-11 tw:shrink-0 tw:items-center tw:gap-2 tw:border-b tw:border-(--kpc-line) tw:px-3">
       <h2 className="tw:m-0 tw:min-w-0 tw:flex-1 tw:text-sm">슬라이드 <span className="tw:font-normal tw:text-(--kpc-muted)">{rows.length}장</span></h2>{props.panelToggle}
     </header>
-    <div tabIndex={0} aria-label="슬라이드 목록" className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-(--layout-card-inset)"
+    <div tabIndex={0} aria-label="슬라이드 목록" className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-2.5"
       onContextMenu={event => { if (!(event.target as Element).closest("[data-slide-select]")) { event.preventDefault(); openEmptyMenu(event.currentTarget, event.clientX, event.clientY); } }}
       onKeyDown={event => { if (event.target === event.currentTarget && (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10"))) { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); openEmptyMenu(event.currentTarget, rect.left, rect.top); } }}>
-      <ol className="tw:m-0 tw:list-none tw:space-y-3 tw:p-0">{rows.map(row => {
+      <ol ref={list} className="tw:m-0 tw:list-none tw:space-y-2.5 tw:p-0">{rows.map(row => {
         const { slide, section, number } = row, siblings = rows.filter(r => r.section.id === section.id);
+        const multiSelected = selectedIds.length > 1 && selectedIds.includes(slide.id), isActive = activeId === slide.id;
+        const border = multiSelected ? "tw:border-2 tw:border-purple-600 tw:ring-2 tw:ring-purple-100" : isActive ? "tw:border-2 tw:border-(--dadam-accent) tw:ring-2 tw:ring-(--dadam-accent-soft)" : row.mine ? "tw:border-2 tw:border-blue-600" : "tw:border tw:border-(--kpc-line)";
+        const caption = multiSelected ? "tw:bg-purple-50 tw:text-purple-700" : isActive ? "tw:bg-(--dadam-accent-soft) tw:text-(--dadam-accent-ink)" : row.mine ? "tw:bg-blue-50 tw:text-blue-700" : "tw:text-(--kpc-secondary)";
         const openMenu = (button: HTMLButtonElement, x: number, y: number) => {
           if (busy) return;
           trigger.current = button; setMenu({ id: slide.id, sectionId: section.id, x, y });
         };
-        return <li key={slide.id} className={"tw:rounded-lg tw:border tw:p-2 " + (selectedIds.includes(slide.id) ? "tw:border-(--kpc-brand) tw:bg-(--dadam-accent-soft)" : "tw:border-(--kpc-line)")}>
-          <button type="button" data-slide-select disabled={busy} aria-current={activeId === slide.id ? "true" : undefined}
+        return <li key={slide.id} className={"tw:overflow-hidden tw:rounded-lg tw:bg-(--kpc-card) " + border}>
+          <button type="button" data-slide-select disabled={busy} aria-current={isActive ? "true" : undefined} aria-pressed={selectedIds.includes(slide.id)}
             aria-haspopup="menu" aria-label={number + "번 " + (slide.content.title || "제목 없음") + " 선택"}
             title={row.mine ? "내가 담당한 슬라이드" : undefined}
-            className="tw:block tw:w-full tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:text-left"
+            className="tw:block tw:w-full tw:cursor-pointer tw:border-0 tw:bg-transparent tw:p-0 tw:text-left tw:focus-visible:outline-2 tw:focus-visible:-outline-offset-2 tw:focus-visible:outline-(--dadam-accent)"
             onContextMenu={e => { e.preventDefault(); openMenu(e.currentTarget, e.clientX, e.clientY); }}
             onKeyDown={e => {
               if (e.key === "ContextMenu" || (e.shiftKey && e.key === "F10")) {
@@ -85,8 +98,9 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
             }}
             onClick={e => { closeMenu(false); onSelect(slide.id, e.shiftKey ? "range" : e.ctrlKey || e.metaKey ? "toggle" : "single"); }}>
             <ProductionPreview view={view} slide={slide} snapshotId={snapshotId} mode="thumbnail" number={number} priority={slide.id === activeId} />
-            <span className="tw:mt-2 tw:flex tw:items-center tw:gap-1 tw:text-xs"><span>{number}</span>{section.locked && <LockClosed16Regular aria-label="고정됨" />}
+            <span className={"tw:flex tw:min-w-0 tw:items-center tw:gap-1.5 tw:border-t tw:border-(--kpc-line) tw:px-2 tw:py-[5px] tw:text-[10.5px] tw:font-bold " + caption}><span className="tw:shrink-0">{number}</span>{section.locked && <LockClosed16Regular className="tw:shrink-0" aria-label="고정됨" />}
               <span className="tw:truncate">{row.sectionNumber} {section.title}{siblings.length > 1 && " · " + (siblings.findIndex(item => item.slide.id === slide.id) + 1) + "/" + siblings.length}</span>
+              {row.openComments > 0 && <span aria-label={`미처리 의견 ${row.openComments}개`} className="tw:ml-auto tw:shrink-0 tw:rounded-full tw:bg-(--dadam-accent-soft) tw:px-1.5 tw:text-(--dadam-accent-ink)">{row.openComments}</span>}
             </span>
           </button>
         </li>;

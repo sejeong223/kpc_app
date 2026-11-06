@@ -9,7 +9,7 @@ import { useComments } from "./CommentsProvider";
 
 const useStyles = makeStyles({
   surface: { display: "flex", flexDirection: "column", flex: "1 1 0%", width: "100%", minHeight: 0, minWidth: 0, backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1 },
-  intro: { padding: "var(--layout-canvas-tools-inset)", display: "flex", flexDirection: "column", flexShrink: 0, minHeight: 0, maxHeight: "50%", overflowY: "auto", overscrollBehavior: "contain", gap: "var(--layout-control-gap)" },
+  intro: { padding: "var(--layout-canvas-tools-inset) var(--layout-canvas-tools-inset) 0", display: "flex", flexDirection: "column", flexShrink: 0, minHeight: 0, maxHeight: "50%", overflowY: "auto", overscrollBehavior: "contain", gap: "var(--layout-control-gap)" },
   text: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, margin: 0 },
   alert: { position: "relative", zIndex: 3, margin: "var(--layout-canvas-tools-inset)", padding: "var(--layout-card-inset)", border: `1px solid ${tokens.colorStatusDangerBorder1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
 });
