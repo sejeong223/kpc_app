@@ -14,6 +14,7 @@ export interface CommentControllerState {
   snapshot: CommentSnapshot | null;
   error: { code: CommentErrorCode; message: string } | null;
   busy: boolean; pinMode: boolean; view: CommentView; pendingPoint: CommentPoint | null;
+  pinModeSlideId: string | null; pendingSlideId: string | null;
   drafts: Record<string, CommentEditorDraft>; editingMessageId: string | null; popupSize: CommentPopupSize;
 }
 export type CommentOperationResult = { ok: true } | { ok: false; code: CommentErrorCode | "busy"; message: string };
@@ -22,7 +23,7 @@ export interface CommentControllerOptions {
 }
 export function createCommentControllerState(): CommentControllerState {
   return { status: "idle", snapshot: null, error: null, busy: false, pinMode: false, view: null,
-    pendingPoint: null, drafts: {}, editingMessageId: null,
+    pendingPoint: null, pinModeSlideId: null, pendingSlideId: null, drafts: {}, editingMessageId: null,
     popupSize: { width: COMMENT_VISUALS.popupDefaultWidth, height: COMMENT_VISUALS.popupDefaultHeight } };
 }
 function asError(error: unknown): CommentError {
@@ -32,6 +33,9 @@ function checkPoint(point: CommentPoint): void {
   if (![point.xRatio, point.yRatio].every((value) => Number.isFinite(value) && value >= 0 && value <= 1)) {
     throw new CommentError("invalid", "핀 위치를 다시 선택해 주세요.");
   }
+}
+function checkSlide(slideId: string): void {
+  if (!slideId || slideId.length > 400 || /\s/.test(slideId)) throw new CommentError("invalid", "슬라이드를 다시 선택해 주세요.");
 }
 
 export class CommentController {
@@ -108,38 +112,50 @@ export class CommentController {
       this.identity = { ...this.identity, actor: { ...actor } };
     });
   }
-  togglePinMode(): void {
+  togglePinMode(slideId: string): void {
     this.ui(() => {
-      this.ready(); if (this.state.busy) return;
+      this.ready(); checkSlide(slideId); if (this.state.busy) return;
       if (this.state.pendingPoint && this.state.drafts.new?.text.trim()) {
-        this.update({ view: { kind: "new" }, pinMode: false, editingMessageId: null });
-      } else this.update({ pinMode: !this.state.pinMode, view: null, editingMessageId: null });
+        if (this.state.pendingSlideId !== slideId) throw new CommentError("invalid", "작성 중인 의견을 먼저 확인해 주세요.");
+        this.update({ view: { kind: "new" }, pinMode: false, pinModeSlideId: null, editingMessageId: null });
+      } else {
+        const active = !(this.state.pinMode && this.state.pinModeSlideId === slideId);
+        const drafts = { ...this.state.drafts }; delete drafts.new;
+        this.update({ pinMode: active, pinModeSlideId: active ? slideId : null, pendingPoint: null, pendingSlideId: null, drafts, view: null, editingMessageId: null });
+      }
     });
   }
-  placePin(point: CommentPoint): void {
+  placePin(point: CommentPoint, slideId: string): void {
     this.ui(() => {
-      this.ready(); checkPoint(point); if (this.state.busy) return;
-      this.update({ pendingPoint: { ...point }, view: { kind: "new" }, pinMode: false, editingMessageId: null });
+      this.ready(); checkPoint(point); checkSlide(slideId); if (this.state.busy) return;
+      if (!(this.state.pinMode && this.state.pinModeSlideId === slideId) && !(this.state.pendingPoint && this.state.pendingSlideId === slideId))
+        throw new CommentError("invalid", "핀을 생성할 슬라이드를 먼저 선택해 주세요.");
+      this.update({ pendingPoint: { ...point }, pendingSlideId: slideId, view: { kind: "new" }, pinMode: false, pinModeSlideId: null, editingMessageId: null });
     });
   }
   movePendingPin(point: CommentPoint): void {
     this.ui(() => { checkPoint(point); if (this.state.pendingPoint && !this.state.busy) this.update({ pendingPoint: { ...point } }); });
   }
   openThread(threadId: string): void {
-    this.ui(() => { this.thread(threadId); this.update({ view: { kind: "thread", threadId }, pinMode: false, editingMessageId: null }); });
+    this.ui(() => { this.thread(threadId); this.update({ view: { kind: "thread", threadId }, pinMode: false, pinModeSlideId: null, editingMessageId: null }); });
   }
   closePopup(): void {
     const drafts = { ...this.state.drafts };
     const keepPending = Boolean(drafts.new?.text.trim());
     if (!keepPending) delete drafts.new;
-    this.update({ view: null, pinMode: false, editingMessageId: null,
-      pendingPoint: keepPending ? this.state.pendingPoint : null, drafts });
+    this.update({ view: null, pinMode: false, pinModeSlideId: null, editingMessageId: null,
+      pendingPoint: keepPending ? this.state.pendingPoint : null, pendingSlideId: keepPending ? this.state.pendingSlideId : null, drafts });
   }
   discardDrafts(): void {
     if(this.state.busy)return;
-    this.update({drafts:{},view:null,pendingPoint:null,editingMessageId:null,pinMode:false});
+    this.update({drafts:{},view:null,pendingPoint:null,pendingSlideId:null,editingMessageId:null,pinMode:false,pinModeSlideId:null});
   }
   suspendUi(): void { this.closePopup(); }
+  suspendSlide(slideId: string): void {
+    const view = this.state.view;
+    const owner = view?.kind === "new" ? this.state.pendingSlideId : view?.kind === "thread" ? this.state.snapshot?.threads.find(t => t.id === view.threadId)?.slideId : null;
+    if (owner === slideId || this.state.pinModeSlideId === slideId) this.closePopup();
+  }
   setDraft(key: string, draft: CommentDraft): void {
     this.ui(() => {
       if (key === "new") {
@@ -160,7 +176,7 @@ export class CommentController {
       const message = this.ownedMessage(messageId);
       const key = `edit:${messageId}`;
       const draft = this.state.drafts[key] ?? { text: message.text, mentions: message.mentions.map((m) => ({ ...m })), revision: 1, baseRevision: message.revision };
-      this.update({ view: { kind: "thread", threadId: message.threadId }, editingMessageId: messageId, drafts: { ...this.state.drafts, [key]: draft } });
+      this.update({ view: { kind: "thread", threadId: message.threadId }, pinMode: false, pinModeSlideId: null, editingMessageId: messageId, drafts: { ...this.state.drafts, [key]: draft } });
     });
   }
   rebaseEdit(messageId: string): void {
@@ -200,12 +216,13 @@ export class CommentController {
         if (remaining) patch.drafts[`edit:${command.messageId}`] = { ...remaining, baseRevision: snapshot.messages.find((m) => m.id === command.messageId)!.revision };
         else if (patch.editingMessageId === command.messageId) patch.editingMessageId = null;
       }
-      let pendingPoint = this.state.pendingPoint;
+      let pendingPoint = this.state.pendingPoint, pendingSlideId = this.state.pendingSlideId;
       if (command.type === "create-thread" && !patch.drafts.new) {
         pendingPoint = null;
+        pendingSlideId = null;
         if (submittedView === this.state.view && submittedView?.kind === "new") patch.view = { kind: "thread", threadId: command.threadId };
       }
-      this.update({ ...patch, snapshot, pendingPoint, busy: false, error: null });
+      this.update({ ...patch, snapshot, pendingPoint, pendingSlideId, busy: false, error: null });
       return { ok: true };
     } catch (error) {
       const failure = asError(error);
@@ -219,9 +236,9 @@ export class CommentController {
   }
   submitNew(): Promise<CommentOperationResult> {
     return this.mutate(() => {
-      if (!this.state.pendingPoint) throw new CommentError("invalid", "핀 위치를 선택해 주세요.");
+      if (!this.state.pendingPoint || !this.state.pendingSlideId) throw new CommentError("invalid", "핀 위치를 선택해 주세요.");
       const id = this.options.createId ?? (() => crypto.randomUUID());
-      return { command: { type: "create-thread", threadId: id(), messageId: id(), point: this.state.pendingPoint, draft: this.draft("new") }, draftKey: "new" };
+      return { command: { type: "create-thread", threadId: id(), messageId: id(), point: this.state.pendingPoint, slideId: this.state.pendingSlideId, draft: this.draft("new") }, draftKey: "new" };
     });
   }
   submitReply(threadId: string): Promise<CommentOperationResult> {

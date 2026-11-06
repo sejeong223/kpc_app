@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
 import { useProjectWorkspace } from "@/hooks/workspace/use-workspace-production";
 import { useCanvasComments } from "@/hooks/workspace/use-canvas-comments";
@@ -31,11 +31,24 @@ function ScopedComments({ binding, identity, view, failure, children }: {
     });
     const guard = useWorkspaceDraftGuard({ dirty, busy: value.state.busy, onDiscard: () => value.controller.discardDrafts() });
     const switchRound = () => setScope({ binding, identity, roundCreatedAt: view.roundCreatedAt });
+    const activation = useRef({ value, failure, roundChanged });
+    useLayoutEffect(() => { activation.current = { value, failure, roundChanged }; });
+    const requestPinMode = (slideId: string) => {
+        const current = value.controller.getSnapshot();
+        if (failure || roundChanged || current.status !== "ready" || current.busy || !value.capabilities.canCreate || !value.capabilities.slideIds.includes(slideId)) return;
+        const activate = () => {
+            const latest = activation.current, state = latest.value.controller.getSnapshot();
+            if (latest.failure || latest.roundChanged || latest.value.controller !== value.controller || state.status !== "ready" || state.busy || !latest.value.capabilities.canCreate || !latest.value.capabilities.slideIds.includes(slideId)) return;
+            latest.value.controller.togglePinMode(slideId);
+        };
+        if (current.drafts.new?.text.trim() && current.pendingSlideId !== slideId) guard.request(activate);
+        else activate();
+    };
     if (roundChanged && !dirty && !value.state.busy)
         switchRound();
     const context = failure ? { ...inactiveComments, state: { ...inactiveComments.state, status: "error" as const, error: { code: "storage" as const, message: failure.message } } }
-        : roundChanged ? { ...value, capabilities: inactiveComments.capabilities,
-            roundConflict: { from: scope.binding.round, to: binding.round, reload: () => guard.request(switchRound) } } : value;
+        : roundChanged ? { ...value, capabilities: inactiveComments.capabilities, requestPinMode: inactiveComments.requestPinMode,
+            roundConflict: { from: scope.binding.round, to: binding.round, reload: () => guard.request(switchRound) } } : { ...value, requestPinMode };
     return <CommentsContext.Provider value={context}>{children}<DadamThemeScope>
       <FileDiscardDialog open={guard.confirmOpen} onKeep={guard.keepEditing} onDiscard={guard.discardAndContinue} busy={guard.saving} error={guard.error}/>
     </DadamThemeScope></CommentsContext.Provider>;

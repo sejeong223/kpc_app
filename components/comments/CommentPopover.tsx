@@ -29,11 +29,11 @@ const useStyles = makeStyles({
   handle: { position: "absolute", border: 0, padding: 0, backgroundColor: "transparent", touchAction: "none", zIndex: 5, ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "-2px" } },
   grip: { display: "block", position: "absolute", right: "5px", bottom: "5px", width: "10px", height: "10px", backgroundImage: `repeating-linear-gradient(135deg, transparent 0 3px, ${tokens.colorNeutralStroke1} 3px 4px)` },
 });
-interface Props { anchor: PixelPoint; limits: PopupLimits; now: number; onClose(): void }
+interface Props { anchor: PixelPoint; limits: PopupLimits; now: number; onClose(): void; onThreadDeleted(): void }
 type Confirmation = { kind: "thread" | "reply"; id: string } | null;
 interface Gesture { start: PopupRect; point: PixelPoint; edge: ResizeEdge; element: HTMLButtonElement; pointerId: number }
 
-export default function CommentPopover({ anchor, limits, now, onClose }: Props): React.ReactElement | null {
+export default function CommentPopover({ anchor, limits, now, onClose, onThreadDeleted }: Props): React.ReactElement | null {
   const styles = useStyles(), { state, controller, identity, capabilities, mentionUsers } = useComments();
   const [manual, setManual] = useState<{ signature: string; rect: PopupRect } | null>(null);
   const [confirmation, setConfirmation] = useState<Confirmation>(null);
@@ -74,7 +74,7 @@ export default function CommentPopover({ anchor, limits, now, onClose }: Props):
     if (!confirmation || !(confirmation.kind === "thread" ? capabilities.deleteThreadIds : capabilities.deletableMessageIds).includes(confirmation.id)) return;
     const result = await (confirmation.kind === "thread" ? controller.deleteThread(confirmation.id) : controller.deleteReply(confirmation.id));
     if (!result.ok) return;
-    if (confirmation.kind === "thread" && !controller.getSnapshot().view) requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-comment-create]")?.focus());
+    if (confirmation.kind === "thread" && !controller.getSnapshot().view) onThreadDeleted();
     else if (mounted.current) { setConfirmation(null); focusComposer(); }
   };
   const composerKey = isNew ? "new" : `reply:${thread!.id}`;

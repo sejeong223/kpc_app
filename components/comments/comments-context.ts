@@ -9,11 +9,12 @@ export interface CommentsContextValue {
     controller: CommentController | null;
     capabilities: CanvasCommentCapabilities;
     mentionUsers: CommentUser[];
+    requestPinMode(slideId: string): void;
     roundConflict?: { from: number; to: number; reload(): void };
 }
 export const inactiveComments: CommentsContextValue = {
-    identity: null, controller: null, state: createCommentControllerState(), mentionUsers: [],
-    capabilities: { readOnly: true, canCreate: false, replyThreadIds: [], moveThreadIds: [], statusThreadIds: [], deleteThreadIds: [], editableMessageIds: [], deletableMessageIds: [] },
+    identity: null, controller: null, state: createCommentControllerState(), mentionUsers: [], requestPinMode: () => {},
+    capabilities: { slideIds: [], readOnly: true, canCreate: false, replyThreadIds: [], moveThreadIds: [], statusThreadIds: [], deleteThreadIds: [], editableMessageIds: [], deletableMessageIds: [] },
 };
 export const CommentsContext = createContext<CommentsContextValue>(inactiveComments);
 export const LegacyCommentIdentityContext = createContext<CommentIdentity | null>(null);

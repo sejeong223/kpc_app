@@ -1,4 +1,5 @@
 import { PROJECT_PERMISSIONS } from "@/config/workspace-production";
+import { visibleCanvasThreads } from "./canvas-comments";
 import type {
   ProjectPermission,
   ProjectWorkspaceState,
@@ -70,7 +71,7 @@ export function selectTocRows(view: ProjectView): TocRow[] {
           ...body.threads,
           ...state.reviews.filter((t) => t.round === state.currentRound),
         ].filter((t) => ids.includes(t.sectionId) && t.status === "open")
-          .length,
+          .length + visibleCanvasThreads(body).filter(t => t.status === "open" && body.slides.some(s => s.id === t.slideId && ids.includes(s.sectionId))).length,
         coverage: {
           full: requirements.filter((r) => r.coverage === "full").length,
           partial: requirements.filter((r) => r.coverage === "partial").length,
@@ -117,7 +118,7 @@ export function selectDeletionImpact(view: ProjectView, id: string) {
     slideIds,
     openComments: view.state.body.threads.filter(
       (t) => slideIds.includes(t.slideId) && t.status === "open",
-    ).length,
+    ).length + visibleCanvasThreads(view.state.body).filter(t => t.status === "open" && slideIds.includes(t.slideId)).length,
     blocked,
     reasons: blocked
       ? [
@@ -147,7 +148,7 @@ export function getCompletionSummary(state: ProjectWorkspaceState) {
     writingSections: state.body.sections.filter((s) => s.state === "writing")
       .length,
     openComments: [
-      ...state.body.canvasComments.threads,
+      ...visibleCanvasThreads(state.body),
       ...state.body.threads,
       ...state.reviews.filter((t) => t.round === state.currentRound),
     ].filter((t) => t.status === "open").length,

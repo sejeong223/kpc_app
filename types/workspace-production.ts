@@ -170,7 +170,8 @@ export interface ProjectCommentThread {
   carriedFromId: string | null;
   messages: ProjectCommentMessage[];
 }
-export interface CanvasCommentThread extends Omit<CommentThread, keyof CommentScope> {
+export interface CanvasCommentThread extends Omit<CommentThread, keyof CommentScope | "slideId"> {
+  slideId: string | null;
   carriedFrom: { round: number; threadId: string } | null;
 }
 export type CanvasCommentMessage = Omit<CommentMessage, keyof CommentScope>;

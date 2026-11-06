@@ -1,11 +1,12 @@
 import type { CommentCommand, CommentErrorCode, CommentSnapshot, CommentUser } from "@/config/comments";
 import { applyCommentCommand, CommentError, normalizeCommentDraft, validateCommentSnapshot } from "@/lib/comments/domain";
 import { canAccessFileProject } from "@/lib/workspace/files/permissions";
-import type { CanvasCommentState, ProjectWorkspaceState, WorkspaceContext, WorkspaceErrorCode } from "@/types/workspace-production";
+import type { CanvasCommentState, CanvasCommentThread, RoundBody, ProjectWorkspaceState, WorkspaceContext, WorkspaceErrorCode } from "@/types/workspace-production";
 import { workspaceAssert as check, WorkspaceError } from "./errors";
 import { CanvasCommandSchema } from "./canvas-schemas";
 import { canManageProject } from "./permissions";
 export interface CanvasCommentCapabilities {
+    slideIds: string[];
     readOnly: boolean;
     canCreate: boolean;
     replyThreadIds: string[];
@@ -15,11 +16,18 @@ export interface CanvasCommentCapabilities {
     editableMessageIds: string[];
     deletableMessageIds: string[];
 }
+export function visibleCanvasThreads(body: RoundBody): (CanvasCommentThread & { slideId: string })[] {
+    const ids = new Set(body.slides.map(s => s.id));
+    return body.canvasComments.threads.filter((t): t is CanvasCommentThread & { slideId: string } => typeof t.slideId === "string" && ids.has(t.slideId));
+}
 export function canvasCapabilities(state: ProjectWorkspaceState, context: WorkspaceContext, readOnly: boolean): CanvasCommentCapabilities {
     const allowed = !readOnly && state.phase === "writing" && canAccessFileProject(context.identity, context.project);
-    const canvas = state.body.canvasComments, actor = context.identity.actor.id;
+    const accessible = state.projectId === context.project.id && canAccessFileProject(context.identity, context.project);
+    const threads = accessible ? visibleCanvasThreads(state.body) : [], ids = new Set(threads.map(t => t.id));
+    const canvas = { threads, messages: state.body.canvasComments.messages.filter(m => ids.has(m.threadId)) }, actor = context.identity.actor.id;
     return {
-        readOnly: !allowed, canCreate: allowed,
+        slideIds: accessible ? state.body.slides.map(s => s.id) : [],
+        readOnly: !allowed || !accessible, canCreate: allowed && accessible,
         replyThreadIds: allowed ? canvas.threads.filter(t => t.status === "open").map(t => t.id) : [],
         moveThreadIds: allowed ? canvas.threads.map(t => t.id) : [],
         statusThreadIds: allowed ? canvas.threads.filter(t => t.authorId === actor || canManageProject(context)).map(t => t.id) : [],
@@ -63,6 +71,9 @@ export function applyCanvasCommand(state: ProjectWorkspaceState, command: Commen
     check(parsed.success, "VALIDATION", "의견 입력을 확인해 주세요.");
     const operation = parsed.data, caps = canvasCapabilities(state, context, false);
     check(caps.canCreate, "FORBIDDEN", "프로젝트 접근 권한이 없습니다.");
+    const target = operation.type === "create-thread" ? operation.slideId : state.body.canvasComments.threads.find(t =>
+        t.id === ("threadId" in operation ? operation.threadId : state.body.canvasComments.messages.find(m => m.id === operation.messageId)?.threadId))?.slideId;
+    check(typeof target === "string" && state.body.slides.some(s => s.id === target), "NOT_FOUND", "의견을 남길 슬라이드를 찾을 수 없습니다.");
     if (operation.type === "set-status") {
         check(state.body.canvasComments.threads.some(t => t.id === operation.threadId), "NOT_FOUND", "의견을 찾을 수 없습니다.");
         check(caps.statusThreadIds.includes(operation.threadId), "FORBIDDEN", "작성자, PM과 슈퍼 관리자만 처리 상태를 변경할 수 있습니다.");
@@ -78,7 +89,7 @@ export function applyCanvasCommand(state: ProjectWorkspaceState, command: Commen
         const next = applyCommentCommand(projectCanvasSnapshot(state, context, createdAt), { id, name, isMock }, operation, context.now);
         const prior = new Map(state.body.canvasComments.threads.map(t => [t.id, t.carriedFrom]));
         return { createdIds, canvas: { nextNumber: next.surface.nextNumber,
-                threads: next.threads.map(({ namespace, surfaceId, ...t }) => { void namespace; void surfaceId; return { ...t, carriedFrom: prior.get(t.id) ?? null }; }),
+                threads: next.threads.map(({ namespace, surfaceId, ...t }) => { void namespace; void surfaceId; return { ...t, slideId: t.slideId ?? null, carriedFrom: prior.get(t.id) ?? null }; }),
                 messages: next.messages.map(({ namespace, surfaceId, ...m }) => { void namespace; void surfaceId; return m; }),
             } };
     }

@@ -16,6 +16,7 @@ export class CommentError extends Error {
 }
 
 const id = z.string().trim().min(1);
+const slideId = z.string().min(1).max(400).regex(/^\S+$/).nullable().optional();
 const integer = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const timestamp = z.string().datetime();
 const scopeFields = { namespace: id, surfaceId: z.literal(COMMENT_SURFACE_ID) };
@@ -31,7 +32,7 @@ const snapshotSchema = z.object({
   surface: z.object({ ...scopeFields, seedVersion: z.literal(1), nextNumber: integer, createdAt: timestamp }).strict(),
   users: z.array(userSchema),
   threads: z.array(z.object({
-    ...scopeFields, ...pointFields, id, number: integer, rootMessageId: id, authorId: id,
+    ...scopeFields, ...pointFields, id, slideId, number: integer, rootMessageId: id, authorId: id,
     status: z.enum(["open", "resolved"]), createdAt: timestamp, updatedAt: timestamp,
     resolvedAt: timestamp.nullable(), resolvedBy: id.nullable(), revision: integer, isSeed: z.boolean(),
   }).strict()),
@@ -42,7 +43,7 @@ const snapshotSchema = z.object({
   }).strict()),
 }).strict();
 export const CommentCommandSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("create-thread"), threadId: id, messageId: id, point: z.object(pointFields).strict(), draft: draftSchema }).strict(),
+  z.object({ type: z.literal("create-thread"), threadId: id, messageId: id, point: z.object(pointFields).strict(), draft: draftSchema, slideId }).strict(),
   z.object({ type: z.literal("reply"), threadId: id, messageId: id, draft: draftSchema }).strict(),
   z.object({ type: z.literal("edit-message"), messageId: id, expectedRevision: integer, draft: draftSchema }).strict(),
   z.object({ type: z.literal("delete-message"), messageId: id, expectedRevision: integer }).strict(),
@@ -158,7 +159,7 @@ export function applyCommentCommand(snapshot: CommentSnapshot, actor: CommentUse
     if (next.threads.some((t) => t.id === command.threadId) || next.messages.some((m) => m.id === command.messageId)
       || next.surface.nextNumber >= Number.MAX_SAFE_INTEGER) invalid();
     const root = message(command.messageId, command.threadId, "root", command.draft);
-    next.threads.push({ ...next.scope, ...command.point, id: command.threadId, number: next.surface.nextNumber++,
+    next.threads.push({ ...next.scope, ...command.point, ...(command.slideId !== undefined ? { slideId: command.slideId } : {}), id: command.threadId, number: next.surface.nextNumber++,
       rootMessageId: root.id, authorId: actor.id, status: "open", createdAt: now, updatedAt: now,
       resolvedAt: null, resolvedBy: null, revision: 1, isSeed: false });
     next.messages.push(root);

@@ -7,7 +7,7 @@ const count = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const time = z.iso.datetime();
 const mention = z.strictObject({ userId: id, name: z.string().min(1).max(500), start: z.number().int().nonnegative(), end: count });
 const thread = z.strictObject({
-    id, number: count, rootMessageId: id, authorId: id, status: z.enum(["open", "resolved"]),
+    id, slideId: id.nullable().default(null), number: count, rootMessageId: id, authorId: id, status: z.enum(["open", "resolved"]),
     xRatio: z.number().finite().min(0).max(1), yRatio: z.number().finite().min(0).max(1),
     createdAt: time, updatedAt: time, resolvedAt: time.nullable(), resolvedBy: id.nullable(),
     revision: count, isSeed: z.boolean(), carriedFrom: z.strictObject({ round: count, threadId: id }).nullable(),
@@ -63,6 +63,8 @@ export function canvasReferenceErrors(state: ProjectWorkspaceState): string[] {
     return errors;
 }
 export const CanvasCommandSchema = CommentCommandSchema.superRefine((command, ctx) => {
+    if (command.type === "create-thread" && !id.safeParse(command.slideId).success)
+        ctx.addIssue({ code: "custom", path: ["slideId"], message: "의견을 남길 슬라이드를 선택해 주세요." });
     const identifiers = [...("threadId" in command ? [command.threadId] : []), ...("messageId" in command ? [command.messageId] : [])];
     if (identifiers.some(value => !id.safeParse(value).success))
         ctx.addIssue({ code: "custom", message: "의견 식별자를 확인해 주세요." });

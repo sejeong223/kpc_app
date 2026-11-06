@@ -1,187 +1,44 @@
 "use client";
 
-import { Button, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { Button, makeStyles, tokens } from "@fluentui/react-components";
 import ProjectHeader from "@/components/common/ProjectHeader";
 import { dadamUi } from "@/lib/ui/dadam-theme";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
-import { useEffect, useRef, useState } from "react";
-import type { CommentPoint } from "@/config/comments";
-import { clientPointToRatio, getPopupLimits, keepPinInsideSurface, placeCommentPopup, ratioToClientPoint, type CommentBounds, type PixelPoint } from "@/lib/comments/geometry";
-import LegacyCommentsArchive from "@/components/workspace/production/comments/LegacyCommentsArchive";
 import ProductionScreen from "@/components/workspace/production/ProductionScreen";
-import CommentCreateButton from "./CommentCreateButton";
-import CommentPin from "./CommentPin";
-import CommentPopover from "./CommentPopover";
-import CommentPreview from "./CommentPreview";
 import { useComments } from "./CommentsProvider";
 
-const DRAFT_ID = "pending-comment";
 const useStyles = makeStyles({
-  surface: { position: "relative", display: "flex", flexDirection: "column", flex: "1 1 0%", width: "100%", minHeight: 0, minWidth: 0, overflow: "visible", backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1, ":focus": { outline: "none" } },
-  creating: { cursor: "crosshair" },
+  surface: { display: "flex", flexDirection: "column", flex: "1 1 0%", width: "100%", minHeight: 0, minWidth: 0, backgroundColor: tokens.colorNeutralBackground2, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, color: tokens.colorNeutralForeground1 },
   intro: { padding: "var(--layout-canvas-tools-inset)", display: "flex", flexDirection: "column", flexShrink: 0, minHeight: 0, maxHeight: "50%", overflowY: "auto", overscrollBehavior: "contain", gap: "var(--layout-control-gap)" },
-  canvasTools: { display: "flex", alignItems: "center", justifyContent: "flex-start", gap: "var(--layout-control-gap)" },
   text: { fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight, margin: 0 },
   alert: { position: "relative", zIndex: 3, margin: "var(--layout-canvas-tools-inset)", padding: "var(--layout-card-inset)", border: `1px solid ${tokens.colorStatusDangerBorder1}`, borderRadius: dadamUi.cardRadius, color: tokens.colorStatusDangerForeground1, backgroundColor: tokens.colorStatusDangerBackground1, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
-  hidden: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 },
 });
-interface Measurement { surface: CommentBounds; viewport: CommentBounds }
-interface PinGesture { id: string; pointerId: number; origin: PixelPoint; offset: PixelPoint; point: CommentPoint; moved: boolean; element: HTMLButtonElement }
-const boundsOf = (element: HTMLElement): CommentBounds => {
-  const r = element.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
-};
-const viewportBounds = (): CommentBounds => {
-  const v = window.visualViewport; return v ? { left: v.offsetLeft, top: v.offsetTop, right: v.offsetLeft + v.width, bottom: v.offsetTop + v.height } : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
-};
 
 export default function CommentsWorkspace(): React.ReactElement {
   const styles = useStyles(), { state, controller, capabilities, roundConflict } = useComments();
-  const surface = useRef<HTMLElement>(null), gesture = useRef<PinGesture | null>(null), suppressClick = useRef<string | null>(null);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [measurement, setMeasurement] = useState<Measurement | null>(null), [hovered, setHovered] = useState<string | null>(null);
-  const [drag, setDrag] = useState<{ id: string; point: CommentPoint } | null>(null);
-  const [now, setNow] = useState(0);
-  useEffect(() => {
-    let frame = 0;
-    const measure = () => {
-      if (!surface.current) return;
-      const next = { surface: boundsOf(surface.current), viewport: viewportBounds() };
-      setMeasurement(previous => JSON.stringify(previous) === JSON.stringify(next) ? previous : next);
-      const current = controller?.getSnapshot();
-      const view = current?.view;
-      const point = view?.kind === "new" ? current?.pendingPoint : view?.kind === "thread" ? current?.snapshot?.threads.find(t => t.id === view.threadId) : null;
-      if (point) {
-        const tip = keepPinInsideSurface(ratioToClientPoint(point, next.surface), next.surface), v = next.viewport;
-        if (tip.x < v.left || tip.x > v.right || tip.y < v.top || tip.y > v.bottom || !getPopupLimits(v, next.surface)) controller?.closePopup();
-      }
-    };
-    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
-    const onScroll = (e: Event) => { if (!(e.target instanceof Element) || !e.target.closest("[data-comment-popup]")) schedule(); };
-    const observer = new ResizeObserver(schedule);
-    if (surface.current) observer.observe(surface.current);
-    window.addEventListener("resize", schedule); document.addEventListener("scroll", onScroll, true);
-    window.visualViewport?.addEventListener("resize", schedule); window.visualViewport?.addEventListener("scroll", schedule);
-    schedule();
-    const clock = requestAnimationFrame(() => setNow(Date.now()));
-    const interval = setInterval(() => setNow(Date.now()), 60000);
-    return () => {
-      cancelAnimationFrame(frame); cancelAnimationFrame(clock); clearInterval(interval); observer.disconnect();
-      window.removeEventListener("resize", schedule); document.removeEventListener("scroll", onScroll, true);
-      window.visualViewport?.removeEventListener("resize", schedule); window.visualViewport?.removeEventListener("scroll", schedule);
-      if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    };
-  }, [controller]);
-
-  useEffect(() => {
-    if (capabilities.readOnly) return;
-    const move = (e: PointerEvent) => {
-      const g = gesture.current;
-      if (!g || g.pointerId !== e.pointerId || !surface.current) return;
-      if (!g.moved && Math.hypot(e.clientX - g.origin.x, e.clientY - g.origin.y) < 5) return;
-      const point = clientPointToRatio({ x: e.clientX - g.offset.x, y: e.clientY - g.offset.y }, boundsOf(surface.current));
-      if (point) { g.moved = true; g.point = point; setDrag({ id: g.id, point }); setHovered(null); }
-    };
-    const finish = (cancel: boolean, pointerId?: number) => {
-      const g = gesture.current;
-      if (!g || (pointerId !== undefined && g.pointerId !== pointerId)) return;
-      gesture.current = null;
-      if (g.element.hasPointerCapture(g.pointerId)) g.element.releasePointerCapture(g.pointerId);
-      if (g.moved) {
-        suppressClick.current = g.id; setTimeout(() => { suppressClick.current = null; }, 0);
-        if (!cancel && controller) {
-          if (g.id === DRAFT_ID) controller.movePendingPin(g.point);
-          else { void controller.moveThread(g.id, g.point).then(() => setDrag(null)); return; }
-        }
-      }
-      setDrag(null);
-    };
-    const up = (e: PointerEvent) => finish(false, e.pointerId), cancel = (e: PointerEvent) => finish(true, e.pointerId);
-    const escape = (e: KeyboardEvent) => { if (e.key === "Escape" && gesture.current) { e.preventDefault(); e.stopPropagation(); finish(true); } };
-    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", cancel); window.addEventListener("keydown", escape, true);
-    return () => { gesture.current = null; window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", cancel); window.removeEventListener("keydown", escape, true); };
-  }, [controller, capabilities.readOnly]);
-
-  useEffect(() => {
-    const outside = (e: PointerEvent) => {
-      if (controller?.getSnapshot().view && e.target instanceof Element && !e.target.closest("[data-comment-popup], [data-comment-pin], [data-comment-create]")) controller.closePopup();
-    };
-    const escape = (e: KeyboardEvent) => {
-      if (e.key !== "Escape" || e.defaultPrevented || e.isComposing || e.keyCode === 229 || document.querySelector("[data-modal-frame]")) return;
-      const current = controller?.getSnapshot();
-      if (!current?.view && !current?.pinMode) return;
-      e.preventDefault();
-      const id = current.view?.kind === "thread" ? current.view.threadId : DRAFT_ID;
-      controller?.closePopup();
-      requestAnimationFrame(() => (Array.from(surface.current?.querySelectorAll<HTMLElement>("[data-comment-pin]") ?? []).find(el => el.dataset.commentPin === id) ?? surface.current?.querySelector<HTMLElement>("[data-comment-create]"))?.focus());
-    };
-    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
-    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
-  }, [controller]);
-
-  const ready = state.status === "ready", limits = measurement ? getPopupLimits(measurement.viewport, measurement.surface) : null;
-  const selectedId = state.view?.kind === "new" ? DRAFT_ID : state.view?.kind === "thread" ? state.view.threadId : null;
-  const pins = [...(state.snapshot?.threads.map(t => ({ id: t.id, point: t as CommentPoint, number: t.number, status: t.status })) ?? []),
-    ...(state.pendingPoint && state.snapshot ? [{ id: DRAFT_ID, point: state.pendingPoint, number: state.snapshot.surface.nextNumber, status: "draft" as const }] : [])];
-  const tipFor = (id: string): PixelPoint | null => {
-    const pin = pins.find(p => p.id === id); if (!pin || !measurement) return null;
-    return keepPinInsideSurface(ratioToClientPoint(drag?.id === id ? drag.point : pin.point, measurement.surface), measurement.surface);
-  };
-  const selectedTip = selectedId ? tipFor(selectedId) : null;
-  const hoverThread = hovered && !state.view && !drag ? state.snapshot?.threads.find(t => t.id === hovered) : null;
-  const previewMessage = hoverThread ? state.snapshot?.messages.find(m => m.id === hoverThread.rootMessageId) : null;
-  const previewTip = hovered ? tipFor(hovered) : null;
-  const previewLimits = limits ? { ...limits, minWidth: 0, minHeight: 0, maxWidth: Math.min(280, limits.bounds.right - limits.bounds.left), maxHeight: Math.min(140, limits.maxHeight) } : null;
-  const previewRect = previewTip && previewLimits ? placeCommentPopup(previewTip, { width: previewLimits.maxWidth, height: previewLimits.maxHeight }, previewLimits) : null;
-  const closeAndFocus = () => {
-    controller?.closePopup();
-    requestAnimationFrame(() => (Array.from(surface.current?.querySelectorAll<HTMLElement>("[data-comment-pin]") ?? []).find(el => el.dataset.commentPin === selectedId) ?? surface.current?.querySelector<HTMLElement>("[data-comment-create]"))?.focus({ preventScroll: true }));
-  };
-
-  return <DadamThemeScope><section ref={surface} data-comment-surface className={mergeClasses(styles.surface, state.pinMode && styles.creating)} aria-labelledby="workspace-screen-title" tabIndex={0}
-    onClick={e => {
-      if (!capabilities.canCreate || !ready || state.busy || !state.pinMode || (e.target instanceof Element && e.target.closest("[data-comment-control], [data-comment-pin], button, a, input, textarea, select, [contenteditable='true'], [role='separator']"))) return;
-      const point = clientPointToRatio({ x: e.clientX, y: e.clientY }, boundsOf(e.currentTarget)); if (point) controller?.placePin(point);
-    }}
-    onKeyDown={e => { if (e.target === e.currentTarget && capabilities.canCreate && state.pinMode && ["Enter", " "].includes(e.key) && !e.nativeEvent.isComposing) { e.preventDefault(); controller?.placePin({ xRatio: .5, yRatio: .5 }); } }}>
+  const unavailableDrafts = state.status === "ready" ? Object.entries(state.drafts).filter(([key, draft]) => {
+    if (!draft.text.trim()) return false;
+    const message = key.startsWith("edit:") ? state.snapshot?.messages.find(m => m.id === key.slice(5)) : null;
+    if (message && draft.text === message.text && JSON.stringify(draft.mentions) === JSON.stringify(message.mentions)) return false;
+    const threadId = key.startsWith("reply:") ? key.slice(6) : message?.threadId;
+    const slideId = key === "new" ? state.pendingSlideId : state.snapshot?.threads.find(t => t.id === threadId)?.slideId;
+    return !!slideId && !capabilities.slideIds.includes(slideId);
+  }) : [];
+  return <DadamThemeScope><section className={styles.surface} aria-labelledby="workspace-screen-title">
     <div className={styles.intro} data-comment-control data-production-header>
       <ProjectHeader title="제작" headingId="workspace-screen-title" />
-      <div className={styles.canvasTools}><CommentCreateButton /><LegacyCommentsArchive /></div>
       {roundConflict && <section role="alert" className="tw:rounded-lg tw:border tw:border-solid tw:border-amber-300 tw:bg-amber-50 tw:p-(--layout-card-inset)">
         <p>{roundConflict.from}차에서 작성하던 의견을 보관하고 있습니다. 현재 작업은 {roundConflict.to}차로 변경되어 이 초안을 저장할 수 없습니다. 필요한 내용을 복사한 뒤 최신 회차를 불러와 주세요.</p>
         {Object.entries(state.drafts).filter(([, draft]) => draft.text.trim()).map(([key, draft]) => <pre key={key} className="tw:my-2 tw:whitespace-pre-wrap tw:break-words tw:font-sans">{draft.text}</pre>)}
         <Button disabled={state.busy} onClick={roundConflict.reload}>최신 회차 불러오기</Button>
       </section>}
-      {state.pinMode && <p className={styles.text} role="status">의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
+      {!roundConflict && unavailableDrafts.length > 0 && <section role="alert" className={styles.alert}>
+        <p>의견을 작성하던 슬라이드를 더 이상 찾을 수 없습니다. 입력 내용은 보관하고 있으니 필요한 내용을 복사해 주세요.</p>
+        {unavailableDrafts.map(([key, draft]) => <pre key={key} className="tw:whitespace-pre-wrap tw:break-words tw:font-sans">{draft.text}</pre>)}
+      </section>}
       {(state.status === "idle" || state.status === "loading") && <p className={styles.text} role="status">코멘트를 불러오는 중입니다.</p>}
       {state.error && !state.view && <div className={styles.alert} role="alert" data-comment-control>{state.error.message} {controller && <Button size="small" disabled={state.busy || state.status === "loading"} onClick={() => void controller.load()}>다시 불러오기</Button>}</div>}
     </div>
-    <p className={styles.hidden} id="comment-pin-help">{capabilities.readOnly ? "핀을 선택하면 의견을 읽을 수 있습니다." : "핀은 드래그하거나 Alt와 방향키로 이동할 수 있습니다. Shift를 함께 누르면 더 크게 이동합니다."}</p>
     <ProductionScreen />
-    {measurement && pins.map(pin => {
-      const tip = tipFor(pin.id)!;
-      const movable = pin.id === DRAFT_ID ? capabilities.canCreate : capabilities.moveThreadIds.includes(pin.id);
-      return <CommentPin key={pin.id} pinId={pin.id} number={pin.number} status={pin.status} selected={selectedId === pin.id} disabled={!ready}
-        position={{ x: tip.x - measurement.surface.left, y: tip.y - measurement.surface.top }} previewId={previewMessage?.threadId === pin.id ? `comment-preview-${pin.id}` : undefined}
-        onActivate={() => { if (suppressClick.current === pin.id) return; setHovered(null); if (pin.id === DRAFT_ID) controller?.placePin(pin.point); else controller?.openThread(pin.id); }}
-        onPreview={visible => {
-          if (hoverTimer.current) clearTimeout(hoverTimer.current);
-          if (!visible) { setHovered(null); return; }
-          hoverTimer.current = setTimeout(() => { if (!gesture.current && !controller?.getSnapshot().view && pin.status !== "draft") setHovered(pin.id); }, 200);
-        }}
-        onPointerDown={movable ? e => {
-          if (!ready || state.busy || e.button !== 0 || !e.isPrimary) return;
-          gesture.current = { id: pin.id, pointerId: e.pointerId, origin: { x: e.clientX, y: e.clientY }, offset: { x: e.clientX - tip.x, y: e.clientY - tip.y }, point: pin.point, moved: false, element: e.currentTarget };
-          e.currentTarget.setPointerCapture(e.pointerId);
-        } : undefined}
-        onKeyDown={movable ? e => {
-          if (!e.altKey || !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) return;
-          e.preventDefault(); if (e.repeat || state.busy || !ready) return;
-          const step = e.shiftKey ? .05 : .01;
-          const point = { xRatio: Math.max(0, Math.min(1, pin.point.xRatio + (e.key === "ArrowRight" ? step : e.key === "ArrowLeft" ? -step : 0))), yRatio: Math.max(0, Math.min(1, pin.point.yRatio + (e.key === "ArrowDown" ? step : e.key === "ArrowUp" ? -step : 0))) };
-          if (pin.id === DRAFT_ID) controller?.movePendingPin(point); else void controller?.moveThread(pin.id, point);
-        } : undefined} />;
-    })}
-    {previewMessage && previewRect && <CommentPreview message={previewMessage} position={previewRect} width={previewRect.width} now={now} />}
-    {selectedTip && limits && <CommentPopover key={selectedId} anchor={selectedTip} limits={limits} now={now} onClose={closeAndFocus} />}
   </section></DadamThemeScope>;
 }

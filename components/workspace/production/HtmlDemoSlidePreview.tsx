@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useLayoutEffect, useRef, useState } from "react";
+import SlideCommentSurface from "@/components/comments/SlideCommentSurface";
 import { HTML_DEMO_PROPOSAL_NAME, type HtmlDemoLayout } from "@/config/production-html-demo";
 import { outlineNumbers } from "@/lib/workspace/production/selectors";
 import type { ProjectView, ProposalSlide } from "@/types/workspace-production";
@@ -33,9 +34,7 @@ export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number
     return () => { observer?.disconnect(); cancelAnimationFrame(pending); };
   }, [slide.content, layout]);
 
-  return <>
-    <div className={styles.frame}>
-      <div className={styles.slide} role="img" aria-label={`${slide.content.title || "제목 없음"} · HTML 예시 슬라이드`}>
+  const renderedSlide = <div className={styles.slide} role="img" aria-label={`${slide.content.title || "제목 없음"} · HTML 예시 슬라이드`}>
         <span className={styles.number}>Slide {number ?? sectionSlides.findIndex(item => item.id === slide.id) + 1}</span>
         <span className={styles.page}>{sectionNumber} · {sectionSlides.findIndex(item => item.id === slide.id) + 1}/{sectionSlides.length}</span>
         <div ref={content} className={styles.content}>
@@ -60,8 +59,9 @@ export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number
           </div>}
         </div>
         <footer className={styles.footer}><span>{HTML_DEMO_PROPOSAL_NAME}</span><span>행정안전부 제안서</span></footer>
-      </div>
-    </div>
+      </div>;
+  return <>
+    <div className={styles.frame}>{mode === "full" ? <SlideCommentSurface slideId={slide.id} enabled>{renderedSlide}</SlideCommentSurface> : renderedSlide}</div>
     {overflow && <p className={styles.notice}>{mode === "thumbnail" ? "본문 초과" : "본문이 슬라이드 영역을 넘습니다. 편집 영역에서 내용을 나누거나 줄여 주세요."}</p>}
   </>;
 }

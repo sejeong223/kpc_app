@@ -28,24 +28,25 @@ const useStyles = makeStyles({
   },
 });
 
-export default function CommentCreateButton(): React.ReactElement | null {
+export interface CommentCreateButtonProps { slideId: string; surfaceId: string; buttonId: string; disabled?: boolean }
+export default function CommentCreateButton({ slideId, surfaceId, buttonId, disabled = false }: CommentCreateButtonProps): React.ReactElement | null {
   const styles = useStyles();
-  const { state, controller, capabilities } = useComments();
+  const { state, controller, capabilities, requestPinMode } = useComments();
+  const active = state.pinMode && state.pinModeSlideId === slideId;
 
-  if(!capabilities.canCreate)return null;
+  if(!capabilities.canCreate || !capabilities.slideIds.includes(slideId))return null;
   return (
     <Button
       type="button"
-      className={mergeClasses(styles.button, state.pinMode && styles.active)}
+      id={buttonId}
+      className={mergeClasses(styles.button, active && styles.active)}
       icon={<CommentAdd20Regular />}
       data-comment-control
-      data-comment-create
-      aria-pressed={state.pinMode}
-      disabled={!controller || state.status !== "ready" || state.busy}
-      onClick={() => {
-        controller?.togglePinMode();
-        if (controller?.getSnapshot().pinMode) document.querySelector<HTMLElement>("[data-comment-surface]")?.focus({ preventScroll: true });
-      }}
+      data-comment-create={slideId}
+      aria-controls={surfaceId}
+      aria-pressed={active}
+      disabled={disabled || !controller || state.status !== "ready" || state.busy}
+      onClick={() => requestPinMode(slideId)}
     >
       핀 생성
     </Button>

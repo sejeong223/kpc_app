@@ -1,6 +1,7 @@
 "use client";
 import { useLayoutEffect, useRef, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import SlideCommentSurface from "@/components/comments/SlideCommentSurface";
 import { useSlideImageUrl } from "@/hooks/workspace/use-production-preview";
 import type { ContentBlock, ProjectView, ProposalSlide } from "@/types/workspace-production";
 
@@ -56,14 +57,15 @@ export default function BasicSlidePreview(props: BasicSlidePreviewProps): React.
     if (frame.current) observer?.observe(frame.current); if (body.current) observer?.observe(body.current);
     measure(); return () => { observer?.disconnect(); cancelAnimationFrame(pending); };
   }, [slide.content, onOverflow]);
-  return <>
-    <div ref={frame} className={styles.frame} role="img" aria-label={`${slide.content.title || "제목 없음"} · 기본 슬라이드 미리보기`}>
+  const preview = <div ref={frame} className={styles.frame} role="img" aria-label={`${slide.content.title || "제목 없음"} · 기본 슬라이드 미리보기`}>
       <div ref={canvas} className={styles.canvas} style={{ transform: `scale(${scale})`, visibility: scale ? "visible" : "hidden" }}>
         <div ref={body} className={styles.body}><h3 className={styles.title}>{slide.content.title || "제목 없음"}</h3>
           {slide.content.lead && <p className={styles.lead}>{slide.content.lead}</p>}<SlideBody {...props} />
         </div>
       </div>
-    </div>
+    </div>;
+  return <>
+    {props.mode === "full" ? <SlideCommentSurface slideId={slide.id} enabled={scale > 0}>{preview}</SlideCommentSurface> : preview}
     {overflow && <p className={styles.notice}>{props.mode === "thumbnail" ? "본문 초과" : "본문이 슬라이드 영역을 넘습니다. 편집 영역에서 내용을 나누거나 줄여 주세요."}</p>}
   </>;
 }

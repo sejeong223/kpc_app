@@ -20,6 +20,7 @@ export interface CommentSurface extends CommentScope {
   seedVersion: 1; nextNumber: number; createdAt: string;
 }
 export interface CommentThread extends CommentScope, CommentPoint {
+  slideId?: string | null;
   id: string; number: number; rootMessageId: string; authorId: string;
   status: CommentStatus; createdAt: string; updatedAt: string;
   resolvedAt: string | null; resolvedBy: string | null;
@@ -38,7 +39,7 @@ export type CommentErrorCode =
   | "empty" | "invalid" | "forbidden" | "not_found" | "conflict"
   | "resolved" | "unidentified" | "db_unavailable" | "db_blocked" | "storage";
 export type CommentCommand =
-  | { type: "create-thread"; threadId: string; messageId: string; point: CommentPoint; draft: CommentDraft }
+  | { type: "create-thread"; threadId: string; messageId: string; point: CommentPoint; draft: CommentDraft; slideId?: string | null }
   | { type: "reply"; threadId: string; messageId: string; draft: CommentDraft }
   | { type: "edit-message"; messageId: string; expectedRevision: number; draft: CommentDraft }
   | { type: "delete-message"; messageId: string; expectedRevision: number }

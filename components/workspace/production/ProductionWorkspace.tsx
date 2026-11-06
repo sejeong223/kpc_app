@@ -29,10 +29,10 @@ export interface ProductionWorkspaceProps extends WorkspaceSceneProps {
 }
 interface EditingSession { slideId: string; round: number; snapshotId: string | null; lastSlide: ProposalSlide; dirty: boolean }
 const cleanDocument: DocumentEditorState = { dirty: false, composing: false, error: null };
-function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange, aiFeedback }: {
+function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange, aiFeedback, showPreview }: {
   view: ProjectView; slide: ProposalSlide; snapshotId: string | null; externalConflict: string | null; busy: boolean; accessDenied: boolean;
   onDirtyChange(dirty: boolean): void; onBusyChange(busy: boolean): void;
-  aiFeedback?: React.ReactNode;
+  aiFeedback?: React.ReactNode; showPreview: boolean;
 }) {
   const editor = useSlideDraft(view, slide);
   const [documentState, setDocumentState] = useState(cleanDocument), [resetKey, setResetKey] = useState(0), [error, setError] = useState<string | null>(null);
@@ -71,7 +71,7 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
       error={editor.error ?? error} onChange={editor.setContent} onEditorStateChange={onDocumentState}
       onSave={() => { void save().catch(() => { /* Error is shown above. */ }); }} />}
     {aiFeedback}
-    {!accessDenied && !externalConflict && <section aria-label="저장된 슬라이드"><h3 className="tw:mb-2 tw:text-sm">슬라이드</h3><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} /></section>}
+    {showPreview && !accessDenied && !externalConflict && <section aria-label="저장된 슬라이드"><h3 className="tw:mb-2 tw:text-sm">슬라이드</h3><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} /></section>}
     <DraftProtection dirty={dirty} busy={busy} onSave={canSave ? save : undefined} onDiscard={discard} />
   </div>;
 }
@@ -169,7 +169,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
     <div hidden={ids.length > 1 && !session?.dirty}>
       {multiple && session?.dirty && <p role="status" className="tw:text-xs">아래에 아직 반영하지 않은 단일 슬라이드 입력을 보관하고 있습니다.</p>}
       {editingSlide ? <ActiveSlide key={`${view.project.id}:${selection.snapshotId ?? "current"}:${editingSlide.id}`} view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy} onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy}
-        aiFeedback={!multiple ? aiFeedback : null} /> : !accessDenied && <section aria-label="편집" className="tw:mb-(--layout-section-gap) tw:rounded-lg tw:border tw:border-(--kpc-line) tw:p-(--layout-card-inset)">
+        aiFeedback={!multiple ? aiFeedback : null} showPreview={!multiple} /> : !accessDenied && <section aria-label="편집" className="tw:mb-(--layout-section-gap) tw:rounded-lg tw:border tw:border-(--kpc-line) tw:p-(--layout-card-inset)">
         <h2 className="tw:mt-0 tw:text-sm">편집</h2><p className="tw:text-sm">{section ? "이 소목차에는 슬라이드가 없습니다." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>
         {section && <p className="tw:text-xs tw:text-(--kpc-muted)">목록을 마우스 오른쪽 버튼으로 눌러 슬라이드를 추가해 주세요.</p>}
         {rows.length > 0 && <p className="tw:text-xs tw:text-(--kpc-muted)">왼쪽 목록에서 다른 슬라이드를 선택할 수 있습니다.</p>}
@@ -187,7 +187,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
     {dialog && !accessDenied && <ModalFrame open title="선택 슬라이드 삭제" contentKey={dialog.operation} onClose={() => { if (!busy) setDialog(null); }}
       footer={<><DadamButton disabled={busy} onClick={() => setDialog(null)}>취소</DadamButton><DadamButton appearance="primary" disabled={busy || readOnly} onClick={applyBatch}>확인</DadamButton></>}>
       <p>{dialog.slideIds.length}장을 삭제합니다. 슬라이드에 연결된 미처리 의견 {dialog.slideIds.reduce((n, id) => n + selectDeletionImpact(view, id).openComments, 0)}개에 영향을 줍니다.</p>
-      <p>작업 영역 코멘트는 유지합니다. 다른 변경 전에 15초 동안 되돌릴 수 있습니다.</p><WorkspaceErrorText error={error ?? batch.error} />
+      <p>연결된 핀 의견은 화면에서 숨겨집니다. 삭제를 되돌리면 다시 표시됩니다. 다른 변경 전에 15초 동안 되돌릴 수 있습니다.</p><WorkspaceErrorText error={error ?? batch.error} />
     </ModalFrame>}
   </div>;
 }
