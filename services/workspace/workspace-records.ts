@@ -14,6 +14,7 @@ import {
 import { workspaceAssert as check } from "@/lib/workspace/production/errors";
 import type { WatchRequest } from "./WorkspaceDatabase";
 import { createHtmlDemoBundle } from "./workspace-demo";
+import { createManufacturingDemoBundle } from "./workspace-mfg-demo";
 
 export function readWorkspaceBundle(
   tx: IDBTransaction,
@@ -40,8 +41,9 @@ export function readWorkspaceBundle(
       "저장된 프로젝트 작업이 없습니다.",
     );
     const demo = !files && !state ? createHtmlDemoBundle(context) : null;
-    const fileState = files ?? demo?.files ?? createEmptyFileProject(context),
-      workspace = state ?? demo?.state ?? createWorkspaceState(context, fileState);
+    const manufacturing = !files && !state ? createManufacturingDemoBundle(context) : null;
+    const fileState = files ?? demo?.files ?? manufacturing?.files ?? createEmptyFileProject(context),
+      workspace = state ?? demo?.state ?? manufacturing?.state ?? createWorkspaceState(context, fileState);
     check(
       fileState.currentRound === workspace.currentRound,
       "STORAGE",

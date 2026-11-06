@@ -45,7 +45,9 @@ export interface Chapter {
   id: string;
   title: string;
 }
+export interface ManufacturingPrompt { intro: string; bullets: string[] }
 export interface Section {
+  demoPrompt?: ManufacturingPrompt;
   id: string;
   chapterId: string;
   title: string;
@@ -99,6 +101,7 @@ export interface SlideUsedSettings {
   sources: PromptSource[];
 }
 export interface ProposalSlide {
+  demoSourceKey?: string;
   id: string;
   sectionId: string;
   revision: number;

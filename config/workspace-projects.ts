@@ -1,5 +1,6 @@
 import { createAdminSeed } from "@/config/admin-seed";
-import { HTML_DEMO_PROJECT_ID, HTML_DEMO_PROJECT_NAME } from "@/config/production-html-demo";
+import { HTML_DEMO_PROJECT_ID } from "@/config/production-html-demo";
+import { MFG_DEMO_PROJECT_ID, MFG_DEMO_PROJECT_NAME } from "@/config/production-mfg-demo";
 import { WorkspaceFileError } from "@/lib/workspace/files/errors";
 import { canAccessFileProject } from "@/lib/workspace/files/permissions";
 import {
@@ -62,8 +63,14 @@ export function createWorkspaceProjectCatalog(
     .filter((project) => canAccessFileProject(scope, project));
 
   const self = seed.users.find(user => user.id === "u-self");
+  const manufacturingDepartment = seed.departments.find(d => d.name === "생산성본부")?.id ?? null;
   projects.push(WorkspaceProjectSchema.parse({
-    id: HTML_DEMO_PROJECT_ID, number: "HTML-DEMO", name: HTML_DEMO_PROJECT_NAME,
+    id: MFG_DEMO_PROJECT_ID, number: "HTML-MFG-DEMO", name: MFG_DEMO_PROJECT_NAME,
+    departmentId: manufacturingDepartment, pmId: "demo:mfg:lee", pmName: "이서연",
+    memberIds: ["demo:mfg:lee", scope.actor.id, "demo:mfg:kim"],
+  }));
+  projects.push(WorkspaceProjectSchema.parse({
+    id: HTML_DEMO_PROJECT_ID, number: "HTML-DEMO", name: "이전 HTML 예시 · 행정업무 AI 에이전트 구축",
     departmentId: self?.departmentId ?? null, pmId: scope.actor.id, pmName: scope.actor.name,
     memberIds: [scope.actor.id],
   }));
@@ -72,6 +79,11 @@ export function createWorkspaceProjectCatalog(
     members: (projectId) => {
       const project = projects.find((p) => p.id === projectId);
       if (!project) return [];
+      if (projectId === MFG_DEMO_PROJECT_ID) return [
+        { id: "demo:mfg:lee", adminUserId: "u-04", name: "이서연", role: "user" as const },
+        { id: scope.actor.id, adminUserId: "u-self", name: "정소담", role: scope.actor.role },
+        { id: "demo:mfg:kim", adminUserId: "u-02", name: "김민수", role: "user" as const },
+      ].map(member => ({ ...member, departmentId: manufacturingDepartment, departmentName: "생산성본부", email: null }));
       if (projectId === HTML_DEMO_PROJECT_ID) return [{
         id: scope.actor.id, adminUserId: "u-self", name: scope.actor.name, role: scope.actor.role,
         departmentId: project.departmentId,

@@ -39,8 +39,12 @@ const sources = z
 export const ProjectPermissionSchema = z.enum(PROJECT_PERMISSIONS);
 export const ProjectGrantSchema=z.strictObject({userId:id,permissions:z.array(ProjectPermissionSchema).max(5).refine(p=>new Set(p).size===p.length)});
 export const ChapterSchema = z.strictObject({ id, title });
+export const ManufacturingPromptSchema = z.strictObject({
+  intro: z.string().max(10000), bullets: z.array(z.string().max(2000)).max(12),
+});
 export const SectionSchema = z
   .strictObject({
+    demoPrompt: ManufacturingPromptSchema.optional(),
     id,
     chapterId: id,
     title,
@@ -141,6 +145,7 @@ export const UsedSettingsSchema = z.strictObject({
 });
 export const ProposalSlideSchema = z
   .strictObject({
+    demoSourceKey: id.optional(),
     id,
     sectionId: id,
     revision: count,

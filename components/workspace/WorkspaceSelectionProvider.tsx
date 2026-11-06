@@ -9,6 +9,8 @@ import type { WorkspaceProject } from "@/types/workspace-files";
 import { isWorkspaceScreenId, parseWorkspaceSelection, resolveWorkspaceSelection, workspaceHref } from "@/lib/workspace/production/routing";
 import { workspaceQueryKeys } from "@/lib/workspace/production/query-keys";
 import { WorkspaceError, workspaceAssert as check } from "@/lib/workspace/production/errors";
+import { HTML_DEMO_PROJECT_ID } from "@/config/production-html-demo";
+import { MFG_DEMO_PROJECT_ID } from "@/config/production-mfg-demo";
 import { activeWorkspaceRead, loadProjectView, useProjectWorkspace, workspaceQueryOptions } from "@/hooks/workspace/use-workspace-production";
 export interface WorkspaceSelectionValue {
     selection: WorkspaceSelection;
@@ -52,7 +54,8 @@ function ActiveSelection({ runtime, children }: {
     const saved = useQuery({ ...workspaceQueryOptions, queryKey: keys.selection, queryFn: ({ signal }) => activeWorkspaceRead(runtime, () => runtime.fileRuntime.service.getSelection(), signal) });
     const ready = projects.isSuccess && saved.isSuccess;
     const accessible = (id: string | null) => id !== null && projects.data?.some(p => p.id === id);
-    const fallback = ready ? (memory && accessible(memory.projectId) ? memory : { ...empty, projectId: accessible(saved.data ?? null) ? saved.data ?? null : projects.data[0]?.id ?? null }) : empty;
+    const savedProject = saved.data === HTML_DEMO_PROJECT_ID && accessible(MFG_DEMO_PROJECT_ID) ? MFG_DEMO_PROJECT_ID : saved.data;
+    const fallback = ready ? (memory && accessible(memory.projectId) ? memory : { ...empty, projectId: accessible(savedProject ?? null) ? savedProject ?? null : projects.data[0]?.id ?? null }) : empty;
     const raw = transition?.location === location ? transition.selection : parsed.value.projectId ? parsed.value : fallback;
     const denied = ready && raw.projectId && !accessible(raw.projectId) ? new WorkspaceError("FORBIDDEN", "선택한 프로젝트에 접근할 수 없습니다. 다른 프로젝트를 선택해 주세요.") : null;
     const view = useProjectWorkspace(ready && !parsed.error && !denied ? raw.projectId : null);

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MFG_DEMO_PROJECT_ID } from "@/config/production-mfg-demo";
 import type {
   ProjectView,
   WorkspaceSelection,
@@ -78,7 +79,8 @@ export function resolveWorkspaceSelection(
       (selection.sectionId === null
         ? body.sections.find((s) => s.id === requestedSlide?.sectionId)
         : undefined) ??
-      body.sections[0];
+      (view.project.id === MFG_DEMO_PROJECT_ID && !selection.sectionId && !selection.slideId
+        ? body.sections.find(s => s.id === "s31") : undefined) ?? body.sections[0];
   const slide =
       requestedSlide?.sectionId === section?.id
         ? requestedSlide

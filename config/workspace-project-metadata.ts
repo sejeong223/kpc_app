@@ -1,5 +1,6 @@
 import { createAdminSeed } from "@/config/admin-seed";
 import { HTML_DEMO_PROJECT_ID } from "@/config/production-html-demo";
+import { MFG_DEMO_PROJECT_ID, MFG_DEMO_ORGANIZATION } from "@/config/production-mfg-demo";
 import type { WorkspaceHeaderMetadata } from "@/types/workspace-header";
 
 // 로컬 프로젝트 목록과 같은 seed를 사용한다. 저장된 본문/권한을 건드리지 않는 표시용 목 데이터다.
@@ -17,4 +18,5 @@ export const WORKSPACE_PROJECT_METADATA: Readonly<Record<string, WorkspaceHeader
     budgetKrw: project.budgetKrw,
   }]),
   [HTML_DEMO_PROJECT_ID, { organization: "행정안전부", departmentName: "AI사업본부", dueDate: "2026-11-27", budgetKrw: 980000000 }],
+  [MFG_DEMO_PROJECT_ID, { organization: MFG_DEMO_ORGANIZATION, departmentName: "생산성본부", dueDate: "2026-11-25", budgetKrw: 850000000 }],
 ]);
