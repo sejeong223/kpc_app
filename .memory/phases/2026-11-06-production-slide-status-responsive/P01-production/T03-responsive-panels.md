@@ -1,6 +1,6 @@
 # Task: T03 반응형 배치·제작 최초 메뉴 접기·사용자 선택 유지
 
-## Status: pending
+## Status: done
 
 ## Goal
 제작 컨테이너 폭이 좁아져도 출처가 중앙을 덮지 않도록 한다. 좁은 데스크톱에서는 출처를 자동으로 접고, 사용자가 펼치면 중앙과 좌측 너비를 실제로 재배분한다.
@@ -233,9 +233,11 @@ Task: T03-responsive-panels
 ~~~
 
 ## Progress
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 지정 타입/lint/build 및 stdin 상태·배치 검증 통과
+- commit: 본 Task 완료 커밋의 Plan/Phase/Task 식별자로 조회
+- 검증 기록: [T03 결과](../../../reports/2026-11-06-production-slide-status-responsive-T03.md)
+- Acceptance Criteria는 코드·배치 계산·React 상태 검증으로 확인했다. 실제 브라우저 확대/축소 및 시각 검증은 정책에 따라 미실시.
 
 ## Execution Constraints
 테두리/폰트/코멘트/설정/회차/기존 HTML 계획의 미커밋 변경 보존. tests/ 생성·복원, 브라우저/CUA/E2E/dev server/스크린샷 검증 금지. 원본 HTML 읽기 전용. 패키지/DB/배포/push 없음. Task에 실제 필요한 파일만 stage, current.md ignore 유지. 완료 시 phase done 3/3 및 current Active Task 없음으로 전진.

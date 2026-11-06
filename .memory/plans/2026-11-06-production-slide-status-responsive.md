@@ -1,7 +1,12 @@
 # Plan: 제작 슬라이드별 완료·잠금과 반응형 배치
 
 ## Goal
-선택한 슬라이드만 작성 완료·잠금·해제하고, 출처 패널이 중앙 편집/슬라이드를 덮지 않도록 제작 화면을 개선한다. 이번 단계는 계획만 작성한다.
+선택한 슬라이드만 작성 완료·잠금·해제하고, 출처 패널이 중앙 편집/슬라이드를 덮지 않도록 제작 화면을 개선한다.
+
+## Status: done
+- T01 → T02 → T03 구현 및 지정 검증 완료 (3/3).
+- 타입 검사, 대상 lint, Node stdin 상태·배치·저장 검증 및 최종 build 통과.
+- 브라우저 시각 검증은 기존 정책에 따라 미실시.
 
 ## Confirmed Scope
 - 제작의 완료/해제 대상은 활성 슬라이드 1장이다. 여러 장을 선택했더라도 상태 드롭다운은 활성 슬라이드에만 적용한다.
@@ -17,7 +22,7 @@
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | 슬라이드 단위 상태·화면 연결·출처 비중첩 배치 | [P01](../phases/2026-11-06-production-slide-status-responsive/P01-production/phase.md) |
+| P01 | done | 슬라이드 단위 상태·화면 연결·출처 비중첩 배치 | [P01](../phases/2026-11-06-production-slide-status-responsive/P01-production/phase.md) |
 
 ## Task Structure
 | Task | 작업 | 주요 파일 |

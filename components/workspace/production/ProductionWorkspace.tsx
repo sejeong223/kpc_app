@@ -221,7 +221,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
     {rows.length > 0 && <p className="tw:text-xs tw:text-(--kpc-muted)">왼쪽 목록에서 다른 슬라이드를 선택할 수 있습니다.</p>}
   </section>;
   const renderCenter = ({ editor, preview, dirty }: ProductionEditorParts) => <>
-    <div data-production-editor-header className="tw:max-h-[55%] tw:min-h-0 tw:shrink-0 tw:overflow-y-auto tw:overscroll-contain tw:border-b tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:px-3 tw:pt-3.5 tw:pb-2.5 tw:@min-[761px]:px-[22px]">
+    <div data-production-editor-header className="tw:box-border tw:w-full tw:max-w-full tw:min-w-0 tw:max-h-[55%] tw:min-h-0 tw:shrink-0 tw:overflow-y-auto tw:overscroll-contain tw:border-b tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:px-3 tw:pt-3.5 tw:pb-2.5 tw:@min-[761px]:px-[22px]">
       <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}
       {!accessDenied && <ProductionToolbar key={current?.id ?? section?.id ?? "empty"} view={safeView} sectionId={section?.id ?? null} slideId={current?.id ?? null} busy={busy}
         commentActionSlot={<div ref={setCommentCreateTarget} data-comment-control />}
@@ -242,7 +242,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
       </div>
       {(multiple || !editingSlide) && aiFeedback}
     </div>
-    <div data-production-scroll className="tw:min-h-0 tw:min-w-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:bg-(--kpc-bg) tw:px-3 tw:pt-5 tw:pb-[30px] tw:@min-[761px]:px-[22px]">
+    <div data-production-scroll className="tw:box-border tw:w-full tw:max-w-full tw:min-h-0 tw:min-w-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:bg-(--kpc-bg) tw:px-3 tw:pt-5 tw:pb-[30px] tw:@min-[761px]:px-[22px]">
       {preview}
       {multiple && !accessDenied && !sessionConflict && <div className="tw:space-y-[22px]">{stackRows.map((row, index) => {
         const siblings = rows.filter(item => item.section.id === row.section.id);

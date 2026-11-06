@@ -32,7 +32,7 @@ export default function ProductionPreview({ view, slide, snapshotId, mode = "ful
   const templatePreview = query.data && templateSlide ? <div role="img" aria-label={`${slide.content.title || "제목 없음"} · Template 미리보기`}>
     <div inert style={{ pointerEvents: "none" }}><TemplateSlidePreview document={query.data.preview} slideIndex={templateSlide.index} selectedObjectId={null} onSelect={() => {}} /></div>
   </div> : null;
-  return <div ref={root} className="tw:w-full tw:min-w-0" aria-label={`${number ? `${number}번 ` : ""}슬라이드 저장본`}>
+  return <div ref={root} className="tw:box-border tw:w-full tw:min-w-0 tw:max-w-full" aria-label={`${number ? `${number}번 ` : ""}슬라이드 저장본`}>
     {demoLayout ? <HtmlDemoSlidePreview view={view} slide={slide} layout={demoLayout} mode={mode} number={number} commentCreateTarget={commentCreateTarget} /> : !slide.template ? <BasicSlidePreview view={view} slide={slide} snapshotId={snapshotId} mode={mode} enabled={enabled} commentCreateTarget={commentCreateTarget} /> : inaccessible ?
       <p role="status">Template 또는 적용 자산의 원본·권한을 확인할 수 없습니다. 제작 설정에서 재선택해 주세요.</p> : query.error ?
       <p role="status">{query.error.message}</p> : query.data && templateSlide ? <>

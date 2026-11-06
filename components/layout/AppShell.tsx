@@ -10,6 +10,8 @@ import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import { WorkspaceNavigationProvider } from "./WorkspaceNavigation";
 
 import NavSidebar from "./NavSidebar";
+import { useOptionalWorkspaceRuntime } from "@/components/workspace/WorkspaceProjectProvider";
+import { useProductionSidebar } from "@/hooks/workspace/use-production-sidebar";
 
 const SIDEBAR_ID = "workspace-sidebar";
 
@@ -78,6 +80,9 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
   const isProduction = pathname === "/workspace/write";
+  const runtime = useOptionalWorkspaceRuntime();
+  const productionSidebar = useProductionSidebar(runtime?.identity.namespace ?? null);
+  const effectiveCollapsed = isProduction ? productionSidebar.collapsed : sidebarCollapsed;
   const previousPathname = useRef(pathname);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -146,7 +151,7 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
 
   return (
     <WorkspaceNavigationProvider value={{ sidebarId: SIDEBAR_ID, triggerId: `${SIDEBAR_ID}-trigger`, menuOpen, toggleMenu: () => { controller?.suspendUi(); setMenuOpen(open => !open); } }}>
-    <div className={mergeClasses(styles.root, sidebarCollapsed && styles.collapsed, isProduction && styles.productionRoot)}>
+    <div className={mergeClasses(styles.root, effectiveCollapsed && styles.collapsed, isProduction && styles.productionRoot)}>
       <DadamThemeScope>
         <a className={styles.skipLink} href="#main-content">본문으로 이동</a>
         {menuOpen && (
@@ -155,9 +160,9 @@ export default function AppShell({ children }: AppShellProps): React.ReactElemen
         <NavSidebar
           id={SIDEBAR_ID}
           isOpen={menuOpen}
-          isCollapsed={sidebarCollapsed}
+          isCollapsed={effectiveCollapsed}
           onNavigate={onNavigate}
-          onCollapseToggle={() => setSidebarCollapsed((collapsed) => !collapsed)}
+          onCollapseToggle={() => isProduction ? productionSidebar.setCollapsed(!effectiveCollapsed) : setSidebarCollapsed(collapsed => !collapsed)}
           onClose={closeMenu}
         />
       </DadamThemeScope>

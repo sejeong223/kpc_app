@@ -16,7 +16,7 @@ export interface SlideContentEditorProps {
 }
 const clean: DocumentEditorState = { dirty: false, composing: false, error: null };
 const useStyles = makeStyles({
-  shell: { minWidth: 0, marginTop: "10px", border: "1px solid var(--kpc-line)", borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, boxShadow: "0 1px 3px rgba(0,0,0,.05)", ":focus-within": { ...shorthands.borderColor("#b9bcc4"), boxShadow: "0 2px 10px rgba(0,0,0,.08)" } },
+  shell: { minWidth: 0, width: "100%", maxWidth: "100%", boxSizing: "border-box", marginTop: "10px", border: "1px solid var(--kpc-line)", borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, boxShadow: "0 1px 3px rgba(0,0,0,.05)", ":focus-within": { ...shorthands.borderColor("#b9bcc4"), boxShadow: "0 2px 10px rgba(0,0,0,.08)" } },
   inputFrame: { position: "relative" },
   paper: { boxSizing: "border-box", padding: "12px 52px 12px 16px", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", fontFamily: tokens.fontFamilyBase, fontSize: "13px", lineHeight: "1.7",
     color: "#26282d",

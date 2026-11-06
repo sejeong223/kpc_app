@@ -24,12 +24,12 @@ export default function SourcePanel({ view, slide, snapshotId, number, panelTogg
   const cards = selectProductionSources(view, slide, query.data ?? null);
   const row = selectProductionSlides(view).find(item => item.slide.id === slide?.id);
   const description = row ? `Slide ${number ?? row.number} · ${row.sectionNumber} ${row.section.title}` : "";
-  return <section aria-label="슬라이드 출처" className="tw:flex tw:h-full tw:min-h-0 tw:min-w-0 tw:flex-col">
+  return <section aria-label="슬라이드 출처" className="tw:box-border tw:flex tw:h-full tw:w-full tw:max-w-full tw:min-h-0 tw:min-w-0 tw:flex-col tw:[overflow-wrap:anywhere]">
     <header className="tw:flex tw:min-h-11 tw:shrink-0 tw:items-center tw:gap-2 tw:border-b tw:border-(--kpc-line) tw:px-3">
       <h2 className="tw:m-0 tw:shrink-0 tw:text-[13px] tw:font-bold">출처</h2>
       <span className="tw:min-w-0 tw:flex-1 tw:truncate tw:text-xs tw:text-(--kpc-muted)" title={description}>{description}</span>{panelToggle}
     </header>
-    <div className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-3">
+    <div className="tw:box-border tw:w-full tw:max-w-full tw:min-w-0 tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-3">
       {!slide ? <p className="tw:text-sm">슬라이드를 선택하면 출처를 볼 수 있습니다.</p> : <>
         {query.isPending && <p role="status" className="tw:text-xs">자료 정보를 불러오는 중입니다.</p>}
         <WorkspaceErrorText error={query.error} />
@@ -51,12 +51,12 @@ export default function SourcePanel({ view, slide, snapshotId, number, panelTogg
                   {card.boxIndex !== undefined && <span className="tw:font-bold tw:text-(--dadam-accent)">{String(card.boxIndex + 1).padStart(2, "0")}</span>}
                   <span className={"tw:inline-flex tw:h-5 tw:shrink-0 tw:items-center tw:rounded tw:px-1 tw:text-[10.5px] tw:font-bold " + (group === "rfp" ? "tw:bg-(--dadam-accent-soft) tw:text-(--dadam-accent-ink)" : "tw:bg-(--kpc-bg) tw:text-(--kpc-secondary)")}>
                     {group === "rfp" ? "RFP" : <Document16Regular />}</span>
-                  <strong className="tw:min-w-0 tw:break-words">{group === "rfp" ? card.page === null ? "쪽수 미상" : `p.${card.page}` : card.title}</strong>
+                  <strong className="tw:min-w-0">{group === "rfp" ? card.page === null ? "쪽수 미상" : `p.${card.page}` : card.title}</strong>
                 </div>
-                <p className="tw:mb-0 tw:mt-1 tw:break-words tw:text-[11.5px] tw:leading-normal tw:text-(--kpc-muted)">
+                <p className="tw:mb-0 tw:mt-1 tw:text-[11.5px] tw:leading-normal tw:text-(--kpc-muted)">
                   {card.location ? group === "rfp" ? card.location : `p.${card.page} · ${card.location}` : group === "rfp" ? card.title : card.page !== null ? `p.${card.page}` : "쪽수 미상"}{!card.demoSource && card.provenance === "mock" && " · 시연 자료"}
                 </p>
-                {card.quote !== null && <blockquote className="tw:mx-0 tw:mb-0 tw:mt-1.5 tw:border-l-[3px] tw:border-(--dadam-accent) tw:bg-(--dadam-accent-soft) tw:px-2.5 tw:py-1.5 tw:whitespace-pre-wrap tw:break-words tw:text-xs tw:leading-[1.6]">{card.quote}</blockquote>}
+                {card.quote !== null && <blockquote className="tw:mx-0 tw:mb-0 tw:mt-1.5 tw:border-l-[3px] tw:border-(--dadam-accent) tw:bg-(--dadam-accent-soft) tw:px-2.5 tw:py-1.5 tw:whitespace-pre-wrap tw:text-xs tw:leading-[1.6]">{card.quote}</blockquote>}
                 {card.missingReason && <p className="tw:mb-0 tw:mt-1 tw:text-xs tw:text-(--kpc-muted)">{card.missingReason}</p>}
               </article>;
             })}

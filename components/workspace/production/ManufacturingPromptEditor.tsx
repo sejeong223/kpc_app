@@ -37,9 +37,9 @@ export default function ManufacturingPromptEditor({ value, readOnly, busy, error
     onEditorStateChange({ dirty: true, composing: false, error: message });
     if (valid.success) onChange(valid.data);
   };
-  return <section aria-label="슬라이드 내용 편집" data-comment-control className="tw:relative tw:mt-2.5 tw:min-w-0 tw:rounded-[14px] tw:border tw:border-(--kpc-line) tw:bg-white tw:shadow-sm">
+  return <section aria-label="슬라이드 내용 편집" data-comment-control className="tw:relative tw:box-border tw:mt-2.5 tw:w-full tw:max-w-full tw:min-w-0 tw:rounded-[14px] tw:border tw:border-(--kpc-line) tw:bg-white tw:shadow-sm">
     <div ref={root} contentEditable={!blocked} suppressContentEditableWarning role="textbox" aria-label="이 슬라이드에 들어갈 내용" aria-multiline="true" aria-readonly={blocked} tabIndex={blocked ? -1 : 0} spellCheck={false}
-      className="tw:min-h-12 tw:max-h-[180px] tw:overflow-y-auto tw:overscroll-contain tw:py-3 tw:pr-[52px] tw:pl-4 tw:text-[13px] tw:leading-[1.7] tw:whitespace-pre-wrap tw:break-words tw:outline-none tw:[&_p]:m-0 tw:[&_ul]:my-0.5 tw:[&_ul]:list-disc tw:[&_ul]:pl-[18px] tw:[&_li]:m-0"
+      className="tw:box-border tw:w-full tw:max-w-full tw:min-h-12 tw:max-h-[180px] tw:overflow-y-auto tw:overscroll-contain tw:py-3 tw:pr-[52px] tw:pl-4 tw:text-[13px] tw:leading-[1.7] tw:whitespace-pre-wrap tw:[overflow-wrap:anywhere] tw:outline-none tw:[&_p]:m-0 tw:[&_ul]:my-0.5 tw:[&_ul]:list-disc tw:[&_ul]:pl-[18px] tw:[&_li]:m-0"
       onBeforeInput={event => { if (blocked) event.preventDefault(); }}
       onCompositionStart={() => { composing.current = true; setComposing(true); dirty.current = true; onEditorStateChange({ dirty: true, composing: true, error: localError }); }}
       onCompositionEnd={() => { composing.current = false; setComposing(false); publish(); }}
