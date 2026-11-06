@@ -1,5 +1,7 @@
 import { applyCanvasCommand, carryCanvasComments } from "./canvas-comments";
 import { emptyCanvasComments } from "./canvas-schemas";
+import { MFG_DEMO_PROJECT_ID } from "@/config/production-mfg-demo";
+import { applyManufacturingPromptContent, manufacturingLayout } from "./manufacturing-prompt";
 import type { FileProjectState } from "@/types/workspace-files";
 import type {
   AssetPin,
@@ -495,6 +497,19 @@ export function applyWorkspaceMutation(
       case "set-grants-batch":
         state.grants=applyProjectGrants(context,state,operation.grants);
         break;
+      case "apply-manufacturing-prompt": {
+        check(state.projectId === MFG_DEMO_PROJECT_ID, "VALIDATION", "제조업 예시에서만 사용할 수 있습니다.");
+        const target = slide(operation.slideId), owner = section(operation.sectionId);
+        check(target.sectionId === owner.id, "VALIDATION", "다른 섹션의 슬라이드입니다.");
+        check(owner.assigneeIds.includes(actorId), "FORBIDDEN", "담당자만 본문을 수정할 수 있습니다.");
+        check(!!operation.prompt.intro.trim() || operation.prompt.bullets.some(item => item.trim()), "VALIDATION", "본문 내용을 입력해 주세요.");
+        check(!target.template, "LAYOUT", "Template 슬라이드는 문서 편집기를 사용해 주세요.");
+        contentChanged([owner.id]);
+        target.content = applyManufacturingPromptContent(target.content, operation.prompt, manufacturingLayout(state.projectId, target), newId);
+        target.revision++;
+        owner.demoPrompt = structuredClone(operation.prompt);
+        break;
+      }
       case "set-section-state":
         edit(operation.id);
         section(operation.id).state = operation.state;

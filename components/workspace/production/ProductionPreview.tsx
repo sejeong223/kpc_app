@@ -7,6 +7,8 @@ import type { ProjectView, ProposalSlide } from "@/types/workspace-production";
 import BasicSlidePreview from "./BasicSlidePreview";
 import HtmlDemoSlidePreview from "./HtmlDemoSlidePreview";
 import { htmlDemoLayout } from "@/config/production-html-demo";
+import { manufacturingLayout } from "@/lib/workspace/production/manufacturing-prompt";
+import { selectProductionSlides } from "@/lib/workspace/production/presentation";
 
 export interface ProductionPreviewProps {
   view: ProjectView; slide: ProposalSlide; snapshotId: string | null;
@@ -25,7 +27,8 @@ export default function ProductionPreview({ view, slide, snapshotId, mode = "ful
   const query = useProductionPreview(view, slide, snapshotId, enabled);
   const inaccessible = !!slide.template && [slide.template.pinId, slide.usedSettings.skillPinId, slide.usedSettings.promptPinId].filter(Boolean).some(id => view.assetAccess.find(a => a.pinId === id)?.access.status !== "available");
   const templateSlide = query.data?.preview.slides.find(s => s.path === slide.template?.sourceSlidePath);
-  const demoLayout = htmlDemoLayout(view.project.id, slide);
+  number ??= selectProductionSlides(view).find(row => row.slide.id === slide.id)?.number;
+  const demoLayout = manufacturingLayout(view.project.id, slide) ?? htmlDemoLayout(view.project.id, slide);
   const templatePreview = query.data && templateSlide ? <div role="img" aria-label={`${slide.content.title || "제목 없음"} · Template 미리보기`}>
     <div inert style={{ pointerEvents: "none" }}><TemplateSlidePreview document={query.data.preview} slideIndex={templateSlide.index} selectedObjectId={null} onSelect={() => {}} /></div>
   </div> : null;

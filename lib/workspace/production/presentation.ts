@@ -2,12 +2,15 @@ import type { Chapter, ProjectView, ProposalSlide, Section } from "@/types/works
 import type { FileResourceView, FileWorkspaceView } from "@/types/workspace-files";
 import { outlineNumbers } from "./selectors";
 import { visibleCanvasThreads } from "./canvas-comments";
+import { MFG_DEMO_PROJECT_ID } from "@/config/production-mfg-demo";
+import { selectManufacturingSources, type ManufacturingDemoSource } from "./manufacturing-sources";
 
 export interface ProductionSlideRow {
   slide: ProposalSlide; section: Section; chapter: Chapter;
   number: number; sectionNumber: string; mine: boolean; editable: boolean; openComments: number;
 }
 export interface ProductionSourceCard {
+  location?: string; boxIndex?: number; demoSource?: ManufacturingDemoSource;
   id: string; group: "rfp" | "reference"; title: string;
   page: number | null; quote: string | null; provenance: "mock" | "manual";
   resource: FileResourceView | null; round: number | null; missingReason: string | null;
@@ -24,10 +27,16 @@ export function selectProductionSlides(view: ProjectView): ProductionSlideRow[] 
       mine: section.assigneeIds.includes(view.actor.id), editable: view.capabilities.editableSectionIds.includes(section.id),
       openComments: counts.get(slide.id) ?? 0,
     })),
-  )).map((row, index) => ({ ...row, number: index + 1 }));
+  )).map((row, index) => ({ ...row, number: index + (view.project.id === MFG_DEMO_PROJECT_ID ? 2 : 1) }));
 }
 export function selectProductionSources(view: ProjectView, slide: ProposalSlide | null, files: FileWorkspaceView | null): ProductionSourceCard[] {
   if (!slide) return [];
+  const demo = selectManufacturingSources(view, slide);
+  if (demo.length) return demo.map(source => ({
+    id: source.id, group: source.kind === "rfp" ? "rfp" : "reference", title: source.title, page: source.page,
+    quote: source.quote, provenance: "mock", resource: null, round: null, missingReason: null,
+    location: source.location, ...(source.boxIndex === null ? {} : { boxIndex: source.boxIndex }), demoSource: source,
+  }));
   const refs = slide.sources.filter(s => s.kind === "requirement");
   const ids = [...new Set([...view.state.body.requirements.filter(r => r.sectionId === slide.sectionId).map(r => r.id), ...refs.map(r => r.targetId)])];
   const cards: ProductionSourceCard[] = ids.map(id => {

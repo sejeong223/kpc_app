@@ -53,9 +53,8 @@ export default function ProductionToolbar({ view, sectionId, onSection, onState,
         </PopoverSurface>
       </Popover>
       <span className="tw:flex-1" />{commentActionSlot}
-      {current && (view.capabilities.editableSectionIds.includes(current.id) && onState ? <DadamSelect className={styles.state} aria-label="소목차 작성 상태" value={current.state} disabled={busy}
-        onChange={(_, data) => onState(data.value === "done" ? "done" : "writing")}><option value="writing">작성 중</option><option value="done">작성 완료</option></DadamSelect>
-        : <span className="tw:text-xs">{current.locked ? "작성 완료 · 고정" : current.state === "done" ? "작성 완료" : "작성 중"}</span>)}
+      {current && <DadamSelect className={styles.state} aria-label="소목차 작성 상태" value={current.state} disabled={busy || !onState || !view.capabilities.editableSectionIds.includes(current.id)}
+        onChange={(_, data) => { const next = data.value === "done" ? "done" : "writing"; if (next !== current.state) onState?.(next); }}><option value="writing">작성 중</option><option value="done">작성 완료</option></DadamSelect>}
     </div>
     {current?.locked && <div className="tw:mt-2.5 tw:flex tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-lg tw:bg-(--dadam-accent-soft) tw:px-3 tw:py-2 tw:text-xs tw:text-(--dadam-accent-ink)">
       <strong>작성 완료 · 고정됨</strong>

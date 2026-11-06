@@ -3,6 +3,7 @@
 import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import SlideCommentSurface from "@/components/comments/SlideCommentSurface";
 import { HTML_DEMO_PROPOSAL_NAME, type HtmlDemoLayout } from "@/config/production-html-demo";
+import { MFG_DEMO_PROJECT_ID, MFG_DEMO_ORGANIZATION } from "@/config/production-mfg-demo";
 import { outlineNumbers } from "@/lib/workspace/production/selectors";
 import type { ProjectView, ProposalSlide } from "@/types/workspace-production";
 import styles from "./HtmlDemoSlidePreview.module.css";
@@ -34,7 +35,8 @@ export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number
     return () => { observer?.disconnect(); cancelAnimationFrame(pending); };
   }, [slide.content, layout]);
 
-  const renderedSlide = <div className={styles.slide} role="img" aria-label={`${slide.content.title || "제목 없음"} · HTML 예시 슬라이드`}>
+  const manufacturing = view.project.id === MFG_DEMO_PROJECT_ID;
+  const renderedSlide = <div className={styles.slide} style={manufacturing ? { "--demo-primary": "#1f3a5f" } as React.CSSProperties : undefined} role="img" aria-label={`${slide.content.title || "제목 없음"} · HTML 예시 슬라이드`}>
         <span className={styles.number}>Slide {number ?? sectionSlides.findIndex(item => item.id === slide.id) + 1}</span>
         <span className={styles.page}>{sectionNumber} · {sectionSlides.findIndex(item => item.id === slide.id) + 1}/{sectionSlides.length}</span>
         <div ref={content} className={styles.content}>
@@ -58,7 +60,7 @@ export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number
             })}
           </div>}
         </div>
-        <footer className={styles.footer}><span>{HTML_DEMO_PROPOSAL_NAME}</span><span>행정안전부 제안서</span></footer>
+        <footer className={styles.footer}><span>{manufacturing ? view.project.name : HTML_DEMO_PROPOSAL_NAME}</span><span>{manufacturing ? MFG_DEMO_ORGANIZATION : "행정안전부"} 제안서</span></footer>
       </div>;
   return <>
     <div className={styles.frame}>{mode === "full" ? <SlideCommentSurface slideId={slide.id} enabled commentCreateTarget={commentCreateTarget}>{renderedSlide}</SlideCommentSurface> : renderedSlide}</div>
