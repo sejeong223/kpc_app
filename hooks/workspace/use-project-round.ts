@@ -7,11 +7,19 @@ import { loadProjectView, activeWorkspaceRead, workspaceQueryOptions, useWorkspa
 import { workspaceQueryKeys } from "@/lib/workspace/production/query-keys";
 import { workspaceAssert as check } from "@/lib/workspace/production/errors";
 import type { ProjectView } from "@/types/workspace-production";
-export function useProjectRound(projectId: string, onChanged: () => Promise<void>, onOpened?: () => void) {
+import { usePathname } from "next/navigation";
+export interface RoundActionResult {
+    mode: "complete" | "start-round"; previousRound: number; currentRound: number;
+    carriedReviews: number; firstReviewSectionId: string | null;
+}
+export function useProjectRound(projectId: string, onChanged: (result: RoundActionResult) => Promise<void>, onOpened?: () => void) {
     const runtime = useWorkspaceRuntime(), client = useQueryClient(), mutation = useWorkspaceCommand();
+    const pathname = usePathname(), pathRef = useRef(pathname);
+    useEffect(() => { pathRef.current = pathname; }, [pathname]);
     const [dialog, setDialog] = useState<{
         mode: "complete" | "start-round";
         view: ProjectView;
+        pathname: string;
     } | null>(null), [error, setError] = useState<string | null>(null), [loading, setLoading] = useState(false);
     const mounted = useRef(true), running = useRef(false), sequence = useRef(0);
     useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
@@ -28,9 +36,9 @@ export function useProjectRound(projectId: string, onChanged: () => Promise<void
             try {
                 const view = await client.fetchQuery({ ...workspaceQueryOptions, staleTime: 0, queryKey: workspaceQueryKeys(runtime.queryScope).project(projectId), queryFn: () => activeWorkspaceRead(runtime, () => loadProjectView(runtime, projectId)) });
                 check(mode === "complete" ? view.capabilities.actions.complete : view.capabilities.actions.rework, "FORBIDDEN", "이 회차 작업의 권한이 없습니다.");
-                if (mounted.current && ticket === sequence.current) {
+                if (mounted.current && ticket === sequence.current && pathRef.current === pathname && runtime.selection.get()?.projectId === projectId) {
                     onOpened?.();
-                    setDialog({ mode, view });
+                    setDialog({ mode, view, pathname });
                 }
             }
             finally {
@@ -53,15 +61,24 @@ export function useProjectRound(projectId: string, onChanged: () => Promise<void
             if (!dialog || running.current)
                 return;
             running.current = true;
+            setError(null);
             try {
                 check(input.revision === dialog.view.state.revision && input.round === dialog.view.state.currentRound && input.fileRevision === dialog.view.fileRevision, "CONFLICT", "확인한 회차 정보가 변경되었습니다.");
-                await mutation.mutateAsync({ projectId, expectedRevision: input.revision, expectedRound: input.round, operation: { type: dialog.mode, expectedFileRevision: input.fileRevision, acknowledged: input.acknowledged } });
+                const reviews = dialog.view.state.reviews.filter(t => t.round === input.round && t.status === "open");
+                const receipt = await mutation.mutateAsync({ projectId, expectedRevision: input.revision, expectedRound: input.round, operation: { type: dialog.mode, expectedFileRevision: input.fileRevision, acknowledged: input.acknowledged } });
                 if (!runtime.isActive())
                     return;
                 runtime.clipboard.clear();
                 runtime.service.clearProjectSessions(projectId);
                 if (mounted.current) setDialog(null);
-                if (runtime.selection.get()?.projectId === projectId) await onChanged();
+                if (mounted.current && pathRef.current === dialog.pathname && runtime.selection.get()?.projectId === projectId) await onChanged({
+                    mode: dialog.mode, previousRound: input.round, currentRound: receipt.state.currentRound,
+                    carriedReviews: reviews.length, firstReviewSectionId: reviews.find(t => receipt.state.body.sections.some(s => s.id === t.sectionId))?.sectionId ?? null,
+                });
+            }
+            catch (cause) {
+                if (mounted.current) setError(cause instanceof Error ? cause.message : "회차를 변경하지 못했습니다.");
+                throw cause;
             }
             finally {
                 running.current = false;

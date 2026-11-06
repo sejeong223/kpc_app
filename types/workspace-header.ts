@@ -29,6 +29,7 @@ export interface WorkspaceHeaderMetadata {
     budgetKrw: number | null;
 }
 export interface WorkspaceHeaderModel extends WorkspaceHeaderMetadata {
+    canComplete: boolean;
     projectId: string;
     number: string;
     name: string;
@@ -48,5 +49,10 @@ export interface WorkspaceHeaderModel extends WorkspaceHeaderMetadata {
     canReview: boolean;
     canManagePermissions: boolean;
     actions: Record<ProjectPermission, boolean>;
-    history: Array<Pick<RoundSnapshot, "id" | "round" | "kind" | "createdAt" | "pptVersionId">>;
+    history: HeaderHistoryItem[];
+}
+export interface HeaderHistoryItem {
+    id: string; round: number; kind: "complete" | "unfinished";
+    createdAt: string; createdBy: string; createdByName: string; inputRevision: number;
+    doneSections: number; writingSections: number; slides: number; pptVersionId: string | null;
 }

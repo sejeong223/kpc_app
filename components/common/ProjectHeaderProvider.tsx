@@ -3,6 +3,7 @@ import { Toast, Toaster, ToastTitle, makeStyles, useToastController } from "@flu
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import { createAdminSeed } from "@/config/admin-seed";
+import { MFG_DEMO_PROJECT_ID } from "@/config/production-mfg-demo";
 import { useOptionalWorkspaceRuntime, useWorkspaceRuntime } from "@/components/workspace/WorkspaceProjectProvider";
 import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
 import { useProjectWorkspace } from "@/hooks/workspace/use-workspace-production";
@@ -36,6 +37,7 @@ export interface ProjectHeaderContextValue {
     isPm: boolean;
     toasterId: string;
     selectProject(id: string): Promise<void>;
+    notify(message: string): void;
 }
 const ProjectHeaderContext = createContext<ProjectHeaderContextValue | null>(null);
 const useStyles = makeStyles({
@@ -83,9 +85,10 @@ function ActiveHeader({ children }: {
         const metadata = getWorkspaceHeaderMetadata(project.id, rfps);
         return { id: project.id, name: project.name, number: project.number, organization: metadata.organization, departmentName: metadata.departmentName, dueDate: metadata.dueDate,
             roleLabels: state.status === "ready" && state.view.project.id === project.id ? selectProjectRoleLabels(state.view)
-                : [project.pmId === runtime.identity.actor.id ? "PM" : "참여자"] };
+                : [project.pmId === runtime.identity.actor.id ? "PM" : project.id === MFG_DEMO_PROJECT_ID ? "작성자" : "참여자"] };
     });
-    return <ProjectHeaderContext.Provider value={{ state, projects: choice.projects, pickerItems, selection: choice.selection, pending: choice.pending, isPm, toasterId, selectProject }}>{children}</ProjectHeaderContext.Provider>;
+    const notify = (message: string) => dispatchToast(<Toast><ToastTitle>{message}</ToastTitle></Toast>, { intent: "success", timeout: 2200 });
+    return <ProjectHeaderContext.Provider value={{ state, projects: choice.projects, pickerItems, selection: choice.selection, pending: choice.pending, isPm, toasterId, selectProject, notify }}>{children}</ProjectHeaderContext.Provider>;
 }
 export default function ProjectHeaderProvider({ children }: {
     children: React.ReactNode;
@@ -93,7 +96,7 @@ export default function ProjectHeaderProvider({ children }: {
     const runtime = useOptionalWorkspaceRuntime(), toasterId = useId();
     if (runtime)
         return <ActiveHeader key={JSON.stringify(runtime.queryScope)}>{children}</ActiveHeader>;
-    return <ProjectHeaderContext.Provider value={{ state: { status: "idle", view: null, model: null, error: null }, projects: [], pickerItems: [], selection: { projectId: null, sectionId: null, slideId: null, snapshotId: null }, pending: false, isPm: false, toasterId, selectProject: async () => { } }}>{children}</ProjectHeaderContext.Provider>;
+    return <ProjectHeaderContext.Provider value={{ state: { status: "idle", view: null, model: null, error: null }, projects: [], pickerItems: [], selection: { projectId: null, sectionId: null, slideId: null, snapshotId: null }, pending: false, isPm: false, toasterId, selectProject: async () => { }, notify: () => {} }}>{children}</ProjectHeaderContext.Provider>;
 }
 export function useProjectHeader() { const value = useContext(ProjectHeaderContext); if (!value)
     throw new Error("프로젝트 상단바 공급자가 필요합니다."); return value; }

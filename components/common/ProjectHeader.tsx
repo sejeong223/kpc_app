@@ -1,7 +1,7 @@
 "use client";
 import { Popover, PopoverSurface, PopoverTrigger, makeStyles, mergeClasses, shorthands, tokens } from "@fluentui/react-components";
-import { ArrowCounterclockwise16Regular, Checkmark16Regular, ChevronDown16Regular, History16Regular, Settings16Regular } from "@fluentui/react-icons";
-import { usePathname } from "next/navigation";
+import { ArrowCounterclockwise16Regular, Checkmark16Regular, ChevronDown16Regular, History16Regular, Settings16Regular, Eye12Regular, ArrowDownload16Regular, LockClosed16Regular } from "@fluentui/react-icons";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { useComments } from "@/components/comments/CommentsProvider";
 import WorkspaceHeader, { type WorkspaceHeaderProps } from "@/components/layout/WorkspaceHeader";
@@ -13,6 +13,7 @@ import { useProjectRound } from "@/hooks/workspace/use-project-round";
 import ProjectRoundDialog from "@/components/workspace/shared/ProjectRoundDialog";
 import { getHeaderDeadline, getHeaderRoundLabel } from "@/lib/workspace/production/header-selectors";
 import { dadamUi } from "@/lib/ui/dadam-theme";
+import { workspaceHref } from "@/lib/workspace/production/routing";
 import Button from "./Button";
 import { useProjectHeader, type HeaderState } from "./ProjectHeaderProvider";
 import ProjectSettingsDrawer from "./ProjectSettingsDrawer";
@@ -44,7 +45,9 @@ const useStyles = makeStyles({
     deadline: { fontSize: "12px", lineHeight: "16px", fontWeight: 600, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", color: tokens.colorNeutralForeground3 },
     urgent: { color: tokens.colorStatusDangerForeground1 },
     overdue: { color: tokens.colorStatusWarningForeground1 },
-    historyActions: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px", marginTop: "6px" },
+    historyActions: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px", marginTop: "6px", "& button": { height: "22px", minHeight: "22px", padding: "0 7px", gap: "6px", fontSize: "12px", lineHeight: "16px" } },
+    history: { width: "300px", padding: "6px", maxHeight: "70vh", "& h2": { margin: 0, padding: "8px 9px 4px", fontSize: "12px", lineHeight: "16px", fontWeight: 600 } },
+    readOnly: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", padding: "8px 12px", backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontSize: "12px", lineHeight: "16px", "& button": { marginLeft: "auto", height: "28px", fontSize: "12px" } },
     version: { display: "flex", flexDirection: "column", gap: "2px", padding: "10px 12px", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
 });
 export default function ProjectHeader(props: ProjectHeaderProps) {
@@ -54,15 +57,16 @@ export default function ProjectHeader(props: ProjectHeaderProps) {
     const ready = state.status === "ready" ? state : last?.view.project.id === selection.projectId && last.model.snapshotId === selection.snapshotId ? last : null;
     return ready ? <ProjectHeaderContent key={JSON.stringify([selection.projectId, selection.snapshotId])} {...props} header={ready} unavailable={state.status !== "ready"} /> : <HeaderLoading {...props} />;
 }
-function ProjectPicker() {
+function ProjectPicker({ open: controlledOpen, onOpenChange, disabled = false }: { open?: boolean; onOpenChange?(open: boolean): void; disabled?: boolean } = {}) {
     const { state, pickerItems, selection, pending, selectProject } = useProjectHeader(), styles = useStyles();
     const runtime = useOptionalWorkspaceRuntime(), { controller } = useComments(), id = useId();
     const trigger = useRef<HTMLButtonElement>(null), running = useRef(false), mounted = useRef(true);
     const [picker, setPicker] = useState({ open: false, openedAt: 0, error: null as string | null });
     const [selecting, setSelecting] = useState(false);
+    const isOpen = controlledOpen ?? picker.open;
     useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
     const selected = pickerItems.find(p => p.id === selection.projectId);
-    const close = () => { setPicker(p => ({ ...p, open: false })); requestAnimationFrame(() => trigger.current?.focus()); };
+    const close = () => { setPicker(p => ({ ...p, open: false })); onOpenChange?.(false); requestAnimationFrame(() => { if (!document.querySelector("[data-modal-frame], [role='dialog']")) trigger.current?.focus(); }); };
     const choose = async (projectId: string) => {
         if (running.current || pending) return;
         running.current = true; setSelecting(true); setPicker(p => ({ ...p, error: null }));
@@ -77,12 +81,13 @@ function ProjectPicker() {
             if (mounted.current) setPicker(p => ({ ...p, error: error instanceof Error ? error.message : "선택하지 못했습니다." }));
         } finally { running.current = false; if (mounted.current) setSelecting(false); }
     };
-    return <Popover open={picker.open} onOpenChange={(_, data) => {
+    return <Popover open={isOpen} onOpenChange={(_, data) => {
         if (!data.open) { close(); return; }
-        controller?.suspendUi(); setPicker({ open: true, openedAt: Date.now(), error: null });
+        if (disabled) return;
+        controller?.suspendUi(); onOpenChange?.(true); setPicker({ open: true, openedAt: Date.now(), error: null });
     }} positioning={{ position: "below", align: "start" }}>
-        <PopoverTrigger disableButtonEnhancement><Button ref={trigger} data-project-picker className={styles.selector} disabled={pending || selecting || !pickerItems.length}
-            aria-label={selected ? `프로젝트 선택: ${selected.name}` : "프로젝트 선택"} aria-haspopup="dialog" aria-expanded={picker.open} aria-controls={id}>
+        <PopoverTrigger disableButtonEnhancement><Button ref={trigger} data-project-picker className={styles.selector} disabled={disabled || pending || selecting || !pickerItems.length}
+            aria-label={selected ? `프로젝트 선택: ${selected.name}` : "프로젝트 선택"} aria-haspopup="dialog" aria-expanded={isOpen} aria-controls={id} aria-disabled={disabled}>
             <span className={styles.summary}><span className={styles.name} title={selected?.name}>{selected?.name ?? (state.status === "loading" ? "프로젝트 조회 중…" : "프로젝트 선택")}</span>
                 <span className={styles.meta} title={selected ? `${selected.organization ?? "—"} · ${selected.departmentName ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : undefined}>{selected ? `${selected.organization ?? "—"} · ${selected.departmentName ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : "참여 중인 프로젝트"}</span></span>
             {selected && <span className={styles.badge} title={selected.roleLabels.join(" · ")}>{selected.roleLabels.join(" · ")}</span>}<ChevronDown16Regular />
@@ -107,33 +112,45 @@ function HeaderLoading({ className, ...props }: ProjectHeaderProps) {
     return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker />{props.leading}</div>} />{state.status === "error" && <p role="alert">{state.error.message}</p>}</>;
 }
 function ProjectHeaderContent({ leading, actions, className, header, unavailable, ...props }: ProjectHeaderProps & { header: Extract<HeaderState, { status: "ready" }>; unavailable: boolean }) {
-    const styles = useStyles(), { state } = useProjectHeader(), runtime = useWorkspaceRuntime(), choice = useWorkspaceSelection(), { controller } = useComments();
-    const [overlay, setOverlay] = useState<"settings" | "history" | null>(null), [error, setError] = useState<string | null>(null);
+    const styles = useStyles(), { state, notify } = useProjectHeader(), runtime = useWorkspaceRuntime(), choice = useWorkspaceSelection(), { controller } = useComments();
+    const pathname = usePathname(), router = useRouter();
+    const [overlay, setOverlay] = useState<"picker" | "settings" | "history" | null>(null), [error, setError] = useState<string | null>(null);
     const settingsRef = useRef<HTMLButtonElement>(null), ppt = useWorkspacePpt();
-    const round = useProjectRound(choice.selection.projectId ?? "", () => choice.commitSelection({ ...choice.selection, sectionId: null, slideId: null, snapshotId: null }), () => { controller?.suspendUi(); setOverlay(null); });
+    const round = useProjectRound(choice.selection.projectId ?? "", async result => {
+        const next = { ...choice.selection, sectionId: result.mode === "start-round" && pathname === "/workspace/review" ? result.firstReviewSectionId : null, slideId: null, snapshotId: null };
+        await choice.commitSelection(next);
+        if (!runtime.isActive() || runtime.selection.get()?.projectId !== next.projectId) return;
+        if (result.mode === "start-round") router.replace(workspaceHref(pathname === "/workspace/review" ? "write" : "files", runtime.selection.get() ?? next));
+        notify(result.mode === "complete" ? `${result.currentRound}차 완성본을 저장했습니다` : `${result.currentRound}차 재작업을 시작했습니다${result.carriedReviews ? ` · 리뷰 코멘트 ${result.carriedReviews}건을 제작으로 전달했습니다` : ""}`);
+    }, () => { controller?.suspendUi(); setOverlay(null); });
     const view = header.view, model = unavailable ? { ...header.model, canManagePermissions: false } : header.model;
-    const open = (next: "settings" | "history") => { void runtime.navigate(async () => { controller?.suspendUi(); setOverlay(next); }).catch(e => setError(e instanceof Error ? e.message : "설정을 열지 못했습니다.")); };
+    const open = (next: "settings" | "history") => { if (round.busy) return; void runtime.navigate(async () => { round.close(); controller?.suspendUi(); setOverlay(next); }).catch(e => setError(e instanceof Error ? e.message : "설정을 열지 못했습니다.")); };
     const chooseSnapshot = (snapshotId: string | null) => { void choice.choose({ ...choice.selection, snapshotId, sectionId: null, slideId: null }).then(() => {
-        if (runtime.isActive() && runtime.selection.get()?.projectId === model.projectId && runtime.selection.get()?.snapshotId === snapshotId) setOverlay(null);
+        if (runtime.isActive() && runtime.selection.get()?.projectId === model.projectId && runtime.selection.get()?.snapshotId === snapshotId) {
+            setOverlay(null);
+            requestAnimationFrame(() => document.querySelector<HTMLButtonElement>("[data-project-picker]")?.focus());
+        }
     }).catch(e => setError(e.message)); };
     const versionRow = (h: typeof model.history[number]) => {
-        const version = view.state.pptVersions.find(v => v.id === h.pptVersionId && v.round === h.round);
-        return <article key={h.id} className={styles.version}><strong>{h.round}차 {h.kind === "complete" ? "완성본" : "미완성 이력"}</strong><span className={styles.meta}>{new Date(h.createdAt).toLocaleString("ko-KR")}</span>
-            <div className={styles.historyActions}><Button disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(h.id)}>보기</Button>
-                {version ? <Button disabled={ppt.task.isPending} onClick={() => ppt.task.mutate({ kind: "download", projectId: model.projectId, versionId: version.id })}>PPT</Button> : <span className={styles.meta}>보관된 PPT 없음</span>}</div></article>;
+        const version = view.state.pptVersions.find(v => v.id === h.pptVersionId && v.round === h.round && v.inputRevision === h.inputRevision && (v.snapshotId === null || v.snapshotId === h.id));
+        return <article key={h.id} className={styles.version}><strong>{h.round}차 완성본</strong><span className={styles.meta}>{new Date(h.createdAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })} · {h.createdByName}</span>
+            <span className={styles.meta}>작성 완료 {h.doneSections} · 작성 중 {h.writingSections} · 슬라이드 {h.slides}장</span>
+            <div className={styles.historyActions}><Button disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(h.id)}><Eye12Regular />보기</Button>
+                <Button disabled={!version || ppt.task.isPending} title={!version ? "보관된 PPT 없음" : undefined} onClick={() => { if (version) ppt.task.mutate({ kind: "download", projectId: model.projectId, versionId: version.id }); }}><ArrowDownload16Regular style={{width:12,height:12}} />PPT</Button>
+                {!version && <span className={styles.meta}>보관된 PPT 없음</span>}</div></article>;
     };
-    const unfinished = model.history.filter(h => h.kind === "unfinished");
-    return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker /><span className={mergeClasses(styles.badge, styles.roundBadge)}>{getHeaderRoundLabel(model)}</span>{leading}</div>} actions={<>{actions}
+    const completed = model.history.find(h => h.round === model.currentRound && h.kind === "complete");
+    return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker open={overlay === "picker"} disabled={round.busy} onOpenChange={value => { if (value) round.close(); setOverlay(current => value ? "picker" : current === "picker" ? null : current); }} /><span className={mergeClasses(styles.badge, styles.roundBadge)}>{getHeaderRoundLabel(model)}</span>{leading}</div>} actions={<>{actions}
         {!unavailable && !model.snapshotId && model.actions.rework && <Button className={mergeClasses(styles.action, styles.iconAction)} disabled={round.busy} aria-label={`${model.currentRound + 1}차 재작업 시작`} title={`${model.currentRound + 1}차 재작업 시작`} onClick={() => round.open("start-round")}><ArrowCounterclockwise16Regular /></Button>}
-        {!unavailable && model.history.length > 0 && <Popover open={overlay === "history"} onOpenChange={(_, d) => d.open ? open("history") : setOverlay(null)}><PopoverTrigger disableButtonEnhancement><Button className={styles.action} aria-haspopup="dialog"><History16Regular />완성본 {model.completedVersions}</Button></PopoverTrigger>
-            <PopoverSurface className={styles.popup} aria-label="완성본 이력"><h2 className={styles.popupTitle}>회차별 완성본</h2><Button disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(null)}>현재 작업으로</Button>
+        {!unavailable && model.history.length > 0 && <Popover positioning={{ position: "below", align: "end" }} open={overlay === "history"} onOpenChange={(_, d) => d.open ? open("history") : setOverlay(current => current === "history" ? null : current)}><PopoverTrigger disableButtonEnhancement><Button disabled={round.busy} className={styles.action} aria-haspopup="dialog"><History16Regular />완성본 {model.completedVersions}</Button></PopoverTrigger>
+            <PopoverSurface className={mergeClasses(styles.popup, styles.history)} aria-label="완성본 이력"><h2 className={styles.popupTitle}>회차별 완성본</h2>
                 {model.history.filter(h => h.kind === "complete").map(versionRow)}{!model.completedVersions && <p className={styles.meta}>완성본이 없습니다.</p>}
-                {unfinished.length > 0 && <details><summary>미완성 이력 {unfinished.length}</summary>{unfinished.map(versionRow)}</details>}
             </PopoverSurface></Popover>}
-        {!unavailable && !model.snapshotId && model.actions.complete && <Button className={mergeClasses(styles.action, "primary")} disabled={round.busy || model.phase === "completed"} onClick={() => round.open("complete")}><Checkmark16Regular />완성</Button>}
-        <Button ref={settingsRef} disabled={unavailable} className={styles.action} onClick={() => open("settings")}><Settings16Regular />설정</Button>
-        {model.snapshotId && <Button className={styles.action} disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(null)}>현재 작업으로</Button>}
+        {!unavailable && !model.snapshotId && model.canComplete && <Button className={mergeClasses(styles.action, "primary")} disabled={round.busy || model.phase === "completed"} title={model.phase === "completed" ? "완성됨 · 왼쪽 재작업 버튼으로 다시 진행" : undefined} onClick={() => round.open("complete")}><Checkmark16Regular />완성</Button>}
+        <Button ref={settingsRef} disabled={unavailable || round.busy} className={styles.action} onClick={() => open("settings")}><Settings16Regular />설정</Button>
     </>} />
+        {model.snapshotId ? <div className={styles.readOnly}><LockClosed16Regular /><span>{model.displayedRound}차 보관본을 보고 있습니다. 내용을 바꾸려면 현재 작업으로 돌아가세요.</span><Button disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(null)}>현재 작업으로</Button></div>
+            : model.phase === "completed" && <div className={styles.readOnly}><LockClosed16Regular /><strong>{model.currentRound}차 완성본</strong><span>읽기 전용{completed ? ` · ${new Date(completed.createdAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })} · ${completed.createdByName} · 작성 완료 ${completed.doneSections}개 · 작성 중 ${completed.writingSections}개` : ""}</span></div>}
         {ppt.task.error && <p role="alert">{ppt.task.error.message}</p>}{state.status === "error" && <p role="alert">{state.error.message}</p>}
         {(error || (!round.dialog && round.error)) && <p role="alert">{error ?? round.error}</p>}
         {overlay === "settings" && <ProjectSettingsDrawer id="project-settings" project={model} view={view} onClose={() => setOverlay(null)} returnFocusRef={settingsRef} />}

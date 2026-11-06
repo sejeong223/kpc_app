@@ -24,9 +24,9 @@ export function getHeaderDeadline(dueDate: string | null, nowMs: number): Header
         description: days < 0 ? label : days === 0 ? "마감 당일" : `마감까지 ${days}일` };
 }
 export function getHeaderRoundLabel(model: WorkspaceHeaderModel): string {
-    if (model.snapshotId) return `${model.displayedRound}차 ${model.snapshotKind === "unfinished" ? "미완성 이력" : "보관본"}`;
+    if (model.snapshotId) return `${model.displayedRound}차 ${model.snapshotKind === "unfinished" ? "미완성 이력" : "보관본"} · 읽기 전용`;
     if (model.phase === "completed") return `${model.currentRound}차 완성`;
-    return model.currentRound === 1 ? "1차 작성 중" : `${model.currentRound}차 재작업 중`;
+    return `${model.currentRound}차 작업 중`;
 }
 export function getWorkspaceHeaderMetadata(projectId: string, rfps: readonly Pick<AdminRfp, "id" | "budgetKrw">[]): WorkspaceHeaderMetadata {
     // 표시 보조 정보만 같은 ID에서 가져온다. 고정 역할·회차·권한은 사용하지 않는다.
@@ -47,12 +47,18 @@ export function selectWorkspaceHeader(view: ProjectView, selection: WorkspaceSel
         currentRound: state.currentRound, displayedRound: selected.state.currentRound, phase: state.phase,
         snapshotId: selection.snapshotId, snapshotKind: snapshot?.kind ?? null,
         readOnly: selection.snapshotId !== null || state.phase === "completed",
+        canComplete: view.actor.role === "super_admin" || view.actor.id === project.pmId || state.grants.some(g => g.userId === view.actor.id && g.permissions.includes("complete")),
         completedVersions: state.snapshots.filter(s => s.kind === "complete").length,
         totalSections: selected.state.body.sections.length,
         doneSections: selected.state.body.sections.filter(s => s.state === "done").length,
         openComments: getCompletionSummary(selected.state).openComments,
         canReview: canReviewProject(view), canManagePermissions: selected.capabilities.managePermissions,
         actions: { ...selected.capabilities.actions },
-        history: state.snapshots.map(({ id, round, kind, createdAt, pptVersionId }) => ({ id, round, kind, createdAt, pptVersionId })).sort((a, b) => b.round - a.round),
+        history: state.snapshots.map(({ id, round, kind, createdAt, createdBy, inputRevision, pptVersionId, body }) => ({
+            id, round, kind, createdAt, createdBy, inputRevision, pptVersionId,
+            createdByName: view.members.find(member => member.id === createdBy)?.name ?? createdBy,
+            doneSections: body.sections.filter(section => section.state === "done").length,
+            writingSections: body.sections.filter(section => section.state === "writing").length, slides: body.slides.length,
+        })).sort((a, b) => b.round - a.round),
     };
 }
