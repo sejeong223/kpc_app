@@ -9,8 +9,8 @@
 | Task | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
 | T01 | done | 공통 헤더·중복 메뉴 제거·자료 제한 안내 본문 이동 | [T01](./T01-shared-header.md) |
-| T02 | in_progress | 제작 코멘트 UI | [T02](./T02-production-comments.md) |
-| T03 | pending | 검토 원문 줌·분석 패널 조절 | [T03](./T03-review-viewer-controls.md) |
+| T02 | done | 제작 코멘트 UI | [T02](./T02-production-comments.md) |
+| T03 | in_progress | 검토 원문 줌·분석 패널 조절 | [T03](./T03-review-viewer-controls.md) |
 | T04 | pending | v12 목차 내용 복원 | [T04](./T04-toc-content.md) |
 | T05 | pending | v12 제작 설정 내용 복원 | [T05](./T05-setup-content.md) |
 | T06 | pending | 관리자 폰트 통일 | [T06](./T06-admin-font.md) |
@@ -18,7 +18,7 @@
 | T08 | pending | 리뷰 도구 제거·다중 슬라이드·통합 검토 | [T08](./T08-review-multiple-slides.md) |
 
 ## Progress
-- done: 1/8 (active: T02)
+- done: 2/8 (active: T03)
 - T01 → T02 → T03 → T04 → T05 → T06 → T07 → T08 순서로 실행.
 - 각 Task의 구문 검사와 정적 수용 조건이 완료된 뒤 done 처리한다.
 - 브라우저 검증은 지속 사용자 정책에 따라 제외. tests/ 생성·복원 금지.
