@@ -23,7 +23,12 @@ const useStyles = makeStyles({
 });
 interface Measurement { surface: CommentBounds; viewport: CommentBounds; visible: CommentBounds | null }
 interface PinGesture { id: string; pointerId: number; origin: PixelPoint; offset: PixelPoint; point: CommentPoint; moved: boolean; element: HTMLButtonElement }
-export interface SlideCommentSurfaceProps { slideId: string; enabled: boolean; children: React.ReactNode }
+export interface SlideCommentSurfaceProps { slideId: string; enabled: boolean; children: React.ReactNode; commentCreateTarget?: HTMLElement | null }
+function restoreSurfaceFocus(surface: HTMLElement | null, buttonId: string, pinId?: string | null) {
+  const pin = Array.from(surface?.querySelectorAll<HTMLButtonElement>("[data-comment-pin]") ?? []).find(el => el.dataset.commentPin === pinId && !el.disabled);
+  const button = document.getElementById(buttonId);
+  (pin ?? (button instanceof HTMLButtonElement && !button.disabled ? button : null) ?? surface)?.focus({ preventScroll: true });
+}
 const boundsOf = (element: HTMLElement): CommentBounds => {
   const r = element.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
 };
@@ -41,7 +46,7 @@ function viewSlide(state: CommentControllerState): string | null {
   return view?.kind === "new" ? state.pendingSlideId : view?.kind === "thread" ? state.snapshot?.threads.find(t => t.id === view.threadId)?.slideId ?? null : null;
 }
 
-export default function SlideCommentSurface({ slideId, enabled, children }: SlideCommentSurfaceProps): React.ReactElement {
+export default function SlideCommentSurface({ slideId, enabled, children, commentCreateTarget }: SlideCommentSurfaceProps): React.ReactElement {
   const styles = useStyles(), id = useId(), surfaceId = `${id}-surface`, buttonId = `${id}-create`, helpId = `${id}-help`;
   const { state, controller, capabilities } = useComments();
   const available = enabled && capabilities.slideIds.includes(slideId);
@@ -151,7 +156,7 @@ export default function SlideCommentSurface({ slideId, enabled, children }: Slid
       e.preventDefault();
       const pinId = current.view?.kind === "thread" ? current.view.threadId : DRAFT_ID;
       controller.closePopup();
-      requestAnimationFrame(() => (Array.from(surface.current?.querySelectorAll<HTMLElement>("[data-comment-pin]") ?? []).find(el => el.dataset.commentPin === pinId) ?? document.getElementById(buttonId))?.focus({ preventScroll: true }));
+      requestAnimationFrame(() => restoreSurfaceFocus(surface.current, buttonId, pinId));
     };
     document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
     return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
@@ -173,11 +178,12 @@ export default function SlideCommentSurface({ slideId, enabled, children }: Slid
   const previewTip = hovered ? tipFor(hovered) : null;
   const previewLimits = limits ? { ...limits, minWidth: 0, minHeight: 0, maxWidth: Math.min(280, limits.maxWidth), maxHeight: Math.min(140, limits.maxHeight) } : null;
   const previewRect = previewTip && previewLimits && contains(measurement?.visible ?? null, previewTip) ? placeCommentPopup(previewTip, { width: previewLimits.maxWidth, height: previewLimits.maxHeight }, previewLimits) : null;
-  const focusCreate = () => { requestAnimationFrame(() => document.getElementById(buttonId)?.focus({ preventScroll: true })); };
+  const focusCreate = () => { requestAnimationFrame(() => restoreSurfaceFocus(surface.current, buttonId)); };
   const closeAndFocus = () => {
     controller?.closePopup();
-    requestAnimationFrame(() => (Array.from(surface.current?.querySelectorAll<HTMLElement>("[data-comment-pin]") ?? []).find(el => el.dataset.commentPin === selectedId) ?? document.getElementById(buttonId))?.focus({ preventScroll: true }));
+    requestAnimationFrame(() => restoreSurfaceFocus(surface.current, buttonId, selectedId));
   };
+  const createButton = available && capabilities.canCreate ? <CommentCreateButton slideId={slideId} surfaceId={surfaceId} buttonId={buttonId} disabled={!visible} compact={commentCreateTarget !== undefined} /> : null;
 
   return <>
     <div ref={surface} id={surfaceId} data-comment-surface={available ? slideId : undefined} className={mergeClasses(styles.surface, creating && styles.creating)} tabIndex={available ? 0 : undefined} aria-label={available ? "슬라이드 핀 영역" : undefined} aria-describedby={available ? helpId : undefined}
@@ -216,8 +222,9 @@ export default function SlideCommentSurface({ slideId, enabled, children }: Slid
           } : undefined} />;
       })}
     </div>
-    {available && capabilities.canCreate && <div className={styles.tools} data-comment-control>
-      <CommentCreateButton slideId={slideId} surfaceId={surfaceId} buttonId={buttonId} disabled={!visible} />
+    {commentCreateTarget && createButton && createPortal(createButton, commentCreateTarget)}
+    {available && capabilities.canCreate && (commentCreateTarget === undefined || creating) && <div className={styles.tools} data-comment-control>
+      {commentCreateTarget === undefined && createButton}
       {creating && <p className={styles.text} role="status">이 슬라이드에서 의견을 남길 위치를 선택해 주세요. Esc로 취소할 수 있어요.</p>}
     </div>}
     {visible && typeof document !== "undefined" && createPortal(<DadamThemeScope>

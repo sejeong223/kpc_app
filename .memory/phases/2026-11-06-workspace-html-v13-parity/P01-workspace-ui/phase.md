@@ -6,11 +6,11 @@
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | 공통 헤더·프로젝트 선택·호출부 적용 | [T01](./T01-shared-header.md) |
 | T02 | `done` | 제작 3열 패널·슬라이드 목록·출처 적용 | [T02](./T02-production-panels.md) |
-| T03 | `in_progress` | 중앙 편집·코멘트 위치·다중 선택 통합 | [T03](./T03-production-editor.md) |
+| T03 | `done` | 중앙 편집·코멘트 위치·다중 선택 통합 | [T03](./T03-production-editor.md) |
 
 ## Progress
 
-- done: 2/3 (active: T03)
+- done: 3/3 (active: 없음)
 
 ## Constraints
 

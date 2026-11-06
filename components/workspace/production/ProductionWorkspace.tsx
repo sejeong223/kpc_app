@@ -1,5 +1,7 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useComments } from "@/components/comments/CommentsProvider";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { DadamButton } from "@/components/ui/DadamControls";
 import { loadProjectView, useWorkspaceAction, useWorkspaceCommand } from "@/hooks/workspace/use-workspace-production";
@@ -9,6 +11,8 @@ import { useSlideClipboard } from "@/hooks/workspace/use-slide-clipboard";
 import { selectDeletionImpact } from "@/lib/workspace/production/selectors";
 import { selectProductionSlides } from "@/lib/workspace/production/presentation";
 import { slidePinIds } from "@/lib/workspace/production/clipboard";
+import { workspaceHref } from "@/lib/workspace/production/routing";
+import { isTypingTarget } from "@/lib/workspace/production/editor";
 import { WorkspaceError, workspaceAssert as check } from "@/lib/workspace/production/errors";
 import type { ProjectView, ProposalSlide, SlideBatchRequest, WorkspaceReceipt, MockRequest, WorkspaceOperation } from "@/types/workspace-production";
 import { useWorkspaceRuntime } from "../WorkspaceProjectProvider";
@@ -28,11 +32,13 @@ export interface ProductionWorkspaceProps extends WorkspaceSceneProps {
   readOnlyError?: string | null; accessDenied?: boolean;
 }
 interface EditingSession { slideId: string; round: number; snapshotId: string | null; lastSlide: ProposalSlide; dirty: boolean }
+interface ProductionEditorParts { editor: React.ReactNode; preview: React.ReactNode; dirty: boolean }
 const cleanDocument: DocumentEditorState = { dirty: false, composing: false, error: null };
-function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange, aiFeedback, showPreview }: {
+function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange, aiFeedback, showPreview, commentCreateTarget, renderLayout }: {
   view: ProjectView; slide: ProposalSlide; snapshotId: string | null; externalConflict: string | null; busy: boolean; accessDenied: boolean;
   onDirtyChange(dirty: boolean): void; onBusyChange(busy: boolean): void;
   aiFeedback?: React.ReactNode; showPreview: boolean;
+  commentCreateTarget: HTMLElement | null; renderLayout(parts: ProductionEditorParts): React.ReactNode;
 }) {
   const editor = useSlideDraft(view, slide);
   const [documentState, setDocumentState] = useState(cleanDocument), [resetKey, setResetKey] = useState(0), [error, setError] = useState<string | null>(null);
@@ -59,11 +65,7 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
     try { await editor.save(); setDocumentState(cleanDocument); setResetKey(k => k + 1); setError(null); onDirtyChange(false); }
     catch (failure) { setError(failure instanceof Error ? failure.message : "슬라이드를 저장하지 못했습니다."); throw failure; }
   };
-  return <div className="tw:space-y-(--layout-section-gap)" onKeyDown={e => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && !e.nativeEvent.isComposing) {
-      e.preventDefault(); e.stopPropagation(); if (canSave) void save().catch(() => { /* save exposes the error and keeps input. */ });
-    }
-  }}>
+  const editorContent = <>
     {conflict && <p role="alert" className="tw:text-sm">{conflict}</p>}
     {!can && !conflict && !accessDenied && <p className="tw:text-xs tw:text-(--kpc-muted)">{readOnlyReason}</p>}
     {accessDenied && dirty && <p role="status" className="tw:text-xs">접근 권한 변경 전 작성하던 입력을 보관하고 있습니다. 필요한 내용을 복사할 수 있습니다.</p>}
@@ -71,12 +73,20 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
       error={editor.error ?? error} onChange={editor.setContent} onEditorStateChange={onDocumentState}
       onSave={() => { void save().catch(() => { /* Error is shown above. */ }); }} />}
     {aiFeedback}
-    {showPreview && !accessDenied && !externalConflict && <section aria-label="저장된 슬라이드"><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} /></section>}
+  </>;
+  const preview = showPreview && !accessDenied && !externalConflict ? <section aria-label="저장된 슬라이드"><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} commentCreateTarget={commentCreateTarget} /></section> : null;
+  return <div className="tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col" onKeyDown={e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && !e.nativeEvent.isComposing) {
+      e.preventDefault(); e.stopPropagation(); if (canSave) void save().catch(() => { /* save exposes the error and keeps input. */ });
+    }
+  }}>
+    {renderLayout({ editor: editorContent, preview, dirty })}
     <DraftProtection dirty={dirty} busy={busy} onSave={canSave ? save : undefined} onDiscard={discard} />
   </div>;
 }
 export default function ProductionWorkspace({ view, selection, readOnlyError = null, accessDenied = false, aiBusy = false, aiFeedback, onPropose }: ProductionWorkspaceProps): React.ReactElement {
-  const runtime = useWorkspaceRuntime(), { commitSelection } = useWorkspaceSelection(), command = useWorkspaceCommand();
+  const runtime = useWorkspaceRuntime(), { commitSelection } = useWorkspaceSelection(), command = useWorkspaceCommand(), router = useRouter(), comments = useComments();
+  const [commentCreateTarget, setCommentCreateTarget] = useState<HTMLDivElement | null>(null);
   const batch = useWorkspaceAction<WorkspaceReceipt, SlideBatchRequest>((r, input) => r.service.editSlides(input)), clipboard = useSlideClipboard();
   const rows = selectProductionSlides(view), active = rows.find(r => r.slide.id === selection.slideId) ?? rows.find(r => r.section.id === selection.sectionId) ?? null;
   const current = active?.slide ?? null, section = view.state.body.sections.find(s => s.id === (active?.section.id ?? selection.sectionId));
@@ -159,27 +169,68 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   const safeView = readOnly ? { ...view, capabilities: { ...view.capabilities, editableSectionIds: [], unlockableSectionIds: [] } } : view;
   const multiple = ids.length > 1;
   const aiControls = multiple && !accessDenied && !readOnly && onPropose ?
-    <div className="tw:mb-(--layout-section-gap)"><ProductionAiPanel key={JSON.stringify([ids, view.state.currentRound])} view={view} slideIds={ids} busy={busy} onPropose={onPropose} /></div> : null;
-  const center = <>
-    <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}
-    {!accessDenied && <ProductionToolbar view={safeView} sectionId={section?.id ?? null} busy={busy} onSection={id => guarded(async () => { await commitSelection({ ...selection, sectionId: id, slideId: null }); if (stillHere()) setSelected(null); })}
-      onState={state => { if (section) execute({ type: "set-section-state", id: section.id, state }); }} onUnlock={() => { if (section) execute({ type: "unlock-section", id: section.id }); }} />
-    }
-    {multiple && aiControls}
-    <div hidden={ids.length > 1 && !session?.dirty}>
-      {multiple && session?.dirty && <p role="status" className="tw:text-xs">아래에 아직 반영하지 않은 단일 슬라이드 입력을 보관하고 있습니다.</p>}
-      {editingSlide ? <ActiveSlide key={`${view.project.id}:${selection.snapshotId ?? "current"}:${editingSlide.id}`} view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy} onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy}
-        aiFeedback={!multiple ? aiFeedback : null} showPreview={!multiple} /> : !accessDenied && <section aria-label="편집" className="tw:mb-(--layout-section-gap) tw:p-(--layout-card-inset)">
-        <p className="tw:text-sm">{section ? "이 소목차에는 슬라이드가 없습니다." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>
-        {section && <p className="tw:text-xs tw:text-(--kpc-muted)">목록을 마우스 오른쪽 버튼으로 눌러 슬라이드를 추가해 주세요.</p>}
-        {rows.length > 0 && <p className="tw:text-xs tw:text-(--kpc-muted)">왼쪽 목록에서 다른 슬라이드를 선택할 수 있습니다.</p>}
-      </section>}
+    <ProductionAiPanel key={JSON.stringify([ids, view.state.currentRound])} view={view} slideIds={ids} busy={busy} onPropose={onPropose} /> : null;
+  const removeSelectedSlide = (id: string) => guarded(async () => {
+    const next = ids.filter(value => value !== id);
+    if (!next.length || next.length === ids.length) return;
+    await selectIds(next, current && next.includes(current.id) ? current.id : next[0]);
+  });
+  const selectedRows = rows.filter(row => ids.includes(row.slide.id));
+  const stackRows = active && ids.includes(active.slide.id) ? [active, ...selectedRows.filter(row => row.slide.id !== active.slide.id)] : selectedRows;
+  const empty = !accessDenied && <section aria-label="편집" className="tw:p-3">
+    <p className="tw:text-sm">{section ? "이 소목차에는 슬라이드가 없습니다." : "목차가 비어 있습니다"}</p>
+    <p className="tw:text-xs tw:text-(--kpc-muted)">{section ? "목록을 마우스 오른쪽 버튼으로 눌러 슬라이드를 추가해 주세요." : "목차 메뉴에서 대목차를 만들거나 RFP 기반 목차 추천을 사용하세요."}</p>
+    {rows.length > 0 && <p className="tw:text-xs tw:text-(--kpc-muted)">왼쪽 목록에서 다른 슬라이드를 선택할 수 있습니다.</p>}
+  </section>;
+  const renderCenter = ({ editor, preview, dirty }: ProductionEditorParts) => <>
+    <div data-production-editor-header className="tw:max-h-[55%] tw:min-h-0 tw:shrink-0 tw:overflow-y-auto tw:overscroll-contain tw:border-b tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:px-3 tw:pt-3.5 tw:pb-2.5 tw:@min-[761px]:px-[22px]">
+      <WorkspaceErrorText error={error} />{notice && !accessDenied && <p role="status" className="tw:text-xs">{notice}</p>}
+      {!accessDenied && <ProductionToolbar key={section?.id ?? "empty"} view={safeView} sectionId={section?.id ?? null} busy={busy}
+        commentActionSlot={<div ref={setCommentCreateTarget} data-comment-control />}
+        onManageToc={() => guarded(async () => { if (stillHere()) router.push(workspaceHref("toc", selection)); })}
+        onSection={id => guarded(async () => {
+          await commitSelection({ ...selection, sectionId: id, slideId: null });
+          if (stillHere() && runtime.selection.get()?.sectionId === id) {
+            setSelected(null);
+            requestAnimationFrame(() => document.querySelector<HTMLButtonElement>("[data-production-section-picker]")?.focus());
+          }
+        })}
+        onState={state => { if (section) execute({ type: "set-section-state", id: section.id, state }); }}
+        onUnlock={() => { if (section) execute({ type: "unlock-section", id: section.id }); }} />}
+      {aiControls}
+      <div hidden={multiple && !dirty}>
+        {multiple && dirty && <p role="status" className="tw:text-xs">아직 반영하지 않은 단일 슬라이드 입력을 보관하고 있습니다.</p>}
+        {editor}
+      </div>
+      {(multiple || !editingSlide) && aiFeedback}
     </div>
-    {(multiple || !editingSlide) && aiFeedback}
-    {ids.length > 1 && !accessDenied && <div className="tw:mt-(--layout-section-gap) tw:space-y-(--layout-section-gap)">{rows.filter(row => ids.includes(row.slide.id)).map(row => <section key={row.slide.id} aria-label={`${row.number}번 선택 슬라이드`}><h3 className="tw:text-sm">{row.number}. {row.slide.content.title || "제목 없음"} <small>{row.section.title}</small></h3><ProductionPreview view={view} slide={row.slide} snapshotId={selection.snapshotId} number={row.number} lazy priority={row.slide.id === current?.id} /></section>)}</div>}
-    {!accessDenied && <fieldset disabled={busy || !!session?.dirty || readOnly} data-comment-control className="tw:m-0 tw:min-w-0 tw:border-0 tw:p-0 tw:[&:not(:empty)]:pt-(--layout-control-gap)"><WorkspaceUndoNotice view={view} /></fieldset>}
+    <div data-production-scroll className="tw:min-h-0 tw:min-w-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:bg-(--kpc-bg) tw:px-3 tw:pt-5 tw:pb-[30px] tw:@min-[761px]:px-[22px]">
+      {preview}
+      {multiple && !accessDenied && !sessionConflict && <div className="tw:space-y-[22px]">{stackRows.map((row, index) => {
+        const siblings = rows.filter(item => item.section.id === row.section.id);
+        return <section key={row.slide.id} aria-label={row.number + "번 선택 슬라이드"}>
+          <header data-comment-control className="tw:mb-2 tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-2 tw:text-xs">
+            <span className="tw:rounded-full tw:bg-(--dadam-accent-soft) tw:px-2 tw:text-(--dadam-accent-ink)">{row.number}</span>
+            <strong>{row.sectionNumber} {row.section.title}</strong>
+            {siblings.length > 1 && <span className="tw:text-(--kpc-muted)">{siblings.findIndex(item => item.slide.id === row.slide.id) + 1}/{siblings.length}</span>}
+            {index > 0 && <DadamButton className="tw:ml-auto" size="small" appearance="subtle" disabled={busy} onClick={() => removeSelectedSlide(row.slide.id)}>선택에서 빼기</DadamButton>}
+          </header>
+          <ProductionPreview view={view} slide={row.slide} snapshotId={selection.snapshotId} number={row.number} lazy priority={row.slide.id === current?.id}
+            commentCreateTarget={row.slide.id === current?.id ? commentCreateTarget : null} />
+        </section>;
+      })}</div>}
+      {!accessDenied && <fieldset disabled={busy || dirty || readOnly} data-comment-control className="tw:m-0 tw:min-w-0 tw:border-0 tw:p-0 tw:[&:not(:empty)]:pt-2"><WorkspaceUndoNotice view={view} /></fieldset>}
+    </div>
   </>;
-  return <div className="tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col">
+  const center = editingSlide ? <ActiveSlide key={view.project.id + ":" + (selection.snapshotId ?? "current") + ":" + editingSlide.id}
+    view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy}
+    onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy} aiFeedback={!multiple ? aiFeedback : null} showPreview={!multiple}
+    commentCreateTarget={commentCreateTarget} renderLayout={renderCenter} /> :
+    <div className="tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col">{renderCenter({ editor: null, preview: empty, dirty: false })}</div>;
+  return <div className="tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col" onKeyDown={event => {
+    if (event.key !== "Escape" || event.defaultPrevented || event.nativeEvent.isComposing || isTypingTarget(event.target) || !multiple || !current || comments.state.pinMode || comments.state.view || document.querySelector("[data-modal-frame], [data-comment-popup], [role='menu'], [role='dialog']")) return;
+    event.preventDefault(); event.stopPropagation(); chooseSlide(current.id, "single");
+  }}>
     {<ProductionPanels namespace={runtime.identity.namespace}
       left={toggle => accessDenied ? null : <SlideNavigator panelToggle={toggle} view={safeView} rows={rows.map(row => ({ ...row, editable: !readOnly && row.editable }))} activeId={current?.id ?? null} sectionId={section?.id ?? null} selectedIds={ids} snapshotId={selection.snapshotId} busy={busy}
         onSelect={chooseSlide} onCommand={execute} onCopy={copy} canCopy={canCopy} onPaste={paste} canPaste={!readOnly && !!clipboard.getToken()} onRemove={openRemove} />}

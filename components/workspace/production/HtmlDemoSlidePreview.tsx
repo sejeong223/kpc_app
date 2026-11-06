@@ -7,9 +7,9 @@ import { outlineNumbers } from "@/lib/workspace/production/selectors";
 import type { ProjectView, ProposalSlide } from "@/types/workspace-production";
 import styles from "./HtmlDemoSlidePreview.module.css";
 
-export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number }: {
+export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number, commentCreateTarget }: {
   view: ProjectView; slide: ProposalSlide; layout: HtmlDemoLayout;
-  mode: "full" | "thumbnail"; number?: number;
+  mode: "full" | "thumbnail"; number?: number; commentCreateTarget?: HTMLElement | null;
 }): React.ReactElement {
   const content = useRef<HTMLDivElement>(null);
   const [overflow, setOverflow] = useState(false);
@@ -61,7 +61,7 @@ export default function HtmlDemoSlidePreview({ view, slide, layout, mode, number
         <footer className={styles.footer}><span>{HTML_DEMO_PROPOSAL_NAME}</span><span>행정안전부 제안서</span></footer>
       </div>;
   return <>
-    <div className={styles.frame}>{mode === "full" ? <SlideCommentSurface slideId={slide.id} enabled>{renderedSlide}</SlideCommentSurface> : renderedSlide}</div>
+    <div className={styles.frame}>{mode === "full" ? <SlideCommentSurface slideId={slide.id} enabled commentCreateTarget={commentCreateTarget}>{renderedSlide}</SlideCommentSurface> : renderedSlide}</div>
     {overflow && <p className={styles.notice}>{mode === "thumbnail" ? "본문 초과" : "본문이 슬라이드 영역을 넘습니다. 편집 영역에서 내용을 나누거나 줄여 주세요."}</p>}
   </>;
 }

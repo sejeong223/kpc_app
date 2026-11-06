@@ -1,6 +1,6 @@
 # Task: T03 제작 중앙 편집과 코멘트 도구 통합
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -174,14 +174,14 @@
 
 ## Acceptance Criteria
 
-- [ ] 중앙에 대목차 breadcrumb·소목차 picker·상태 select가 있고 코멘트 버튼은 상태 select 바로 왼쪽에 1개만 표시된다.
-- [ ] 입력 영역은 상단에 남고 실제 슬라이드 영역만 스크롤되며 좌우 패널과 독립적이다.
-- [ ] 제목/리딩/문단/리스트/표/이미지 데이터와 한국어 IME·붙여넣기·Ctrl+S·미저장 입력 보호가 유지된다.
-- [ ] 세 preview 종류에서 active slide의 버튼/aria-controls/좌표/포커스가 정확히 연결되고 썸네일에는 핀 UI가 없다.
-- [ ] 다중 선택 입력과 선택에서 빼기·Escape가 동작 계약을 만족하고 active preview/버튼 중복이 없다.
-- [ ] 저장·복사·삭제·undo·제안 비교/적용·보관본·권한 상실·회차 변경 보호를 유지한다.
-- [ ] HTML의 예시 프로젝트·슬라이드·전역 S 상태·시연 타이머를 이식하지 않는다.
-- [ ] 전체 타입/lint/build 성공 및 정적 대조를 기록하고 브라우저 시각 검증은 미실시로 남긴다.
+- [x] 중앙에 대목차 breadcrumb·소목차 picker·상태 select가 있고 코멘트 버튼은 상태 select 바로 왼쪽에 1개만 표시된다.
+- [x] 입력 영역은 상단에 남고 실제 슬라이드 영역만 스크롤되며 좌우 패널과 독립적이다.
+- [x] 제목/리딩/문단/리스트/표/이미지 데이터와 한국어 IME·붙여넣기·Ctrl+S·미저장 입력 보호가 유지된다.
+- [x] 세 preview 종류에서 active slide의 버튼/aria-controls/좌표/포커스가 정확히 연결되고 썸네일에는 핀 UI가 없다.
+- [x] 다중 선택 입력과 선택에서 빼기·Escape가 동작 계약을 만족하고 active preview/버튼 중복이 없다.
+- [x] 저장·복사·삭제·undo·제안 비교/적용·보관본·권한 상실·회차 변경 보호를 유지한다.
+- [x] HTML의 예시 프로젝트·슬라이드·전역 S 상태·시연 타이머를 이식하지 않는다.
+- [x] 전체 타입/lint/build 성공 및 정적 대조를 기록하고 브라우저 시각 검증은 미실시로 남긴다.
 
 ## Validation
 
@@ -209,8 +209,10 @@ Task: T03-production-editor
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 Task를 포함한 `feat(production): HTML v13 중앙 편집과 코멘트 도구 적용` 커밋 (`git log -- 이 파일`로 조회)
 
 검증과 커밋 후 phase를 done3/3, Plan P01을 done으로 갱신하고 `.memory/current.md` Active Task를 없음으로 변경한다. 검증 미통과 상태를 완료로 쓰지 않는다. 지정 변경·이 계획 기록만 커밋하며 current는 강제 stage하지 않는다. push/배포는 하지 않는다.
+
+- 결과: [T03 검증·학습 기록](../../../reports/2026-11-06-workspace-html-v13-parity-T03.md). 시각·마우스 검증은 제외 정책에 따라 미실시.

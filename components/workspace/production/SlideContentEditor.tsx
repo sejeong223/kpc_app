@@ -16,9 +16,9 @@ export interface SlideContentEditorProps {
 }
 const clean: DocumentEditorState = { dirty: false, composing: false, error: null };
 const useStyles = makeStyles({
-  shell: { minWidth: 0, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1 },
+  shell: { minWidth: 0, marginTop: "10px", border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, boxShadow: tokens.shadow2 },
   inputFrame: { position: "relative" },
-  paper: { boxSizing: "border-box", padding: "12px 52px 12px 16px", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: "1.65",
+  paper: { boxSizing: "border-box", padding: "12px 52px 12px 16px", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", fontFamily: tokens.fontFamilyBase, fontSize: "13px", lineHeight: "1.7",
     ":focus-within": { boxShadow: `inset 0 0 0 1px ${tokens.colorBrandStroke1}` },
     "& h2": { margin: "0 0 8px", fontSize: tokens.fontSizeBase500, fontWeight: 600 },
     "& [data-document-field='lead']": { margin: "0 0 16px", color: tokens.colorNeutralForeground2 },
@@ -58,7 +58,10 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
       cancelAnimationFrame(resetFrame.current);
       resetFrame.current = requestAnimationFrame(() => { setState(clean); setNotice(null); onEditorStateChange?.(clean); });
     }
-    node.querySelectorAll<HTMLElement>("[data-document-editable]").forEach(el => { el.setAttribute("contenteditable", String(!readOnly && !busy)); el.setAttribute("aria-readonly", String(readOnly || busy)); });
+    node.querySelectorAll<HTMLElement>("[data-document-editable]").forEach(el => {
+      el.setAttribute("contenteditable", String(!readOnly && !busy)); el.setAttribute("aria-readonly", String(readOnly || busy));
+      if (el.dataset.blockKind === "text") el.dataset.placeholder = "이 슬라이드에 들어갈 내용을 입력하세요";
+    });
   }, [value, resetKey, readOnly, busy, onEditorStateChange]);
   const publish = (): SlideContent | null => {
     if (!root.current) return null;

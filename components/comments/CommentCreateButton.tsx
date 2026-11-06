@@ -26,10 +26,11 @@ const useStyles = makeStyles({
     ...shorthands.borderColor(tokens.colorBrandStroke1),
     color: tokens.colorBrandForeground2,
   },
+  compact: { height: "30px", minHeight: "30px", padding: "0 10px", borderRadius: "8px", fontSize: "12px", lineHeight: "20px", columnGap: "4px", boxShadow: "none", "& svg": { width: "14px", height: "14px" } },
 });
 
-export interface CommentCreateButtonProps { slideId: string; surfaceId: string; buttonId: string; disabled?: boolean }
-export default function CommentCreateButton({ slideId, surfaceId, buttonId, disabled = false }: CommentCreateButtonProps): React.ReactElement | null {
+export interface CommentCreateButtonProps { slideId: string; surfaceId: string; buttonId: string; disabled?: boolean; compact?: boolean }
+export default function CommentCreateButton({ slideId, surfaceId, buttonId, disabled = false, compact = false }: CommentCreateButtonProps): React.ReactElement | null {
   const styles = useStyles();
   const { state, controller, capabilities, requestPinMode } = useComments();
   const active = state.pinMode && state.pinModeSlideId === slideId;
@@ -39,7 +40,7 @@ export default function CommentCreateButton({ slideId, surfaceId, buttonId, disa
     <Button
       type="button"
       id={buttonId}
-      className={mergeClasses(styles.button, active && styles.active)}
+      className={mergeClasses(styles.button, compact && styles.compact, active && styles.active)}
       icon={<CommentAdd20Regular />}
       data-comment-control
       data-comment-create={slideId}
@@ -48,7 +49,7 @@ export default function CommentCreateButton({ slideId, surfaceId, buttonId, disa
       disabled={disabled || !controller || state.status !== "ready" || state.busy}
       onClick={() => requestPinMode(slideId)}
     >
-      핀 생성
+      {active ? "코멘트 추가 취소" : "코멘트 추가"}
     </Button>
   );
 }

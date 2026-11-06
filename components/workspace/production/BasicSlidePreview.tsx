@@ -8,6 +8,7 @@ import type { ContentBlock, ProjectView, ProposalSlide } from "@/types/workspace
 export interface BasicSlidePreviewProps {
   view: ProjectView; slide: ProposalSlide; snapshotId: string | null;
   mode: "full" | "thumbnail"; enabled: boolean; onOverflow?(value: boolean): void;
+  commentCreateTarget?: HTMLElement | null;
 }
 const useStyles = makeStyles({
   frame: { position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", border: `1px solid ${tokens.colorNeutralStroke2}`, backgroundColor: tokens.colorNeutralBackground1 },
@@ -65,7 +66,7 @@ export default function BasicSlidePreview(props: BasicSlidePreviewProps): React.
       </div>
     </div>;
   return <>
-    {props.mode === "full" ? <SlideCommentSurface slideId={slide.id} enabled={scale > 0}>{preview}</SlideCommentSurface> : preview}
+    {props.mode === "full" ? <SlideCommentSurface slideId={slide.id} enabled={scale > 0} commentCreateTarget={props.commentCreateTarget}>{preview}</SlideCommentSurface> : preview}
     {overflow && <p className={styles.notice}>{props.mode === "thumbnail" ? "본문 초과" : "본문이 슬라이드 영역을 넘습니다. 편집 영역에서 내용을 나누거나 줄여 주세요."}</p>}
   </>;
 }

@@ -16,7 +16,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 공통 헤더와 제작 화면의 HTML UI 적용 | [P01](../phases/2026-11-06-workspace-html-v13-parity/P01-workspace-ui/phase.md) |
+| P01 | `done` | 공통 헤더와 제작 화면의 HTML UI 적용 | [P01](../phases/2026-11-06-workspace-html-v13-parity/P01-workspace-ui/phase.md) |
 
 ## Scope
 
@@ -45,3 +45,11 @@ T01 → T02 → T03 순서로 실행한다. 각 Task는 정확한 파일·타입
 - T01은 공통 헤더와 각 호출부를 함께 바꿔야 중복 메뉴·업로드 안내가 남지 않는 완결된 결과가 된다.
 - T02는 목록·출처·폭 저장·반응형까지 묶어 외곽이 동작하는 상태로 끝낸다. 중앙 편집 상태는 이 단계에서 유지한다.
 - T03은 입력 상태와 코멘트 버튼의 소유 관계를 함께 정리한다. 버튼만 먼저 옮기면 슬라이드별 좌표·포커스·다중 선택 대상이 어긋나므로 분리하지 않는다.
+
+## Completion
+
+2026-11-06 사용자 `$mea` 요청으로 T01 → T02 → T03 구현·검증을 완료했다. 전체 typecheck/lint/build 및 정적 경로 검토가 통과했고 브라우저 시각·마우스 검증은 미실시다. 현재 프로젝트 데이터·저장·권한을 유지했다.
+
+- [T01 헤더 결과](../reports/2026-11-06-workspace-html-v13-parity-T01.md)
+- [T02 패널·목록·출처 결과](../reports/2026-11-06-workspace-html-v13-parity-T02.md)
+- [T03 편집·코멘트 결과](../reports/2026-11-06-workspace-html-v13-parity-T03.md)
