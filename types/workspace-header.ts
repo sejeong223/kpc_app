@@ -1,5 +1,20 @@
 import type { ProjectPermission, ProjectWorkspaceState, RoundSnapshot, WorkspaceMember } from "./workspace-production";
 import type { ProjectGrant } from "./workspace-production";
+export type HeaderProjectRole = "PM" | "작성자" | "리뷰자" | "참여자" | "슈퍼 관리자";
+export interface WorkspaceProjectPickerItem {
+    id: string;
+    name: string;
+    number: string;
+    organization: string | null;
+    dueDate: string | null;
+    roleLabels: HeaderProjectRole[];
+}
+export interface HeaderDeadline {
+    days: number | null;
+    label: string;
+    tone: "normal" | "urgent" | "overdue";
+    description: string;
+}
 export interface ProjectPermissionDraft {
     projectId: string;
     baseRevision: number;

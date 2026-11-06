@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
@@ -8,7 +7,6 @@ import { useProjectWorkspace } from "@/hooks/workspace/use-workspace-production"
 import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
 import {
   resolveWorkspaceSelection,
-  workspaceHref,
 } from "@/lib/workspace/production/routing";
 import { WorkspaceError } from "@/lib/workspace/production/errors";
 import type {
@@ -156,43 +154,6 @@ export function WorkspaceProjectGate({
         </WorkspacePage>
       )}
     </DadamThemeScope>
-  );
-}
-export function WorkspaceLinks({
-  selection,
-  current,
-}: {
-  selection: WorkspaceSelection;
-  current: "files" | "toc" | "setup" | "write";
-}): React.ReactElement {
-  return (
-    <nav
-      aria-label="프로젝트 작업 이동"
-      className="tw:flex tw:flex-wrap tw:items-center tw:gap-2"
-    >
-      {(
-        [
-          ["files", "파일 업로드"],
-          ["toc", "목차"],
-          ["setup", "제작 설정"],
-          ["write", "제작"],
-        ] as const
-      ).map(([screen, label]) => (
-        <Link
-          key={screen}
-          href={workspaceHref(screen, selection)}
-          aria-current={current === screen ? "page" : undefined}
-          className={
-            "tw:rounded-md tw:px-3 tw:py-2 tw:text-sm tw:no-underline " +
-            (current === screen
-              ? "tw:bg-(--dadam-accent-soft) tw:font-semibold tw:text-(--dadam-accent-ink)"
-              : "tw:text-(--kpc-secondary) tw:hover:bg-(--dadam-accent-soft)")
-          }
-        >
-          {label}
-        </Link>
-      ))}
-    </nav>
   );
 }
 export default function WorkspaceScreen({

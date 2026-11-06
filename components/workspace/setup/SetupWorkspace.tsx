@@ -4,14 +4,12 @@ import ProjectHeader from "@/components/common/ProjectHeader";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import { DadamButton } from "@/components/ui/DadamControls";
 import type { WorkspaceSceneProps } from "../WorkspaceScreen";
-import { WorkspaceLinks } from "../WorkspaceScreen";
 import { useWorkspaceRuntime } from "../WorkspaceProjectProvider";
 import type { WorkspaceAssetKind } from "@/types/workspace-production";
 import AssetSelectionPanel from "./AssetSelectionPanel";
 import ProjectPromptEditor from "./ProjectPromptEditor";
 export default function SetupWorkspace({
   view,
-  selection,
   selector,
 }: WorkspaceSceneProps) {
   const [tab, setTab] = useState<WorkspaceAssetKind>("template"),
@@ -20,7 +18,6 @@ export default function SetupWorkspace({
     <WorkspacePage headerComponent={ProjectHeader}
       title="제작 설정"
       leading={selector}
-      actions={<WorkspaceLinks current="setup" selection={selection} />}
     >
       <div role="tablist" aria-label="제작 자산" className="tw:flex tw:gap-2">
         {(

@@ -11,7 +11,6 @@ import {
   DadamTextarea,
 } from "@/components/ui/DadamControls";
 import type { WorkspaceSceneProps } from "../WorkspaceScreen";
-import { WorkspaceLinks } from "../WorkspaceScreen";
 import { useWorkspaceRuntime } from "../WorkspaceProjectProvider";
 import { useWorkspaceCommand } from "@/hooks/workspace/use-workspace-production";
 import {
@@ -173,7 +172,6 @@ export default function TocWorkspace({
     <WorkspacePage headerComponent={ProjectHeader}
       title="목차"
       leading={selector}
-      actions={<WorkspaceLinks selection={selection} current="toc" />}
     >
       <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-3">
         <strong>

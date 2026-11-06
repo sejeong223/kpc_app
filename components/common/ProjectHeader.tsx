@@ -1,93 +1,146 @@
 "use client";
-import { Popover, PopoverSurface, PopoverTrigger, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import { ChevronDown16Regular, History16Regular, Settings16Regular } from "@fluentui/react-icons";
+import { Popover, PopoverSurface, PopoverTrigger, makeStyles, mergeClasses, shorthands, tokens } from "@fluentui/react-components";
+import { ArrowCounterclockwise16Regular, Checkmark16Regular, ChevronDown16Regular, History16Regular, Settings16Regular } from "@fluentui/react-icons";
 import { usePathname } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useComments } from "@/components/comments/CommentsProvider";
 import WorkspaceHeader, { type WorkspaceHeaderProps } from "@/components/layout/WorkspaceHeader";
 import WorkspacePage from "@/components/layout/WorkspacePage";
-import { useWorkspaceRuntime } from "@/components/workspace/WorkspaceProjectProvider";
+import { useOptionalWorkspaceRuntime, useWorkspaceRuntime } from "@/components/workspace/WorkspaceProjectProvider";
 import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
 import { useWorkspacePpt } from "@/hooks/workspace/use-workspace-ppt";
 import { useProjectRound } from "@/hooks/workspace/use-project-round";
 import ProjectRoundDialog from "@/components/workspace/shared/ProjectRoundDialog";
+import { getHeaderDeadline, getHeaderRoundLabel } from "@/lib/workspace/production/header-selectors";
 import { dadamUi } from "@/lib/ui/dadam-theme";
 import Button from "./Button";
-import { DadamSelect } from "@/components/ui/DadamControls";
 import { useProjectHeader, type HeaderState } from "./ProjectHeaderProvider";
 import ProjectSettingsDrawer from "./ProjectSettingsDrawer";
 export type ProjectHeaderProps = WorkspaceHeaderProps;
 const useStyles = makeStyles({
     header: {
-        fontFamily: tokens.fontFamilyBase,
-        fontWeight: tokens.fontWeightRegular,
-        backgroundColor: tokens.colorNeutralBackground1,
-        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-        boxSizing: "border-box", minHeight: "58px", justifyContent: "center",
-        padding: "8px var(--layout-page-inset)",
-        // 페이지와 제작 도구 영역의 바깥 여백까지 헤더 배경·구분선을 확장한다.
-        marginTop: "calc(-1 * var(--layout-page-inset))",
-        marginLeft: "calc(-1 * var(--layout-page-inset))",
-        marginRight: "calc(-1 * var(--layout-page-inset))",
+        fontFamily: tokens.fontFamilyBase, fontWeight: tokens.fontWeightRegular,
+        backgroundColor: tokens.colorNeutralBackground1, borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+        boxSizing: "border-box", minHeight: "58px", justifyContent: "center", padding: "8px var(--layout-page-inset)",
+        marginTop: "calc(-1 * var(--layout-page-inset))", marginLeft: "calc(-1 * var(--layout-page-inset))", marginRight: "calc(-1 * var(--layout-page-inset))",
     },
-    leading: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--layout-control-gap)", minWidth: 0, maxWidth: "100%" },
-    selector: { height: "auto", minHeight: "40px", width: "360px", maxWidth: "100%", minWidth: 0, padding: "4px 10px", columnGap: "10px", textAlign: "left", whiteSpace: "normal" },
-    meta: { fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, color: tokens.colorNeutralForeground3, fontWeight: tokens.fontWeightRegular },
-    badge: { display: "inline-flex", flexShrink: 0, alignItems: "center", borderRadius: tokens.borderRadiusCircular, backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontSize: dadamUi.metaSize, lineHeight: dadamUi.metaLineHeight, whiteSpace: "nowrap" },
-    roleBadge: { padding: "2px 7px" },
+    leading: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", minWidth: 0, maxWidth: "100%", "@media (max-width: 760px)": { width: "100%" } },
+    selector: { height: "auto", minHeight: "40px", width: "560px", maxWidth: "100%", minWidth: 0, padding: "4px 10px", columnGap: "10px", textAlign: "left", whiteSpace: "normal", "@media (max-width: 760px)": { width: "100%" } },
+    summary: { display: "flex", flex: 1, minWidth: 0, flexDirection: "column", gap: "2px" },
+    name: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "14px", lineHeight: "20px", fontWeight: 500 },
+    meta: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", lineHeight: "16px", color: tokens.colorNeutralForeground3, fontWeight: 400 },
+    badge: { display: "inline-flex", flexShrink: 0, alignItems: "center", borderRadius: "999px", padding: "2px 8px", backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontSize: "12px", lineHeight: "16px", whiteSpace: "nowrap" },
     roundBadge: { padding: "3px 9px" },
     action: { boxSizing: "border-box", height: "34px", minHeight: "34px", paddingLeft: "12px", paddingRight: "12px", columnGap: "6px" },
-    popup: { width: "360px", maxWidth: "calc(100vw - 32px)", maxHeight: "min(480px, calc(100svh - 100px))", boxSizing: "border-box", overflowY: "auto", padding: "8px", borderRadius: dadamUi.surfaceRadius, boxShadow: dadamUi.popoverShadow, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
-    popupTitle: { margin: "4px 8px 8px", fontSize: dadamUi.metaSize, color: tokens.colorNeutralForeground3, fontWeight: tokens.fontWeightSemibold },
+    iconAction: { width: "34px", minWidth: "34px", padding: 0 },
+    popup: { width: "360px", maxWidth: "calc(100vw - 32px)", maxHeight: "min(480px, calc(100svh - 100px))", boxSizing: "border-box", overflowY: "auto", padding: "8px", borderRadius: "8px", boxShadow: dadamUi.popoverShadow, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
+    picker: { width: "640px" },
+    popupTitle: { margin: "4px 8px 8px", fontSize: "12px", color: tokens.colorNeutralForeground3, fontWeight: 500 },
+    option: { display: "flex", width: "100%", height: "auto", padding: "10px", gap: "16px", marginBottom: "4px", textAlign: "left", ...shorthands.borderColor("transparent"), "&[aria-pressed='true']": { backgroundColor: tokens.colorBrandBackground2 } },
+    optionBody: { rowGap: "6px" },
+    optionName: { fontWeight: 600 },
+    optionStatus: { display: "flex", flexShrink: 0, alignItems: "center", gap: "8px" },
+    check: { display: "inline-flex", width: "16px", color: tokens.colorBrandForeground1 },
+    deadline: { fontSize: "12px", lineHeight: "16px", fontWeight: 600, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", color: tokens.colorNeutralForeground3 },
+    urgent: { color: tokens.colorStatusDangerForeground1 },
+    overdue: { color: tokens.colorStatusWarningForeground1 },
     historyActions: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px", marginTop: "6px" },
-    version: { display: "flex", flexDirection: "column", gap: "2px", padding: "10px 12px", borderTop: `1px solid ${tokens.colorNeutralStroke2}` }
+    version: { display: "flex", flexDirection: "column", gap: "2px", padding: "10px 12px", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
 });
 export default function ProjectHeader(props: ProjectHeaderProps) {
     const { state, selection } = useProjectHeader();
-    const [last, setLast] = useState<Extract<HeaderState, {
-        status: "ready";
-    }> | null>(null);
-    if (state.status === "ready" && state !== last)
-        setLast(state);
+    const [last, setLast] = useState<Extract<HeaderState, { status: "ready" }> | null>(null);
+    if (state.status === "ready" && state !== last) setLast(state);
     const ready = state.status === "ready" ? state : last?.view.project.id === selection.projectId && last.model.snapshotId === selection.snapshotId ? last : null;
-    return ready ? <ProjectHeaderContent key={JSON.stringify([selection.projectId, selection.snapshotId])} {...props} header={ready} unavailable={state.status !== "ready"}/> : <HeaderLoading {...props}/>;
+    return ready ? <ProjectHeaderContent key={JSON.stringify([selection.projectId, selection.snapshotId])} {...props} header={ready} unavailable={state.status !== "ready"} /> : <HeaderLoading {...props} />;
 }
 function ProjectPicker() {
-    const { state, projects, selection, pending, selectProject } = useProjectHeader(), styles = useStyles();
-    const [error, setError] = useState<string | null>(null);
-    return <label className="tw:flex tw:min-w-0 tw:flex-col tw:gap-1"><span className="tw:sr-only">프로젝트 선택</span><DadamSelect className={styles.selector} aria-label="프로젝트 선택" value={selection.projectId ?? ""} disabled={pending} onChange={e => { setError(null); void selectProject(e.target.value).catch(e => setError(e instanceof Error ? e.message : "선택하지 못했습니다.")); }}><option value="" disabled>{state.status === "loading" ? "프로젝트 조회 중…" : "프로젝트 선택"}</option>{projects.map(p => <option key={p.id} value={p.id}>{p.number} · {p.name}</option>)}</DadamSelect>{error && <span role="alert">{error}</span>}</label>;
+    const { state, pickerItems, selection, pending, selectProject } = useProjectHeader(), styles = useStyles();
+    const runtime = useOptionalWorkspaceRuntime(), { controller } = useComments(), id = useId();
+    const trigger = useRef<HTMLButtonElement>(null), running = useRef(false), mounted = useRef(true);
+    const [picker, setPicker] = useState({ open: false, openedAt: 0, error: null as string | null });
+    const [selecting, setSelecting] = useState(false);
+    useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+    const selected = pickerItems.find(p => p.id === selection.projectId);
+    const close = () => { setPicker(p => ({ ...p, open: false })); requestAnimationFrame(() => trigger.current?.focus()); };
+    const choose = async (projectId: string) => {
+        if (running.current || pending) return;
+        running.current = true; setSelecting(true); setPicker(p => ({ ...p, error: null }));
+        try {
+            await selectProject(projectId);
+            if (runtime?.isActive() && runtime.selection.get()?.projectId === projectId) {
+                if (mounted.current) close();
+                // 프로젝트 변경 시 헤더가 새로 마운트되어도 새 선택 버튼으로 복귀한다.
+                requestAnimationFrame(() => document.querySelector<HTMLButtonElement>("[data-project-picker]")?.focus());
+            }
+        } catch (error) {
+            if (mounted.current) setPicker(p => ({ ...p, error: error instanceof Error ? error.message : "선택하지 못했습니다." }));
+        } finally { running.current = false; if (mounted.current) setSelecting(false); }
+    };
+    return <Popover open={picker.open} onOpenChange={(_, data) => {
+        if (!data.open) { close(); return; }
+        controller?.suspendUi(); setPicker({ open: true, openedAt: Date.now(), error: null });
+    }} positioning={{ position: "below", align: "start" }}>
+        <PopoverTrigger disableButtonEnhancement><Button ref={trigger} data-project-picker className={styles.selector} disabled={pending || selecting || !pickerItems.length}
+            aria-label={selected ? `프로젝트 선택: ${selected.name}` : "프로젝트 선택"} aria-haspopup="dialog" aria-expanded={picker.open} aria-controls={id}>
+            <span className={styles.summary}><span className={styles.name} title={selected?.name}>{selected?.name ?? (state.status === "loading" ? "프로젝트 조회 중…" : "프로젝트 선택")}</span>
+                <span className={styles.meta}>{selected ? `${selected.organization ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : "참여 중인 프로젝트"}</span></span>
+            {selected && <span className={styles.badge} title={selected.roleLabels.join(" · ")}>{selected.roleLabels.join(" · ")}</span>}<ChevronDown16Regular />
+        </Button></PopoverTrigger>
+        <PopoverSurface id={id} role="dialog" aria-labelledby={id + "-title"} className={mergeClasses(styles.popup, styles.picker)}>
+            <h2 id={id + "-title"} className={styles.popupTitle}>내가 참여 중</h2>
+            {pickerItems.map(project => {
+                const deadline = getHeaderDeadline(project.dueDate, picker.openedAt), summary = `${project.roleLabels.join(" · ")} · ${project.organization ?? "—"}`;
+                return <Button key={project.id} className={styles.option} aria-pressed={project.id === selection.projectId} disabled={pending || selecting} onClick={() => { void choose(project.id); }}>
+                    <span className={mergeClasses(styles.summary, styles.optionBody)}><span className={mergeClasses(styles.name, styles.optionName)} title={project.name}>{project.name}</span><span className={styles.meta} title={summary}>{summary}</span></span>
+                    <span className={styles.optionStatus}><span className={styles.check} aria-hidden="true">{project.id === selection.projectId && <Checkmark16Regular />}</span>
+                        <span className={mergeClasses(styles.deadline, deadline.tone === "urgent" && styles.urgent, deadline.tone === "overdue" && styles.overdue)} aria-label={deadline.description}
+                            title={`${project.dueDate?.replaceAll("-", ".") ?? "—"} · ${deadline.description}`}>{deadline.label}</span></span>
+                </Button>;
+            })}
+            {picker.error && <p role="alert">{picker.error}</p>}
+        </PopoverSurface>
+    </Popover>;
 }
-function HeaderLoading(props: ProjectHeaderProps) { const { state } = useProjectHeader(); return <><WorkspaceHeader {...props} leading={<><ProjectPicker />{props.leading}</>} actions={props.actions}/>{state.status === "error" && <p role="alert">{state.error.message}</p>}</>; }
-function ProjectHeaderContent({ leading, actions, className, header, unavailable, ...props }: ProjectHeaderProps & {
-    header: Extract<HeaderState, {
-        status: "ready";
-    }>;
-    unavailable: boolean;
-}) {
+function HeaderLoading({ className, ...props }: ProjectHeaderProps) {
+    const { state } = useProjectHeader(), styles = useStyles();
+    return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker />{props.leading}</div>} />{state.status === "error" && <p role="alert">{state.error.message}</p>}</>;
+}
+function ProjectHeaderContent({ leading, actions, className, header, unavailable, ...props }: ProjectHeaderProps & { header: Extract<HeaderState, { status: "ready" }>; unavailable: boolean }) {
     const styles = useStyles(), { state } = useProjectHeader(), runtime = useWorkspaceRuntime(), choice = useWorkspaceSelection(), { controller } = useComments();
     const [overlay, setOverlay] = useState<"settings" | "history" | null>(null), [error, setError] = useState<string | null>(null);
-    const settingsRef = useRef<HTMLButtonElement>(null);
-    const ppt = useWorkspacePpt();
+    const settingsRef = useRef<HTMLButtonElement>(null), ppt = useWorkspacePpt();
     const round = useProjectRound(choice.selection.projectId ?? "", () => choice.commitSelection({ ...choice.selection, sectionId: null, slideId: null, snapshotId: null }), () => { controller?.suspendUi(); setOverlay(null); });
     const view = header.view, model = unavailable ? { ...header.model, canManagePermissions: false } : header.model;
     const open = (next: "settings" | "history") => { void runtime.navigate(async () => { controller?.suspendUi(); setOverlay(next); }).catch(e => setError(e instanceof Error ? e.message : "설정을 열지 못했습니다.")); };
-    return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker /><span className={mergeClasses(styles.badge, styles.roleBadge)}>{view.actor.role === "super_admin" ? "슈퍼 관리자" : view.actor.id === model.pmId ? "PM" : "참여자"}</span><span className={mergeClasses(styles.badge, styles.roundBadge)}>{model.displayedRound}차 {model.snapshotKind === "unfinished" ? "미완성 이력" : model.readOnly ? "보관본 · 읽기 전용" : "작업 중"}</span><span className={styles.meta}>PM {model.pmName} · 참여자 {model.members.length}명<br />{model.organization ?? "—"} · 마감 {model.dueDate ?? "—"} · 예산 {model.budgetKrw === null ? "—" : model.budgetKrw.toLocaleString() + "원"}<br />작성 완료 {model.doneSections}/{model.totalSections} · 미처리 의견 {model.openComments}</span>{leading}</div>} actions={<>{actions}
- {!unavailable && model.history.length > 0 && <Popover open={overlay === "history"} onOpenChange={(_, d) => d.open ? open("history") : setOverlay(null)}><PopoverTrigger disableButtonEnhancement><Button className={styles.action}><History16Regular />완성본 {model.completedVersions}<ChevronDown16Regular /></Button></PopoverTrigger><PopoverSurface className={styles.popup}><h2 className={styles.popupTitle}>회차 이력</h2><Button disabled={round.busy} onClick={() => { void choice.choose({ ...choice.selection, snapshotId: null, sectionId: null, slideId: null }).then(() => { if (runtime.selection.get()?.snapshotId === null)
-            setOverlay(null); }).catch(e => setError(e.message)); }}>현재 작업으로</Button>{model.history.map(h => { const version = view.state.pptVersions.find(v => v.id === h.pptVersionId && v.round === h.round); return <article key={h.id} className={styles.version}><strong>{h.round}차 {h.kind === "complete" ? "완성본" : "미완성 이력"}</strong><span>{new Date(h.createdAt).toLocaleString("ko-KR")}</span><div className={styles.historyActions}><Button disabled={round.busy} onClick={() => { void choice.choose({ ...choice.selection, snapshotId: h.id, sectionId: null, slideId: null }).then(() => { if (runtime.selection.get()?.snapshotId === h.id)
-            setOverlay(null); }).catch(e => setError(e.message)); }}>보기</Button>{version ? <Button disabled={ppt.task.isPending} onClick={() => ppt.task.mutate({ kind: "download", projectId: model.projectId, versionId: version.id })}>PPT</Button> : <span>보관된 PPT 없음</span>}</div></article>; })}</PopoverSurface></Popover>}
- {model.snapshotId && <Button disabled={round.busy} onClick={() => { void choice.choose({ ...choice.selection, snapshotId: null, sectionId: null, slideId: null }).catch(e => setError(e.message)); }}>현재 작업으로</Button>}
- {!unavailable && !model.snapshotId && model.actions.complete && <Button className="primary" disabled={round.busy} onClick={() => round.open("complete")}>완성</Button>}
- {!unavailable && !model.snapshotId && model.actions.rework && <Button disabled={round.busy} onClick={() => round.open("start-round")}>재작업</Button>}
- <Button ref={settingsRef} disabled={unavailable} className={styles.action} onClick={() => open("settings")}><Settings16Regular />설정</Button></>}/>
- {ppt.task.error && <p role="alert">{ppt.task.error.message}</p>}
- {state.status === "error" && <p role="alert">{state.error.message}</p>}
- {(error || (!round.dialog && round.error)) && <p role="alert">{error ?? round.error}</p>}
- {overlay === "settings" && <ProjectSettingsDrawer id="project-settings" project={model} view={view} onClose={() => setOverlay(null)} returnFocusRef={settingsRef}/>}
- {round.dialog && <ProjectRoundDialog key={round.dialog.mode + ":" + round.dialog.view.state.revision} open mode={round.dialog.mode} view={round.dialog.view} busy={round.busy} error={round.error} onConfirm={input => { void round.confirm(input).catch(() => { }); }} onClose={round.close} onReload={() => { if (round.dialog)
-        round.open(round.dialog.mode); }}/>}
- </>;
+    const chooseSnapshot = (snapshotId: string | null) => { void choice.choose({ ...choice.selection, snapshotId, sectionId: null, slideId: null }).then(() => {
+        if (runtime.isActive() && runtime.selection.get()?.projectId === model.projectId && runtime.selection.get()?.snapshotId === snapshotId) setOverlay(null);
+    }).catch(e => setError(e.message)); };
+    const versionRow = (h: typeof model.history[number]) => {
+        const version = view.state.pptVersions.find(v => v.id === h.pptVersionId && v.round === h.round);
+        return <article key={h.id} className={styles.version}><strong>{h.round}차 {h.kind === "complete" ? "완성본" : "미완성 이력"}</strong><span className={styles.meta}>{new Date(h.createdAt).toLocaleString("ko-KR")}</span>
+            <div className={styles.historyActions}><Button disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(h.id)}>보기</Button>
+                {version ? <Button disabled={ppt.task.isPending} onClick={() => ppt.task.mutate({ kind: "download", projectId: model.projectId, versionId: version.id })}>PPT</Button> : <span className={styles.meta}>보관된 PPT 없음</span>}</div></article>;
+    };
+    const unfinished = model.history.filter(h => h.kind === "unfinished");
+    return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker /><span className={mergeClasses(styles.badge, styles.roundBadge)}>{getHeaderRoundLabel(model)}</span>{leading}</div>} actions={<>{actions}
+        {!unavailable && !model.snapshotId && model.actions.rework && <Button className={mergeClasses(styles.action, styles.iconAction)} disabled={round.busy} aria-label={`${model.currentRound + 1}차 재작업 시작`} title={`${model.currentRound + 1}차 재작업 시작`} onClick={() => round.open("start-round")}><ArrowCounterclockwise16Regular /></Button>}
+        {!unavailable && model.history.length > 0 && <Popover open={overlay === "history"} onOpenChange={(_, d) => d.open ? open("history") : setOverlay(null)}><PopoverTrigger disableButtonEnhancement><Button className={styles.action} aria-haspopup="dialog"><History16Regular />완성본 {model.completedVersions}</Button></PopoverTrigger>
+            <PopoverSurface className={styles.popup} aria-label="완성본 이력"><h2 className={styles.popupTitle}>회차별 완성본</h2><Button disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(null)}>현재 작업으로</Button>
+                {model.history.filter(h => h.kind === "complete").map(versionRow)}{!model.completedVersions && <p className={styles.meta}>완성본이 없습니다.</p>}
+                {unfinished.length > 0 && <details><summary>미완성 이력 {unfinished.length}</summary>{unfinished.map(versionRow)}</details>}
+            </PopoverSurface></Popover>}
+        {!unavailable && !model.snapshotId && model.actions.complete && <Button className={mergeClasses(styles.action, "primary")} disabled={round.busy || model.phase === "completed"} onClick={() => round.open("complete")}><Checkmark16Regular />완성</Button>}
+        <Button ref={settingsRef} disabled={unavailable} className={styles.action} onClick={() => open("settings")}><Settings16Regular />설정</Button>
+        {model.snapshotId && <Button className={styles.action} disabled={round.busy || choice.pending} onClick={() => chooseSnapshot(null)}>현재 작업으로</Button>}
+    </>} />
+        {ppt.task.error && <p role="alert">{ppt.task.error.message}</p>}{state.status === "error" && <p role="alert">{state.error.message}</p>}
+        {(error || (!round.dialog && round.error)) && <p role="alert">{error ?? round.error}</p>}
+        {overlay === "settings" && <ProjectSettingsDrawer id="project-settings" project={model} view={view} onClose={() => setOverlay(null)} returnFocusRef={settingsRef} />}
+        {round.dialog && <ProjectRoundDialog key={round.dialog.mode + ":" + round.dialog.view.state.revision} open mode={round.dialog.mode} view={round.dialog.view} busy={round.busy} error={round.error} onConfirm={input => { void round.confirm(input).catch(() => {}); }} onClose={round.close} onReload={() => { if (round.dialog) round.open(round.dialog.mode); }} />}
+    </>;
 }
-export function ProjectHeaderPage({ title, headingId }: {
-    title: string;
-    headingId?: string;
-}) { const { state, isPm } = useProjectHeader(), path = usePathname(); return <WorkspacePage title={title} headingId={headingId} headerComponent={ProjectHeader}>{path === "/workspace/review" && state.status === "ready" && !isPm ? <p>제작 화면으로 이동합니다.</p> : null}</WorkspacePage>; }
+export function ProjectHeaderPage({ title, headingId }: { title: string; headingId?: string }) {
+    const { state, isPm } = useProjectHeader(), path = usePathname();
+    return <WorkspacePage title={title} headingId={headingId} headerComponent={ProjectHeader}>{path === "/workspace/review" && state.status === "ready" && !isPm ? <p>제작 화면으로 이동합니다.</p> : null}</WorkspacePage>;
+}

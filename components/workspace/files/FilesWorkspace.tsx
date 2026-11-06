@@ -117,17 +117,19 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
       settings: { kind: "web", priority: "normal", instruction: value.instruction }, web: { type: "web", url: value.url, period: value.period } });
     return submit({ type: "add-web", ...value });
   }
-  return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드" actions={data && <>
-    <span className="tw:text-xs tw:text-(--kpc-secondary)">현재 자료 <b>{data.currentCount}</b> / {FILE_LIMITS.currentMaterials}개 · 파일당 {FILE_LIMITS.fileBytes / 1024 / 1024}MB · 이 브라우저에 저장</span>
-    <progress value={data.currentCount} max={FILE_LIMITS.currentMaterials} aria-label="현재 회차 자료 사용량" className="tw:h-1.5 tw:w-20 tw:accent-(--dadam-accent)" />
-  </>}>
+  return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드">
+    {data && <div className="tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-2 tw:text-xs tw:text-(--kpc-secondary)">
+      <span>자료 <b>{data.currentCount}</b> / {FILE_LIMITS.currentMaterials}개</span>
+      <progress value={data.currentCount} max={FILE_LIMITS.currentMaterials} aria-label="현재 회차 자료 사용량" className="tw:h-1.5 tw:min-w-0 tw:flex-1 tw:accent-(--dadam-accent)" />
+      <span>파일당 {FILE_LIMITS.fileBytes / 1024 / 1024}MB · 문서당 300쪽 이내 권장 · 이 브라우저에 저장</span>
+    </div>}
     <input ref={picker.inputRef} {...picker.inputProps}/>
     {selectionError && <p role="alert" className="tw:m-0 tw:text-red-700">{selectionError}</p>}
     {!dialog && !confirmation && error && <div role="alert" className="tw:flex tw:flex-wrap tw:items-center tw:gap-(--layout-control-gap) tw:text-red-700">{error.message}<DadamButton disabled={busy} onClick={() => { reset(); setLocalError(null); void query.refetch(); }}>최신 자료 다시 불러오기</DadamButton></div>}
     {notice && <p role="status" className="tw:m-0 tw:text-xs tw:text-(--dadam-accent-ink)">{notice}</p>}
     {!snapshotId && removal && removal.round === data?.currentRound && <FileUndoNotice key={removal.id} removal={removal} busy={busy} onExpire={expireUndo} onUndo={removalId => { void execute({ type: "undo-remove", removalId }).catch(() => {}); }} />}
     {query.error ? <AdminAsyncState state="error" message={query.error.message} onRetry={() => guard.request(onReconnect)} /> : query.isPending ? <AdminAsyncState state="loading" /> : data && <>
-      <p className="tw:m-0 tw:text-xs tw:text-(--kpc-secondary)">자료의 참조 순서는 왼쪽부터 적용됩니다. 문서당 300쪽 이내를 권장합니다.</p>
+      <p className="tw:m-0 tw:text-xs tw:text-(--kpc-secondary)">자료의 참조 순서는 왼쪽부터 적용됩니다.</p>
       {[...data.rounds].reverse().map(round => <FileRoundSection initialOpen={snapshotId?true:undefined} key={data.currentRound + ":" + round.number} value={round} canAdd={!selectionError&&data.canAdd} canReorder={!selectionError&&data.canReorder} disabled={busy || query.isFetching || !!selectionError}
         onAdd={add} onDropFiles={(category, files) => {if(files.length)guard.request(()=>openAdd(category,files));}} onEdit={resource => openEdit(resource)}
         onOpen={(resource, round) => setPreview({ resource, round })}
