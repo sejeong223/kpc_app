@@ -70,7 +70,7 @@ export default function ProductionPanels({ namespace, left, center, right }: Pro
       {rail("left")}
       <aside id={leftId} aria-label="슬라이드 목록" className={(s.mobilePanel === "slides" ? "tw:block" : "tw:hidden") + " " + (s.leftOpen ? "tw:@min-[761px]:block" : "tw:@min-[761px]:hidden") + " tw:w-full tw:min-w-0 tw:shrink-0 tw:overflow-hidden tw:@min-[761px]:w-(--production-left)" + panel}>{left(collapseButton("left"))}</aside>
       {s.leftOpen && splitter("left")}
-      <section id={editorId} data-production-scroll aria-label="슬라이드 편집" className={(s.mobilePanel === "editor" ? "tw:block" : "tw:hidden") + " tw:min-w-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-(--layout-card-inset) tw:@min-[761px]:block" + panel}>{center}</section>
+      <section id={editorId} data-production-scroll aria-label="슬라이드 편집" className={(s.mobilePanel === "editor" ? "tw:block" : "tw:hidden") + " tw:box-border tw:min-h-0 tw:min-w-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-(--layout-card-inset) tw:@min-[761px]:block"}>{center}</section>
       {s.rightOpen && splitter("right")}
       <aside id={rightId} aria-label="출처" className={(s.mobilePanel === "sources" ? "tw:block" : "tw:hidden") + " " + (s.rightOpen ? "tw:@min-[761px]:block" : "tw:@min-[761px]:hidden") + " tw:w-full tw:min-w-0 tw:shrink-0 tw:overflow-hidden tw:@min-[761px]:absolute tw:@min-[761px]:inset-y-0 tw:@min-[761px]:right-0 tw:@min-[761px]:z-10 tw:@min-[761px]:w-(--production-right) tw:@min-[761px]:shadow-xl tw:@min-[1180px]:static tw:@min-[1180px]:shadow-none" + panel}>{right(collapseButton("right"))}</aside>
       {rail("right")}

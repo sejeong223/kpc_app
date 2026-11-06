@@ -1,7 +1,7 @@
 # Plan: 제작 화면 슬라이드 핀 및 중앙 편집 레이아웃
 
 - Date: 2026-11-05
-- Status: in_progress
+- Status: done
 - Decisions: [확정 결정](../decisions/2026-11-05-production-slide-pin-layout.md)
 - Scope: `/workspace/write`, 기존 HTML 예시 프로젝트를 포함한 모든 중앙 슬라이드 미리보기.
 
@@ -13,7 +13,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 슬라이드 단위 핀 연결과 HTML 중앙 구조 반영 | [P01](../phases/2026-11-05-production-slide-pin-layout/P01-slide-pin-layout/phase.md) |
+| P01 | `done` | 슬라이드 단위 핀 연결과 HTML 중앙 구조 반영 | [P01](../phases/2026-11-05-production-slide-pin-layout/P01-slide-pin-layout/phase.md) |
 
 ## Task 경계
 
@@ -81,3 +81,9 @@ lib/workspace/production/
 - 이전 의견 버튼, 별도 `편집`/`슬라이드` 제목, 중앙 공통 흰 카드가 없다.
 - 편집 입력은 최대 180px의 내부 스크롤 영역과 안쪽 반영 아이콘을 사용한다.
 - 헤더·좌우 패널·저장·한글 조합 입력·초안 보호가 유지된다.
+
+## Completion (2026-11-06)
+
+- T01/T02 완료 (2/2). 각 Task 구현·검증 후 한국어 커밋을 남겼다.
+- 상세 검증 및 학습 기록: [완료 보고서](../reports/2026-11-05-production-slide-pin-layout.md).
+- 실제 브라우저 시각 검증은 사용자 수동 확인 범위로 남는다.

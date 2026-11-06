@@ -17,9 +17,8 @@ export interface SlideContentEditorProps {
 const clean: DocumentEditorState = { dirty: false, composing: false, error: null };
 const useStyles = makeStyles({
   shell: { minWidth: 0, border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: dadamUi.cardRadius, backgroundColor: tokens.colorNeutralBackground1 },
-  heading: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--layout-control-gap)", padding: "var(--layout-control-gap) var(--layout-card-inset)", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` },
-  title: { margin: 0, flex: 1, fontSize: dadamUi.bodySize, fontWeight: 600 },
-  paper: { padding: "var(--layout-card-inset)", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: "1.65",
+  inputFrame: { position: "relative" },
+  paper: { boxSizing: "border-box", padding: "12px 52px 12px 16px", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: "1.65",
     ":focus-within": { boxShadow: `inset 0 0 0 1px ${tokens.colorBrandStroke1}` },
     "& h2": { margin: "0 0 8px", fontSize: tokens.fontSizeBase500, fontWeight: 600 },
     "& [data-document-field='lead']": { margin: "0 0 16px", color: tokens.colorNeutralForeground2 },
@@ -33,12 +32,13 @@ const useStyles = makeStyles({
     "& ul": { paddingLeft: "24px" },
     "& figure": { marginLeft: 0, marginRight: 0, padding: "12px", backgroundColor: tokens.colorNeutralBackground2, color: tokens.colorNeutralForeground2 },
   },
-  footer: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "8px", padding: "var(--layout-control-gap)", borderTop: `1px solid ${tokens.colorNeutralStroke2}` },
+  save: { position: "absolute", right: "10px", bottom: "10px", width: "30px", height: "30px", minWidth: "30px", minHeight: "30px", padding: 0, borderRadius: "50%" },
+  hint: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 },
   error: { color: tokens.colorStatusDangerForeground1, margin: "8px 12px", fontSize: dadamUi.metaSize },
-  meta: { color: tokens.colorNeutralForeground3, fontSize: dadamUi.metaSize },
+  meta: { color: tokens.colorNeutralForeground3, margin: "8px 12px", fontSize: dadamUi.metaSize },
 });
 export default function SlideContentEditor({ value, readOnly, error, onChange, onSave, busy = false, resetKey = 0, onEditorStateChange }: SlideContentEditorProps): React.ReactElement {
-  const styles = useStyles(), headingId = useId(), hintId = useId(), root = useRef<HTMLDivElement>(null), content = useRef(value), baseline = useRef(JSON.stringify(value));
+  const styles = useStyles(), hintId = useId(), root = useRef<HTMLDivElement>(null), content = useRef(value), baseline = useRef(JSON.stringify(value));
   const initialized = useRef(false), appliedReset = useRef(resetKey), stateRef = useRef(clean);
   const [state, setState] = useState(clean);
   const [notice, setNotice] = useState<string | null>(null);
@@ -89,8 +89,9 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
     const selected = node.ownerDocument.getSelection(); selected?.removeAllRanges(); selected?.addRange(range); return publish() !== null;
   };
   return <section className={styles.shell} aria-label="슬라이드 문서 편집" data-comment-control>
-    <header className={styles.heading}><h2 id={headingId} className={styles.title}>편집</h2><span className={styles.meta}>{readOnly ? "읽기 전용" : state.dirty ? "미반영 변경" : "직접 편집"}</span></header>
-    <div ref={root} className={styles.paper} role="group" aria-labelledby={headingId} aria-describedby={hintId} onFocusCapture={remember} onPointerUp={remember} onKeyUp={remember}
+    <span id={hintId} className={styles.hint}>{readOnly ? "저장된 내용을 확인할 수 있습니다." : "제목·리딩 메시지·본문을 입력한 뒤 슬라이드에 반영하세요."}</span>
+    <div className={styles.inputFrame}>
+    <div ref={root} className={styles.paper} role="group" aria-label="슬라이드 내용 편집" aria-describedby={hintId} onFocusCapture={remember} onPointerUp={remember} onKeyUp={remember}
       onCompositionStart={() => updateState({ ...stateRef.current, dirty: true, composing: true })}
       onCompositionEnd={() => { if (!locked) publish(); else updateState({ ...stateRef.current, composing: false }); }}
       onInput={() => { if (locked) return; if (stateRef.current.composing) updateState({ ...stateRef.current, dirty: true }); else publish(); }}
@@ -128,10 +129,10 @@ export default function SlideContentEditor({ value, readOnly, error, onChange, o
         if (!validated.ok) { setNotice(validated.message); return; }
         replace(validated.content); setNotice(result.notices.join(" ") || null);
       }} />
+      {!readOnly && <DadamButton className={styles.save} appearance="primary" icon={<ArrowUp20Regular />} title="슬라이드에 반영" aria-label="슬라이드에 반영" disabled={blocked || !!state.error || !!error} onClick={onSave} />}
+    </div>
+    {(readOnly || state.dirty) && <p role="status" className={styles.meta}>{readOnly ? state.dirty ? "읽기 전용 · 미반영 변경 보관 중" : "읽기 전용" : "미반영 변경"}</p>}
     {(state.error || error) && <p role="alert" className={styles.error}>{state.error ?? error}</p>}
     {notice && <p role="status" className={styles.error}>{notice}</p>}
-    <div className={styles.footer}><span id={hintId} className={styles.meta}>{readOnly ? "저장된 내용을 확인할 수 있습니다." : state.dirty ? "아직 슬라이드에 반영하지 않은 내용입니다." : "제목·리딩 메시지·본문을 입력한 뒤 슬라이드에 반영하세요."}</span>
-      {!readOnly && <DadamButton appearance="primary" icon={<ArrowUp20Regular />} title="슬라이드에 반영" aria-label="슬라이드에 반영" disabled={blocked || !!state.error || !!error} onClick={onSave} />}
-    </div>
   </section>;
 }

@@ -71,7 +71,7 @@ function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: external
       error={editor.error ?? error} onChange={editor.setContent} onEditorStateChange={onDocumentState}
       onSave={() => { void save().catch(() => { /* Error is shown above. */ }); }} />}
     {aiFeedback}
-    {showPreview && !accessDenied && !externalConflict && <section aria-label="저장된 슬라이드"><h3 className="tw:mb-2 tw:text-sm">슬라이드</h3><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} /></section>}
+    {showPreview && !accessDenied && !externalConflict && <section aria-label="저장된 슬라이드"><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} /></section>}
     <DraftProtection dirty={dirty} busy={busy} onSave={canSave ? save : undefined} onDiscard={discard} />
   </div>;
 }
@@ -169,8 +169,8 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
     <div hidden={ids.length > 1 && !session?.dirty}>
       {multiple && session?.dirty && <p role="status" className="tw:text-xs">아래에 아직 반영하지 않은 단일 슬라이드 입력을 보관하고 있습니다.</p>}
       {editingSlide ? <ActiveSlide key={`${view.project.id}:${selection.snapshotId ?? "current"}:${editingSlide.id}`} view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy} onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy}
-        aiFeedback={!multiple ? aiFeedback : null} showPreview={!multiple} /> : !accessDenied && <section aria-label="편집" className="tw:mb-(--layout-section-gap) tw:rounded-lg tw:border tw:border-(--kpc-line) tw:p-(--layout-card-inset)">
-        <h2 className="tw:mt-0 tw:text-sm">편집</h2><p className="tw:text-sm">{section ? "이 소목차에는 슬라이드가 없습니다." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>
+        aiFeedback={!multiple ? aiFeedback : null} showPreview={!multiple} /> : !accessDenied && <section aria-label="편집" className="tw:mb-(--layout-section-gap) tw:p-(--layout-card-inset)">
+        <p className="tw:text-sm">{section ? "이 소목차에는 슬라이드가 없습니다." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>
         {section && <p className="tw:text-xs tw:text-(--kpc-muted)">목록을 마우스 오른쪽 버튼으로 눌러 슬라이드를 추가해 주세요.</p>}
         {rows.length > 0 && <p className="tw:text-xs tw:text-(--kpc-muted)">왼쪽 목록에서 다른 슬라이드를 선택할 수 있습니다.</p>}
       </section>}

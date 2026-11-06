@@ -1,6 +1,6 @@
 # Task: T02 편집 높이 축소 및 중앙 외곽 카드·제목 정리
 
-## Status: in_progress
+## Status: done
 
 ## Goal
 
@@ -119,14 +119,14 @@
 
 ## Acceptance Criteria
 
-- [ ] 중앙 section에는 공통 흰 배경·테두리·둥근 외곽 카드가 없다. 좌우 패널은 기존 모습과 기능을 유지한다.
-- [ ] 편집 입력만 흰 배경이며 기본 너비가 유지된다. 본문 높이는 border-box 기준 48~180px, 초과 내용은 내부 스크롤이다.
-- [ ] 반영 버튼은 입력칸 오른쪽 아래에 있고 본문·오류 문구와 겹치지 않는다.
-- [ ] 고정 `편집`/`슬라이드` 제목과 상시 일반 안내 행이 없다. 접근성 이름·필요한 상태·오류 안내는 남는다.
-- [ ] 실제 slide 제목·리딩 메시지·본문의 데이터와 편집 동작은 유지된다.
-- [ ] dirty/IME/읽기 전용/저장 충돌/붙여넣기 보호 및 Ctrl/Meta+S가 유지된다.
-- [ ] 다중 선택·빈 상태에서도 추가 외곽 카드나 중복 핀 표면이 생기지 않는다.
-- [ ] 중앙 min-height/overflow 경계와 T01의 표면·portal 배치가 유지된다.
+- [x] 중앙 section에는 공통 흰 배경·테두리·둥근 외곽 카드가 없다. 좌우 패널은 기존 모습과 기능을 유지한다.
+- [x] 편집 입력만 흰 배경이며 기본 너비가 유지된다. 본문 높이는 border-box 기준 48~180px, 초과 내용은 내부 스크롤이다.
+- [x] 반영 버튼은 입력칸 오른쪽 아래에 있고 본문·오류 문구와 겹치지 않는다.
+- [x] 고정 `편집`/`슬라이드` 제목과 상시 일반 안내 행이 없다. 접근성 이름·필요한 상태·오류 안내는 남는다.
+- [x] 실제 slide 제목·리딩 메시지·본문의 데이터와 편집 동작은 유지된다.
+- [x] dirty/IME/읽기 전용/저장 충돌/붙여넣기 보호 및 Ctrl/Meta+S가 유지된다.
+- [x] 다중 선택·빈 상태에서도 추가 외곽 카드나 중복 핀 표면이 생기지 않는다.
+- [x] 중앙 min-height/overflow 경계와 T01의 표면·portal 배치가 유지된다.
 
 ## Validation
 
@@ -170,8 +170,20 @@ Task: T02-compact-editor-layout
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 문서를 포함한 T02 완료 커밋. 해시는 로컬 current.md와 사용자 완료 보고에 기록한다.
 
 완료 후 이 Task의 Status를 done으로 바꾸고 실제 검증 결과·커밋을 기록한다. phase.md는 done 2/2, Plan은 done으로 갱신한다. `.memory/current.md`는 Active Task 없음으로 전진하고 `.memory/reports/2026-11-05-production-slide-pin-layout.md`에 완료 범위·검증·한계를 기록한다. current.md 강제 stage 금지. push·배포 없음.
+
+## Execution Result (2026-11-06)
+
+- ProductionPanels 중앙 장식만 제거하고 box-border/min-h-0/overflow/data-production-scroll과 여백을 유지했다.
+- SlideContentEditor의 고정 제목·상시 안내를 제거하고 본문을 border-box 48~180px로 제한했다. 반영 버튼은 입력칸 안쪽 30×30px 원형으로 배치했다. 접근성 설명은 숨김 텍스트로 유지하고 dirty/readOnly/error/notice만 필요한 때 표시한다.
+- ProductionWorkspace의 고정 슬라이드/빈 편집 제목 및 빈 상태 카드를 제거했다. 실제 제목·다중 선택 식별·초안 보존·핀 표면은 유지했다.
+- npm.cmd run typecheck / lint / build 및 git diff --check 통과.
+- stdin 검증 118개 통과: 실제 편집기/패널 80, 실제 ProductionWorkspace/미리보기/핀 표면/팝업 통합 38. 별도로 기존 editor 상태/effect/입력/IME/붙여넣기/키보드 handler가 이전 커밋과 동일함을 비교 확인했다.
+- 편집기는 실제 문서 parser와 DOM 이벤트를 사용했고, 패널은 실제 저장 hook과 namespace별 localStorage를 사용했다. 통합 검증은 실제 useSlideDraft와 controller를 사용하고 query/runtime/인접 패널 데이터는 메모리 fixture로 대체했다.
+- Griffel 버튼 크기는 DOM에 주입된 atomic CSS 규칙으로 검증했다. jsdom의 styleSheets 등록 순서와 실제 style DOM 순서 차이 때문에 computedStyle만으로 브라우저 렌더 결과를 판단하지 않는다.
+- 실제 브라우저 육안 검증 및 tests/ 생성 없음. 사용자 수동 확인: /workspace/write?project=production-html-demo.
+- 범위 밖 추가 문제: 특이사항 없음.

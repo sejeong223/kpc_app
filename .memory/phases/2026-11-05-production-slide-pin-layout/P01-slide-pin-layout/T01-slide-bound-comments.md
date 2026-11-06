@@ -380,7 +380,7 @@ Task: T01-slide-bound-comments
 
 - [x] 구현 완료
 - [x] 검증 통과
-- commit: 이 Task 완료 커밋 (T02 완료 기록에 해시 기재)
+- commit: af5279e
 
 완료 후 Status를 done으로 바꾸고 검증 결과·커밋을 기록한다. 상위 phase.md를 done 1/2로 갱신하고 `.memory/current.md`의 Active Task를 `T02-compact-editor-layout.md`로 이동한다. current.md 강제 stage 금지. 요청하지 않은 코드 정리·다른 DB 작업·push·배포 금지.
 
