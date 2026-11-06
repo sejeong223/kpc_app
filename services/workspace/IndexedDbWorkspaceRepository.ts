@@ -30,6 +30,8 @@ import {
   readWorkspaceBundle,
   workspaceBlobReferences,
 } from "./workspace-records";
+import { addHtmlDemoCompletion, needsHtmlDemoCompletion } from "./workspace-demo";
+import { createHtmlDemoPpt } from "./html-demo-ppt";
 
 export async function hashWorkspaceBlob(blob: Blob): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -44,6 +46,7 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
   private readonly database: WorkspaceDatabase;
   private readonly signal = new AbortController();
   private readonly identity;
+  private demoPpt: Promise<{ blob: Blob; sha256: string }> | null = null;
   constructor(private readonly options: WorkspaceRepositoryOptions) {
     const identity = FileIdentitySchema.safeParse(options.identity);
     check(identity.success, "FORBIDDEN", "사용자 정보를 확인해 주세요.");
@@ -78,9 +81,9 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
       newId: this.options.newId ?? (() => crypto.randomUUID()),
     };
   }
-  load(projectId: string): Promise<WorkspaceBundle> {
+  async load(projectId: string): Promise<WorkspaceBundle> {
     const context = this.context(projectId);
-    return this.database.transact(
+    const bundle = await this.database.transact<WorkspaceBundle>(
       ["projects", "workspaces", "blobs"],
       "readwrite",
       (tx, done, watch) =>
@@ -90,6 +93,25 @@ export class IndexedDbWorkspaceRepository implements WorkspaceRepository {
         }),
       this.signal.signal,
     );
+    if (!needsHtmlDemoCompletion(bundle)) return bundle;
+    this.demoPpt ??= createHtmlDemoPpt().then(async blob => ({ blob, sha256: await hashWorkspaceBlob(blob) })).catch(error => {
+      this.demoPpt = null; throw error;
+    });
+    // ZIP 생성과 해시는 IDB 트랜잭션 밖에서 끝내야 트랜잭션이 중간에 종료되지 않는다.
+    const ppt = await this.demoPpt;
+    this.context(projectId);
+    return this.database.transact<WorkspaceBundle>(["projects", "workspaces", "workspaceBlobs"], "readwrite", (tx, done, watch) => {
+      readWorkspaceBundle(tx, context, watch, latest => {
+        const current = this.context(projectId);
+        if (!needsHtmlDemoCompletion(latest)) { done(latest); return; }
+        const next = addHtmlDemoCompletion(latest, current, ppt);
+        const original = WorkspaceBlobRecordSchema.parse(next.original);
+        watch(tx.objectStore("workspaceBlobs").add(original), () => {});
+        watch(tx.objectStore("projects").put({ namespace: this.identity.namespace, projectId, state: next.bundle.files }), () => {});
+        watch(tx.objectStore("workspaces").put({ namespace: this.identity.namespace, projectId, state: next.bundle.state }), () => {});
+        done(next.bundle);
+      }, false);
+    }, this.signal.signal);
   }
   execute(input: WorkspaceMutation): Promise<WorkspaceReceipt> {
     const parsed = WorkspaceMutationSchema.safeParse(input);

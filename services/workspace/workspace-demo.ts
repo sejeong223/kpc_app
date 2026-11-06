@@ -1,10 +1,11 @@
 import { HTML_DEMO_PROJECT_ID, HTML_DEMO_SECTION_ID, HTML_DEMO_SLIDES, htmlDemoSlideId } from "@/config/production-html-demo";
-import { createEmptyFileProject } from "@/lib/workspace/files/domain";
+import { advanceFileRound, createEmptyFileProject } from "@/lib/workspace/files/domain";
 import { FileProjectStateSchema } from "@/lib/workspace/files/schemas";
 import { createWorkspaceState } from "@/lib/workspace/production/domain";
 import { WorkspaceStateSchema } from "@/lib/workspace/production/schemas";
 import type { StoredFileBlob } from "@/types/workspace-files";
-import type { WorkspaceBundle, WorkspaceContext } from "@/types/workspace-production";
+import type { StoredWorkspaceBlob, WorkspaceBundle, WorkspaceContext } from "@/types/workspace-production";
+import { HTML_DEMO_PPT_FILENAME } from "./html-demo-ppt";
 
 /** 첫 접근 전용. 호출자는 files/workspaces 레코드가 모두 없는지 확인해야 한다. */
 export function createHtmlDemoBundle(context: WorkspaceContext): (WorkspaceBundle & { original: StoredFileBlob }) | null {
@@ -58,4 +59,41 @@ export function createHtmlDemoBundle(context: WorkspaceContext): (WorkspaceBundl
     };
   });
   return { state: WorkspaceStateSchema.parse(state), files: FileProjectStateSchema.parse(files), original };
+}
+
+export function needsHtmlDemoCompletion(bundle: WorkspaceBundle): boolean {
+  return bundle.state.projectId === HTML_DEMO_PROJECT_ID && bundle.state.currentRound === 1 &&
+    bundle.state.phase === "writing" && bundle.state.snapshots.length === 0;
+}
+
+/** 사용자 편집본과 별개인 예시 완성본을 추가한다. 호출자는 최신 레코드에서 조건을 재확인한다. */
+export function addHtmlDemoCompletion(source: WorkspaceBundle, context: WorkspaceContext, ppt: { blob: Blob; sha256: string }): { bundle: WorkspaceBundle; original: StoredWorkspaceBlob } {
+  if (!needsHtmlDemoCompletion(source) || context.project.id !== HTML_DEMO_PROJECT_ID) throw new Error("완성본 예시를 추가할 수 없는 프로젝트입니다.");
+  const state = structuredClone(source.state), files = advanceFileRound(source.files, context);
+  const body = createHtmlDemoBundle(context)!.state.body;
+  body.sections.forEach(section => { section.state = "done"; section.locked = true; });
+  // 보관본은 독립된 시연 자료다. 사용자가 삭제/변경했을 수 있는 현재 파일 버전을 가리키지 않는다.
+  body.slides.forEach(slide => { slide.sources = slide.sources.filter(source => source.kind === "requirement"); });
+  const snapshotId = context.newId(), versionId = context.newId(), blobId = context.newId();
+  state.snapshots.push({ id: snapshotId, round: 1, kind: "complete", createdAt: context.now, createdBy: context.identity.actor.id,
+    inputRevision: 1, body, fileEntries: [], fileRevision: source.files.revision, pptVersionId: versionId });
+  state.pptVersions.push({ id: versionId, index: state.pptVersions.length + 1, round: 1, snapshotId, kind: "generated", pinIds: [], blobId,
+    filename: HTML_DEMO_PPT_FILENAME, byteLength: ppt.blob.size, sha256: ppt.sha256, createdAt: context.now, createdBy: context.identity.actor.id,
+    inputRevision: 1, baseVersionId: null, manifest: null });
+  state.currentRound = files.currentRound;
+  state.revision++; state.inputRevision++;
+  // 기존 텍스트·핀·메시지 ID와 편집 상태는 그대로 두고 현재 회차 표시만 옮긴다.
+  state.body.threads.forEach(thread => { thread.round = state.currentRound; });
+  if (state.undo) {
+    state.undo.previousBody.threads.forEach(thread => { thread.round = state.currentRound; });
+    if (state.undo.round === source.state.currentRound && state.undo.afterRevision === source.state.revision) {
+      state.undo.round = state.currentRound; state.undo.afterRevision = state.revision;
+    }
+  }
+  files.removals = source.files.removals.map(removal => ({ ...structuredClone(removal), round: files.currentRound }));
+  return {
+    bundle: { state: WorkspaceStateSchema.parse(state), files: FileProjectStateSchema.parse(files) },
+    original: { namespace: context.identity.namespace, projectId: context.project.id, id: blobId, kind: "ppt", ...ppt,
+      filename: HTML_DEMO_PPT_FILENAME, byteLength: ppt.blob.size, createdAt: context.now },
+  };
 }
