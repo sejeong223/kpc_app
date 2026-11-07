@@ -1,6 +1,6 @@
 # Task: T02 자료 사용량·회차·카드 목록 HTML 스타일 적용
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -166,8 +166,8 @@ Task: T02-list-html-style
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 파일의 Task 식별자를 가진 완료 커밋 (해시는 current에 기록)
 
 검증 통과 후 Task/phase를 갱신하고 이 범위만 한글 커밋한다. current는 강제 stage하지 않고 `T03-reference-dialogs.md`로 전진한다. 원본 HTML 수정/데이터 초기화/패키지 추가/인프라 변경은 금지한다.

@@ -20,6 +20,7 @@ import FileUndoNotice from "./FileUndoNotice";
 import FilePreviewDialog from "./FilePreviewDialog";
 import ProjectHeader from "@/components/common/ProjectHeader";
 import FileRoundSection from "./FileRoundSection";
+import { useFileListStyles } from "./file-list.styles";
 
 export default function FilesWorkspace({ onReconnect }: { onReconnect(): void }): React.ReactElement {
   const {selection,projects,pending,error}=useWorkspaceSelection();
@@ -34,6 +35,7 @@ export default function FilesWorkspace({ onReconnect }: { onReconnect(): void })
 interface FileProjectWorkspaceProps { snapshotId:string|null; projectId: string; onReconnect(): void; selectionError?: string }
 interface ActionConfirmation { operation: Extract<FileOperation, { type: "remove" | "start-round" }>; revision: number; round: number; workspaceRevision?: number; label: string }
 function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionError }: FileProjectWorkspaceProps): React.ReactElement {
+  const styles = useFileListStyles();
   const currentQuery = useFileWorkspace(snapshotId?null:projectId);
   const historyQuery = useWorkspaceFileHistory(projectId,snapshotId);
   const query = snapshotId?historyQuery:currentQuery;
@@ -53,6 +55,7 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
   const guard = useFileDraftGuard({ dirty, busy: command.isPending, onDiscard: closeDraft });
   const expireUndo = useCallback(() => setRemoval(null), []);
   const data = query.data;
+  const usageCount = Math.min(FILE_LIMITS.currentMaterials, Math.max(0, data?.currentCount ?? 0));
   const previewResource = !query.error && preview ? data?.rounds.find(round => round.number === preview.round)?.resources.find(resource => resource.version.id === preview.resource.version.id) : null;
   const busy = command.isPending;
   const error = localError ?? command.error;
@@ -118,10 +121,13 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
     return submit({ type: "add-web", ...value });
   }
   return <WorkspacePage headerComponent={ProjectHeader} title="파일 업로드">
-    {data && <div className="tw:flex tw:min-w-0 tw:flex-wrap tw:items-center tw:gap-2 tw:text-xs tw:text-(--kpc-secondary)">
-      <span>자료 <b>{data.currentCount}</b> / {FILE_LIMITS.currentMaterials}개</span>
-      <progress value={data.currentCount} max={FILE_LIMITS.currentMaterials} aria-label="현재 회차 자료 사용량" className="tw:h-1.5 tw:min-w-0 tw:flex-1 tw:accent-(--dadam-accent)" />
-      <span>파일당 {FILE_LIMITS.fileBytes / 1024 / 1024}MB · 문서당 300쪽 이내 권장 · 이 브라우저에 저장</span>
+    <div data-files-workspace className={styles.workspace}>
+    {data && <div className={styles.usage}>
+      <span>자료 <b className={styles.usageCount}>{data.currentCount} / {FILE_LIMITS.currentMaterials}개</b></span>
+      <span className={styles.usageBar} role="progressbar" aria-label="자료 사용량" aria-valuemin={0} aria-valuemax={FILE_LIMITS.currentMaterials} aria-valuenow={usageCount} aria-valuetext={`자료 ${data.currentCount} / ${FILE_LIMITS.currentMaterials}개`}>
+        <span className={styles.usageFill} style={{ width: `${usageCount / FILE_LIMITS.currentMaterials * 100}%` }} />
+      </span>
+      <span>파일당 {FILE_LIMITS.fileBytes / 1024 / 1024}MB · 문서당 300쪽 권장</span>
     </div>}
     <input ref={picker.inputRef} {...picker.inputProps}/>
     {selectionError && <p role="alert" className="tw:m-0 tw:text-red-700">{selectionError}</p>}
@@ -129,7 +135,7 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
     {notice && <p role="status" className="tw:m-0 tw:text-xs tw:text-(--dadam-accent-ink)">{notice}</p>}
     {!snapshotId && removal && removal.round === data?.currentRound && <FileUndoNotice key={removal.id} removal={removal} busy={busy} onExpire={expireUndo} onUndo={removalId => { void execute({ type: "undo-remove", removalId }).catch(() => {}); }} />}
     {query.error ? <AdminAsyncState state="error" message={query.error.message} onRetry={() => guard.request(onReconnect)} /> : query.isPending ? <AdminAsyncState state="loading" /> : data && <>
-      <p className="tw:m-0 tw:text-xs tw:text-(--kpc-secondary)">자료의 참조 순서는 왼쪽부터 적용됩니다.</p>
+      <p className={styles.note}>자료의 참조 순서는 왼쪽부터 적용됩니다.</p>
       {[...data.rounds].reverse().map(round => <FileRoundSection initialOpen={snapshotId !== null || round.number === data.currentRound} isCurrent={round.number === data.currentRound} snapshotId={snapshotId} key={data.currentRound + ":" + round.number} value={round} canAdd={!selectionError&&data.canAdd} canReorder={!selectionError&&data.canReorder} disabled={busy || query.isFetching || !!selectionError}
         onAdd={add} onDropFiles={(category, files) => {if(files.length)guard.request(()=>openAdd(category,files));}} onEdit={resource => openEdit(resource)}
         onOpen={(resource, round) => setPreview({ resource, round })}
@@ -148,5 +154,6 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
     </ModalFrame>}
     {guard.confirmOpen && <FileDiscardDialog open onKeep={guard.keepEditing} onDiscard={guard.discardAndContinue} />}
     {preview && previewResource && <FilePreviewDialog key={preview.resource.version.id + ":" + preview.round} open projectId={projectId} resource={previewResource} round={preview.round} onClose={() => setPreview(null)} />}
+    </div>
   </WorkspacePage>;
 }
