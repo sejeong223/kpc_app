@@ -603,7 +603,6 @@ const publicOperations = [
   op("set-grants", ProjectGrantSchema.shape),
   op("set-grants-batch", {grants:z.array(ProjectGrantSchema).min(1).max(1000).refine(rows=>new Set(rows.map(r=>r.userId)).size===rows.length)}),
   op("set-section-state", { id, state: z.enum(["writing", "done"]) }),
-  op("apply-manufacturing-prompt", { sectionId: id, slideId: id, prompt: ManufacturingPromptSchema }),
   op("unlock-section", { id }),
   op("set-slide-state", { id, state: z.enum(["writing", "done"]) }),
   op("unlock-slide", { id }),

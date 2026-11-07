@@ -1,12 +1,11 @@
 "use client";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useComments } from "@/components/comments/CommentsProvider";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { DadamButton } from "@/components/ui/DadamControls";
 import { loadProjectView, useWorkspaceAction, useWorkspaceCommand } from "@/hooks/workspace/use-workspace-production";
 import { useWorkspaceSelection } from "@/hooks/workspace/use-workspace-selection";
-import { useSlideDraft } from "@/hooks/workspace/use-slide-draft";
 import { useSlideClipboard } from "@/hooks/workspace/use-slide-clipboard";
 import { selectDeletionImpact } from "@/lib/workspace/production/selectors";
 import { selectProductionSlides } from "@/lib/workspace/production/presentation";
@@ -17,108 +16,21 @@ import { WorkspaceError, workspaceAssert as check } from "@/lib/workspace/produc
 import type { ProjectView, ProposalSlide, SlideBatchRequest, WorkspaceReceipt, MockRequest, WorkspaceOperation } from "@/types/workspace-production";
 import { useWorkspaceRuntime } from "../WorkspaceProjectProvider";
 import type { WorkspaceSceneProps } from "../WorkspaceScreen";
-import { DraftProtection, requestFor, WorkspaceErrorText } from "../shared/WorkspaceUi";
+import { requestFor, WorkspaceErrorText } from "../shared/WorkspaceUi";
 import WorkspaceUndoNotice from "../shared/WorkspaceUndoNotice";
 import ProductionToolbar from "./ProductionToolbar";
 import ProductionPanels from "./ProductionPanels";
 import SlideNavigator from "./SlideNavigator";
-import SlideContentEditor, { type DocumentEditorState } from "./SlideContentEditor";
 import ProductionPreview from "./ProductionPreview";
+import ActiveSlideEditor, { type ProductionEditorParts } from "./ActiveSlideEditor";
 import SourcePanel from "./SourcePanel";
 import ProductionAiPanel from "./ProductionAiPanel";
-import ManufacturingPromptEditor from "./ManufacturingPromptEditor";
-import { useManufacturingPrompt } from "@/hooks/workspace/use-manufacturing-prompt";
-import { MFG_DEMO_PROJECT_ID } from "@/config/production-mfg-demo";
 
 export interface ProductionWorkspaceProps extends WorkspaceSceneProps {
   onPropose?(request: MockRequest): void; aiFeedback?: React.ReactNode; aiBusy?: boolean;
   readOnlyError?: string | null; accessDenied?: boolean;
 }
 interface EditingSession { slideId: string; round: number; snapshotId: string | null; lastSlide: ProposalSlide; dirty: boolean }
-interface ProductionEditorParts { editor: React.ReactNode; preview: React.ReactNode; dirty: boolean }
-const cleanDocument: DocumentEditorState = { dirty: false, composing: false, error: null };
-interface ActiveSlideProps {
-  view: ProjectView; slide: ProposalSlide; snapshotId: string | null; externalConflict: string | null; busy: boolean; accessDenied: boolean;
-  onDirtyChange(dirty: boolean): void; onBusyChange(busy: boolean): void;
-  aiFeedback?: React.ReactNode; showPreview: boolean;
-  commentCreateTarget: HTMLElement | null; renderLayout(parts: ProductionEditorParts): React.ReactNode;
-}
-function ActiveSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange, aiFeedback, showPreview, commentCreateTarget, renderLayout }: ActiveSlideProps) {
-  const editor = useSlideDraft(view, slide);
-  const [documentState, setDocumentState] = useState(cleanDocument), [resetKey, setResetKey] = useState(0), [error, setError] = useState<string | null>(null);
-  const dirty = editor.draft.dirty || documentState.dirty, localBusy = editor.busy || documentState.composing;
-  const busy = externalBusy || localBusy;
-  const can = !snapshotId && !externalConflict && !accessDenied && view.state.phase === "writing" && view.capabilities.editableSlideIds.includes(slide.id);
-  const conflict = externalConflict ?? (editor.conflict ? "다른 변경이 저장되었습니다. 입력을 보존했으니 필요한 내용을 복사한 뒤 최신 내용을 불러와 주세요." : null);
-  const canSave = can && !conflict && !documentState.error && !documentState.composing && !busy;
-  const readOnlyReason = snapshotId ? "보관본은 읽기 전용입니다." : view.state.phase !== "writing" ? "현재 작업 단계에서는 내용을 수정할 수 없습니다." :
-    slide.state === "done" ? "작성 완료로 고정된 슬라이드입니다. 수정하려면 고정을 해제해 주세요." : "이 슬라이드의 편집 권한이 없습니다.";
-  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
-  useEffect(() => onBusyChange(localBusy), [localBusy, onBusyChange]);
-  const latestEditor = useRef(editor);
-  useLayoutEffect(() => { latestEditor.current = editor; });
-  const onDocumentState = useCallback((next: DocumentEditorState) => {
-    const current = latestEditor.current;
-    // Freeze the draft revision at the first raw edit, including an unfinished IME composition.
-    if (next.dirty && !current.draft.dirty) current.setContent(current.draft.content);
-    setDocumentState(next); onDirtyChange(next.dirty || current.draft.dirty);
-  }, [onDirtyChange]);
-  const discard = () => { editor.discard(); setDocumentState(cleanDocument); setResetKey(k => k + 1); setError(null); onDirtyChange(false); };
-  const save = async () => {
-    if (!canSave) throw new WorkspaceError("READ_ONLY", conflict ?? "지금은 슬라이드에 반영할 수 없습니다.");
-    try { await editor.save(); setDocumentState(cleanDocument); setResetKey(k => k + 1); setError(null); onDirtyChange(false); }
-    catch (failure) { setError(failure instanceof Error ? failure.message : "슬라이드를 저장하지 못했습니다."); throw failure; }
-  };
-  const editorContent = <>
-    {conflict && <p role="alert" className="tw:text-sm">{conflict}</p>}
-    {!can && !conflict && !accessDenied && <p className="tw:text-xs tw:text-(--kpc-muted)">{readOnlyReason}</p>}
-    {accessDenied && dirty && <p role="status" className="tw:text-xs">접근 권한 변경 전 작성하던 입력을 보관하고 있습니다. 필요한 내용을 복사할 수 있습니다.</p>}
-    {(!accessDenied || dirty) && <SlideContentEditor value={editor.draft.content} resetKey={resetKey} readOnly={!can || !!conflict} busy={busy}
-      error={editor.error ?? error} onChange={editor.setContent} onEditorStateChange={onDocumentState}
-      onSave={() => { void save().catch(() => { /* Error is shown above. */ }); }} />}
-    {aiFeedback}
-  </>;
-  const preview = showPreview && !accessDenied && !externalConflict ? <section aria-label="저장된 슬라이드"><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} commentCreateTarget={commentCreateTarget} /></section> : null;
-  return <div className="tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col" onKeyDown={e => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && !e.nativeEvent.isComposing) {
-      e.preventDefault(); e.stopPropagation(); if (canSave) void save().catch(() => { /* save exposes the error and keeps input. */ });
-    }
-  }}>
-    {renderLayout({ editor: editorContent, preview, dirty })}
-    <DraftProtection dirty={dirty} busy={busy} onSave={canSave ? save : undefined} onDiscard={discard} />
-  </div>;
-}
-function ActiveManufacturingSlide({ view, slide, snapshotId, externalConflict, busy: externalBusy, accessDenied, onDirtyChange, onBusyChange, aiFeedback, showPreview, commentCreateTarget, renderLayout }: ActiveSlideProps) {
-  const editor = useManufacturingPrompt(view, slide);
-  const [documentState, setDocumentState] = useState(cleanDocument), [resetKey, setResetKey] = useState(0), [error, setError] = useState<string | null>(null);
-  const dirty = editor.draft.dirty || documentState.dirty, busy = externalBusy || editor.busy || documentState.composing;
-  const section = view.state.body.sections.find(s => s.id === slide.sectionId);
-  const conflict = externalConflict ?? (editor.conflict ? "다른 변경이 저장되었습니다. 입력을 보관했으니 필요한 내용을 복사한 뒤 최신 내용을 불러와 주세요." : null);
-  const can = !snapshotId && !accessDenied && !conflict && view.state.phase === "writing" && !!section?.assigneeIds.includes(view.actor.id) && view.capabilities.editableSlideIds.includes(slide.id);
-  const canSave = can && !busy && !documentState.error;
-  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
-  useEffect(() => onBusyChange(editor.busy || documentState.composing), [editor.busy, documentState.composing, onBusyChange]);
-  const discard = () => { editor.discard(); setDocumentState(cleanDocument); setResetKey(key => key + 1); setError(null); onDirtyChange(false); };
-  const save = async () => {
-    if (!canSave) throw new WorkspaceError("READ_ONLY", conflict ?? "지금은 본문을 반영할 수 없습니다.");
-    try { await editor.save(); setDocumentState(cleanDocument); setResetKey(key => key + 1); setError(null); onDirtyChange(false); }
-    catch (failure) { setError(failure instanceof Error ? failure.message : "본문을 저장하지 못했습니다."); throw failure; }
-  };
-  return <div className="tw:flex tw:min-h-0 tw:min-w-0 tw:flex-1 tw:flex-col" onKeyDown={event => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s" && !event.nativeEvent.isComposing) {
-      event.preventDefault(); event.stopPropagation(); if (canSave) void save().catch(() => {});
-    }
-  }}>
-    {renderLayout({ dirty, editor: <>
-      {conflict && <p role="alert" className="tw:text-xs">{conflict}</p>}
-      {(!accessDenied || dirty) && <ManufacturingPromptEditor value={editor.draft.prompt} readOnly={!can} busy={externalBusy || editor.busy} resetKey={resetKey} error={editor.error ?? error}
-        onChange={prompt => { editor.setPrompt(prompt); setError(null); }} onSave={() => { void save().catch(() => {}); }} onEditorStateChange={next => {
-          if (next.dirty && !editor.draft.dirty) editor.markDirty(); setDocumentState(next); onDirtyChange(next.dirty || editor.draft.dirty);
-        }} />}{aiFeedback}
-    </>, preview: showPreview && !accessDenied && !externalConflict ? <section aria-label="저장된 슬라이드"><ProductionPreview view={view} slide={slide} snapshotId={snapshotId} commentCreateTarget={commentCreateTarget} /></section> : null })}
-    <DraftProtection dirty={dirty} busy={busy} onSave={canSave ? save : undefined} onDiscard={discard} />
-  </div>;
-}
 export default function ProductionWorkspace({ view, selection, readOnlyError = null, accessDenied = false, aiBusy = false, aiFeedback, onPropose }: ProductionWorkspaceProps): React.ReactElement {
   const runtime = useWorkspaceRuntime(), { commitSelection } = useWorkspaceSelection(), command = useWorkspaceCommand(), router = useRouter(), comments = useComments();
   const [commentCreateTarget, setCommentCreateTarget] = useState<HTMLDivElement | null>(null);
@@ -260,8 +172,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
       {!accessDenied && <fieldset disabled={busy || dirty || readOnly} data-comment-control className="tw:m-0 tw:min-w-0 tw:border-0 tw:p-0 tw:[&:not(:empty)]:pt-2"><WorkspaceUndoNotice view={view} /></fieldset>}
     </div>
   </>;
-  const Editor = view.project.id === MFG_DEMO_PROJECT_ID && !editingSlide?.template && view.state.body.sections.some(s => s.id === editingSlide?.sectionId && s.demoPrompt) ? ActiveManufacturingSlide : ActiveSlide;
-  const center = editingSlide ? <Editor key={view.project.id + ":" + (selection.snapshotId ?? "current") + ":" + editingSlide.id}
+  const center = editingSlide ? <ActiveSlideEditor key={view.project.id + ":" + (selection.snapshotId ?? "current") + ":" + editingSlide.id}
     view={view} slide={editingSlide} snapshotId={selection.snapshotId} externalConflict={sessionConflict} accessDenied={accessDenied} busy={externalBusy}
     onDirtyChange={onDirtyChange} onBusyChange={setEditorBusy} aiFeedback={!multiple ? aiFeedback : null} showPreview={!multiple}
     commentCreateTarget={commentCreateTarget} renderLayout={renderCenter} /> :

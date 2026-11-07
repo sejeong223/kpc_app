@@ -27,3 +27,15 @@
 - 기존 AI/PPT/이미지 경로는 원본 slide clone/spread를 사용하여 새 원문 필드를 유지한다. 관련 서비스의 전면 정리 없음.
 - 핵심: `editorPrompt`는 원문, `content`는 로컬 배치 결과이며 prepared operation 하나로 저장한다. 원문 없는 저장본은 자기 content에서 읽고 자동 migration/seed 초기화는 하지 않는다.
 - DadamControls SHA256 시작 값과 일치. 브라우저 시각 검증 미실시. 요청 범위 밖 추가 변경 없음.
+
+## T03
+
+- T02 commit: 498259d.
+- 타입 검사·변경 파일 ESLint·프로덕션 빌드 통과. build의 기존 baseline-browser-mapping 데이터 경고는 비차단이며 패키지는 변경하지 않았다.
+- 실제 hook/editor/adapter를 메모리 컴파일한 jsdom/React 검증 통과. runtime/mutation·preview·공용 버튼/style provider만 격리 stub했으며 실제 prompt mapper를 사용했다.
+- 통프롬프트 textarea 하나, 한글·줄바꿈·앞뒤 공백 저장, 같은 소목차 A/B 독립 원문, 반영 전 저장 미리보기 유지 확인.
+- IME 중 입력 가능/저장 차단, 조합 중 외부 revision 변경 시 원문 보존과 충돌 처리, Ctrl+S 1회 저장, 저장 중 중복 호출 거부 확인.
+- LAYOUT 저장 실패·권한 상실·빈 입력/20001자·snapshot/done·PM/admin 본문 권한·명시 폐기·이전 화면의 늦은 receipt·round/project 변경 방어 통과.
+- textarea font/min-width/wrap/높이 제한 정적 확인. 대체된 editor/hook/legacy operation 실행 참조 0. 기존 문서 유틸·예시 seed·다른 mutation은 유지.
+- 공용 버튼 리팩토링 없음. DadamControls SHA256 시작 값과 일치. 브라우저 시각 검증 미실시.
+- 첫 변경 시 project revision을 고정하고, receipt를 현재 session에만 적용하며 실패 시 dirty 원문을 유지하는 공통 경로로 통합했다. 요청 범위 밖 추가 변경 없음.

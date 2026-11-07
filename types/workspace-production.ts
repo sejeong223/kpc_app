@@ -368,7 +368,6 @@ export type WorkspaceErrorCode =
   | "LAYOUT";
 
 export type WorkspaceOperation =
-  | { type: "apply-manufacturing-prompt"; sectionId: string; slideId: string; prompt: ManufacturingPrompt }
   | {type:"set-grants-batch";grants:ProjectGrant[]}
   | {type:"canvas-command";command:CommentCommand}
   | {
