@@ -25,13 +25,16 @@ const useStyles = makeStyles({
         boxSizing: "border-box", minHeight: "58px", justifyContent: "center", padding: "8px 12px", "--layout-control-gap": "8px",
         marginTop: "calc(-1 * var(--layout-page-inset))", marginLeft: "calc(-1 * var(--layout-page-inset))", marginRight: "calc(-1 * var(--layout-page-inset))",
     },
-    leading: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", minWidth: 0, maxWidth: "100%", "@media (max-width: 760px)": { width: "100%" } },
-    selector: { height: "auto", minHeight: "40px", width: "560px", maxWidth: "100%", minWidth: 0, padding: "4px 10px", columnGap: "10px", textAlign: "left", whiteSpace: "normal", "@media (max-width: 760px)": { width: "100%" } },
+    leading: { display: "flex", flex: "1 1 0%", flexWrap: "nowrap", alignItems: "center", gap: "8px", minWidth: 0, maxWidth: "100%" },
+    selector: { height: "auto", minHeight: "40px", width: "auto", flex: "1 1 0%", flexWrap: "nowrap", maxWidth: "100%", minWidth: 0, padding: "4px 10px", columnGap: "10px", textAlign: "left", whiteSpace: "nowrap" },
+    selectorChevron: { width: "16px", height: "16px", flexShrink: 0 },
+    selectorRole: { maxWidth: "40%", minWidth: 0 },
     summary: { display: "flex", flex: 1, minWidth: 0, flexDirection: "column", gap: "2px" },
     name: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "14px", lineHeight: "20px", fontWeight: 500 },
     meta: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", lineHeight: "16px", color: tokens.colorNeutralForeground3, fontWeight: 400 },
     badge: { display: "inline-flex", flexShrink: 0, alignItems: "center", borderRadius: "999px", padding: "2px 8px", backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2, fontSize: "12px", lineHeight: "16px", whiteSpace: "nowrap" },
-    roundBadge: { padding: "2px 8px" },
+    roundBadge: { padding: "2px 8px", maxWidth: "50%", minWidth: 0 },
+    badgeText: { display: "block", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
     action: { boxSizing: "border-box", height: "34px", minHeight: "34px", paddingLeft: "12px", paddingRight: "12px", columnGap: "6px" },
     iconAction: { width: "34px", minWidth: "34px", padding: 0 },
     popup: { width: "360px", maxWidth: "calc(100vw - 32px)", maxHeight: "min(480px, calc(100svh - 100px))", boxSizing: "border-box", overflowY: "auto", padding: "8px", borderRadius: "8px", boxShadow: dadamUi.popoverShadow, fontFamily: tokens.fontFamilyBase, fontSize: dadamUi.bodySize, lineHeight: dadamUi.bodyLineHeight },
@@ -90,7 +93,7 @@ function ProjectPicker({ open: controlledOpen, onOpenChange, disabled = false }:
             aria-label={selected ? `프로젝트 선택: ${selected.name}` : "프로젝트 선택"} aria-haspopup="dialog" aria-expanded={isOpen} aria-controls={id} aria-disabled={disabled}>
             <span className={styles.summary}><span className={styles.name} title={selected?.name}>{selected?.name ?? (state.status === "loading" ? "프로젝트 조회 중…" : "프로젝트 선택")}</span>
                 <span className={styles.meta} title={selected ? `${selected.organization ?? "—"} · ${selected.departmentName ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : undefined}>{selected ? `${selected.organization ?? "—"} · ${selected.departmentName ?? "—"} · 마감 ${selected.dueDate?.replaceAll("-", ".") ?? "—"}` : "참여 중인 프로젝트"}</span></span>
-            {selected && <span className={styles.badge} title={selected.roleLabels.join(" · ")}>{selected.roleLabels.join(" · ")}</span>}<ChevronDown16Regular />
+            {selected && <span className={mergeClasses(styles.badge, styles.selectorRole)} title={selected.roleLabels.join(" · ")}><span className={styles.badgeText}>{selected.roleLabels.join(" · ")}</span></span>}<ChevronDown16Regular className={styles.selectorChevron} />
         </Button></PopoverTrigger>
         <PopoverSurface id={id} role="dialog" aria-labelledby={id + "-title"} className={mergeClasses(styles.popup, styles.picker)}>
             <h2 id={id + "-title"} className={styles.popupTitle}>내가 참여 중</h2>
@@ -109,7 +112,7 @@ function ProjectPicker({ open: controlledOpen, onOpenChange, disabled = false }:
 }
 function HeaderLoading({ className, ...props }: ProjectHeaderProps) {
     const { state } = useProjectHeader(), styles = useStyles();
-    return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker />{props.leading}</div>} />{state.status === "error" && <p role="alert">{state.error.message}</p>}</>;
+    return <><WorkspaceHeader {...props} fluidLeading className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker />{props.leading}</div>} />{state.status === "error" && <p role="alert">{state.error.message}</p>}</>;
 }
 function ProjectHeaderContent({ leading, actions, className, header, unavailable, ...props }: ProjectHeaderProps & { header: Extract<HeaderState, { status: "ready" }>; unavailable: boolean }) {
     const styles = useStyles(), { state, notify } = useProjectHeader(), runtime = useWorkspaceRuntime(), choice = useWorkspaceSelection(), { controller } = useComments();
@@ -140,7 +143,8 @@ function ProjectHeaderContent({ leading, actions, className, header, unavailable
                 {!version && <span className={styles.meta}>보관된 PPT 없음</span>}</div></article>;
     };
     const completed = model.history.find(h => h.round === model.currentRound && h.kind === "complete");
-    return <><WorkspaceHeader {...props} className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker open={overlay === "picker"} disabled={round.busy} onOpenChange={value => { if (value) round.close(); setOverlay(current => value ? "picker" : current === "picker" ? null : current); }} /><span className={mergeClasses(styles.badge, styles.roundBadge)}>{getHeaderRoundLabel(model)}</span>{leading}</div>} actions={<>{actions}
+    const roundLabel = getHeaderRoundLabel(model);
+    return <><WorkspaceHeader {...props} fluidLeading className={mergeClasses(styles.header, className)} leading={<div className={styles.leading}><ProjectPicker open={overlay === "picker"} disabled={round.busy} onOpenChange={value => { if (value) round.close(); setOverlay(current => value ? "picker" : current === "picker" ? null : current); }} /><span className={mergeClasses(styles.badge, styles.roundBadge)} title={roundLabel}><span className={styles.badgeText}>{roundLabel}</span></span>{leading}</div>} actions={<>{actions}
         {!unavailable && !model.snapshotId && model.actions.rework && <Button className={mergeClasses(styles.action, styles.iconAction)} disabled={round.busy} aria-label={`${model.currentRound + 1}차 재작업 시작`} title={`${model.currentRound + 1}차 재작업 시작`} onClick={() => round.open("start-round")}><ArrowCounterclockwise16Regular /></Button>}
         {!unavailable && model.history.length > 0 && <Popover positioning={{ position: "below", align: "end" }} open={overlay === "history"} onOpenChange={(_, d) => d.open ? open("history") : setOverlay(current => current === "history" ? null : current)}><PopoverTrigger disableButtonEnhancement><Button disabled={round.busy} className={styles.action} aria-haspopup="dialog"><History16Regular />완성본 {model.completedVersions}</Button></PopoverTrigger>
             <PopoverSurface className={mergeClasses(styles.popup, styles.history)} aria-label="완성본 이력"><h2 className={styles.popupTitle}>회차별 완성본</h2>
