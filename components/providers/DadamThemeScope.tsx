@@ -1,10 +1,12 @@
 "use client";
 
 import { FluentProvider, makeStyles, tokens } from "@fluentui/react-components";
-import { dadamTheme, dadamUi } from "@/lib/ui/dadam-theme";
+import { DADAM_FONT_FAMILY, dadamTheme, dadamUi } from "@/lib/ui/dadam-theme";
 
 const useStyles = makeStyles({
   root: {
+    // Tailwind의 font-sans를 쓰는 보관 초안·출처 미리보기도 같은 글꼴을 사용한다.
+    "--tw-font-sans": DADAM_FONT_FAMILY,
     backgroundColor: "transparent",
     color: tokens.colorNeutralForeground1,
     fontFamily: tokens.fontFamilyBase,

@@ -3,7 +3,7 @@
 import { Button, makeStyles, shorthands, tokens } from "@fluentui/react-components";
 import { dadamUi } from "@/lib/ui/dadam-theme";
 import { Checkmark16Regular, Dismiss16Regular } from "@fluentui/react-icons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { COMMENT_VISUALS, type CommentDraft } from "@/config/comments";
 import { getThreadMessages, normalizeCommentDraft } from "@/lib/comments/domain";
 import { placeCommentPopup, resizeCommentPopup, type PixelPoint, type PopupLimits, type PopupRect, type ResizeEdge } from "@/lib/comments/geometry";
@@ -27,11 +27,21 @@ const useStyles = makeStyles({
   danger: { color: tokens.colorStatusDangerForeground1, border: `1px solid ${tokens.colorStatusDangerBorder1}`, ":enabled:hover": { backgroundColor: tokens.colorStatusDangerBackground1, color: tokens.colorStatusDangerForeground1 }, ":disabled": { color: tokens.colorNeutralForegroundDisabled, ...shorthands.borderColor(tokens.colorNeutralStrokeDisabled) } },
   confirmButtons: { display: "flex", justifyContent: "flex-end", gap: "var(--layout-control-gap)", marginTop: "var(--layout-popover-inset)" },
   handle: { position: "absolute", border: 0, padding: 0, backgroundColor: "transparent", touchAction: "none", zIndex: 5, ":focus-visible": { outline: dadamUi.focusRing, outlineOffset: "-2px" } },
-  grip: { display: "block", position: "absolute", right: "5px", bottom: "5px", width: "10px", height: "10px", backgroundImage: `repeating-linear-gradient(135deg, transparent 0 3px, ${tokens.colorNeutralStroke1} 3px 4px)` },
+  grip: { display: "block", position: "absolute", inset: 0, backgroundImage: "linear-gradient(135deg,transparent 60%,#a7aeba 61%,transparent 67%,transparent 76%,#a7aeba 77%,transparent 83%)" },
 });
+const resizeHandles: ReadonlyArray<{ edge: ResizeEdge; label: string; style: CSSProperties }> = [
+  { edge: "n", label: "위", style: { left: 16, right: 16, top: 0, height: 8, cursor: "ns-resize" } },
+  { edge: "ne", label: "오른쪽 위", style: { right: 0, top: 0, width: 16, height: 16, cursor: "nesw-resize", zIndex: 6 } },
+  { edge: "e", label: "오른쪽", style: { right: 0, top: 16, bottom: 16, width: 8, cursor: "ew-resize" } },
+  { edge: "se", label: "오른쪽 아래", style: { right: 0, bottom: 0, width: 16, height: 16, cursor: "nwse-resize", zIndex: 6 } },
+  { edge: "s", label: "아래", style: { left: 16, right: 16, bottom: 0, height: 8, cursor: "ns-resize" } },
+  { edge: "sw", label: "왼쪽 아래", style: { left: 0, bottom: 0, width: 16, height: 16, cursor: "nesw-resize", zIndex: 6 } },
+  { edge: "w", label: "왼쪽", style: { left: 0, top: 16, bottom: 16, width: 8, cursor: "ew-resize" } },
+  { edge: "nw", label: "왼쪽 위", style: { left: 0, top: 0, width: 16, height: 16, cursor: "nwse-resize", zIndex: 6 } },
+];
 interface Props { anchor: PixelPoint; limits: PopupLimits; now: number; onClose(): void; onThreadDeleted(): void }
 type Confirmation = { kind: "thread" | "reply"; id: string } | null;
-interface Gesture { start: PopupRect; point: PixelPoint; edge: ResizeEdge; element: HTMLButtonElement; pointerId: number }
+interface Gesture { start: PopupRect; point: PixelPoint; edge: ResizeEdge; element: HTMLButtonElement; pointerId: number; signature: string }
 
 export default function CommentPopover({ anchor, limits, now, onClose, onThreadDeleted }: Props): React.ReactElement | null {
   const styles = useStyles(), { state, controller, identity, capabilities, mentionUsers } = useComments();
@@ -51,7 +61,11 @@ export default function CommentPopover({ anchor, limits, now, onClose, onThreadD
   useEffect(() => {
     mounted.current = true;
     if (!root.current?.querySelector("textarea:not(:disabled)")) root.current?.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
-    return () => { mounted.current = false; gesture.current = null; };
+    return () => {
+      mounted.current = false;
+      const current = gesture.current; gesture.current = null;
+      if (current?.element.hasPointerCapture(current.pointerId)) current.element.releasePointerCapture(current.pointerId);
+    };
   }, []);
   useEffect(() => { if (confirmation) cancelButton.current?.focus(); }, [confirmation]);
   if (!controller || !identity || !state.snapshot || (!thread && !isNew)) return null;
@@ -66,7 +80,7 @@ export default function CommentPopover({ anchor, limits, now, onClose, onThreadD
   const endResize = (cancel = false) => {
     const current = gesture.current; gesture.current = null;
     if (!current) return;
-    if (cancel) sizeTo(current.start);
+    if (cancel && current.signature === signature) sizeTo(current.start);
     if (current.element.hasPointerCapture(current.pointerId)) current.element.releasePointerCapture(current.pointerId);
   };
   const focusComposer = () => requestAnimationFrame(() => root.current?.querySelector<HTMLElement>("textarea:not(:disabled), h2")?.focus({ preventScroll: true }));
@@ -125,13 +139,19 @@ export default function CommentPopover({ anchor, limits, now, onClose, onThreadD
           }} />
       </div>}
     </>}
-    {(["e", "s", "se"] as const).map(edge => <button type="button" key={edge} data-comment-resize={edge} className={styles.handle}
-      style={edge === "e" ? { right: 0, top: 48, bottom: 24, width: 8, cursor: "ew-resize" } : edge === "s" ? { left: 12, right: 24, bottom: 0, height: 8, cursor: "ns-resize" } : { right: 0, bottom: 0, width: 24, height: 24, cursor: "nwse-resize" }}
-      aria-label={`팝업 ${edge === "e" ? "너비" : edge === "s" ? "높이" : "너비와 높이"} 조절 (방향키, Shift로 크게)`}
-      onPointerDown={e => { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); gesture.current = { start: rect, point: { x: e.clientX, y: e.clientY }, edge, element: e.currentTarget, pointerId: e.pointerId }; e.currentTarget.setPointerCapture(e.pointerId); }}
-      onPointerMove={e => { const g = gesture.current; if (g && g.pointerId === e.pointerId) sizeTo(resizeCommentPopup(g.start, { x: e.clientX - g.point.x, y: e.clientY - g.point.y }, g.edge, limits)); }}
-      onPointerUp={() => endResize()} onPointerCancel={() => endResize(true)} onLostPointerCapture={() => endResize(true)}
-      onKeyDown={e => { const step = e.shiftKey ? 32 : 16; const delta = { x: e.key === "ArrowRight" ? step : e.key === "ArrowLeft" ? -step : 0, y: e.key === "ArrowDown" ? step : e.key === "ArrowUp" ? -step : 0 }; if (delta.x || delta.y) { e.preventDefault(); sizeTo(resizeCommentPopup(rect, delta, edge, limits)); } }}>
+    {resizeHandles.map(({ edge, label, style }) => <button type="button" key={edge} data-comment-resize={edge} className={styles.handle} style={style}
+      aria-label={`코멘트 ${label} 크기 조절 (방향키, Shift로 크게)`}
+      onPointerDown={e => { if (e.button !== 0 || !e.isPrimary || gesture.current) return; e.preventDefault(); e.currentTarget.focus(); gesture.current = { start: rect, point: { x: e.clientX, y: e.clientY }, edge, element: e.currentTarget, pointerId: e.pointerId, signature }; e.currentTarget.setPointerCapture(e.pointerId); }}
+      onPointerMove={e => { const g = gesture.current; if (g && g.pointerId === e.pointerId && g.signature === signature) sizeTo(resizeCommentPopup(g.start, { x: e.clientX - g.point.x, y: e.clientY - g.point.y }, g.edge, limits)); }}
+      onPointerUp={e => { if (gesture.current?.pointerId === e.pointerId) endResize(); }} onPointerCancel={e => { if (gesture.current?.pointerId === e.pointerId) endResize(true); }} onLostPointerCapture={e => { if (gesture.current?.pointerId === e.pointerId) endResize(true); }}
+      onKeyDown={e => {
+        const horizontal = (edge.includes("e") || edge.includes("w")) && ["ArrowLeft", "ArrowRight"].includes(e.key);
+        const vertical = (edge.includes("n") || edge.includes("s")) && ["ArrowUp", "ArrowDown"].includes(e.key);
+        if (!horizontal && !vertical) return;
+        e.preventDefault(); e.stopPropagation();
+        const step = e.shiftKey ? 32 : 16;
+        sizeTo(resizeCommentPopup(rect, { x: horizontal ? (e.key === "ArrowRight" ? step : -step) : 0, y: vertical ? (e.key === "ArrowDown" ? step : -step) : 0 }, edge, limits));
+      }}>
       {edge === "se" && <span className={styles.grip} />}
     </button>)}
   </div>;

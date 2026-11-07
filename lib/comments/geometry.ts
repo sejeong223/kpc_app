@@ -4,7 +4,7 @@ import type { CommentPopupSize } from "./controller";
 export interface PixelPoint { x: number; y: number }
 export interface CommentBounds { left: number; top: number; right: number; bottom: number }
 export interface PopupLimits { bounds: CommentBounds; minWidth: number; minHeight: number; maxWidth: number; maxHeight: number }
-export type ResizeEdge = "e" | "s" | "se";
+export type ResizeEdge = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
 export interface PopupRect extends PixelPoint, CommentPopupSize {}
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 const valid = (b: CommentBounds) => Object.values(b).every(Number.isFinite) && b.right > b.left && b.bottom > b.top;
@@ -44,6 +44,21 @@ export function placeCommentPopup(anchor: PixelPoint, size: CommentPopupSize, li
   return containRect({ ...clamped, x, y: anchor.y - 22 }, limits);
 }
 export function resizeCommentPopup(start: PopupRect, delta: PixelPoint, edge: ResizeEdge, limits: PopupLimits): PopupRect {
-  const size = clampPopupSize({ width: start.width + (edge.includes("e") ? delta.x : 0), height: start.height + (edge.includes("s") ? delta.y : 0) }, limits);
-  return containRect({ ...start, ...size }, limits);
+  const next = containRect({ ...start, ...clampPopupSize(start, limits) }, limits);
+  const right = next.x + next.width, bottom = next.y + next.height;
+  const dx = Number.isFinite(delta.x) ? delta.x : 0, dy = Number.isFinite(delta.y) ? delta.y : 0;
+  // 드래그하지 않은 반대쪽 변은 고정한다. 화면 경계에서는 이동 대신 크기만 제한한다.
+  if (edge.includes("w")) {
+    next.width = clamp(next.width - dx, limits.minWidth, Math.min(limits.maxWidth, right - limits.bounds.left));
+    next.x = right - next.width;
+  } else if (edge.includes("e")) {
+    next.width = clamp(next.width + dx, limits.minWidth, Math.min(limits.maxWidth, limits.bounds.right - next.x));
+  }
+  if (edge.includes("n")) {
+    next.height = clamp(next.height - dy, limits.minHeight, Math.min(limits.maxHeight, bottom - limits.bounds.top));
+    next.y = bottom - next.height;
+  } else if (edge.includes("s")) {
+    next.height = clamp(next.height + dy, limits.minHeight, Math.min(limits.maxHeight, limits.bounds.bottom - next.y));
+  }
+  return next;
 }

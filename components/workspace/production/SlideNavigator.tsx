@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LockClosed16Regular } from "@fluentui/react-icons";
+import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import type { ProjectView, WorkspaceOperation } from "@/types/workspace-production";
 import type { ProductionSlideRow } from "@/lib/workspace/production/presentation";
 import { isTypingTarget } from "@/lib/workspace/production/editor";
@@ -71,21 +72,23 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       else if ((key === "delete" || key === "backspace") && editable(selectedIds)) { e.preventDefault(); onRemove([...selectedIds]); }
     }}>
     <header className="tw:flex tw:min-h-11 tw:shrink-0 tw:items-center tw:gap-2 tw:border-b tw:border-(--kpc-line) tw:px-3">
-      <h2 className="tw:m-0 tw:min-w-0 tw:flex-1 tw:text-sm">슬라이드 <span className="tw:font-normal tw:text-(--kpc-muted)">{rows.length}장</span></h2>{props.panelToggle}
+      <h2 className="tw:m-0 tw:flex tw:min-w-0 tw:flex-1 tw:items-baseline tw:gap-[8px] tw:text-sm"><span>슬라이드</span><span className="tw:shrink-0 tw:text-xs tw:font-normal tw:text-(--kpc-muted)">{rows.length}장</span></h2>{props.panelToggle}
     </header>
     <div tabIndex={0} aria-label="슬라이드 목록" className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-2.5"
       onContextMenu={event => { if (!(event.target as Element).closest("[data-slide-select]")) { event.preventDefault(); openEmptyMenu(event.currentTarget, event.clientX, event.clientY); } }}
       onKeyDown={event => { if (event.target === event.currentTarget && (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10"))) { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); openEmptyMenu(event.currentTarget, rect.left, rect.top); } }}>
       <ol ref={list} className="tw:m-0 tw:list-none tw:space-y-2.5 tw:p-0">{rows.map(row => {
         const { slide, section, number } = row, siblings = rows.filter(r => r.section.id === section.id);
-        const multiSelected = selectedIds.length > 1 && selectedIds.includes(slide.id), isActive = activeId === slide.id;
-        const border = multiSelected ? "tw:border-2 tw:border-purple-600 tw:ring-2 tw:ring-purple-100" : isActive ? "tw:border-2 tw:border-(--dadam-accent) tw:ring-2 tw:ring-(--dadam-accent-soft)" : row.mine ? "tw:border-2 tw:border-blue-600" : "tw:border tw:border-(--kpc-line)";
-        const caption = multiSelected ? "tw:bg-purple-50 tw:text-purple-700" : isActive ? "tw:bg-(--dadam-accent-soft) tw:text-(--dadam-accent-ink)" : row.mine ? "tw:bg-blue-50 tw:text-blue-700" : "tw:text-(--kpc-secondary)";
+        const isActive = activeId === slide.id, highlighted = isActive || selectedIds.includes(slide.id);
+        // HTML의 담당 색은 유지하되, 선택 테두리(1.5px)와 구분되도록 2.5px로 표시한다.
+        const border = (row.mine ? "tw:border-[2.5px] tw:border-[#2f6fe4]" : highlighted ? "tw:border-[1.5px] tw:border-(--dadam-accent)" : "tw:border-[1.5px] tw:border-(--kpc-line)")
+          + (highlighted ? " tw:ring-[3px] tw:ring-[#0072e51a]" : "");
+        const caption = row.mine ? "tw:bg-[#eef3fe] tw:text-[#2457b8]" : highlighted ? "tw:text-(--dadam-accent-ink)" : "tw:text-(--kpc-secondary)";
         const openMenu = (button: HTMLButtonElement, x: number, y: number) => {
           if (busy) return;
           trigger.current = button; setMenu({ id: slide.id, sectionId: section.id, x, y });
         };
-        return <li key={slide.id} className={"tw:overflow-hidden tw:rounded-lg tw:bg-(--kpc-card) " + border}>
+        return <li key={slide.id} data-slide-assigned={row.mine} className={"tw:overflow-hidden tw:rounded-lg tw:bg-(--kpc-card) " + border}>
           <button type="button" data-slide-select disabled={busy} aria-current={isActive ? "true" : undefined} aria-pressed={selectedIds.includes(slide.id)}
             aria-haspopup="menu" aria-label={number + "번 " + (slide.content.title || "제목 없음") + " 선택"}
             title={row.mine ? "내가 담당한 슬라이드" : undefined}
@@ -107,7 +110,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       })}</ol>
       {!rows.length && <p className="tw:text-sm">{props.sectionId ? "목록을 마우스 오른쪽 버튼으로 눌러 슬라이드를 추가해 주세요." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>}
     </div>
-    {menu && menuSection && createPortal(<div ref={menuRef} role="menu" aria-label="슬라이드 작업" data-comment-control
+    {menu && menuSection && createPortal(<DadamThemeScope><div ref={menuRef} role="menu" aria-label="슬라이드 작업" data-comment-control
       style={{ position: "fixed", left: menu.x, top: menu.y, zIndex: 1000, width: 224, maxWidth: "calc(100vw - 16px)" }}
       className="tw:rounded-lg tw:border tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:p-1 tw:shadow-lg"
       onKeyDown={e => {
@@ -127,6 +130,6 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       ]).map(item => <button key={item.label} type="button" role="menuitem" disabled={busy || item.disabled}
         className="tw:block tw:w-full tw:cursor-pointer tw:rounded tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:text-sm tw:hover:bg-(--kpc-bg) tw:focus-visible:outline-2 tw:focus-visible:outline-(--kpc-brand) tw:disabled:cursor-not-allowed tw:disabled:opacity-40"
         onClick={() => { closeMenu(); item.run(); }}>{item.label}</button>)}
-    </div>, document.body)}
+    </div></DadamThemeScope>, document.body)}
   </section>;
 }

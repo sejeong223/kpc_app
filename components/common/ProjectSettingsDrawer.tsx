@@ -1,6 +1,6 @@
 "use client";
 import { OverlayDrawer, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import { Dismiss16Regular, Settings20Regular } from "@fluentui/react-icons";
+import { Dismiss12Regular, Settings20Regular } from "@fluentui/react-icons";
 import { useRef, useState } from "react";
 import { HEADER_NOTIFICATION_FIELDS, HEADER_PERMISSION_COLUMNS, canEditHeaderPermissionDraft, createHeaderSettingsDraft, headerSettingsDemoLogs } from "@/lib/workspace/production/header-settings-demo";
 import type { HeaderPermissionKey, HeaderSettingsTab, WorkspaceHeaderModel } from "@/types/workspace-header";
@@ -11,18 +11,18 @@ export interface ProjectSettingsDrawerProps {
 }
 const tabs: readonly [HeaderSettingsTab, string][] = [["info", "기본정보"], ["perm", "권한"], ["noti", "알림"], ["log", "로그"]];
 const useStyles = makeStyles({
-  drawer: { width: "560px", maxWidth: "96vw", zIndex: 4300, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: "14px", lineHeight: "20px",
+  drawer: { width: "560px", maxWidth: "96vw", alignItems: "stretch", zIndex: 4300, backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1, fontFamily: tokens.fontFamilyBase, fontSize: "14px", lineHeight: "20px",
     "& button:focus-visible, & input:focus-visible, & [role='tabpanel']:focus-visible": { outline: "2px solid "+tokens.colorBrandStroke1, outlineOffset: "-2px" } },
   backdrop: { zIndex: 4299 },
-  header: { display: "flex", alignItems: "center", flexShrink: 0, padding: "14px 16px", gap: "8px", borderBottom: "1px solid "+tokens.colorNeutralStroke2, minWidth: 0,
+  header: { display: "flex", width: "100%", boxSizing: "border-box", alignItems: "center", flexShrink: 0, padding: "14px 16px", gap: "8px", borderBottom: "1px solid "+tokens.colorNeutralStroke2, minWidth: 0,
     "& h2": { margin: 0, flexShrink: 0, whiteSpace: "nowrap", fontSize: "14px", lineHeight: "20px", fontWeight: 600 } },
   subtitle: { flex: 1, minWidth: 0, wordBreak: "keep-all", overflowWrap: "anywhere", color: tokens.colorNeutralForeground3, fontSize: "12px", lineHeight: "16px" },
-  close: { display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, width: "32px", height: "32px", padding: 0, marginLeft: "auto", border: "1px solid "+tokens.colorNeutralStroke1, borderRadius: "4px", backgroundColor: tokens.colorNeutralBackground1, cursor: "pointer" },
-  tabs: { display: "flex", flexShrink: 0, flexWrap: "wrap", padding: "0 10px", gap: "2px", borderBottom: "1px solid "+tokens.colorNeutralStroke2 },
+  close: { display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, width: "32px", height: "32px", padding: 0, marginLeft: "auto", border: 0, borderRadius: "4px", backgroundColor: "transparent", cursor: "pointer", ":hover": { backgroundColor: tokens.colorNeutralBackground1Hover } },
+  tabs: { display: "flex", width: "100%", boxSizing: "border-box", flexShrink: 0, flexWrap: "wrap", padding: "0 10px", gap: "2px", borderBottom: "1px solid "+tokens.colorNeutralStroke2 },
   tab: { position: "relative", height: "38px", padding: "0 10px", border: 0, backgroundColor: "transparent", color: tokens.colorNeutralForeground2, fontFamily: "inherit", fontWeight: 600, fontSize: "12px", lineHeight: "16px", cursor: "pointer",
     "&[aria-selected='true']": { color: tokens.colorBrandForeground1 },
     "&[aria-selected='true']::after": { content: '""', position: "absolute", bottom: 0, left: "10px", right: "10px", height: "3px", borderRadius: "3px", backgroundColor: tokens.colorBrandBackground } },
-  body: { padding: "16px", flex: 1, minWidth: 0, minHeight: 0, overflow: "auto" },
+  body: { width: "100%", boxSizing: "border-box", padding: "16px", flex: 1, minWidth: 0, minHeight: 0, overflow: "auto" },
   fields: { display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: "12px 14px" },
   field: { display: "flex", flexDirection: "column", gap: "5px", minWidth: 0, "& > span": { fontWeight: 600 } },
   input: { width: "100%", minWidth: 0, boxSizing: "border-box", height: "32px", padding: "0 10px", margin: 0, border: "1px solid "+tokens.colorNeutralStroke1, borderRadius: "4px", font: "inherit", color: "inherit", backgroundColor: tokens.colorNeutralBackground1 },
@@ -64,7 +64,7 @@ function SettingsContent({ id, project, view, onClose, returnFocusRef }: Project
   };
   return <OverlayDrawer id={id} open position="end" size="large" className={styles.drawer} modalType="modal" backdrop={{className:styles.backdrop}} data-modal-frame="" aria-labelledby={id+"-title"} aria-describedby={id+"-subtitle"}
     onOpenChange={(_,data)=>{if(!data.open)close();}} onKeyDownCapture={event=>{if(event.key==="Escape"){event.preventDefault();event.stopPropagation();close();}}}>
-    <header className={styles.header}><Settings20Regular style={{width:18,height:18,flexShrink:0}}/><h2 id={id+"-title"}>프로젝트 설정</h2><span id={id+"-subtitle"} className={styles.subtitle}>{project.name}</span><button type="button" className={styles.close} aria-label="닫기" onClick={close}><Dismiss16Regular style={{width:14,height:14}}/></button></header>
+    <header className={styles.header}><Settings20Regular style={{width:18,height:18,flexShrink:0}}/><h2 id={id+"-title"}>프로젝트 설정</h2><span id={id+"-subtitle"} className={styles.subtitle}>{project.name}</span><button type="button" className={styles.close} aria-label="닫기" onClick={close}><Dismiss12Regular /></button></header>
     <div role="tablist" aria-label="프로젝트 설정" className={styles.tabs}>{tabs.map(([value,label],index)=><button type="button" role="tab" key={value} id={id+"-tab-"+value} aria-controls={id+"-panel-"+value} aria-selected={tab===value} tabIndex={tab===value?0:-1} className={styles.tab}
       ref={node=>{tabRefs.current[value]=node;}} onClick={()=>setTab(value)} onKeyDown={event=>{
         const next=event.key==="ArrowRight"?(index+1)%tabs.length:event.key==="ArrowLeft"?(index+tabs.length-1)%tabs.length:event.key==="Home"?0:event.key==="End"?tabs.length-1:null;

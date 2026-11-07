@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import { Checkmark12Regular, LockClosed12Regular, Warning12Regular, Comment12Regular } from "@fluentui/react-icons";
+import { Checkmark20Regular, LockClosed12Regular, Warning12Regular, Comment12Regular } from "@fluentui/react-icons";
 import ModalFrame from "@/components/ui/ModalFrame";
 import { DadamButton } from "@/components/ui/DadamControls";
 import type { ProjectView } from "@/types/workspace-production";
@@ -24,9 +24,10 @@ export interface ProjectRoundDialogProps {
 }
 
 const useStyles = makeStyles({
-  header: { padding: '16px 18px 12px', gap: '10px', '& h2': { fontSize: '14px', lineHeight: '20px', fontWeight: 600 } },
+  header: { padding: '16px 18px 12px', gap: '10px', alignItems: 'center', '& h2': { fontSize: '14px', lineHeight: '20px', fontWeight: 600 } },
   body: { padding: '14px 18px', gap: '12px', fontSize: '14px', lineHeight: '20px', scrollbarWidth: 'auto' },
   footer: { padding: '12px 18px', gap: '8px', justifyContent: 'flex-end', '& button': { height: '32px', minHeight: '32px', padding: '0 12px' } },
+  confirmIcon: { width: '20px', height: '20px', fontSize: '20px', flexShrink: 0, marginLeft: 0, marginRight: '8px' },
   stats: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: '8px', margin: 0,
     '& > div': { padding: '10px 12px', border: '1px solid '+tokens.colorNeutralStroke2, borderRadius: '6px', minWidth: 0 },
     '& dt': { fontSize: '12px', lineHeight: '16px', color: tokens.colorNeutralForeground3 },
@@ -42,7 +43,8 @@ const useStyles = makeStyles({
     '& ul': { listStyleType: 'none', padding: 0, margin: 0 }, '& li': { padding: '3px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
   count: { borderRadius: '999px', padding: '0 5px', minWidth: '17px', textAlign: 'center', backgroundColor: tokens.colorBrandBackground, color: '#fff', fontSize: '12px', lineHeight: '17px' },
   fixed: { backgroundColor: tokens.colorNeutralBackground3, color: tokens.colorNeutralForeground3 },
-  warning: { display: 'flex', gap: '6px', alignItems: 'center', padding: '8px 10px', margin: '0 0 10px', borderRadius: '4px', backgroundColor: '#fff4ce', color: tokens.colorStatusWarningForeground1 },
+  warning: { display: 'flex', gap: '6px', alignItems: 'center', padding: '8px 10px', margin: '0 0 10px', borderRadius: '4px', backgroundColor: '#fff4ce', color: tokens.colorStatusWarningForeground1,
+    '& > svg': { display: 'block', width: '12px', height: '12px', flexShrink: 0 }, '& > span': { flex: 1, minWidth: 0 } },
   notice: { display: 'flex', gap: '6px', alignItems: 'center', padding: '10px 12px', margin: '0 0 12px', borderRadius: '4px', backgroundColor: tokens.colorBrandBackground2, color: tokens.colorBrandForeground2 },
 });
 export function RoundSummary({ view, mode }: { view: ProjectView; mode: ProjectRoundDialogProps['mode'] }) {
@@ -70,8 +72,8 @@ export default function ProjectRoundDialog({open,mode,view,busy,error,onConfirm,
   return <ModalFrame open={open} width={520} title={title} contentKey={mode+':'+baseline.round} slotClassNames={{header:styles.header,body:styles.body,footer:styles.footer}}
     onClose={()=>{if(!busy)onClose();}} footer={<>
       <DadamButton disabled={busy} onClick={onClose}>취소</DadamButton>
-      <DadamButton appearance="primary" disabled={busy} onClick={()=>onConfirm({revision:baseline.revision,fileRevision:baseline.fileRevision,round:baseline.round,acknowledged:true})}>
-        {mode==='complete' && <Checkmark12Regular />}{busy?'저장 중…':title}
+      <DadamButton appearance="primary" disabled={busy} icon={mode==='complete' ? { children: <Checkmark20Regular />, className: styles.confirmIcon } : undefined} onClick={()=>onConfirm({revision:baseline.revision,fileRevision:baseline.fileRevision,round:baseline.round,acknowledged:true})}>
+        {busy?'저장 중…':title}
       </DadamButton></>}>
     <RoundSummary view={baseline.view} mode={mode}/><WorkspaceErrorText error={error}/>
     {error&&onReload&&<DadamButton disabled={busy} onClick={onReload}>최신 상태 다시 불러오기</DadamButton>}

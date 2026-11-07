@@ -1,7 +1,7 @@
 # Plan: KPC v13 HTML UI 정비
 
 - Date: 2026-11-06 (Asia/Seoul)
-- Status: in_progress
+- Status: done
 - 요청: memory-plan 후 2026-11-06 사용자 $mea 승인으로 전체 순차 실행.
 - 구현 대상: [KPC_제안서_UI_v13.html](C:/Users/김세정/Downloads/KPC_제안서_UI_v13.html)
 - 읽기 전용 참고: [KPC_제안서_UI_v12 8.html](<C:/Users/김세정/Downloads/KPC_제안서_UI_v12 8.html>)
@@ -22,7 +22,7 @@ v13 단일 HTML에서 공통 헤더, 제작 코멘트, 검토 목록 RFP 뷰어,
 ## Phases
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | in_progress | 한 HTML의 8개 작업을 순차 수행 | [P01](../phases/2026-11-06-html-v13-refinement/P01-html-only/phase.md) |
+| P01 | done | 한 HTML의 8개 작업을 순차 수행 | [P01](../phases/2026-11-06-html-v13-refinement/P01-html-only/phase.md) |
 
 ## Tasks and requirement mapping
 | Task | 요청 | 결과 | 유일한 제품 수정 파일 |
@@ -61,8 +61,15 @@ current.md는 .gitignore 대상이므로 강제 stage하지 않는다. 기존 �
 - 사용자가 **“요청한 7개만 유지”**를 선택한 것은 위 두 제안을 제외한다는 결정이다. 이후 직접 요청한 리뷰 변경은 T08로 추가하되, 검색 신규 구현·전체 중복 정리는 계속 제외한다.
 
 ## Progress
-- done: 3/8
-- active: P01-T04
+- done: 8/8
+- active: none
 - 계획 수립 중 HTML 2개의 inline JS/CSS 구문 검사가 통과했다.
 - HTML 구현·정적 검증은 Task별 결과 기록을 따른다. 브라우저 검증은 미실시.
 - 이전 슬라이드 핀 계획 완료 후 전환했으며 이번 사용자의 새 $mea 요청으로 실행한다.
+
+## 최종 실행 지시 및 결과
+- 2026-11-06 사용자 $mea로 전체8개 작업 구현·정적 검증 완료.
+- 핀 생성 버튼은 최신 지시대로 제작 상태 드롭다운 바로 왼쪽에 배치.
+- 추가 커밋 금지 지시 후 T04–T08은 커밋하지 않았다. T01–T03의 기존 문서 커밋은 보존했다.
+- 제품 결과물은 Downloads/KPC_제안서_UI_v13.html 한 파일이며 앱 코드와 v12는 변경하지 않았다.
+- 브라우저·실제 시각 검증은 기존 사용자 정책에 따라 미실시.

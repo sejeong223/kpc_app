@@ -26,7 +26,9 @@ const useStyles = makeStyles({
     ...shorthands.borderColor(tokens.colorBrandStroke1),
     color: tokens.colorBrandForeground2,
   },
-  compact: { height: "30px", minHeight: "30px", padding: "0 10px", borderRadius: "8px", fontSize: "12px", lineHeight: "20px", columnGap: "4px", boxShadow: "none", "& svg": { width: "14px", height: "14px" } },
+  compact: { height: "30px", minHeight: "30px", minWidth: 0, padding: "0 10px", borderRadius: "8px", fontSize: "12px", lineHeight: "20px", fontWeight: 500, columnGap: "4px", boxShadow: "none", ...shorthands.borderColor("var(--dadam-control-border)"), color: "#242424",
+    ":enabled:hover": { backgroundColor: "#f5f5f5", ...shorthands.borderColor("var(--dadam-control-border-hover)"), color: "#242424" } },
+  compactIcon: { width: "14px", height: "14px", fontSize: "14px", margin: 0, flexShrink: 0, "& svg": { width: "14px", height: "14px" } },
 });
 
 export interface CommentCreateButtonProps { slideId: string; surfaceId: string; buttonId: string; disabled?: boolean; compact?: boolean }
@@ -41,7 +43,7 @@ export default function CommentCreateButton({ slideId, surfaceId, buttonId, disa
       type="button"
       id={buttonId}
       className={mergeClasses(styles.button, compact && styles.compact, active && styles.active)}
-      icon={<CommentAdd20Regular />}
+      icon={{ children: <CommentAdd20Regular />, className: compact ? styles.compactIcon : undefined }}
       data-comment-control
       data-comment-create={slideId}
       aria-controls={surfaceId}
