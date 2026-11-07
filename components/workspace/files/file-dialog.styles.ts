@@ -1,0 +1,61 @@
+"use client";
+
+import { makeStyles, radioClassNames, shorthands, textareaClassNames, tokens } from "@fluentui/react-components";
+
+/** ModalFrame의 기존 슬롯과 컨트롤 className에만 전달하는 파일 팝업 스타일. */
+export const useFileDialogStyles = makeStyles({
+  header: { gap: "10px", padding: "16px 18px 12px", fontFamily: tokens.fontFamilyBase },
+  body: { minWidth: 0, gap: "12px", padding: "4px 18px 16px", fontFamily: tokens.fontFamilyBase, fontSize: "14px", lineHeight: "20px", fontWeight: 400 },
+  footer: { padding: "12px 18px", gap: "8px", flexWrap: "wrap", justifyContent: "flex-start", fontFamily: tokens.fontFamilyBase, backgroundColor: tokens.colorNeutralBackground2 },
+  button: {
+    minWidth: 0, minHeight: "38px", height: "38px", padding: "0 12px", borderRadius: "8px", gap: "4px", flexShrink: 0,
+    fontFamily: tokens.fontFamilyBase, fontSize: "14px", lineHeight: "20px", fontWeight: 400, color: "#242424",
+    "&:disabled, &:disabled:hover, &[aria-disabled='true']": { backgroundColor: "#f0f0f0", color: "#bdbdbd", ...shorthands.borderColor("#e0e0e0") },
+  },
+  primaryButton: {
+    backgroundColor: "var(--dadam-accent)", color: "#fff", ...shorthands.borderColor("transparent"),
+    ":enabled:hover": { backgroundColor: "var(--dadam-accent-hover)", color: "#fff", ...shorthands.borderColor("transparent") },
+    "&:disabled, &:disabled:hover, &[aria-disabled='true']": { backgroundColor: "#f0f0f0", color: "#bdbdbd", ...shorthands.borderColor("transparent") },
+  },
+  smallButton: { minHeight: "32px", height: "32px", fontSize: "14px" },
+  fieldStack: { display: "flex", minWidth: 0, flexDirection: "column", gap: "12px" },
+  field: { display: "flex", flexDirection: "column", minWidth: 0, gap: "4px", paddingTop: "2px", fontSize: "14px", lineHeight: "20px" },
+  fields: {
+    display: "grid", minWidth: 0, gap: "12px", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 2fr)",
+    "@media (max-width: 640px)": { gridTemplateColumns: "minmax(0, 1fr)" },
+  },
+  priority: { minWidth: 0, "& > span": { display: "block", marginBottom: "4px", fontSize: "14px", lineHeight: "20px" } },
+  priorityGroup: {
+    gap: "6px", flexWrap: "wrap",
+    [`& .${radioClassNames.label}`]: { minHeight: "32px", padding: "0 10px", borderRadius: "8px", fontFamily: tokens.fontFamilyBase, fontSize: "12px", lineHeight: "16px", fontWeight: 500, ...shorthands.borderColor("#d1d1d1") },
+    [`& .${radioClassNames.input}:enabled:not(:checked) ~ .${radioClassNames.label}`]: { color: "#424242" },
+    [`& .${radioClassNames.input}:checked ~ .${radioClassNames.label}`]: { backgroundColor: "var(--dadam-accent-soft)", ...shorthands.borderColor("var(--dadam-accent-ink)"), fontWeight: 700 },
+    [`& .${radioClassNames.input}:enabled:checked ~ .${radioClassNames.label}`]: { color: "var(--dadam-accent-ink)" },
+  },
+  periodGroup: {
+    padding: "3px", gap: "2px", flexWrap: "wrap", backgroundColor: "var(--dadam-control-muted)",
+    [`& .${radioClassNames.label}`]: { minHeight: "32px", height: "auto", padding: "4px 8px", borderRadius: "8px", fontFamily: tokens.fontFamilyBase, fontSize: "12px", lineHeight: "16px", fontWeight: 500 },
+    [`& .${radioClassNames.input}:enabled:not(:checked) ~ .${radioClassNames.label}`]: { color: "#616161" },
+    [`& .${radioClassNames.input}:checked ~ .${radioClassNames.label}`]: { backgroundColor: "var(--dadam-accent-soft)", boxShadow: "inset 0 0 0 1px var(--dadam-accent-ink)" },
+    [`& .${radioClassNames.input}:enabled:checked ~ .${radioClassNames.label}`]: { color: "var(--dadam-accent-ink)" },
+  },
+  summary: { cursor: "pointer", color: "var(--dadam-accent-ink)", fontSize: "14px", lineHeight: "20px" },
+  instruction: { display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px", minWidth: 0 },
+  textarea: { minWidth: 0, [`& .${textareaClassNames.textarea}`]: { resize: "none", fontFamily: tokens.fontFamilyBase } },
+  counter: { fontSize: "12px", color: "var(--kpc-secondary)" },
+  invalid: { color: "#b91c1c" },
+  error: { margin: 0, color: "#b91c1c" },
+  hints: { display: "flex", flexWrap: "wrap", gap: "4px" },
+  drop: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "8px", border: "1px dashed var(--dadam-control-border)", borderRadius: "8px", padding: "12px", "& b": { fontWeight: 700 } },
+  dropText: { margin: "12px 0 0", fontSize: "12px", color: "var(--kpc-secondary)" },
+  bulk: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", "& b": { fontWeight: 700 } },
+  bulkSelect: { width: "auto" },
+  bulkSelected: { backgroundColor: "var(--dadam-accent-soft)", color: "var(--dadam-accent-ink)", ...shorthands.borderColor("var(--dadam-accent)") },
+  row: { display: "flex", flexDirection: "column", gap: "8px", minWidth: 0, border: "1px solid var(--kpc-line)", borderRadius: "8px", padding: "12px", "& details": { marginTop: "4px" } },
+  rowHeader: { display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: "8px", minWidth: 0 },
+  filename: { flex: "1 1 120px", minWidth: 0, overflowWrap: "anywhere", fontWeight: 700 },
+  fileSize: { fontSize: "11.2px", whiteSpace: "nowrap" },
+  legend: { display: "flex", flexWrap: "wrap", gap: "8px", fontSize: "12px", color: "var(--kpc-secondary)", "& b": { fontWeight: 700 } },
+  footNote: { marginRight: "auto", fontSize: "12px", color: "var(--kpc-secondary)" },
+  feedback: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", color: "#b91c1c" },
+});

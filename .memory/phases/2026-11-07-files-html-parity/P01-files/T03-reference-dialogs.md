@@ -1,6 +1,6 @@
 # Task: T03 파일 추가·자료 설정·웹 링크 팝업 HTML 일치
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -188,8 +188,8 @@ Task: T03-reference-dialogs
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 파일의 Task 식별자를 가진 완료 커밋 (해시는 current에 기록)
 
 통과 후 Task/phase를 갱신하고 해당 범위만 한글 커밋한다. current는 ignore/강제 stage 금지를 유지하며 `T04-preview-confirmation.md`로 전진한다. 원본 HTML/기존 자료/목업 배열을 변경하거나 패키지/인프라 작업을 추가하지 않는다.

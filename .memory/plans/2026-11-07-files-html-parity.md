@@ -5,7 +5,7 @@
 `/workspace/files`의 목록과 파일 추가·자료 설정·웹 링크·미리보기·삭제·미저장 확인 팝업을 `C:/Users/김세정/Downloads/KPC_제안서_UI_v13.html`의 최종 화면 구성에 맞춘다. 현재 자료, 실제 원본 처리, 권한, 보관 이력을 보존하며 회차별 등록 자료 표시와 전체 참조 수 집계를 분리한다. 일반 저장 성공 문구는 표시하지 않는다.
 
 - Date: 2026-11-07
-- Status: in_progress (2/4)
+- Status: in_progress (3/4)
 - Decisions: [확정 인터뷰](../decisions/2026-11-07-files-html-parity.md)
 - Evidence: [계획 검토 기록](../reports/2026-11-07-files-html-parity-planning.md)
 - 현재 단계의 변경 대상은 `.memory/` 문서뿐이다. 구현·패키지 변경·커밋을 수행하지 않는다.
@@ -79,6 +79,6 @@ HTML에는 중복 정의가 있으므로 최종 덮어쓰기가 우선한다. �
 
 ## Progress
 
-- done: 2/4
-- active: P01-T03
+- done: 3/4
+- active: P01-T04
 - Previous context: [전환 전 current 원문](../history/2026-11-07-before-files-html-parity.md)

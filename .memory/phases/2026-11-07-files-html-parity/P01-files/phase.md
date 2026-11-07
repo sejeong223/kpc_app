@@ -10,12 +10,12 @@
 | :--- | :--- | :--- | :--- |
 | T01 | `done` | 회차별 표시·완성본 예외·성공 안내 정리 | [T01](./T01-round-display-feedback.md) |
 | T02 | `done` | 사용량·목록·카드·되돌리기 HTML 스타일 | [T02](./T02-list-html-style.md) |
-| T03 | `in_progress` | 파일 추가·설정·웹 링크 입력 팝업 | [T03](./T03-reference-dialogs.md) |
-| T04 | `pending` | 실제 미리보기·삭제·미저장 확인과 통합 검증 | [T04](./T04-preview-confirmation.md) |
+| T03 | `done` | 파일 추가·설정·웹 링크 입력 팝업 | [T03](./T03-reference-dialogs.md) |
+| T04 | `in_progress` | 실제 미리보기·삭제·미저장 확인과 통합 검증 | [T04](./T04-preview-confirmation.md) |
 
 ## Progress
 
-- done: 2/4 (active: T03)
+- done: 3/4 (active: T04)
 - T01 → T02 → T03 → T04 순차 실행. 구현·검증·한글 커밋·진행률/포인터 갱신을 Task마다 수행한다.
 
 ## Gates

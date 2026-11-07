@@ -20,3 +20,11 @@
 - Node stdin + jsdom에서 실제 FileCategoryPanel을 렌더링: 파일 드롭/분류 이동 callback 실행, disabled/웹의 파일 drop/readonly 이동 차단, 드롭 후 강조 제거, React console error 없음 확인.
 - 기존 canonical 수량, 권한, FileResourceMeta 포맷과 15초 undo 타이머 보존을 정적 검토했다. typecheck/lint 성공은 시각 동일성 확인을 의미하지 않는다.
 - DadamControls 해시 일치. 공용 컨트롤·테마·서비스·스키마 변경 없음. 신규 외부 문제 없음.
+
+## T03 — 자료 입력 팝업
+
+- typecheck 및 지정 6개 파일 ESLint `--max-warnings=0`: 통과. `git diff --check` 통과.
+- HTML 최종값 대응: 추가820/설정760/웹640px, header/body/footer 여백, 팝업 small14px/32px, 지침 textarea resize:none, 640px 이하 필드1열, 우선순위/기간 슬롯 스타일 적용.
+- 정적 경우표 확인: 0/1/복수행, availableSlots 초과/0, 오류행 제거, 3999/4000/4001자 지침, 혼합/일치 일괄 우선순위, 웹 빈값/정상/잘못된 scheme, busy/dirty/CONFLICT 분기는 기존 validator·callback을 유지한다.
+- 모달 변경은 className/slotClassNames와 카운터 표시 포맷에 한정했다. File 객체/기존 submit payload/URL 정규화/저장 실패 시 입력 보존/선택 취소·재선택 경로를 변경하지 않았다.
+- 제작·공용 컨트롤·SegmentedControl·ModalFrame·Provider·저장 코드 비변경 확인. 신규 외부 문제 없음.
