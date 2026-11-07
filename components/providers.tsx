@@ -10,6 +10,7 @@ export interface AuthRuntimeContextValue {
 }
 
 export const AuthRuntimeContext = createContext<AuthRuntimeContextValue | null>(null);
+const disabledAuthRuntime: AuthRuntimeContextValue = { authEnabled: false, session: null };
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -29,10 +30,13 @@ function AuthRuntimeBridge({ children, authEnabled }: AuthRuntimeBridgeProps): R
 }
 
 export default function Providers({ children, authEnabled, session }: ProvidersProps): React.ReactElement {
+  if (!authEnabled) {
+    return <AuthRuntimeContext.Provider value={disabledAuthRuntime}>{children}</AuthRuntimeContext.Provider>;
+  }
   return (
     <SessionProvider
-      refetchInterval={authEnabled ? 15 * 60 : 0}
-      refetchOnWindowFocus={authEnabled}
+      refetchInterval={15 * 60}
+      refetchOnWindowFocus
       session={session}
     >
       <AuthRuntimeBridge authEnabled={authEnabled}>{children}</AuthRuntimeBridge>

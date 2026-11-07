@@ -2,6 +2,7 @@
 
 import {
   FluentProvider,
+  SSRProvider,
 } from "@fluentui/react-components";
 import { dadamTheme } from "@/lib/ui/dadam-theme";
 import {
@@ -31,19 +32,21 @@ export default function FluentUiProvider({
 
   return (
     <RendererProvider renderer={renderer}>
-      <FluentProvider
-        theme={dadamTheme}
-        style={{
-          minHeight: "100svh",
-          backgroundColor: "transparent",
-          fontFamily: "inherit",
-          fontSize: "inherit",
-          lineHeight: "inherit",
-          color: "inherit",
-        }}
-      >
-        {children}
-      </FluentProvider>
+      <SSRProvider>
+        <FluentProvider
+          theme={dadamTheme}
+          style={{
+            minHeight: "100svh",
+            backgroundColor: "transparent",
+            fontFamily: "inherit",
+            fontSize: "inherit",
+            lineHeight: "inherit",
+            color: "inherit",
+          }}
+        >
+          {children}
+        </FluentProvider>
+      </SSRProvider>
     </RendererProvider>
   );
 }
