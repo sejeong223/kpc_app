@@ -24,6 +24,7 @@ import { advanceFileRound } from "@/lib/workspace/files/domain";
 import { WorkspaceError, workspaceAssert as check } from "./errors";
 import {
   PreparedWorkspaceMutationSchema,
+  ProposalSlideSchema,
   WorkspaceIdSchema,
   WorkspaceStateSchema,
 } from "./schemas";
@@ -542,6 +543,16 @@ export function applyWorkspaceMutation(
       case "set-grants-batch":
         state.grants=applyProjectGrants(context,state,operation.grants);
         break;
+      case "apply-slide-prompt": {
+        const target = slide(operation.slideId);
+        contentSlidesChanged([target.id]);
+        check(ProposalSlideSchema.safeParse({ ...target, content: operation.content, editorPrompt: operation.prompt }).success,
+          "LAYOUT", "슬라이드의 내용과 요소 연결을 확인해 주세요.");
+        target.editorPrompt = operation.prompt;
+        target.content = structuredClone(operation.content);
+        target.revision++;
+        break;
+      }
       case "apply-manufacturing-prompt": {
         check(state.projectId === MFG_DEMO_PROJECT_ID, "VALIDATION", "제조업 예시에서만 사용할 수 있습니다.");
         const target = slide(operation.slideId), owner = section(operation.sectionId);

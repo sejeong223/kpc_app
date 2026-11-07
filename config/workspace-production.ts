@@ -6,6 +6,7 @@ export const WORKSPACE_LIMITS = {
   title: 200,
   lead: 1000,
   text: 20000,
+  editorPrompt: 20000,
   listItems: 100,
   itemText: 2000,
   columns: 20,

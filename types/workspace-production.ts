@@ -102,6 +102,7 @@ export interface SlideUsedSettings {
 }
 export type SlideWritingState = "writing" | "done";
 export interface ProposalSlide {
+  editorPrompt?: string;
   state: SlideWritingState;
   demoSourceKey?: string;
   id: string;
@@ -309,7 +310,7 @@ export interface ProjectWorkspaceState {
   reviews: ProjectCommentThread[];
   undo: WorkspaceUndo | null;
 }
-export type PreSlideStateProposalSlide = Omit<ProposalSlide, "state">;
+export type PreSlideStateProposalSlide = Omit<ProposalSlide, "state" | "editorPrompt">;
 export type V2RoundBody = Omit<RoundBody, "slides"> & { slides: PreSlideStateProposalSlide[] };
 export interface V2RoundSnapshot extends Omit<RoundSnapshot, "body"> { body: V2RoundBody }
 export interface V2WorkspaceUndo extends Omit<WorkspaceUndo, "previousBody"> { previousBody: V2RoundBody }
@@ -542,6 +543,7 @@ export interface PreparedSlideBatch extends Omit<
 }
 export type PreparedWorkspaceOperation =
   | WorkspaceOperation
+  | { type: "apply-slide-prompt"; slideId: string; prompt: string; content: SlideContent }
   | PreparedAssetChange
   | PreparedProposalChange
   | PreparedVersionChange
@@ -745,6 +747,10 @@ export interface ProjectRequest {
   projectId: string;
   expectedRevision: number;
   expectedRound: number;
+}
+export interface SlidePromptRequest extends ProjectRequest {
+  slideId: string;
+  prompt: string;
 }
 export interface MockRequest extends ProjectRequest {
   kind: "recommend-toc" | "edit-toc" | "draft" | "polish" | "check";

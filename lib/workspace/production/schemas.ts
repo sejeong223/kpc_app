@@ -168,7 +168,11 @@ const PreSlideStateSchema = z
   );
 export const ProposalSlideSchema = PreSlideStateSchema.safeExtend({
   state: z.enum(["writing", "done"]),
+  editorPrompt: z.string().max(L.editorPrompt).optional(),
 });
+export const SlidePromptTextSchema = z.string()
+  .max(L.editorPrompt, `작성 내용은 ${L.editorPrompt.toLocaleString("ko-KR")}자 이내로 입력해 주세요.`)
+  .refine(value => value.trim().length > 0, "슬라이드에 담을 내용을 입력해 주세요.");
 export const RequirementSchema = z.strictObject({
   id,
   sectionId: nullableId,
@@ -675,6 +679,7 @@ export const PreparedWorkspaceMutationSchema = z.strictObject({
   ...scope,
   operation: z.discriminatedUnion("type", [
     ...publicOperations,
+    op("apply-slide-prompt", { slideId: id, prompt: SlidePromptTextSchema, content: SlideContentSchema }),
     op("batch-slides", {
       operation: z.enum(["move", "remove"]),
       slideIds: ids.min(1).max(L.slides),
@@ -710,6 +715,7 @@ export const PreparedWorkspaceMutationSchema = z.strictObject({
 }) satisfies z.ZodType<PreparedWorkspaceMutation>;
 
 export const ProjectRequestSchema = z.strictObject(scope);
+export const SlidePromptRequestSchema = ProjectRequestSchema.extend({ slideId: id, prompt: SlidePromptTextSchema });
 export const MockRequestSchema = ProjectRequestSchema.extend({
   kind: z.enum(["recommend-toc", "edit-toc", "draft", "polish", "check"]),
   sectionIds: ids,

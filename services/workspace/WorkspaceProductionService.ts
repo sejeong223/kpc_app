@@ -14,6 +14,7 @@ import type {
   ProposalSlide,
   RoundBody,
   SlideContent,
+  SlidePromptRequest,
   SlideTemplateRef,
   WorkspaceBlobInput,
   WorkspaceContext,
@@ -31,6 +32,7 @@ import {
   MockRequestSchema,
   ProjectRequestSchema,
   ProposalSlideSchema,
+  SlidePromptRequestSchema,
   WorkspaceIdSchema,
   WorkspaceMutationSchema,
 } from "@/lib/workspace/production/schemas";
@@ -58,6 +60,7 @@ import { loadZipLibrary } from "@/lib/pptx/zip";
 import { safePptxFilename } from "@/lib/pptx/errors";
 import { TEMPLATE_LIMITS } from "@/lib/pptx/limits";
 import { WORKSPACE_LIMITS } from "@/config/workspace-production";
+import { composeSlidePrompt } from "@/lib/workspace/production/slide-prompt";
 import type { SlideBatchRequest } from "@/types/workspace-production";
 import { hashWorkspaceBlob } from "./IndexedDbWorkspaceRepository";
 
@@ -259,6 +262,20 @@ export class WorkspaceProductionService {
       [],
       this.guard(request.projectId, pins),
     );
+  }
+  async applySlidePrompt(input: SlidePromptRequest): Promise<WorkspaceReceipt> {
+    const parsed = SlidePromptRequestSchema.safeParse(input);
+    check(parsed.success, "VALIDATION", parsed.error?.issues[0]?.message ?? "작성 내용을 확인해 주세요.");
+    const request = parsed.data, { state } = await this.requested(request);
+    this.editSlidesById(state, [request.slideId]);
+    const slide = state.body.slides.find(item => item.id === request.slideId)!;
+    const verify = this.guard(request.projectId, pinsForSlides(state, [slide]));
+    verify();
+    const content = composeSlidePrompt({ projectId: request.projectId, slide, prompt: request.prompt, newId: this.newId });
+    return this.options.repository.commitPrepared({
+      projectId: request.projectId, expectedRevision: request.expectedRevision, expectedRound: request.expectedRound,
+      operation: { type: "apply-slide-prompt", slideId: slide.id, prompt: request.prompt, content },
+    }, [], verify);
   }
   private target(
     state: ProjectWorkspaceState,
