@@ -1,5 +1,6 @@
 import { WORKSPACE_LIMITS as L } from "@/config/workspace-production";
 import { htmlDemoLayout } from "@/config/production-html-demo";
+import { readDemoSlidePrompt } from "@/config/production-demo-prompts";
 import type { ContentBlock, ProposalSlide, SlideContent } from "@/types/workspace-production";
 import { workspaceAssert as check } from "./errors";
 import { manufacturingLayout } from "./manufacturing-prompt";
@@ -7,14 +8,24 @@ import { ProposalSlideSchema, SlideContentSchema, SlidePromptTextSchema } from "
 
 export function readSlidePrompt(slide: ProposalSlide): string {
   if (slide.editorPrompt !== undefined) return slide.editorPrompt;
-  return [slide.content.title, slide.content.lead, ...slide.content.blocks.map(block => {
+  const demo = readDemoSlidePrompt(slide);
+  if (demo !== null) return demo;
+  const paragraph = (value: string) => value.replace(/\s+/gu, " ").trim();
+  const describe = (value: string) => {
+    const text = paragraph(value);
+    if (!text) return "";
+    return /[.!?。！？]$/u.test(text) ? text : /(?:다|요)$/u.test(text) ? text + "." : text + " 내용을 담아 주세요.";
+  };
+  const title = paragraph(slide.content.title);
+  return [title ? title + "에 관한 슬라이드를 작성해 주세요." : "", describe(slide.content.lead), ...slide.content.blocks.map(block => {
     switch (block.kind) {
-      case "text": return block.text;
-      case "list": return block.items.join("\n");
-      case "table": return [block.columns, ...block.rows].map(row => row.join("\t")).join("\n");
-      case "image": return block.alt;
+      case "text": return describe(block.text);
+      case "list": return block.items.map(describe).filter(Boolean).join(" ");
+      case "table": return block.rows.map(row => describe(row.map((cell, index) =>
+        [block.columns[index], cell].filter(Boolean).join(" ")).join(", "))).join(" ");
+      case "image": return paragraph(block.alt) ? paragraph(block.alt) + " 이미지도 함께 활용해 주세요." : "";
     }
-  })].filter(value => value.length > 0).join("\n\n");
+  })].filter(Boolean).join(" ");
 }
 
 export interface ComposeSlidePromptInput {

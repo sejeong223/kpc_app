@@ -29,6 +29,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   const [menu, setMenu] = useState<{ id: string | null; sectionId: string; x: number; y: number } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null), trigger = useRef<HTMLElement | null>(null);
   const list = useRef<HTMLOListElement>(null);
+  const returnToList = useRef(false);
   useEffect(() => {
     const node = list.current?.querySelector<HTMLElement>("[aria-current='true']");
     if (node?.getClientRects().length) node.scrollIntoView({ block: "nearest" });
@@ -47,7 +48,27 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
     ];
   };
   const menuActions = actions(menuIds, menuSection?.id ?? null, menuRow?.slide.id ?? null);
-  const closeMenu = (restoreFocus = true) => { setMenu(null); if (restoreFocus) trigger.current?.focus(); };
+  const closeMenu = (restoreFocus = true) => { setMenu(null); if (restoreFocus) trigger.current?.focus({ preventScroll: true }); };
+  const runAction = (action: SlideMenuAction) => {
+    if (action.disabled) return;
+    returnToList.current = true;
+    if (menu) closeMenu();
+    action.run();
+  };
+  const selectSlide = (id: string, mode: "single" | "toggle" | "range") => {
+    returnToList.current = true;
+    onSelect(id, mode);
+  };
+  useLayoutEffect(() => {
+    if (busy || menu || !returnToList.current) return;
+    returnToList.current = false;
+    const focused = document.activeElement;
+    // A busy operation disables thumbnails and can leave keyboard focus on body.
+    // Never pull focus away from an editor, confirmation dialog, or another control.
+    if (document.querySelector("[data-modal-frame]") ||
+      (focused !== document.body && focused !== document.documentElement && !list.current?.contains(focused))) return;
+    (list.current?.querySelector<HTMLElement>("[aria-current='true']") ?? list.current?.parentElement)?.focus({ preventScroll: true });
+  }, [busy, menu, activeId]);
   const openEmptyMenu = (element: HTMLElement, x: number, y: number) => {
     if (busy || !props.sectionId || rows.some(row => row.section.id === props.sectionId)) return;
     trigger.current = element; setMenu({ id: null, sectionId: props.sectionId, x, y });
@@ -58,7 +79,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
     const rect = element.getBoundingClientRect();
     element.style.left = Math.max(8, Math.min(menu.x, window.innerWidth - rect.width - 8)) + "px";
     element.style.top = Math.max(8, Math.min(menu.y, window.innerHeight - rect.height - 8)) + "px";
-    element.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
+    (element.querySelector<HTMLButtonElement>("button:not(:disabled)") ?? element).focus({ preventScroll: true });
   }, [menu]);
   useEffect(() => {
     if (!menu) return;
@@ -75,22 +96,22 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   }, [menu]);
   return <section data-comment-control aria-label="슬라이드 탐색" tabIndex={0} className="tw:flex tw:h-full tw:min-h-0 tw:min-w-0 tw:flex-col"
     onKeyDown={e => {
-      if (busy || menu || e.defaultPrevented || isTypingTarget(e.target) || e.nativeEvent.isComposing || document.querySelector("[data-modal-frame], [data-comment-popup]") || !(e.target instanceof Element)) return;
+      if (busy || menu || e.defaultPrevented || isTypingTarget(e.target) || e.nativeEvent.isComposing || document.querySelector("[data-modal-frame]") || !(e.target instanceof Element)) return;
       if (e.target !== e.currentTarget && !e.target.matches("[data-slide-list]") && !e.target.closest("[data-slide-select]")) return;
-      const key = { key: e.key, ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey, shiftKey: e.shiftKey, isComposing: e.nativeEvent.isComposing };
+      const key = { key: e.key, code: e.code, ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey, shiftKey: e.shiftKey, isComposing: e.nativeEvent.isComposing };
       const delta = slideNavigationDelta(key), shortcut = navigatorShortcut(key);
       if (delta && active) {
         const index = rows.findIndex(row => row.slide.id === active.slide.id);
         const next = rows[index + delta];
         e.preventDefault(); e.stopPropagation();
-        if (next) onSelect(next.slide.id, "single");
+        if (next) selectSlide(next.slide.id, "single");
       }
-      else if (e.key === "Escape" && active) { e.preventDefault(); e.stopPropagation(); onSelect(active.slide.id, "single"); }
+      else if (e.key === "Escape" && active) { e.preventDefault(); e.stopPropagation(); selectSlide(active.slide.id, "single"); }
       else if (shortcut) {
         e.preventDefault(); e.stopPropagation();
         const emptySection = props.sectionId && !rows.some(row => row.section.id === props.sectionId) ? props.sectionId : null;
         const action = actions(selectedIds, active?.section.id ?? emptySection, active?.slide.id ?? null).find(item => item.id === shortcut);
-        if (action && !action.disabled) action.run();
+        if (action) runAction(action);
       }
     }}>
     <header className="tw:flex tw:min-h-11 tw:shrink-0 tw:items-center tw:gap-2 tw:border-b tw:border-(--kpc-line) tw:px-3">
@@ -121,7 +142,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
                 e.preventDefault(); e.stopPropagation(); const rect = e.currentTarget.getBoundingClientRect(); openMenu(e.currentTarget, rect.left, rect.top);
               }
             }}
-            onClick={e => { closeMenu(false); onSelect(slide.id, e.shiftKey ? "range" : e.ctrlKey || e.metaKey ? "toggle" : "single"); }}>
+            onClick={e => { closeMenu(false); selectSlide(slide.id, e.shiftKey ? "range" : e.ctrlKey || e.metaKey ? "toggle" : "single"); }}>
             <ProductionPreview view={view} slide={slide} snapshotId={snapshotId} mode="thumbnail" number={number} priority={slide.id === activeId} />
             <span className={"tw:flex tw:min-w-0 tw:items-center tw:gap-1.5 tw:border-t tw:border-(--kpc-line) tw:px-2 tw:py-[5px] tw:text-[10.5px] tw:font-bold " + caption}><span className="tw:shrink-0">{number}</span>{slide.state === "done" && <LockClosed16Regular className="tw:shrink-0" aria-label="고정됨" />}
               <span className="tw:truncate">{row.sectionNumber} {section.title}{siblings.length > 1 && " · " + (siblings.findIndex(item => item.slide.id === slide.id) + 1) + "/" + siblings.length}</span>
@@ -132,7 +153,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       })}</ol>
       {!rows.length && <p className="tw:text-sm">{props.sectionId ? "목록을 마우스 오른쪽 버튼으로 눌러 슬라이드를 추가해 주세요." : "목차 화면에서 소목차를 먼저 추가해 주세요."}</p>}
     </div>
-    {menu && menuSection && createPortal(<DadamThemeScope><div ref={menuRef} role="menu" aria-label="슬라이드 작업" data-comment-control
+    {menu && menuSection && createPortal(<DadamThemeScope><div ref={menuRef} role="menu" tabIndex={-1} aria-label="슬라이드 작업" data-comment-control
       style={{ position: "fixed", left: menu.x, top: menu.y, zIndex: 1000, width: 224, maxWidth: "calc(100vw - 16px)" }}
       className="tw:rounded-lg tw:border tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:p-1 tw:shadow-lg"
       onKeyDown={e => {
@@ -140,12 +161,12 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
         if (e.defaultPrevented || isTypingTarget(e.target) || e.nativeEvent.isComposing) return;
         if (e.key === "Escape") { e.preventDefault(); closeMenu(); return; }
         if (e.key === "Tab") { closeMenu(false); return; }
-        if (busy || document.querySelector("[data-modal-frame], [data-comment-popup]")) return;
-        const shortcut = navigatorShortcut({ key: e.key, ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey, shiftKey: e.shiftKey, isComposing: e.nativeEvent.isComposing });
+        if (busy || document.querySelector("[data-modal-frame]")) return;
+        const shortcut = navigatorShortcut({ key: e.key, code: e.code, ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey, shiftKey: e.shiftKey, isComposing: e.nativeEvent.isComposing });
         if (shortcut) {
           e.preventDefault();
           const action = menuActions.find(item => item.id === shortcut);
-          if (action && !action.disabled) { closeMenu(); action.run(); }
+          if (action) runAction(action);
           return;
         }
         if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
@@ -159,7 +180,7 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
         {item.id === "add" && <div role="separator" style={{ height: 1, background: "#EEF0F3", margin: "4px 6px", border: 0, padding: 0 }} />}
         <button type="button" role="menuitem" disabled={item.disabled}
           className="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[18px] tw:rounded tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:text-sm tw:hover:bg-(--kpc-bg) tw:focus-visible:outline-2 tw:focus-visible:outline-(--kpc-brand) tw:disabled:cursor-not-allowed tw:disabled:opacity-40"
-          onClick={() => { if (!item.disabled) { closeMenu(); item.run(); } }}>{item.label}
+          onClick={() => runAction(item)}>{item.label}
           {item.shortcut && <kbd style={{ marginLeft: "auto", flexShrink: 0, fontFamily: "inherit", lineHeight: "inherit", fontSize: "11.5px", color: "#74747d", fontWeight: 500, border: 0, background: "transparent", padding: 0 }}>{item.shortcut}</kbd>}
         </button>
       </Fragment>)}

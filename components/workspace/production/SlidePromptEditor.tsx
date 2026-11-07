@@ -21,7 +21,7 @@ const useStyles = makeStyles({
   shell: { minWidth: 0, width: "100%", maxWidth: "100%", boxSizing: "border-box", marginTop: "10px", border: "1px solid var(--kpc-line)", borderRadius: "14px", backgroundColor: tokens.colorNeutralBackground1, boxShadow: "0 1px 3px rgba(0,0,0,.05)",
     ":focus-within": { ...shorthands.borderColor("#b9bcc4"), boxShadow: "0 2px 10px rgba(0,0,0,.08)" } },
   frame: { position: "relative", minWidth: 0 },
-  input: { display: "block", boxSizing: "border-box", width: "100%", minWidth: 0, padding: "12px 52px 12px 16px", minHeight: "48px", maxHeight: "180px", overflowY: "auto", overscrollBehavior: "contain", resize: "none", border: 0, borderRadius: "14px", backgroundColor: "transparent", outline: "none",
+  input: { display: "block", boxSizing: "border-box", width: "100%", minWidth: 0, padding: "12px 52px 12px 16px", minHeight: "48px", maxHeight: "180px", overflowY: "hidden", overscrollBehavior: "contain", resize: "none", border: 0, borderRadius: "14px", backgroundColor: "transparent", outline: "none",
     fontFamily: tokens.fontFamilyBase, fontSize: "13px", lineHeight: "1.7", color: "#26282d", whiteSpace: "pre-wrap", overflowWrap: "anywhere", "::placeholder": { color: tokens.colorNeutralForeground4 } },
   save: { position: "absolute", right: "10px", bottom: "10px", width: "30px", height: "30px", minWidth: "30px", minHeight: "30px", padding: 0, borderRadius: "50%" },
   meta: { color: tokens.colorNeutralForeground3, margin: "8px 12px", fontSize: dadamUi.metaSize },
@@ -33,19 +33,40 @@ export default function SlidePromptEditor({ value, dirty, readOnly, busy, compos
   useLayoutEffect(() => {
     const element = input.current;
     if (!element) return;
-    const measure = () => { element.style.height = "auto"; element.style.height = Math.min(180, Math.max(48, element.scrollHeight)) + "px"; };
+    let disposed = false;
+    const measure = () => {
+      if (disposed) return;
+      const scrollTop = element.scrollTop;
+      // Measure at the full input width; an existing scrollbar must not affect wrapping.
+      element.style.overflowY = "hidden";
+      element.style.height = "auto";
+      const contentHeight = element.scrollHeight;
+      // scrollHeight rounds fractional line heights, so leave one pixel of room.
+      element.style.height = Math.min(180, Math.max(48, contentHeight + 1)) + "px";
+      element.style.overflowY = contentHeight > 180 ? "auto" : "hidden";
+      element.scrollTop = scrollTop;
+    };
     measure();
-    let width = element.clientWidth;
+    let width = element.getBoundingClientRect().width;
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => {
-      if (element.clientWidth !== width) { width = element.clientWidth; measure(); }
+      const nextWidth = element.getBoundingClientRect().width;
+      if (nextWidth !== width) { width = nextWidth; measure(); }
     });
     observer?.observe(element);
-    return () => observer?.disconnect();
+    window.addEventListener("resize", measure);
+    void document.fonts?.ready.then(measure);
+    document.fonts?.addEventListener("loadingdone", measure);
+    return () => {
+      disposed = true;
+      observer?.disconnect();
+      window.removeEventListener("resize", measure);
+      document.fonts?.removeEventListener("loadingdone", measure);
+    };
   }, [value]);
   return <section className={styles.shell} aria-label="슬라이드 원문 편집">
     <div className={styles.frame}>
       <textarea ref={input} className={styles.input} value={value} aria-label="슬라이드 작성 내용"
-        placeholder="슬라이드에 담을 내용을 자유롭게 작성해 주세요." spellCheck={false}
+        placeholder="슬라이드에 담고 싶은 내용을 자연스러운 줄글로 작성해 주세요." spellCheck={false}
         readOnly={busy || (readOnly && !composing)} aria-invalid={!!error} aria-describedby={error ? errorId : undefined}
         onBeforeInput={() => { if (!busy && !readOnly) onEditStart(); }}
         onChange={event => { if (!busy && (!readOnly || composingNow.current)) { onEditStart(); onChange(event.currentTarget.value); } }}
@@ -57,7 +78,7 @@ export default function SlidePromptEditor({ value, dirty, readOnly, busy, compos
       {!readOnly && <DadamButton className={styles.save} appearance="primary" icon={<ArrowUp20Regular />} title="슬라이드에 반영" aria-label="슬라이드에 반영"
         disabled={busy || composing || !!error} onClick={() => { if (!composingNow.current && !busy && !error) onSave(); }} />}
     </div>
-    <p className={styles.meta}>AI 배치 시연{readOnly ? dirty ? " · 읽기 전용 · 미반영 변경 보관 중" : " · 읽기 전용" : dirty ? " · 미반영 변경" : ""}</p>
+    {(readOnly || dirty) && <p className={styles.meta}>{readOnly ? dirty ? "읽기 전용 · 미반영 변경 보관 중" : "읽기 전용" : "미반영 변경"}</p>}
     {error && <p id={errorId} role="alert" className={styles.error}>{error}</p>}
   </section>;
 }

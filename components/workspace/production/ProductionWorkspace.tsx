@@ -87,7 +87,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
     const nextIds = receipt.createdIds.length ? receipt.createdIds : preferred;
     const slide = receipt.state.body.slides.find(s => s.id === nextIds[0]) ?? receipt.state.body.slides.find(s => s.id === current?.id) ?? null;
     await commitSelection({ ...selection, sectionId: slide?.sectionId ?? section?.id ?? null, slideId: slide?.id ?? null });
-    if (stillHere()) { setSelected(nextIds.length ? nextIds : null); setNotice(options?.silent ? null : receipt.notices?.join(" ") || "변경을 반영했습니다."); }
+    if (stillHere()) { setSelected(nextIds.length ? nextIds : null); setNotice(options?.silent ? null : receipt.notices?.join(" ") || null); }
   };
   const execute = (operation: WorkspaceOperation) => guarded(async () => {
     const silent = operation.type === "set-slide-state" || operation.type === "unlock-slide";

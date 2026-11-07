@@ -1,6 +1,7 @@
 export type NavigatorShortcut = "copy" | "paste" | "remove";
 export interface NavigatorKey {
   key: string;
+  code?: string;
   ctrlKey: boolean;
   metaKey: boolean;
   altKey: boolean;
@@ -10,9 +11,11 @@ export interface NavigatorKey {
 
 export function navigatorShortcut(event: NavigatorKey): NavigatorShortcut | null {
   if (event.isComposing || event.altKey || event.shiftKey) return null;
-  const key = event.key.toLowerCase(), modifier = event.ctrlKey || event.metaKey;
+  // IME/layouts can report a localized character (e.g. ㅊ/ㅍ) for Ctrl+C/V.
+  const key = event.code === "KeyC" ? "c" : event.code === "KeyV" ? "v" : event.key.toLowerCase();
+  const modifier = event.ctrlKey || event.metaKey;
   if (modifier) return key === "c" ? "copy" : key === "v" ? "paste" : null;
-  return key === "delete" || key === "backspace" ? "remove" : null;
+  return key === "delete" || key === "del" || key === "backspace" || event.code === "Delete" || event.code === "Backspace" ? "remove" : null;
 }
 
 export function slideNavigationDelta(event: NavigatorKey): -1 | 0 | 1 {
