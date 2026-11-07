@@ -39,3 +39,22 @@
 - textarea font/min-width/wrap/높이 제한 정적 확인. 대체된 editor/hook/legacy operation 실행 참조 0. 기존 문서 유틸·예시 seed·다른 mutation은 유지.
 - 공용 버튼 리팩토링 없음. DadamControls SHA256 시작 값과 일치. 브라우저 시각 검증 미실시.
 - 첫 변경 시 project revision을 고정하고, receipt를 현재 session에만 적용하며 실패 시 dirty 원문을 유지하는 공통 경로로 통합했다. 요청 범위 밖 추가 변경 없음.
+
+## T04
+
+- T03 commit: 650677f. T04 commit: 이 보고를 포함한 완료 커밋의 Git 이력 참조.
+- 타입 검사·변경 파일 ESLint·최종 프로덕션 빌드·diff --check 통과. 기존 baseline-browser-mapping 갱신 권고만 있으며 비차단이다.
+- 실제 permissions/selectors/domain 검증 통과: 담당자의 한 장 완료/해제, 형제 슬라이드/본문 불변, 비담당 일반/PM/super_admin의 writing/done/no-op/대체 명령 모두 FORBIDDEN, grant로 우회 불가.
+- PM/admin 본문 편집 및 목차 전체 완료/해제 권한 유지, 직접 배정 시 개별 완료/해제 허용, 완료 회차/snapshot 차단, 담당 해제 stale 요청 CONFLICT 및 최신 요청 FORBIDDEN 확인. 실패 시 source state/revision/undo 불변.
+- jsdom/React로 실제 CompletedSlidePrompt와 변경하지 않은 DadamButton/DadamSelect를 렌더하고 동작 검증 통과. adapter는 실제 hook을 쓰되 runtime/mutation·preview와 쓰기 입력창의 버튼/style provider만 메모리 stub했다.
+- 완료 기본 접힘·보기/접기·aria 연결·저장 원문과 긴 한글/줄바꿈/<script> 문자열의 안전한 텍스트 출력·전송/고정 해제 부재·서비스 호출 0회 확인.
+- 같은 완료 카드의 unrelated revision은 펼침 유지, slide/round/snapshot 변경 및 다시 완료 시 접힘. writing 전환 시 입력창 복귀. 외부 완료/IME/접근 상실 때 미반영 원문을 저장 원문과 분리 보존하고 저장은 차단하며 명시 폐기 가능.
+- 실제 select의 담당/비담당·writing/done·busy·callback 없는 상태를 확인. disabled 속성과 onChange 이중 검사로 차단, 담당자만 상태 callback 1회. 기존 disabled/muted 토큰의 생성 CSS와 점선/줄바꿈/높이 제한 소스 확인.
+- DadamControls 최종 SHA256: 56468648EF696239EC5B14704E6F58E60E21DA97CFBA199A90BD03F96F073F84. 시작 값과 동일. 공용 버튼 리팩토링 없음.
+- 검증 한계: 브라우저 시각/실제 확대 배율 검증은 미실시. jsdom 결과를 실제 배치·색상 확인으로 해석하지 않는다. 실 AI/서버 연동 없이 로컬 배치 시연이다.
+- 학습 포인트: 상태 변경과 본문 편집 권한은 별도 capability를 쓰되 UI와 domain이 같은 담당 판단을 사용한다. 원문 보기의 접힘 상태는 저장 revision과 분리하고, 외부 완료로 입력창이 사라지면 IME busy를 해제해 조작이 묶이지 않도록 했다.
+- 요청 범위 밖 추가 변경: 없음. 보호 대상/기존 사용자 데이터/패키지/DB 설정 변경 없음.
+
+## Final
+
+- done: 4/4. Task/phase/plan/current 동기화 완료. 테스트 폴더·임시 검증 파일·브라우저·서버 실행·push 없음.

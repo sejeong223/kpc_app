@@ -30,6 +30,7 @@ import {
 import {
   canEditSection,
   canEditSlide,
+  canChangeSlideState,
   canInsertSlide,
   canManageProject,
   applyProjectGrants,
@@ -556,7 +557,7 @@ export function applyWorkspaceMutation(
       case "unlock-slide": {
         writing();
         const item = slide(operation.id);
-        check(isSectionAuthor(context, state, item.sectionId), "FORBIDDEN", "담당자만 상태를 변경할 수 있습니다.");
+        check(canChangeSlideState(context, state, item.id), "FORBIDDEN", "담당 슬라이드만 작성 상태를 변경할 수 있습니다.");
         if (operation.type === "unlock-slide")
           check(isSlideLocked(item), "VALIDATION", "고정된 슬라이드가 아닙니다.");
         const next = operation.type === "unlock-slide" ? "writing" : operation.state;

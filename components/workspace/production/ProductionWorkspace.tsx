@@ -116,7 +116,7 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
   const savedSessionSlide = session ? rows.find(r => r.slide.id === session.slideId)?.slide : null;
   const sessionConflict = readOnlyError ?? (session?.dirty && (session.round !== view.state.currentRound || !savedSessionSlide) ? "편집 중인 슬라이드의 회차가 변경되었거나 삭제되었습니다. 입력을 복사한 뒤 최신 내용으로 이동해 주세요." : null);
   const editingSlide = session ? (session.round === view.state.currentRound ? savedSessionSlide ?? session.lastSlide : session.lastSlide) : null;
-  const safeView = readOnly ? { ...view, capabilities: { ...view.capabilities, editableSectionIds: [], unlockableSectionIds: [], editableSlideIds: [], unlockableSlideIds: [], insertableSectionIds: [] } } : view;
+  const safeView = readOnly ? { ...view, capabilities: { ...view.capabilities, editableSectionIds: [], unlockableSectionIds: [], editableSlideIds: [], stateChangeableSlideIds: [], unlockableSlideIds: [], insertableSectionIds: [] } } : view;
   const multiple = ids.length > 1;
   const aiControls = multiple && !accessDenied && !readOnly && onPropose ?
     <ProductionAiPanel key={JSON.stringify([ids, view.state.currentRound])} view={view} slideIds={ids} busy={busy} onPropose={onPropose} /> : null;
@@ -145,8 +145,11 @@ export default function ProductionWorkspace({ view, selection, readOnlyError = n
             requestAnimationFrame(() => document.querySelector<HTMLButtonElement>("[data-production-section-picker]")?.focus());
           }
         })}
-        onState={state => { if (current) execute(state === "writing" ? { type: "unlock-slide", id: current.id } : { type: "set-slide-state", id: current.id, state }); }}
-        onUnlock={() => { if (current) execute({ type: "unlock-slide", id: current.id }); }} />}
+        onState={state => {
+          if (busy || !current || state === current.state || !safeView.capabilities.stateChangeableSlideIds.includes(current.id) ||
+            (current.state === "done" && !safeView.capabilities.unlockableSlideIds.includes(current.id))) return;
+          execute(state === "writing" ? { type: "unlock-slide", id: current.id } : { type: "set-slide-state", id: current.id, state });
+        }} />}
       {aiControls}
       <div hidden={multiple && !dirty}>
         {multiple && dirty && <p role="status" className="tw:text-xs">아직 반영하지 않은 단일 슬라이드 입력을 보관하고 있습니다.</p>}

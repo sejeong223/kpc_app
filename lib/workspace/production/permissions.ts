@@ -62,6 +62,13 @@ export function canEditSlide(context: WorkspaceContext, state: ProjectWorkspaceS
     isSectionAuthor(context, state, slide.sectionId) && !isSlideLocked(slide);
 }
 
+export function canChangeSlideState(context: WorkspaceContext, state: ProjectWorkspaceState, slideId: string): boolean {
+  const slide = state.body.slides.find(item => item.id === slideId);
+  const section = slide && state.body.sections.find(item => item.id === slide.sectionId);
+  return !!section && state.phase === "writing" && canAccessFileProject(context.identity, context.project) &&
+    section.assigneeIds.includes(context.identity.actor.id);
+}
+
 export function canInsertSlide(context: WorkspaceContext, state: ProjectWorkspaceState, sectionId: string): boolean {
   return state.phase === "writing" && isSectionAuthor(context, state, sectionId) &&
     state.body.sections.some(section => section.id === sectionId && !isSectionLocked(section));

@@ -11,12 +11,12 @@
 | T01 | `done` | 메뉴 단축키 표시·실행 및 목록 이동 방향 | [T01](./T01-context-menu-shortcuts.md) |
 | T02 | `done` | 슬라이드별 통프롬프트·로컬 배치 저장 계약 | [T02](./T02-slide-prompt-domain.md) |
 | T03 | `done` | 단일 통프롬프트 편집기 적용·중복 경로 정리 | [T03](./T03-unified-prompt-editor.md) |
-| T04 | `in_progress` | 담당자 상태 변경 제한·완료 프롬프트 접기/보기 | [T04](./T04-assignee-slide-status.md) |
+| T04 | `done` | 담당자 상태 변경 제한·완료 프롬프트 접기/보기 | [T04](./T04-assignee-slide-status.md) |
 
 ## Progress
 
-- done: 3/4 (active: T04)
-- T01·T02·T03 구현·검증 완료. mea로 T04 계속 실행.
+- done: 4/4 (active: 없음)
+- T01·T02·T03·T04 구현·검증·태스크별 커밋 완료. 실행 검증 보고 참조.
 
 ## Shared Constraints
 

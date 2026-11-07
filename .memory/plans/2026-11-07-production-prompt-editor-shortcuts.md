@@ -1,5 +1,7 @@
 # Plan: 제작 통프롬프트 편집기·슬라이드 단축키
 
+## Status: done (4/4)
+
 ## Goal
 
 우클릭 메뉴의 단축키 표시와 실행을 일치시키고, 일반·제조업 제작 편집기를 한 개의 자유로운 통프롬프트 입력 흐름으로 통합한다. 로컬 시연으로 기존 슬라이드 레이아웃에 내용을 배치하며 원문과 결과를 각 슬라이드에 독립적으로 저장한다. 본문 편집 권한·완료 잠금·미저장 보호·반응형 동작을 유지하고, 개별 슬라이드의 상태 변경은 실제 담당자만 허용한다.
@@ -18,7 +20,7 @@
 
 | Phase | Status | Summary | Blueprint |
 | :--- | :--- | :--- | :--- |
-| P01 | `in_progress` | 메뉴 단축키와 슬라이드별 통프롬프트 편집 통합 | [P01](../phases/2026-11-07-production-prompt-editor-shortcuts/P01-production/phase.md) |
+| P01 | `done` | 메뉴 단축키와 슬라이드별 통프롬프트 편집 통합 | [P01](../phases/2026-11-07-production-prompt-editor-shortcuts/P01-production/phase.md) |
 
 ## Task Boundaries
 
@@ -66,3 +68,10 @@
 - 시작 포인터: [current](../current.md) → P01-T01.
 - T01 → T02 → T03 → T04 순서로 실행하고 Task별 한국어 커밋 1개를 만든다.
 - 완료 후 Task/Phase/Plan/current와 실행 검증 보고를 동기화한다. `current.md`의 ignore를 유지하고 강제 stage하지 않는다.
+
+## Completion
+
+- 2026-11-07: T01~T04 순차 구현·검증·태스크별 한국어 커밋 완료.
+- [실행 검증 보고](../reports/2026-11-07-production-prompt-editor-shortcuts-validation.md).
+- 공용 버튼 리팩토링 제외, DadamControls.tsx 원본 SHA256 동일 확인.
+- current의 Active Task 없음. 브라우저 시각 검증 미실시.

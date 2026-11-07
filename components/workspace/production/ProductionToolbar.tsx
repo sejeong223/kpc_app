@@ -9,7 +9,7 @@ import type { ProjectView } from "@/types/workspace-production";
 import ProductionTocBadge from "./ProductionTocBadge";
 export interface ProductionToolbarProps {
   view: ProjectView; sectionId: string | null; slideId: string | null; busy?: boolean;
-  onSection(id: string): void; onState?(state: "writing" | "done"): void; onUnlock?(): void;
+  onSection(id: string): void; onState?(state: "writing" | "done"): void;
   onManageToc(): void; commentActionSlot: React.ReactNode;
 }
 const useStyles = makeStyles({
@@ -29,15 +29,14 @@ const useStyles = makeStyles({
 });
 const avatarColors: Record<string, string> = { "정소담": "#1d1e22", "김민수": "#2f6fdc", "이서연": "#0f8a5f", "박지훈": "#b45309", "최유진": "#7c3aed", "박성훈": "#be123c" };
 const chapterNumber = (index: number) => ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][index] ?? String(index + 1);
-export default function ProductionToolbar({ view, sectionId, slideId, onSection, onState, onUnlock, onManageToc, commentActionSlot, busy = false }: ProductionToolbarProps) {
+export default function ProductionToolbar({ view, sectionId, slideId, onSection, onState, onManageToc, commentActionSlot, busy = false }: ProductionToolbarProps) {
   const styles = useStyles(), id = useId(), trigger = useRef<HTMLButtonElement>(null);
   const [openedSection, setOpenedSection] = useState<string | null | undefined>(undefined);
   const open = openedSection !== undefined && openedSection === sectionId;
   const current = view.state.body.sections.find(s => s.id === sectionId), numbers = outlineNumbers(view.state), rows = selectProductionSlides(view);
   const activeSlide = view.state.body.slides.find(s => s.id === slideId && s.sectionId === sectionId);
-  const canChangeState = !!activeSlide && (activeSlide.state === "done"
-    ? view.capabilities.unlockableSlideIds.includes(activeSlide.id)
-    : view.capabilities.editableSlideIds.includes(activeSlide.id));
+  const canChangeState = !!activeSlide && view.capabilities.stateChangeableSlideIds.includes(activeSlide.id) &&
+    (activeSlide.state !== "done" || view.capabilities.unlockableSlideIds.includes(activeSlide.id));
   const chapterIndex = view.state.body.chapters.findIndex(c => c.id === current?.chapterId), chapter = view.state.body.chapters[chapterIndex];
   const close = () => { setOpenedSection(undefined); requestAnimationFrame(() => trigger.current?.focus()); };
   return <div data-comment-control>
@@ -70,11 +69,8 @@ export default function ProductionToolbar({ view, sectionId, slideId, onSection,
       </Popover>
       <span className="tw:flex-1" />{commentActionSlot}
       {activeSlide && <DadamSelect className={styles.state} aria-label="슬라이드 작성 상태" value={activeSlide.state} disabled={busy || !onState || !canChangeState}
-        onChange={(_, data) => { const next = data.value === "done" ? "done" : "writing"; if (canChangeState && next !== activeSlide.state) onState?.(next); }}><option value="writing">작성 중</option><option value="done">작성 완료</option></DadamSelect>}
+        title={!canChangeState ? "담당 슬라이드만 작성 상태를 변경할 수 있습니다." : undefined}
+        onChange={(_, data) => { const next = data.value === "done" ? "done" : "writing"; if (!busy && canChangeState && next !== activeSlide.state) onState?.(next); }}><option value="writing">작성 중</option><option value="done">작성 완료</option></DadamSelect>}
     </div>
-    {activeSlide?.state === "done" && <div className="tw:mt-2.5 tw:flex tw:flex-wrap tw:items-center tw:gap-2 tw:rounded-lg tw:bg-(--dadam-accent-soft) tw:px-3 tw:py-2 tw:text-xs tw:text-(--dadam-accent-ink)">
-      <strong>작성 완료 · 고정됨</strong>
-      {onUnlock && view.capabilities.unlockableSlideIds.includes(activeSlide.id) && <DadamButton className="tw:ml-auto" size="small" disabled={busy} onClick={onUnlock}>고정 해제</DadamButton>}
-    </div>}
   </div>;
 }

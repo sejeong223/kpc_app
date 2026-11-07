@@ -9,6 +9,7 @@ import type {
 import {
   canEditSection,
   canEditSlide,
+  canChangeSlideState,
   canInsertSlide,
   canManageProject,
   canProjectAction,
@@ -182,8 +183,8 @@ export function getWorkspaceCapabilities(
       )
       .map((s) => s.id),
     editableSlideIds: state.body.slides.filter(s => canEditSlide(context, state, s.id)).map(s => s.id),
-    unlockableSlideIds: state.body.slides.filter(s => state.phase === "writing" &&
-      isSlideLocked(s) && isSectionAuthor(context, state, s.sectionId)).map(s => s.id),
+    stateChangeableSlideIds: state.body.slides.filter(s => canChangeSlideState(context, state, s.id)).map(s => s.id),
+    unlockableSlideIds: state.body.slides.filter(s => isSlideLocked(s) && canChangeSlideState(context, state, s.id)).map(s => s.id),
     insertableSectionIds: state.body.sections.filter(s => canInsertSlide(context, state, s.id)).map(s => s.id),
   };
 }
@@ -255,6 +256,7 @@ export function selectSnapshotView(
       editableSectionIds: [],
       unlockableSectionIds: [],
       editableSlideIds: [],
+      stateChangeableSlideIds: [],
       unlockableSlideIds: [],
       insertableSectionIds: [],
     },
