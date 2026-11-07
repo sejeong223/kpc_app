@@ -93,7 +93,7 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
       if (operation.type === "remove") setRemoval(result.state.removals.find(item => item.id === result.removalId) ?? null);
       else if (operation.type === "undo-remove" || operation.type === "start-round") setRemoval(null);
       setConfirmation(null); closeDraft();
-      setNotice(operation.type === "start-round" ? `${result.state.currentRound}차 자료함을 시작했습니다.` : operation.type === "undo-remove" ? "삭제한 자료를 복원했습니다." : "변경 사항을 저장했습니다.");
+      setNotice(operation.type === "start-round" ? `${result.state.currentRound}차 자료함을 시작했습니다.` : operation.type === "undo-remove" ? "삭제한 자료를 복원했습니다." : "");
     } finally { running.current = false; }
   }
   function submit(operation: FileOperation): Promise<void> {
@@ -130,7 +130,7 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
     {!snapshotId && removal && removal.round === data?.currentRound && <FileUndoNotice key={removal.id} removal={removal} busy={busy} onExpire={expireUndo} onUndo={removalId => { void execute({ type: "undo-remove", removalId }).catch(() => {}); }} />}
     {query.error ? <AdminAsyncState state="error" message={query.error.message} onRetry={() => guard.request(onReconnect)} /> : query.isPending ? <AdminAsyncState state="loading" /> : data && <>
       <p className="tw:m-0 tw:text-xs tw:text-(--kpc-secondary)">자료의 참조 순서는 왼쪽부터 적용됩니다.</p>
-      {[...data.rounds].reverse().map(round => <FileRoundSection initialOpen={snapshotId?true:undefined} key={data.currentRound + ":" + round.number} value={round} canAdd={!selectionError&&data.canAdd} canReorder={!selectionError&&data.canReorder} disabled={busy || query.isFetching || !!selectionError}
+      {[...data.rounds].reverse().map(round => <FileRoundSection initialOpen={snapshotId !== null || round.number === data.currentRound} isCurrent={round.number === data.currentRound} snapshotId={snapshotId} key={data.currentRound + ":" + round.number} value={round} canAdd={!selectionError&&data.canAdd} canReorder={!selectionError&&data.canReorder} disabled={busy || query.isFetching || !!selectionError}
         onAdd={add} onDropFiles={(category, files) => {if(files.length)guard.request(()=>openAdd(category,files));}} onEdit={resource => openEdit(resource)}
         onOpen={(resource, round) => setPreview({ resource, round })}
         onRemove={resource => setConfirmation({ operation: { type: "remove", assetId: resource.asset.id, sourceVersionId: resource.version.id }, revision: data.revision, round: data.currentRound, label: resource.version.label })}
