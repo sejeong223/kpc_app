@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { mergeClasses } from "@fluentui/react-components";
 import WorkspacePage from "@/components/layout/WorkspacePage";
 import AdminAsyncState from "@/components/admin/ui/AdminAsyncState";
 import { useFileCommand, useFileWorkspace, useWorkspaceFileHistory } from "@/hooks/workspace/use-workspace-files";
@@ -21,6 +22,7 @@ import FilePreviewDialog from "./FilePreviewDialog";
 import ProjectHeader from "@/components/common/ProjectHeader";
 import FileRoundSection from "./FileRoundSection";
 import { useFileListStyles } from "./file-list.styles";
+import { useFileDialogStyles } from "./file-dialog.styles";
 
 export default function FilesWorkspace({ onReconnect }: { onReconnect(): void }): React.ReactElement {
   const {selection,projects,pending,error}=useWorkspaceSelection();
@@ -36,6 +38,8 @@ interface FileProjectWorkspaceProps { snapshotId:string|null; projectId: string;
 interface ActionConfirmation { operation: Extract<FileOperation, { type: "remove" | "start-round" }>; revision: number; round: number; workspaceRevision?: number; label: string }
 function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionError }: FileProjectWorkspaceProps): React.ReactElement {
   const styles = useFileListStyles();
+  const dialogStyles = useFileDialogStyles();
+  const dialogSlots = { header: dialogStyles.header, body: dialogStyles.body, footer: dialogStyles.footer };
   const currentQuery = useFileWorkspace(snapshotId?null:projectId);
   const historyQuery = useWorkspaceFileHistory(projectId,snapshotId);
   const query = snapshotId?historyQuery:currentQuery;
@@ -148,11 +152,12 @@ function FileProjectWorkspace({ projectId, snapshotId, onReconnect, selectionErr
       ? <FileSettingsDialog {...dialogProps} resource={dialog.source} copyToCurrent={dialog.copyToCurrent} onSubmit={settings => submit({ type: "edit", assetId: dialog.source.asset.id, sourceVersionId: dialog.source.version.id, settings, web: null })} />
       : <WebReferenceDialog {...dialogProps} initial={{ url: dialog.source.version.source.url, period: dialog.source.version.source.period, instruction: dialog.source.version.instruction }} copyToCurrent={dialog.copyToCurrent} onSubmit={saveWeb} />)}
     {confirmation && <ModalFrame open title={confirmation.operation.type === "remove" ? "자료를 삭제할까요?" : "다음 회차를 시작할까요?"} subtitle={confirmation.label} contentKey={confirmation.operation.type} onClose={() => { if (!busy) { setConfirmation(null); reset(); } }}
-      footer={<><span className="tw:mr-auto" /><DadamButton disabled={busy} onClick={() => { setConfirmation(null); reset(); }}>취소</DadamButton><DadamButton appearance="primary" disabled={busy} onClick={() => { void execute(confirmation.operation, { revision: confirmation.revision, round: confirmation.round, workspaceRevision: confirmation.workspaceRevision }).catch(() => {}); }}>{busy ? "저장 중…" : "확인"}</DadamButton></>}>
+      slotClassNames={dialogSlots}
+      footer={<><span className={dialogStyles.footNote} /><DadamButton className={dialogStyles.button} disabled={busy} onClick={() => { setConfirmation(null); reset(); }}>취소</DadamButton><DadamButton className={mergeClasses(dialogStyles.button, dialogStyles.primaryButton)} appearance="primary" disabled={busy} onClick={() => { void execute(confirmation.operation, { revision: confirmation.revision, round: confirmation.round, workspaceRevision: confirmation.workspaceRevision }).catch(() => {}); }}>{busy ? "저장 중…" : "확인"}</DadamButton></>}>
       <p>{confirmation.operation.type === "remove" ? "현재 회차에서만 제외됩니다. 이전 회차의 보관본은 유지되며, 삭제 후 15초 동안 되돌릴 수 있습니다." : "이전 회차를 읽기 전용으로 보관하고 현재 자료와 참조 순서를 새 회차에 계승합니다."}</p>
       {error && <p role="alert" className="tw:m-0 tw:text-red-700">{error.message} 취소 후 최신 자료를 다시 확인해 주세요.</p>}
     </ModalFrame>}
-    {guard.confirmOpen && <FileDiscardDialog open onKeep={guard.keepEditing} onDiscard={guard.discardAndContinue} />}
+    {guard.confirmOpen && <FileDiscardDialog open slotClassNames={dialogSlots} buttonClassName={dialogStyles.button} onKeep={guard.keepEditing} onDiscard={guard.discardAndContinue} />}
     {preview && previewResource && <FilePreviewDialog key={preview.resource.version.id + ":" + preview.round} open projectId={projectId} resource={previewResource} round={preview.round} onClose={() => setPreview(null)} />}
     </div>
   </WorkspacePage>;

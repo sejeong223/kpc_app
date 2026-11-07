@@ -58,4 +58,16 @@ export const useFileDialogStyles = makeStyles({
   legend: { display: "flex", flexWrap: "wrap", gap: "8px", fontSize: "12px", color: "var(--kpc-secondary)", "& b": { fontWeight: 700 } },
   footNote: { marginRight: "auto", fontSize: "12px", color: "var(--kpc-secondary)" },
   feedback: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", color: "#b91c1c" },
+  previewBody: { backgroundColor: "#f6f7f9", overflow: "auto", minWidth: 0 },
+  previewMetadata: { display: "flex", flexWrap: "wrap", gap: "8px", fontSize: "12px", lineHeight: "16px", color: "var(--kpc-secondary)", overflowWrap: "anywhere" },
+  previewDocument: {
+    minWidth: 0, backgroundColor: "#fff", border: "1px solid var(--kpc-line)", borderRadius: "10px", padding: "26px 34px", boxShadow: "0 1px 2px rgba(0,0,0,.04)",
+    "@media (max-width: 640px)": { padding: "12px" },
+  },
+  previewLink: { color: "var(--dadam-accent-ink)", overflowWrap: "anywhere" },
+  previewHeading: { margin: 0, fontSize: "14px", fontWeight: 700 },
+  previewInstruction: { margin: 0, whiteSpace: "pre-wrap", overflowWrap: "break-word", padding: "10px 12px", borderRadius: "10px", fontSize: "12px", backgroundColor: "#f4f0ff", color: "#5b3fc4" },
+  previewText: { margin: 0, whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontFamily: tokens.fontFamilyBase, fontSize: "13px", lineHeight: 1.7 },
+  previewHint: { fontSize: "12px", color: "var(--kpc-secondary)" },
+  previewPdf: { height: "55vh", minHeight: "256px", width: "100%" },
 });

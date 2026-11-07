@@ -151,13 +151,13 @@ function normalizeWebUrl(raw:string):string; // 오류 시 WorkspaceFileError("V
 
 ## Acceptance Criteria
 
-- [ ] 추가820/설정760/웹640px 폭과 기존 viewport 안전 여백, Dadam 폰트·header/footer를 유지한다.
-- [ ] 최종 override인 팝업 small14px, 파일 형식 안내 위12px, row details 위4px, 640px 이하 1열이 적용된다.
-- [ ] 기본/일괄 우선순위의 선택·비선택·disabled가 명확하고 실제 Radio 키보드 조작을 보존한다.
-- [ ] 파일 선택/취소/드롭/행 제거/여러 파일 추가 및 per-row 설정이 기존 File 객체와 저장 명령을 사용한다.
-- [ ] 30개 제한은 계승을 포함한 부모 currentCount 기준이며 50MiB/4,000자/URL 검증과 입력 보존이 유지된다.
-- [ ] 저장 성공 후 일반 완료 문구/토스트가 없고 실패 시 입력과 오류 안내가 남는다.
-- [ ] DadamControls/ModalFrame/SegmentedControl·전역 테마/Provider를 수정하지 않는다.
+- [x] 추가820/설정760/웹640px 폭과 기존 viewport 안전 여백, Dadam 폰트·header/footer를 유지한다.
+- [x] 최종 override인 팝업 small14px, 파일 형식 안내 위12px, row details 위4px, 640px 이하 1열이 적용된다.
+- [x] 기본/일괄 우선순위의 선택·비선택·disabled가 명확하고 실제 Radio 키보드 조작을 보존한다.
+- [x] 파일 선택/취소/드롭/행 제거/여러 파일 추가 및 per-row 설정이 기존 File 객체와 저장 명령을 사용한다.
+- [x] 30개 제한은 계승을 포함한 부모 currentCount 기준이며 50MiB/4,000자/URL 검증과 입력 보존이 유지된다.
+- [x] 저장 성공 후 일반 완료 문구/토스트가 없고 실패 시 입력과 오류 안내가 남는다.
+- [x] DadamControls/ModalFrame/SegmentedControl·전역 테마/Provider를 수정하지 않는다.
 
 ## Validation
 

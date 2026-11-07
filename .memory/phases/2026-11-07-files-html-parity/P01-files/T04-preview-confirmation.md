@@ -1,6 +1,6 @@
 # Task: T04 실제 자료 미리보기·확인 팝업과 통합 검증
 
-## Status: pending
+## Status: done
 
 ## Goal
 
@@ -136,12 +136,12 @@ interface ActionConfirmation {
 
 ## Acceptance Criteria
 
-- [ ] 파일/웹 미리보기 프레임과 메타·지침은 HTML 스타일이고 실제 원본/등록값이 표시된다.
-- [ ] PDF/TXT/metadata·오류·retry·다운로드·URL cleanup을 유지한다. HTML 시연 본문으로 교체하지 않는다.
-- [ ] 삭제 확인/15초 되돌리기/과거 보존과 실패 시 입력·오류 안내가 유지된다.
-- [ ] 파일 메뉴의 미저장 확인만 스타일을 전달받고 제작·코멘트 기본 호출은 변하지 않는다.
-- [ ] 기존 readonly/권한/30개 제한/표시 수량/일반 성공 문구 제거가 전체 연결에서 유지된다.
-- [ ] 공용 DadamControls·ModalFrame·SegmentedControl·Provider·저장 코드를 변경하지 않는다.
+- [x] 파일/웹 미리보기 프레임과 메타·지침은 HTML 스타일이고 실제 원본/등록값이 표시된다.
+- [x] PDF/TXT/metadata·오류·retry·다운로드·URL cleanup을 유지한다. HTML 시연 본문으로 교체하지 않는다.
+- [x] 삭제 확인/15초 되돌리기/과거 보존과 실패 시 입력·오류 안내가 유지된다.
+- [x] 파일 메뉴의 미저장 확인만 스타일을 전달받고 제작·코멘트 기본 호출은 변하지 않는다.
+- [x] 기존 readonly/권한/30개 제한/표시 수량/일반 성공 문구 제거가 전체 연결에서 유지된다.
+- [x] 공용 DadamControls·ModalFrame·SegmentedControl·Provider·저장 코드를 변경하지 않는다.
 
 ## Validation
 
@@ -202,8 +202,8 @@ Task: T04-preview-confirmation
 
 ## Progress
 
-- [ ] 구현 완료
-- [ ] 검증 통과
-- commit: pending
+- [x] 구현 완료
+- [x] 검증 통과
+- commit: 이 파일의 Task 식별자를 가진 완료 커밋 (해시는 current에 기록)
 
 통과 후 Task/phase/Plan을 done(4/4)으로 갱신하고 이 범위만 한글 커밋한다. current는 Active Task 없음/이 계획 완료로 갱신하되 강제 stage하지 않는다. 이전 별도 hydration 오류가 해결됐다고 기록하지 않는다. 기존 데이터/원본 HTML/다른 변경을 보존하고 패키지·인프라·push 작업은 수행하지 않는다.
