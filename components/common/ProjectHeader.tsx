@@ -26,7 +26,7 @@ const useStyles = makeStyles({
         marginTop: "calc(-1 * var(--layout-page-inset))", marginLeft: "calc(-1 * var(--layout-page-inset))", marginRight: "calc(-1 * var(--layout-page-inset))",
     },
     leading: { display: "flex", flex: "1 1 0%", flexWrap: "nowrap", alignItems: "center", gap: "8px", minWidth: 0, maxWidth: "100%" },
-    selector: { height: "auto", minHeight: "40px", width: "auto", flex: "1 1 0%", flexWrap: "nowrap", maxWidth: "100%", minWidth: 0, padding: "4px 10px", columnGap: "10px", textAlign: "left", whiteSpace: "nowrap" },
+    selector: { height: "auto", minHeight: "40px", width: "auto", flex: "1 1 0%", flexWrap: "nowrap", maxWidth: "560px", minWidth: 0, padding: "4px 10px", columnGap: "10px", textAlign: "left", whiteSpace: "nowrap" },
     selectorChevron: { width: "16px", height: "16px", flexShrink: 0 },
     selectorRole: { maxWidth: "40%", minWidth: 0 },
     summary: { display: "flex", flex: 1, minWidth: 0, flexDirection: "column", gap: "2px" },
