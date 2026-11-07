@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LockClosed16Regular } from "@fluentui/react-icons";
 import DadamThemeScope from "@/components/providers/DadamThemeScope";
 import type { ProjectView, WorkspaceOperation } from "@/types/workspace-production";
 import type { ProductionSlideRow } from "@/lib/workspace/production/presentation";
 import { isTypingTarget } from "@/lib/workspace/production/editor";
+import { navigatorShortcut, slideNavigationDelta, type NavigatorShortcut } from "@/lib/workspace/production/navigator-shortcuts";
 import ProductionPreview from "./ProductionPreview";
 
 export interface SlideNavigatorProps {
@@ -15,6 +16,13 @@ export interface SlideNavigatorProps {
   onCommand(operation: WorkspaceOperation): void; onCopy(ids: string[]): void;
   onPaste(sectionId: string, afterId: string | null): void; onRemove(ids: string[]): void;
   canCopy(ids: readonly string[]): boolean; canPaste: boolean;
+}
+interface SlideMenuAction {
+  id: NavigatorShortcut | "add";
+  label: string;
+  shortcut: string | null;
+  disabled: boolean;
+  run(): void;
 }
 export default function SlideNavigator(props: SlideNavigatorProps): React.ReactElement {
   const { view, rows, activeId, selectedIds, snapshotId, busy, onSelect, onCommand, onCopy, onPaste, onRemove, canCopy, canPaste } = props;
@@ -28,8 +36,17 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   const editable = (ids: readonly string[]) => ids.length > 0 && ids.every(id => rows.find(r => r.slide.id === id)?.editable);
   const active = rows.find(r => r.slide.id === activeId), menuRow = rows.find(r => r.slide.id === menu?.id);
   const menuSection = view.state.body.sections.find(section => section.id === menu?.sectionId);
-  const canEditMenu = !!menuSection && view.capabilities.insertableSectionIds.includes(menuSection.id);
   const menuIds = menuRow ? selectedIds.includes(menuRow.slide.id) ? [...selectedIds] : [menuRow.slide.id] : [];
+  const actions = (ids: readonly string[], sectionId: string | null, afterId: string | null): SlideMenuAction[] => {
+    const canInsert = !!sectionId && view.capabilities.insertableSectionIds.includes(sectionId);
+    return [
+      { id: "copy", label: "복사", shortcut: "Ctrl+C", disabled: busy || !canCopy(ids), run: () => onCopy([...ids]) },
+      { id: "paste", label: "붙여넣기", shortcut: "Ctrl+V", disabled: busy || !canInsert || !canPaste, run: () => { if (sectionId) onPaste(sectionId, afterId); } },
+      { id: "remove", label: "삭제", shortcut: "Del", disabled: busy || !editable(ids), run: () => onRemove([...ids]) },
+      { id: "add", label: "추가", shortcut: null, disabled: busy || !canInsert, run: () => { if (sectionId) onCommand({ type: "add-slide", sectionId, afterId, template: null }); } },
+    ];
+  };
+  const menuActions = actions(menuIds, menuSection?.id ?? null, menuRow?.slide.id ?? null);
   const closeMenu = (restoreFocus = true) => { setMenu(null); if (restoreFocus) trigger.current?.focus(); };
   const openEmptyMenu = (element: HTMLElement, x: number, y: number) => {
     if (busy || !props.sectionId || rows.some(row => row.section.id === props.sectionId)) return;
@@ -59,22 +76,27 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
   return <section data-comment-control aria-label="슬라이드 탐색" tabIndex={0} className="tw:flex tw:h-full tw:min-h-0 tw:min-w-0 tw:flex-col"
     onKeyDown={e => {
       if (busy || menu || e.defaultPrevented || isTypingTarget(e.target) || e.nativeEvent.isComposing || document.querySelector("[data-modal-frame], [data-comment-popup]") || !(e.target instanceof Element)) return;
-      if (e.target !== e.currentTarget && !e.target.closest("[data-slide-select]")) return;
-      const modifier = e.ctrlKey || e.metaKey, key = e.key.toLowerCase();
-      if (["arrowup", "arrowright", "arrowdown", "arrowleft"].includes(key) && !modifier && !e.altKey && !e.shiftKey && active) {
+      if (e.target !== e.currentTarget && !e.target.matches("[data-slide-list]") && !e.target.closest("[data-slide-select]")) return;
+      const key = { key: e.key, ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey, shiftKey: e.shiftKey, isComposing: e.nativeEvent.isComposing };
+      const delta = slideNavigationDelta(key), shortcut = navigatorShortcut(key);
+      if (delta && active) {
         const index = rows.findIndex(row => row.slide.id === active.slide.id);
-        const next = rows[index + (key === "arrowup" || key === "arrowright" ? 1 : -1)];
-        if (next) { e.preventDefault(); e.stopPropagation(); onSelect(next.slide.id, "single"); }
+        const next = rows[index + delta];
+        e.preventDefault(); e.stopPropagation();
+        if (next) onSelect(next.slide.id, "single");
       }
-      else if (key === "escape" && active) { e.preventDefault(); e.stopPropagation(); onSelect(active.slide.id, "single"); }
-      else if (modifier && key === "c" && canCopy(selectedIds)) { e.preventDefault(); onCopy([...selectedIds]); }
-      else if (modifier && key === "v" && active && view.capabilities.insertableSectionIds.includes(active.section.id) && canPaste) { e.preventDefault(); onPaste(active.section.id, active.slide.id); }
-      else if ((key === "delete" || key === "backspace") && editable(selectedIds)) { e.preventDefault(); onRemove([...selectedIds]); }
+      else if (e.key === "Escape" && active) { e.preventDefault(); e.stopPropagation(); onSelect(active.slide.id, "single"); }
+      else if (shortcut) {
+        e.preventDefault(); e.stopPropagation();
+        const emptySection = props.sectionId && !rows.some(row => row.section.id === props.sectionId) ? props.sectionId : null;
+        const action = actions(selectedIds, active?.section.id ?? emptySection, active?.slide.id ?? null).find(item => item.id === shortcut);
+        if (action && !action.disabled) action.run();
+      }
     }}>
     <header className="tw:flex tw:min-h-11 tw:shrink-0 tw:items-center tw:gap-2 tw:border-b tw:border-(--kpc-line) tw:px-3">
       <h2 className="tw:m-0 tw:flex tw:min-w-0 tw:flex-1 tw:items-baseline tw:gap-[8px] tw:text-sm"><span>슬라이드</span><span className="tw:shrink-0 tw:text-xs tw:font-normal tw:text-(--kpc-muted)">{rows.length}장</span></h2>{props.panelToggle}
     </header>
-    <div tabIndex={0} aria-label="슬라이드 목록" className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-2.5"
+    <div data-slide-list tabIndex={0} aria-label="슬라이드 목록" className="tw:min-h-0 tw:flex-1 tw:overflow-y-auto tw:overscroll-contain tw:p-2.5"
       onContextMenu={event => { if (!(event.target as Element).closest("[data-slide-select]")) { event.preventDefault(); openEmptyMenu(event.currentTarget, event.clientX, event.clientY); } }}
       onKeyDown={event => { if (event.target === event.currentTarget && (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10"))) { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); openEmptyMenu(event.currentTarget, rect.left, rect.top); } }}>
       <ol ref={list} className="tw:m-0 tw:list-none tw:space-y-2.5 tw:p-0">{rows.map(row => {
@@ -115,21 +137,32 @@ export default function SlideNavigator(props: SlideNavigatorProps): React.ReactE
       className="tw:rounded-lg tw:border tw:border-(--kpc-line) tw:bg-(--kpc-card) tw:p-1 tw:shadow-lg"
       onKeyDown={e => {
         e.stopPropagation();
+        if (e.defaultPrevented || isTypingTarget(e.target) || e.nativeEvent.isComposing) return;
         if (e.key === "Escape") { e.preventDefault(); closeMenu(); return; }
         if (e.key === "Tab") { closeMenu(false); return; }
+        if (busy || document.querySelector("[data-modal-frame], [data-comment-popup]")) return;
+        const shortcut = navigatorShortcut({ key: e.key, ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey, shiftKey: e.shiftKey, isComposing: e.nativeEvent.isComposing });
+        if (shortcut) {
+          e.preventDefault();
+          const action = menuActions.find(item => item.id === shortcut);
+          if (action && !action.disabled) { closeMenu(); action.run(); }
+          return;
+        }
+        if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
         const buttons = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+        if (!buttons.length) return;
         const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
         const next = e.key === "Home" ? 0 : e.key === "End" ? buttons.length - 1 : e.key === "ArrowDown" ? (index + 1) % buttons.length : e.key === "ArrowUp" ? (index - 1 + buttons.length) % buttons.length : -1;
         if (next >= 0) { e.preventDefault(); buttons[next]?.focus(); }
       }}>
-      {([
-        { label: "복사", disabled: !canCopy(menuIds), run: () => onCopy(menuIds) },
-        { label: "붙여넣기", disabled: !canEditMenu || !canPaste, run: () => onPaste(menuSection.id, menuRow?.slide.id ?? null) },
-        { label: "삭제", disabled: !editable(menuIds), run: () => onRemove(menuIds) },
-        { label: "추가", disabled: !canEditMenu, run: () => onCommand({ type: "add-slide", sectionId: menuSection.id, afterId: menuRow?.slide.id ?? null, template: null }) },
-      ]).map(item => <button key={item.label} type="button" role="menuitem" disabled={busy || item.disabled}
-        className="tw:block tw:w-full tw:cursor-pointer tw:rounded tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:text-sm tw:hover:bg-(--kpc-bg) tw:focus-visible:outline-2 tw:focus-visible:outline-(--kpc-brand) tw:disabled:cursor-not-allowed tw:disabled:opacity-40"
-        onClick={() => { closeMenu(); item.run(); }}>{item.label}</button>)}
+      {menuActions.map(item => <Fragment key={item.id}>
+        {item.id === "add" && <div role="separator" style={{ height: 1, background: "#EEF0F3", margin: "4px 6px", border: 0, padding: 0 }} />}
+        <button type="button" role="menuitem" disabled={item.disabled}
+          className="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-[18px] tw:rounded tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:text-sm tw:hover:bg-(--kpc-bg) tw:focus-visible:outline-2 tw:focus-visible:outline-(--kpc-brand) tw:disabled:cursor-not-allowed tw:disabled:opacity-40"
+          onClick={() => { if (!item.disabled) { closeMenu(); item.run(); } }}>{item.label}
+          {item.shortcut && <kbd style={{ marginLeft: "auto", flexShrink: 0, fontFamily: "inherit", lineHeight: "inherit", fontSize: "11.5px", color: "#74747d", fontWeight: 500, border: 0, background: "transparent", padding: 0 }}>{item.shortcut}</kbd>}
+        </button>
+      </Fragment>)}
     </div></DadamThemeScope>, document.body)}
   </section>;
 }
