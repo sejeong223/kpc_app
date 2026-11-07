@@ -21,9 +21,7 @@ export const useFileListStyles = makeStyles({
   roundSummary: { marginBottom: "12px", minHeight: "20px", cursor: "pointer", fontSize: "14px", lineHeight: "20px", fontWeight: 600, listStylePosition: "inside" },
   roundMeta: { marginLeft: "8px", fontSize: "12px", fontWeight: 400, color: "var(--kpc-secondary)" },
   grid: {
-    display: "grid", minWidth: 0, gap: "12px", gridTemplateColumns: "minmax(0, 1fr)",
-    "@media (min-width: 768px)": { gridTemplateColumns: "repeat(2, minmax(0, 1fr))" },
-    "@media (min-width: 1280px)": { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" },
+    display: "grid", minWidth: 0, gap: "12px", gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
   },
   panelHost: { minWidth: 0 },
   panel: {
